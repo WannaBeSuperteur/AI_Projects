@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 import torch
 import time
+import threading
 import pandas as pd
 
 quantize_config = BaseQuantizeConfig(bits=4, group_size=128)
@@ -17,6 +18,9 @@ MODEL_NAMES = ['DeepSeek-V2-Lite', 'DeepSeek-V2-Lite-Chat',
                'deepseek-coder-6.7b-base', 'deepseek-coder-7b-base-v1.5', 'deepseek-coder-1.3b-base',
                'deepseek-llm-7b-chat', 'deepseek-llm-7b-base',
                'deepseek-moe-16b-chat', 'deepseek-moe-16b-base']
+
+TIMEOUT = 60
+outputs = [None]
 
 llm_report = pd.DataFrame(columns=['success', 'used_memory', 'resp_time', 'quant_need', 'test_resp',
                                    'error_msg', 'error_msg_wo_quant'])
@@ -45,7 +49,6 @@ print(f'cuda is available with device {torch.cuda.get_device_name()}')
 #   - error_msg_wo_quant (str)   : 양자화 없이 실시했을 때 실패 (오류) 시 오류 메시지
 
 def test_llm(model_name):
-
     try:
         # 양자화 없이 시도
         llm = AutoModelForCausalLM.from_pretrained(f"deepseek-ai/{model_name}",
@@ -92,13 +95,39 @@ def test_llm(model_name):
 #   - test_resp   (str)   : 테스트 프롬프트에 대한 출력값
 
 def test_loaded_llm(llm, quantized):
+    global outputs
+
     model_name = llm.config.name_or_path
     used_memory = torch.cuda.memory_allocated()
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     start = time.time()
     inputs = tokenizer(TEST_PROMPT, return_tensors='pt').to(llm.device)
-    outputs = llm.generate(**inputs, max_length=512)
+
+    print('generating answer ...')
+
+    # 60초 동안 모델 응답 반환 안되면 강제 종료
+    outputs = [None]
+    exception = [None]
+
+    def generate():
+        global outputs
+
+        try:
+            outputs = llm.generate(**inputs, max_length=512)
+        except Exception as e:
+            exception[0] = str(e)
+
+    thread = threading.Thread(target=generate)
+    thread.start()
+    thread.join(TIMEOUT)
+
+    if thread.is_alive():
+        raise TimeoutError('Generation time exceeded')
+
+    if exception[0]:
+        raise exception[0]
+
     resp_time = time.time() - start
     test_resp = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
