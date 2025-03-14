@@ -18,7 +18,8 @@ MODEL_NAMES = ['DeepSeek-V2-Lite', 'DeepSeek-V2-Lite-Chat',
                'deepseek-llm-7b-chat', 'deepseek-llm-7b-base',
                'deepseek-moe-16b-chat', 'deepseek-moe-16b-base']
 
-llm_report = pd.DataFrame(columns=['success', 'used_memory', 'resp_time', 'quant_need', 'test_resp', 'error_msg'])
+llm_report = pd.DataFrame(columns=['success', 'used_memory', 'resp_time', 'quant_need', 'test_resp',
+                                   'error_msg', 'error_msg_wo_quant'])
 
 # check cuda is available
 assert torch.cuda.is_available(), "CUDA MUST BE AVAILABLE"
@@ -35,12 +36,13 @@ print(f'cuda is available with device {torch.cuda.get_device_name()}')
 # Returns:
 # - llm         (LLM)  : 테스트 결과 정상 작동 (오류 없이 정상 작동) 시 해당 LLM 반환, 실패 시 None
 # - result_dict (dict) : 아래의 내용을 dict 로 묶어서 반환
-#   - success     (bool)  : 성공(정상 작동) 여부
-#   - used_memory (float) : 사용 메모리 양 (MB)
-#   - resp_time   (float) : 응답(추론) 시간 (초)
-#   - quant_need  (bool)  : 양자화 (Quantization) 필요 여부
-#   - test_resp   (str)   : 테스트 프롬프트에 대한 출력값
-#   - error_msg   (str)   : 실패 (오류) 시 오류 메시지
+#   - success            (bool)  : 성공(정상 작동) 여부
+#   - used_memory        (float) : 사용 메모리 양 (MB)
+#   - resp_time          (float) : 응답(추론) 시간 (초)
+#   - quant_need         (bool)  : 양자화 (Quantization) 필요 여부
+#   - test_resp          (str)   : 테스트 프롬프트에 대한 출력값
+#   - error_msg          (str)   : 실패 (오류) 시 오류 메시지
+#   - error_msg_wo_quant (str)   : 양자화 없이 실시했을 때 실패 (오류) 시 오류 메시지
 
 def test_llm(model_name):
 
@@ -51,7 +53,10 @@ def test_llm(model_name):
                                                    torch_dtype=torch.bfloat16).cuda()
         result_dict = test_loaded_llm(llm, quantized=False)
 
-    except:
+    except Exception as e:
+        err_msg_wo_quant = str(e)
+        print(f'error message when quantization not applied : {err_msg_wo_quant}')
+
         # 양자화 적용해서 시도 (.cuda() 사용 불가)
         try:
             llm = AutoGPTQForCausalLM.from_pretrained(f"deepseek-ai/{model_name}",
@@ -60,8 +65,12 @@ def test_llm(model_name):
                                                       torch_dtype=torch.bfloat16)
 
             result_dict = test_loaded_llm(llm, quantized=True)
+            result_dict['err_msg_wo_quant'] = err_msg_wo_quant
+
         except Exception as e:
-            return None, {'success': False, 'error_msg': str(e)}
+            return None, {'success': False,
+                          'error_msg': str(e),
+                          'err_msg_wo_quant': err_msg_wo_quant}
 
     return llm, result_dict
 
@@ -81,7 +90,6 @@ def test_llm(model_name):
 #   - resp_time   (float) : 응답(추론) 시간 (초)
 #   - quant_need  (bool)  : 양자화 (Quantization) 필요 여부
 #   - test_resp   (str)   : 테스트 프롬프트에 대한 출력값
-#   - error_msg   (str)   : 실패 (오류) 시 오류 메시지
 
 def test_loaded_llm(llm, quantized):
     model_name = llm.config.name_or_path
