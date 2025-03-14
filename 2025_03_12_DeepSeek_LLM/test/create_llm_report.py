@@ -94,7 +94,7 @@ def test_llm(model_name):
 def test_loaded_llm(llm, quantized):
     model_name = llm.config.name_or_path
     used_memory = torch.cuda.memory_allocated()
-    tokenizer = AutoTokenizer.from_pretrained(f"deepseek_model/{model_name}")
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     start = time.time()
     inputs = tokenizer(TEST_PROMPT, return_tensors='pt').to(llm.device)
