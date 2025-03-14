@@ -11,8 +11,6 @@ MODEL_NAMES = ['DeepSeek-V2-Lite', 'DeepSeek-V2-Lite-Chat',
                'deepseek-moe-16b-chat', 'deepseek-moe-16b-base']
 
 
-
-
 # 각 LLM을 테스트하고, [LLM 이름, 성공 여부, 사용 메모리, 응답(추론) 시간, 양자화 필요 여부, 테스트 프롬프트 출력값] 형식으로 반환
 # Create Date : 2025.03.14
 # Last Update Date : -
