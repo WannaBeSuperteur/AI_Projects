@@ -9,10 +9,15 @@
 
 ## 1. 테스트 환경
 
-* OS : **Windows 10**
-* Deep Learning Framework : **PyTorch 2.4.0+cu124**
-* CUDA : **Version 12.4**
-* GPU : ```Quadro M6000``` 
+* 선택한 환경
+  * Google Colab
+  * T4 GPU + 고용량 RAM
+* 이유
+  * 다음 로컬 환경에서 대부분의 LLM이 Out-of-memory 발생
+    * OS : **Windows 10**
+    * Deep Learning Framework : **PyTorch 2.4.0+cu124**
+    * CUDA : **Version 12.4**
+    * GPU : ```Quadro M6000``` (12 GB)
 
 ## 2. LLM 에 대한 비교 Report 생성
 
