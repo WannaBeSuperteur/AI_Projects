@@ -11,6 +11,7 @@
   * [4-2. LLM Fine-Tuning](#4-2-llm-fine-tuning)
   * [4-3. 생성된 이미지의 저차원 벡터화](#4-3-생성된-이미지의-저차원-벡터화)
   * [4-4. 최종 이미지 생성 및 순위 산출](#4-4-최종-이미지-생성-및-순위-산출)
+* [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
 
 ## 1. 프로젝트 개요
 
@@ -18,7 +19,7 @@
 * 해당 텍스트를 이용하여 일반 알고리즘으로 Diagram 을 생성한다.
 * 다음과 같은 방법을 이용하여 보다 가독성 좋은 Diagram 을 생성한다.
   * **[DPO 또는 ORPO](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_기초_Fine_Tuning_DPO_ORPO.md) 와 같은 기술로 LLM 을 Fine-Tuning** 하여, LLM 자체적으로 사용자 입장에서 가독성 높은 Diagram 생성
-* 가독성이 더욱 향상된 Diagram 생성을 위해 다음을 적용한다.
+* 가독성이 더욱 향상된 **개별 사용자 맞춤형** Diagram 생성을 위해 다음을 적용한다.
   * 여러 개의 Diagram 을 생성한 후, **기본 가독성 점수 + 예상 사용자 평가 점수** 가 높은 순으로 정렬하여 상위권의 Diagram 들을 사용자에게 표시
   * [CNN (Conv. Neural Network)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_CNN.md) 을 이용하여 가독성 높은 Diagram 인지의 **기본 가독성 점수** 산출
   * 생성된 이미지를 [Auto-Encoder](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Auto%20Encoder.md) 로 저차원 벡터화하고, [k-Nearest Neighbor](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_KNN.md) 의 아이디어를 이용하여 **예상 사용자 평가 점수** 산출
@@ -87,7 +88,7 @@
 | CNN 개발 및 학습                                | 03.15 토 (1d)           | ```P001-003-CNN```      | ⬜  |
 | Auto-Encoder 개발 및 학습                       | 03.16 일 (1d)           | ```P001-004-AE```       | ⬜  |
 | k-NN 개발 및 학습                               | 03.16 일 (1d)           | ```P001-005-kNN```      | ⬜  |
-| 기본 가독성 + 예상 사용자 평가 점수 처리 알고리즘 개발           | 03.16 일 - 03.17 월 (2d) |                         | ⬜  |
+| 기본 가독성 + 예상 사용자 평가 점수 처리 알고리즘 개발           | 03.16 일 - 03.17 월 (2d) | ```P001-006-Score```       | ⬜  |
 | 프로젝트 상세 설명 정리 및 링크 추가                      | 03.17 월 (1d)           |                         | ⬜  |
 
 ## 4. 프로젝트 상세 설명
@@ -101,3 +102,5 @@
 ### 4-3. 생성된 이미지의 저차원 벡터화
 
 ### 4-4. 최종 이미지 생성 및 순위 산출
+
+## 5. 프로젝트 진행 중 이슈 및 해결 방법
