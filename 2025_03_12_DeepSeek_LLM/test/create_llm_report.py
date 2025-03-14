@@ -4,6 +4,7 @@ import torch
 import time
 import threading
 import pandas as pd
+import gc
 
 quantize_config = BaseQuantizeConfig(bits=4, group_size=128)
 
@@ -136,7 +137,7 @@ def test_loaded_llm(llm, quantized):
     test_resp = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     result_dict = {'model_name': model_name,
-                   'success': False,
+                   'success': True,
                    'used_memory': used_memory,
                    'resp_time': resp_time,
                    'quent_need': quantized,
