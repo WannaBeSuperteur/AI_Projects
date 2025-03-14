@@ -4,7 +4,8 @@
 * [2. LLM 에 대한 비교 Report 생성](#2-llm-에-대한-비교-report-생성)
   * [2-1. 코드 파일 설명](#2-1-코드-파일-설명)
   * [2-2. 후보 모델 선정](#2-2-후보-모델-선정)
-  * [2-3. 실제 Report 결과](#2-3-실제-report-결과)
+  * [2-3. Quantization 방법](#2-3-quantization-방법)
+  * [2-4. 실제 Report 결과](#2-4-실제-report-결과)
 
 ## 1. 테스트 환경
 
@@ -23,7 +24,7 @@
   * ```create_llm_report.py```
 * 입/출력
   * 입력 : 없음
-  * 출력 : ```llm_report.csv``` (LLM 이름, 성공 여부, 각 LLM 의 사용 메모리, 응답 시간, [양자화](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md) 필요 여부, 테스트 프롬프트에 대한 출력값을 정리한 report)
+  * 출력 : ```llm_report.csv``` (LLM 이름, 정상 작동 여부, 각 LLM 의 사용 메모리, 응답 시간, [양자화](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md) 필요 여부, 테스트 프롬프트에 대한 출력값을 정리한 report)
 * 테스트 프롬프트
   * ```Draw a diagram of neural network model with 4 input nodes, 6 first hidden layer nodes, 6 second hidden layer nodes, and 1 output node. For each node, write in the form of [node No., background color, text, text color, edge color, arrow color, connected nodes No. (as an array)]. Color should be such as #008000 format.```
 
@@ -60,6 +61,15 @@
     * 사용자 입력 프롬프트에 따라 서로 다른 네트워크 (전문가) 를 활성화
     * 이를 통해, 파라미터는 많아지지만 **연산량은 유지** 
 
-### 2-3. 실제 Report 결과
+### 2-3. Quantization 방법
+
+Quantization 방법은 [GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) 를 사용
+
+* 본 프로젝트 특성상 **개발 일정에 맞춘 빠르고 효율적인 양자화**가 필요
+* [PTQ (Post-training Quantization)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-1-ptq-vs-qat) 방법론 적용
+  * 이미 Pre-train 된 LLM 의 빠른 Fine-tuning 에는 QAT 보다 PTQ 가 적합
+* PTQ 방법론 중, **3,4비트로 양자화해도 손실이 적으며 학습 효율성도 높은** GPTQ 방법론 사용
+
+### 2-4. 실제 Report 결과
 
 TBU
