@@ -1,3 +1,9 @@
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+import torch
+import os
+import time
+
+
 TEST_PROMPT = ("Draw a diagram of neural network model with 4 input nodes, 6 first hidden layer nodes, 6 second "
                "hidden layer nodes, and 1 output node. For each node, write in the form of [node No., background color,"
                "text, text color, edge color, arrow color, connected nodes No. (as an array)]. Color should be such"
@@ -9,6 +15,8 @@ MODEL_NAMES = ['DeepSeek-V2-Lite', 'DeepSeek-V2-Lite-Chat',
                'deepseek-coder-6.7b-base', 'deepseek-coder-7b-base-v1.5', 'deepseek-coder-1.3b-base',
                'deepseek-llm-7b-chat', 'deepseek-llm-7b-base',
                'deepseek-moe-16b-chat', 'deepseek-moe-16b-base']
+
+report = []
 
 
 # 각 LLM을 테스트하고, [LLM 이름, 성공 여부, 사용 메모리, 응답(추론) 시간, 양자화 필요 여부, 테스트 프롬프트 출력값] 형식으로 반환
