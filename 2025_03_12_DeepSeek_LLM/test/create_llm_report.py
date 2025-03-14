@@ -40,6 +40,7 @@ print(f'cuda is available with device {torch.cuda.get_device_name()}')
 # Returns:
 # - llm         (LLM)  : 테스트 결과 정상 작동 (오류 없이 정상 작동) 시 해당 LLM 반환, 실패 시 None
 # - result_dict (dict) : 아래의 내용을 dict 로 묶어서 반환
+#   - model_name         (str)   : LLM 모델 이름
 #   - success            (bool)  : 성공(정상 작동) 여부
 #   - used_memory        (float) : 사용 메모리 양 (MB)
 #   - resp_time          (float) : 응답(추론) 시간 (초)
@@ -57,8 +58,8 @@ def test_llm(model_name):
         result_dict = test_loaded_llm(llm, quantized=False)
 
     except Exception as e:
-        err_msg_wo_quant = str(e)
-        print(f'error message when quantization not applied : {err_msg_wo_quant}')
+        error_msg_wo_quant = str(e)
+        print(f'error message when quantization not applied : {error_msg_wo_quant}')
 
         # 양자화 적용해서 시도 (.cuda() 사용 불가)
         try:
@@ -68,17 +69,18 @@ def test_llm(model_name):
                                                       torch_dtype=torch.bfloat16)
 
             result_dict = test_loaded_llm(llm, quantized=True)
-            result_dict['err_msg_wo_quant'] = err_msg_wo_quant
+            result_dict['error_msg_wo_quant'] = error_msg_wo_quant
 
         except Exception as e:
-            return None, {'success': False,
+            return None, {'model_name': model_name,
+                          'success': False,
                           'error_msg': str(e),
-                          'err_msg_wo_quant': err_msg_wo_quant}
+                          'error_msg_wo_quant': error_msg_wo_quant}
 
     return llm, result_dict
 
 
-# 로딩 된 LLM을 테스트하여 [정상 작동 여부, 사용 메모리, 응답(추론) 시간, 양자화 필요 여부, 테스트 프롬프트 출력값] 형식으로 반환
+# 로딩 된 LLM을 테스트하여 [LLM 이름, 정상 작동 여부, 사용 메모리, 응답(추론) 시간, 양자화 필요 여부, 테스트 프롬프트 출력값] 형식으로 반환
 # Create Date : 2025.03.14
 # Last Update Date : -
 
@@ -88,6 +90,7 @@ def test_llm(model_name):
 
 # Returns:
 # - result_dict (dict) : 아래의 내용을 dict 로 묶어서 반환
+#   - model_name  (str)   : LLM 모델 이름
 #   - success     (bool)  : 성공(정상 작동) 여부
 #   - used_memory (float) : 사용 메모리 양 (MB)
 #   - resp_time   (float) : 응답(추론) 시간 (초)
@@ -98,8 +101,9 @@ def test_loaded_llm(llm, quantized):
     global outputs
 
     model_name = llm.config.name_or_path
-    used_memory = torch.cuda.memory_allocated()
+    used_memory = torch.cuda.memory_allocated() / (1024 * 1024)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
+    print(f'memory used : {used_memory}')
 
     start = time.time()
     inputs = tokenizer(TEST_PROMPT, return_tensors='pt').to(llm.device)
@@ -131,7 +135,8 @@ def test_loaded_llm(llm, quantized):
     resp_time = time.time() - start
     test_resp = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-    result_dict = {'success': False,
+    result_dict = {'model_name': model_name,
+                   'success': False,
                    'used_memory': used_memory,
                    'resp_time': resp_time,
                    'quent_need': quantized,
