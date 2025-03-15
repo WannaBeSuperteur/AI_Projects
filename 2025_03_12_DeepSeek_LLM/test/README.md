@@ -78,7 +78,7 @@ Represent below as a Python list.
 A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers,
 and 1 node in the output layer in the following format.
 
-At this time, each node is represented in the format of "[node No., X position (px), Y position (px), shape,
+At this time, each node is represented in the format of Python list "[node No., X position (px), Y position (px), shape,
 width (px), height (px), connection line shape, background color, connection line color,
 list of node No. s of other nodes pointed to by the connection line]".
 
