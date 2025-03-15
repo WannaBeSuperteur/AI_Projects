@@ -13,12 +13,9 @@ TEST_PROMPT = ("Draw a diagram of neural network model with 4 input nodes, 6 fir
                "text, text color, edge color, arrow color, connected nodes No. (as an array)]. Color should be such"
                "as #008000 format.")
 
-MODEL_NAMES = ['DeepSeek-V2-Lite', 'DeepSeek-V2-Lite-Chat',
-               'DeepSeek-Coder-V2-Lite-Base', 'DeepSeek-Coder-V2-Lite-Instruct',
+MODEL_NAMES = ['DeepSeek-Coder-V2-Lite-Base', 'DeepSeek-Coder-V2-Lite-Instruct',
                'deepseek-coder-6.7b-instruct', 'deepseek-coder-7b-instruct-v1.5', 'deepseek-coder-1.3b-instruct',
-               'deepseek-coder-6.7b-base', 'deepseek-coder-7b-base-v1.5', 'deepseek-coder-1.3b-base',
-               'deepseek-llm-7b-chat', 'deepseek-llm-7b-base',
-               'deepseek-moe-16b-chat', 'deepseek-moe-16b-base']
+               'deepseek-coder-6.7b-base', 'deepseek-coder-7b-base-v1.5', 'deepseek-coder-1.3b-base']
 
 TIMEOUT = 60
 outputs = [None]
