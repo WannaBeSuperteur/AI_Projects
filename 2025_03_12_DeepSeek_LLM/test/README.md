@@ -71,6 +71,11 @@ X position range is 0-1000 and Y position range is 0-600.
 
 * 테스트 프롬프트 (2차 테스트)
   * 1차 테스트 프롬프트에서 ```width``` ```height``` 도형 속성 추가 및 ```(px)``` 를 추가 명시
+  * node 의 representation format 이 ```Python list``` 임을 명시
+  * connection line shape 를 ```solid or dashed``` 로 명시
+  * 도형의 shape 를 ```rectangle, round rectangle or circle``` 로 명시
+  * 색상 표시 포맷을 ```in range 0-255``` 에서 ```between 0 and 255``` 로 수정
+  * 마지막에 가독성이 좋은 다이어그램을 만드는 것이 중요하다고 명시
 
 ```
 Represent below as a Python list.
@@ -78,12 +83,15 @@ Represent below as a Python list.
 A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers,
 and 1 node in the output layer in the following format.
 
-At this time, each node is represented in the format of Python list "[node No., X position (px), Y position (px), shape,
-width (px), height (px), connection line shape, background color, connection line color,
-list of node No. s of other nodes pointed to by the connection line]".
+At this time, each node is represented in the format of Python list "[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]".
 
-At this time, the color is represented in the format of tuple (R, G, B), in range 0-255, and
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
 X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.
 ```
 
 * 테스트 프롬프트에서 다음 부분만이 실제 User Prompt 이고, 나머지는 [프롬프트 엔지니어링](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Prompt_Engineering.md) 을 위해 추가한 부분임.
