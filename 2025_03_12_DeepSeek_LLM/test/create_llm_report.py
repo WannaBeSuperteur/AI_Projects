@@ -4,22 +4,30 @@ import torch
 import time
 import threading
 import pandas as pd
-import gc
 
 quantize_config = BaseQuantizeConfig(bits=4, group_size=128)
 
 TEST_PROMPT = ("Represent below as a Python list.\n" +
                "A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, " +
                "and 1 node in the output layer in the following format.\n" +
-               'At this time, each node is represented in the format of "[node No., shape, connection line shape, ' +
-               'background color, connection line color, list of node No. s of other nodes pointed to by the connection line]".\n' +
-               "At this time, the color is represented in the format of RGB color code.")
+               'At this time, each node is represented in the format of "[node No., X position, Y position, shape, ' +
+               "connection line shape, background color, connection line color," +
+               'list of node No. s of other nodes pointed to by the connection line]".\n' +
+               "At this time, the color is represented in the format of tuple (R, G, B), in range 0-255, and \n" +
+               "X position range is 0-1000 and Y position range is 0-600.")
 
 MODEL_NAMES = ['deepseek-coder-6.7b-instruct', 'deepseek-coder-7b-instruct-v1.5', 'deepseek-coder-1.3b-instruct',
                'deepseek-coder-6.7b-base', 'deepseek-coder-7b-base-v1.5', 'deepseek-coder-1.3b-base',
                'deepseek-llm-7b-chat', 'deepseek-llm-7b-base']
 
-TIMEOUT = 60
+# Auto-GPTQ Not Supported for below models:
+"""
+MODEL_NAMES = ['DeepSeek-V2-Lite', 'DeepSeek-V2-Lite-Chat',
+               'DeepSeek-Coder-V2-Lite-Base', 'DeepSeek-Coder-V2-Lite-Instruct',
+               'deepseek-moe-16b-chat', 'deepseek-moe-16b-base']
+"""
+
+TIMEOUT = 60  # Auto-GPTQ Not Supported 인 6개 모델에 대해서는 TIMEOUT = 120
 outputs = [None]
 
 llm_report = pd.DataFrame(columns=['success', 'used_memory', 'resp_time', 'quant_need', 'test_resp',
@@ -82,7 +90,7 @@ def test_llm(model_name):
 
 # 로딩 된 LLM을 테스트하여 [LLM 이름, 정상 작동 여부, 사용 메모리, 응답(추론) 시간, 양자화 필요 여부, 테스트 프롬프트 출력값] 형식으로 반환
 # Create Date : 2025.03.14
-# Last Update Date : -
+# Last Update Date : 2025.03.15
 
 # Arguments:
 # - llm       (LLM)  : 테스트 대상 LLM
@@ -118,7 +126,8 @@ def test_loaded_llm(llm, quantized):
         global outputs
 
         try:
-            outputs = llm.generate(**inputs, max_length=512)
+            with torch.no_grad():
+                outputs = llm.generate(**inputs, max_length=512)  # Auto-GPTQ Not Supported 인 6개 모델에 대해서는 max_length=1024
         except Exception as e:
             exception[0] = str(e)
 

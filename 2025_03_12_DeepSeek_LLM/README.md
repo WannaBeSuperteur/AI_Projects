@@ -98,6 +98,7 @@
 
 ### 4-2. LLM Fine-Tuning
 
+* LLaMA 등 기존 LLM 보다는, **최신 트렌드인 DeepSeek 모델을 Fine-tuning** 하는 것을 본 프로젝트의 목표로 함.
 * DPO 는 참조 모델을 사용해야 한다는 부담이 있지만, ORPO 는 LLM 1개만 사용하면 되므로 메모리 사용 및 Out-of-memory 부담이 낮음
 
 ### 4-3. 생성된 이미지의 저차원 벡터화
@@ -106,6 +107,12 @@
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
+**이슈 요약**
+
+| 이슈                     | 날짜         | 심각성 | 상태 | 원인                           | 해결 방법                                                                                                    |
+|------------------------|------------|-----|----|------------------------------|----------------------------------------------------------------------------------------------------------|
+| ```flash_attn``` 사용 불가 | 2025.03.14 | 낮음  | 보류 | ```nvcc -V``` 기준의 CUDA 버전 이슈 | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
+
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
 **문제 상황**
@@ -113,9 +120,17 @@
 * [LLM 후보 모델](test/README.md#2-2-후보-모델-선정) 중 일부를 양자화하지 않고 실행 시, ```flash_attn``` (Flash Attention) 라이브러리를 필요로 함
 * 해당 라이브러리가 CUDA 버전 이슈 (```nvcc -V``` 로 확인되는 버전 기준 CUDA 11.7 이상에서만 설치 가능) 로 인해 설치 안됨
 
+**해결 보류 사유**
+
+* ```flash_attn``` 오류는 Local 환경이 아닌 Google Colab 환경에서 실행 시 해결됨
+* Flash Attention 을 요구하는 LLM (DeepSeek-V2 등) 은 모두 Auto-[GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) (양자화 방법) Not Supported 인 큰 모델임
+  * 이는 Local 환경에서는 GPTQ를 이용한 양자화 자체가 어려우며, 따라서 **큰 규모로 인한 OOM을 해결하기 어렵기 때문에, ```flash_attn``` 문제가 발생하는 로컬 환경에서는 사용 자체가 어려운 모델**임을 의미함.  
+  * 오류 메시지 : ```deepseek_v2 isn't supported yet.``` 
+* 해당 문제 해결 없이도 [Supervised Fine-Tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) 의 선 진행을 통해 충분한 성능을 보일 것으로 기대되는 모델 존재
+
 **해결 시도 (모두 실패, 해결 보류 중)**
 
-* 1. Windows 환경 변수 편집
+* **1. Windows 환경 변수 편집**
   * ```CUDA_PATH``` 환경 변수를 현재 설치된 11.7 이상의 CUDA 버전으로 갱신
   * ```PATH``` 의 ```CUDA\bin``` 부분을 현재 설치된 11.7 이상의 CUDA 버전으로 갱신
   * 결과
@@ -123,12 +138,12 @@
     * ```pip install flash_attn``` 설치 시도 시 다음과 같은 오류 발생
       * ```ERROR: Failed to build installable wheels for some pyproject.toml based projects (flash_attn)``` 
 
-* 2. flash_attn 라이브러리의 이전 버전 설치
+* **2. flash_attn 라이브러리의 이전 버전 설치**
   * ```pip install flash_attn==2.5.7``` 시도 [(참고)](https://github.com/Dao-AILab/flash-attention/issues/224)
   * 결과
     * ```error: Microsoft Visual C++ 14.0 is required. Get it with "Microsoft Visual C++ Build Tools": https://visualstudio.microsoft.com/downloads/``` 오류 발생
 
-* 3. Visual C++ 14.0 설치
+* **3. Visual C++ 14.0 설치**
   * [설치 링크](https://visualstudio.microsoft.com/ko/downloads/) 에서 설치 프로그램 다운로드
   * 설치 프로그램에서 "C++를 사용한 데스크톱 개발" 체크 후 설치
   * ```pip install flash_attn``` 실행 시도 결과

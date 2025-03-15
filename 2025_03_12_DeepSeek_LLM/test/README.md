@@ -11,14 +11,18 @@
 
 * 선택한 환경
   * Google Colab
-  * T4 GPU (15GB) + 고용량 RAM → A100 GPU (40GB) + 일반 RAM
-    * T4 GPU 는 후보 모델 중 일부에서 Out of memory 발생 
+  * Auto-GPTQ 가 지원되지 않는 큰 모델
+    * T4 GPU (15GB) + 고용량 RAM → **T4 GPU (15GB) + 일반 RAM**
+  * Auto-GPTQ 가 지원되는 작은 모델
+    * **A100 GPU (40GB) + 일반 RAM** 
 * 이유
   * 다음 로컬 환경에서 대부분의 LLM이 Out-of-memory 발생
     * OS : **Windows 10**
     * Deep Learning Framework : **PyTorch 2.4.0+cu124**
     * CUDA : **Version 12.4**
-    * GPU : ```Quadro M6000``` (12 GB)
+    * GPU : **Quadro M6000 (12 GB)**
+  * T4 GPU (15GB) 만으로도, Auto-GPTQ 가 지원되지 않는 큰 모델들을 제외하고 모두 테스트 가능
+  * A100 GPU (40GB) 수준의 대용량 GPU를 사용해야 해당 큰 모델들에서 Out-of-memory 가 발생하지 않음
 
 ## 2. LLM 에 대한 비교 Report 생성
 
@@ -43,11 +47,13 @@
   * DeepSeek-R1 또는 이를 [Distillation](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Knowledge_Distillation.md) 한 모델 등 [추론형 모델](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_%EC%B6%94%EB%A1%A0%ED%98%95_%EB%AA%A8%EB%8D%B8.md) 은 후보에서 제외 (추론으로 인해 응답 시간이 긺)
 * 후보 선정 결과
   * 총 14 개 모델
+    * 이 중 실제 코드에서는 Auto-[GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) Not Supported 를 제외한 8개만 테스트
+    * 해당 모델들은 양자화 없이 실행 시 모두 Out-of-memory 발생하여 실행 불가
   * DeepSeek-V2
-    * [```DeepSeek-V2-Lite``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite)
-    * [```DeepSeek-V2-Lite-Chat``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite-Chat)
-    * [```DeepSeek-Coder-V2-Lite-Base``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Base)
-    * [```DeepSeek-Coder-V2-Lite-Instruct``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct)
+    * [```DeepSeek-V2-Lite``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite) (Auto-GPTQ Not Supported)
+    * [```DeepSeek-V2-Lite-Chat``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-V2-Lite-Chat) (Auto-GPTQ Not Supported)
+    * [```DeepSeek-Coder-V2-Lite-Base``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Base) (Auto-GPTQ Not Supported)
+    * [```DeepSeek-Coder-V2-Lite-Instruct``` (15.7B)](https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct) (Auto-GPTQ Not Supported)
   * DeepSeek-Coder
     * [```deepseek-coder-6.7b-instruct``` (6.74B)](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct)
     * [```deepseek-coder-7b-instruct-v1.5``` (6.91B)](https://huggingface.co/deepseek-ai/deepseek-coder-7b-instruct-v1.5)
@@ -59,8 +65,8 @@
     * [```deepseek-llm-7b-chat``` (7B)](https://huggingface.co/deepseek-ai/deepseek-llm-7b-chat)
     * [```deepseek-llm-7b-base``` (7B)](https://huggingface.co/deepseek-ai/deepseek-llm-7b-base)
   * DeepSeek-MoE
-    * [```deepseek-moe-16b-chat``` (16.4B)](https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat)
-    * [```deepseek-moe-16b-base``` (16.4B)](https://huggingface.co/deepseek-ai/deepseek-moe-16b-base)
+    * [```deepseek-moe-16b-chat``` (16.4B)](https://huggingface.co/deepseek-ai/deepseek-moe-16b-chat) (Auto-GPTQ Not Supported)
+    * [```deepseek-moe-16b-base``` (16.4B)](https://huggingface.co/deepseek-ai/deepseek-moe-16b-base) (Auto-GPTQ Not Supported)
 * 참고
   * DeepSeek-MoE 는 **Mixture of Expert** 라는 기법을 적용한 LLM 임 
   * **MoE (Mixture of Expert, 전문가 혼합)**
