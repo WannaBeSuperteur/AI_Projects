@@ -18,9 +18,9 @@
 
 * 선택한 환경
   * Google Colab
-  * Auto-GPTQ 가 지원되지 않는 큰 모델
-    * T4 GPU (15GB) + 고용량 RAM → **T4 GPU (15GB) + 일반 RAM**
   * Auto-GPTQ 가 지원되는 작은 모델
+    * T4 GPU (15GB) + 고용량 RAM → **T4 GPU (15GB) + 일반 RAM**
+  * Auto-GPTQ 가 지원되지 않는 큰 모델
     * **A100 GPU (40GB) + 일반 RAM** 
 * 이유
   * 다음 로컬 환경에서 대부분의 LLM이 Out-of-memory 발생
