@@ -1,22 +1,29 @@
+import cv2
+import numpy as np
 
-canvas = None
+WIDTH = 1000
+HEIGHT = 600
+
+canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
+
 
 # Diagram 의 도형 생성
 # Create Date : 2025.03.15
 # Last Update Date : -
 
 # Arguments:
-# - x     (int)   : 도형의 x 좌표
-# - y     (int)   : 도형의 y 좌표
-# - shape (str)   : 도형의 모양 (원, 직사각형 등)
-# - color (tuple) : 도형의 배경 색
+# - x      (int)   : 도형의 x 좌표
+# - y      (int)   : 도형의 y 좌표
+# - width  (int)   : 도형의 가로 길이
+# - height (int)   : 도형의 세로 길이
+# - shape  (str)   : 도형의 모양 (원, 직사각형 등)
+# - color  (tuple) : 도형의 배경 색
 
 # Returns:
 # - canvas 에 해당 도형 추가
 
-def generate_node(x, y, shape, color):
+def generate_node(x, y, width, height, shape, color):
     global canvas
-    raise NotImplementedError
 
 
 # Diagram 의 화살표 생성
