@@ -8,10 +8,12 @@ import gc
 
 quantize_config = BaseQuantizeConfig(bits=4, group_size=128)
 
-TEST_PROMPT = ("Draw a diagram of neural network model with 4 input nodes, 6 first hidden layer nodes, 6 second "
-               "hidden layer nodes, and 1 output node. For each node, write in the form of [node No., background color,"
-               "text, text color, edge color, arrow color, connected nodes No. (as an array)]. Color should be such"
-               "as #008000 format.")
+TEST_PROMPT = ("Represent below as a Python list.\n" +
+               "A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, " +
+               "and 1 node in the output layer in the following format.\n" +
+               'At this time, each node is represented in the format of "[node No., shape, connection line shape, ' +
+               'background color, connection line color, list of node No. s of other nodes pointed to by the connection line]".\n' +
+               "At this time, the color is represented in the format of RGB color code.")
 
 MODEL_NAMES = ['DeepSeek-Coder-V2-Lite-Base', 'DeepSeek-Coder-V2-Lite-Instruct',
                'deepseek-coder-6.7b-instruct', 'deepseek-coder-7b-instruct-v1.5', 'deepseek-coder-1.3b-instruct',
