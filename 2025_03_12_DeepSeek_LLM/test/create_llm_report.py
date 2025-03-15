@@ -15,9 +15,9 @@ TEST_PROMPT = ("Represent below as a Python list.\n" +
                'background color, connection line color, list of node No. s of other nodes pointed to by the connection line]".\n' +
                "At this time, the color is represented in the format of RGB color code.")
 
-MODEL_NAMES = ['DeepSeek-Coder-V2-Lite-Base', 'DeepSeek-Coder-V2-Lite-Instruct',
-               'deepseek-coder-6.7b-instruct', 'deepseek-coder-7b-instruct-v1.5', 'deepseek-coder-1.3b-instruct',
-               'deepseek-coder-6.7b-base', 'deepseek-coder-7b-base-v1.5', 'deepseek-coder-1.3b-base']
+MODEL_NAMES = ['deepseek-coder-6.7b-instruct', 'deepseek-coder-7b-instruct-v1.5', 'deepseek-coder-1.3b-instruct',
+               'deepseek-coder-6.7b-base', 'deepseek-coder-7b-base-v1.5', 'deepseek-coder-1.3b-base',
+               'deepseek-llm-7b-chat', 'deepseek-llm-7b-base']
 
 TIMEOUT = 60
 outputs = [None]

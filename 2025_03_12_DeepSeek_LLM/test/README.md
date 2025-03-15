@@ -11,7 +11,8 @@
 
 * 선택한 환경
   * Google Colab
-  * T4 GPU + 고용량 RAM
+  * T4 GPU (15GB) + 고용량 RAM → A100 GPU (40GB) + 일반 RAM
+    * T4 GPU 는 후보 모델 중 일부에서 Out of memory 발생 
 * 이유
   * 다음 로컬 환경에서 대부분의 LLM이 Out-of-memory 발생
     * OS : **Windows 10**
