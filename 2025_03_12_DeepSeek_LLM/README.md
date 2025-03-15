@@ -12,6 +12,7 @@
   * [4-3. 생성된 이미지의 저차원 벡터화](#4-3-생성된-이미지의-저차원-벡터화)
   * [4-4. 최종 이미지 생성 및 순위 산출](#4-4-최종-이미지-생성-및-순위-산출)
 * [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
+  * [5-1. ```flash_attn``` 실행 불가 (해결 보류)](#5-1-flashattn-실행-불가-해결-보류)
 
 ## 1. 프로젝트 개요
 
@@ -122,7 +123,7 @@
 
 **해결 보류 사유**
 
-* ```flash_attn``` 오류는 Local 환경이 아닌 Google Colab 환경에서 실행 시 해결됨
+* ```flash_attn``` 오류는 Local 환경이 아닌 Google Colab 환경에서 실행 시 발생하지 않음
 * Flash Attention 을 요구하는 LLM (DeepSeek-V2 등) 은 모두 Auto-[GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) (양자화 방법) Not Supported 인 큰 모델임
   * 이는 Local 환경에서는 GPTQ를 이용한 양자화 자체가 어려우며, 따라서 **큰 규모로 인한 OOM을 해결하기 어렵기 때문에, ```flash_attn``` 문제가 발생하는 로컬 환경에서는 사용 자체가 어려운 모델**임을 의미함.  
   * 오류 메시지 : ```deepseek_v2 isn't supported yet.``` 
