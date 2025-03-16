@@ -1,14 +1,65 @@
 import cv2
 import numpy as np
+import math
+
 
 WIDTH = 1000
 HEIGHT = 600
+DASH_INTERVAL = 20  # interval for dashed arrow
 
 canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
 
 
+# Round Rectangle 그리기
+# Create Date : 2025.03.16
+# Last Update Date : -
+
+# Arguments:
+# - x         (int)   : 도형의 x 좌표
+# - y         (int)   : 도형의 y 좌표
+# - width     (int)   : 도형의 가로 길이
+# - height    (int)   : 도형의 세로 길이
+# - color     (tuple) : 도형의 배경 색 (B-G-R 순)
+# - thickness (int)   : 도형의 굵기 (-1 이면 배경색 칠함)
+
+# Returns:
+# - canvas 에 해당 Round Rectangle 추가
+
+def draw_round_rectangle(x, y, width, height, color, thickness):
+    round_radius = min(0.1 * max(width, height), 0.5 * min(width, height))
+
+    top = y - height / 2
+    left = x - width / 2
+    bottom = y + height / 2
+    right = x + width / 2
+
+    # draw circles
+    circle_centers = [
+        (top + round_radius, left + round_radius),     # top-left circle
+        (top + round_radius, right - round_radius),    # top-right circle
+        (bottom - round_radius, left + round_radius),  # bottom-left circle
+        (bottom - round_radius, right - round_radius)  # bottom-right circle
+    ]
+
+    for circle_center in circle_centers:
+        cv2.circle(canvas, center=circle_center, radius=round_radius, color=color, lineType=cv2.LINE_AA)
+
+    # draw rectangles
+    cv2.rectangle(canvas,
+                  pt1=(left + round_radius, top),
+                  pt2=(right - round_radius, bottom),
+                  color=color,
+                  thickness=thickness)
+
+    cv2.rectangle(canvas,
+                  pt1=(left, top + round_radius),
+                  pt2=(right, bottom - round_radius),
+                  color=color,
+                  thickness=thickness)
+
+
 # Diagram 의 도형 생성
-# Create Date : 2025.03.15
+# Create Date : 2025.03.16
 # Last Update Date : -
 
 # Arguments:
@@ -17,7 +68,7 @@ canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
 # - width  (int)   : 도형의 가로 길이
 # - height (int)   : 도형의 세로 길이
 # - shape  (str)   : 도형의 모양 (원, 직사각형 등)
-# - color  (tuple) : 도형의 배경 색
+# - color  (tuple) : 도형의 배경 색 (B-G-R 순)
 
 # Returns:
 # - canvas 에 해당 도형 추가
@@ -25,25 +76,198 @@ canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
 def generate_node(x, y, width, height, shape, color):
     global canvas
 
+    colors = [color, (0, 0, 0)]  # background / edge line color
+    thickness = [-1, 1]          # thickness (-1 for background / 1 for edge line)
 
-# Diagram 의 화살표 생성
-# Create Date : 2025.03.15
+    for c, t in zip(colors, thickness):
+
+        # round rectangle
+        if 'round' in shape and 'rect' in shape:
+            draw_round_rectangle(x, y, width, height, color=c, thickness=t)
+
+        # rectangle
+        elif 'rect' in shape:
+            cv2.rectangle(canvas,
+                          pt1=(x - width / 2, y - height / 2),
+                          pt2=(x + width / 2, y + height / 2),
+                          color=c,
+                          thickness=t)
+
+        # circle
+        elif 'circle' in shape:
+            cv2.ellipse(canvas,
+                        center=(x, y),
+                        axes=(width, height),
+                        angle=0,
+                        startAngle=0,
+                        endAngle=360,
+                        color=c,
+                        thickness=t)
+
+
+# Diagram 의 화살표 생성 시, 화살표의 끝점의 좌표 계산
+# Create Date : 2025.03.16
 # Last Update Date : -
 
 # Arguments:
-# - x0    (int)   : 시작점 도형의 x 좌표
-# - y0    (int)   : 시작점 도형의 y 좌표
-# - x1    (int)   : 끝점 도형의 x 좌표
-# - y1    (int)   : 끝점 도형의 y 좌표
-# - shape (str)   : 화살표의 모양 (실선, 점선 등)
-# - color (tuple) : 화살표의 색
+# - x0          (int)   : 시작점 도형의 x 좌표
+# - y0          (int)   : 시작점 도형의 y 좌표
+# - x1          (int)   : 끝점 도형의 x 좌표
+# - y1          (int)   : 끝점 도형의 y 좌표
+# - dest_shape  (int)   : 끝점 도형의 모양
+# - dest_width  (int)   : 끝점 도형의 가로 길이
+# - dest_height (int)   : 끝점 도형의 세로 길이
+
+# Returns:
+# - x_dest (float) : 화살표 끝점의 x 좌표
+# - y_dest (float) : 화살표 끝점의 y 좌표
+
+def compute_dest_point(x0, y0, x1, y1, dest_shape, dest_width, dest_height):
+    x_dest, y_dest = None, None
+
+    # round rectangle or rectangle
+    if 'rect' in dest_shape:
+        if abs(x0 - x1) >= abs(y0 - y1):
+            x_dest = x1 - dest_width
+            y_dest = y1
+        else:
+            x_dest = x1
+            y_dest = y1 - dest_height
+
+    # circle
+    elif 'circle' in dest_shape:
+        if y0 == y1 and x0 == x1:
+            x_dest = x1
+            y_dest = y1
+
+        elif x0 == x1:
+            x_dest = x1
+            y_dest = y1 - dest_height if y0 < y1 else y1 + dest_height
+
+        elif y0 == y1:
+            x_dest = x1 - dest_width if x0 < x1 else x1 + dest_width
+            y_dest = y1
+
+        else:
+            angle = math.atan2(y1 - y0, x1 - x0)
+            x_dest = x1 - math.cos(angle) * dest_width
+            y_dest = y1 - math.sin(angle) * dest_height
+
+    return x_dest, y_dest
+
+
+# Diagram 의 점선 화살표를 그리기 위한 dash dot 의 가로, 세로 성분 길이 구하기
+# Create Date : 2025.03.16
+# Last Update Date : -
+
+# Arguments:
+# - x0     (int)   : 시작점 도형의 x 좌표
+# - y0     (int)   : 시작점 도형의 y 좌표
+# - x_dest (float) : 화살표 끝점의 x 좌표
+# - y_dest (float) : 화살표 끝점의 y 좌표
+
+# Returns:
+# - dash_width  (float) : dash dot 의 가로 성분 길이
+# - dash_height (float) : dash dot 의 세로 성분 길이
+
+def compute_dash_width_and_height(x0, y0, x_dest, y_dest):
+    dash_length = DASH_INTERVAL / 2.0
+
+    if x0 == x_dest:
+        dash_width = 0
+        dash_height = dash_length if y0 < y_dest else (-1) * dash_length
+
+    elif y0 == y_dest:
+        dash_width = dash_length if x0 < x_dest else (-1) * dash_length
+        dash_height = 0
+
+    else:
+        angle = math.atan2(y_dest - y0, x_dest - x0)
+        dash_width = math.cos(angle) * dash_length
+        dash_height = math.cos(angle) * dash_length
+
+    return dash_width, dash_height
+
+
+# Diagram 의 점선 화살표 그리기
+# Create Date : 2025.03.16
+# Last Update Date : -
+
+# Arguments:
+# - x0          (int)   : 시작점 도형의 x 좌표
+# - y0          (int)   : 시작점 도형의 y 좌표
+# - x_dest      (float) : 화살표 끝점의 x 좌표
+# - y_dest      (float) : 화살표 끝점의 y 좌표
+# - arrow_color (tuple) : 화살표의 색 (B-G-R 순)
+
+# Returns:
+# - canvas 에 해당 점선 화살표 추가
+
+def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
+
+    if y0 == y_dest and x0 == x_dest:
+        return
+
+    # compute width and height of dash
+    dash_width, dash_height = compute_dash_width_and_height(x0, y0, x_dest, y_dest)
+
+    # draw dash
+    x = x0
+    y = y0
+
+    while True:
+        cv2.line(canvas,
+                 pt1=(x, y),
+                 pt2=(x + dash_width, x + dash_height),
+                 color=arrow_color,
+                 thickness=1,
+                 lineType=cv2.LINE_AA)
+
+        x_next = x + 2.0 * dash_width
+        y_next = y + 2.0 * dash_height
+        x = x_next
+        y = y_next
+
+        # when passed destination point
+        if (x - x_dest) * (x_next - x_dest) <= 0 and (y - y_dest) * (y_next - y_dest) <= 0:
+            return
+
+
+# Diagram 의 화살표 생성
+# Create Date : 2025.03.16
+# Last Update Date : -
+
+# Arguments:
+# - x0          (int)   : 시작점 도형의 x 좌표
+# - y0          (int)   : 시작점 도형의 y 좌표
+# - x1          (int)   : 끝점 도형의 x 좌표
+# - y1          (int)   : 끝점 도형의 y 좌표
+# - arrow_shape (str)   : 화살표의 모양 (실선, 점선 등)
+# - arrow_color (tuple) : 화살표의 색 (B-G-R 순)
+# - dest_shape  (int)   : 끝점 도형의 모양
+# - dest_width  (int)   : 끝점 도형의 가로 길이
+# - dest_height (int)   : 끝점 도형의 세로 길이
 
 # Returns:
 # - canvas 에 해당 화살표 추가
 
-def generate_arrow(x0, y0, x1, y1, shape, color):
+def generate_arrow(x0, y0, x1, y1, arrow_shape, arrow_color, dest_shape, dest_width, dest_height):
     global canvas
-    raise NotImplementedError
+
+    x_dest, y_dest = compute_dest_point(x0, y0, x1, y1, dest_shape, dest_width, dest_height)
+
+    # solid arrow
+    if 'solid' in arrow_shape:
+        cv2.arrowedLine(canvas,
+                        pt1=(x0, y0),
+                        pt2=(x1, y1),
+                        color=arrow_color,
+                        thickness=1,
+                        line_type=cv2.LINE_AA)
+
+    # dotted (dashed) arrow
+    elif 'dot' in arrow_shape or 'dash' in arrow_shape:
+        generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color)
 
 
 # 각 line 을 읽고, 해당 line 의 정보를 이용하여 Diagram 에 도형 및 화살표 추가
@@ -57,12 +281,21 @@ def generate_arrow(x0, y0, x1, y1, shape, color):
 # - canvas 에 해당 line 과 관련된 도형 추가
 
 def generate_diagram_each_line(line_text):
-    global canvas
+
+    # remove quotes
+    line_text = line_text.replace('"', '').replace("'", "")
+
+    # find diagram shape line format from line text
+
+    # split by ","
+
+    # draw shape
+
     raise NotImplementedError
 
 
 # 파일을 읽어서 해당 파일에 쓰인 각 line 을 파싱하여 도형 및 화살표 추가
-# Create Date : 2025.03.15
+# Create Date : 2025.03.16
 # Last Update Date : -
 
 # Arguments:
@@ -72,5 +305,12 @@ def generate_diagram_each_line(line_text):
 # - canvas 에 해당 파일의 정보를 이용하여 도형 추가
 
 def generate_diagram(file_path):
-    global canvas
-    raise NotImplementedError
+    f = open(file_path, 'r')
+    lines = f.readlines()
+    f.close()
+
+    for line_idx, line_text in enumerate(lines):
+        try:
+            generate_diagram_each_line(line_text)
+        except Exception as e:
+            print(f'line {line_idx} : {e}')
