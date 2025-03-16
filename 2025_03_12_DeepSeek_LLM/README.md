@@ -86,8 +86,8 @@
 | 프로젝트 개요 작성                                   | 03.14 금 (1d)           |                           | ✅  |
 | DeepSeek LLM 모델 선택 (1차)                      | 03.14 금 - 03.15 토 (2d) | ```P001-001-SelectLLM```  | ✅  |
 | LLM Fine-tuning 학습 데이터의 Diagram 생성 알고리즘 개발   | 03.15 토 - 03.16 일 (2d) | ```P001-002-DiagAlgo```   | 💨 |
-| DeepSeek LLM 모델 선택 (2차, **변경된 테스트 프롬프트 이용**) | 03.15 토 - 03.16 일 (2d) | ```P001-003-SelectLLM2``` | 💨 |
-| LLM Fine-tuning 학습 데이터 생성                    | 03.16 일 (1d)           | ```P001-004-Data```       | ⬜  |
+| DeepSeek LLM 모델 선택 (2차, **변경된 테스트 프롬프트 이용**) | 03.15 토 - 03.16 일 (2d) | ```P001-003-SelectLLM2``` | ✅  |
+| LLM Fine-tuning 학습 데이터 생성                    | 03.17 월 (1d)           | ```P001-004-Data```       | ⬜  |
 | LLM Fine-tuning 실시 (SFT)                     | 03.17 월 (1d)           | ```P001-005-FineTune```   | ⬜  |
 | LLM Fine-tuning 실시 (ORPO)                    | 03.17 월 (1d)           | ```P001-005-FineTune```   | ⬜  |
 | CNN 개발 및 학습                                  | 03.17 월 (1d)           | ```P001-006-CNN```        | ⬜  |
