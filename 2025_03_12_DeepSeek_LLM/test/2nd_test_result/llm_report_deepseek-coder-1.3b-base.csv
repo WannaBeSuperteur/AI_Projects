@@ -1,0 +1,634 @@
+,success,used_memory,resp_time,quant_need,test_resp,error_msg,error_msg_wo_quant,model_name,quent_need
+0,True,2604.19189453125,32.26866841316223,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. It is also important to know that the information in each ""node"" above is important for building a model that can be trained.
+
+
+[
+{   ""node no"": 1,
+    ""X position"": 750,
+    ""Y position"": 200,
+    ""type"": ""rectangle"",
+    ""width"": 100,
+    ""height"": 100,
+    ""connection line shape"": ""solid"",
+    ""background color"": (0, 0, 255),
+    ""connection line color"": (255, 0, 0),
+    ""list of node no.s pointed to by the connection line"": [
+        2,
+        3
+        ],
+},
+{   ""node no"": 2,
+    ""X position"": 50,
+    ""Y position"": 30,
+    ""type"": ""circle"",
+    ""width"": 50,
+    ""height"": 50,
+    ""connection line shape"": ""solid"",
+    ""background color"": (128, 128, 128),
+    ""connection line color"": (128, 128, 128),
+    ""list of node no.s pointed to by the connection line"": [],
+},
+{   ""node no"": 3,
+    ""X position"": 750,
+    ""Y position"": 520,
+    ""type"": ""round rectangle"",
+    ""width"": 140,
+    ""height"": 140,
+    ""connection line shape"": ""solid"",
+    ""background color"": (128, 128, 128),
+    ""connection line color"": (0, 0, 0),
+    ""list of node no.s pointed to by the connection line"": [
+        4,
+        5,
+        ],
+},
+{   ""node no"": 4,
+    ""X position"": 210,
+    ""Y position"": 90,
+    ""type"": ""square"",
+    ""width"": 100,
+    ""height"": 100,
+    ""connection line shape"": ""dashed"",
+    ""background color"": (128, 128, 128),
+    ""connection line color"": (128, 128, 128),
+    ""list of node no.s pointed to by the connection line"": [
+        1,
+        6
+        ],
+",,,deepseek-ai/deepseek-coder-1.3b-base,False
+1,True,2612.32275390625,3.056514263153076,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. However, in this assignment, the purpose of the above Python list is to demonstrate the ability of this model when you are drawing it in the Github website, and not to make a functioning model.
+    Input_node: 0,[0,0,2,4,0,0,[0,0]
+    Input_node: 1,[0,0,2,4,0,0,[0,0]
+```
+",,,deepseek-ai/deepseek-coder-1.3b-base,False
+2,True,2612.3193359375,18.357900142669678,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+The last 3 elements ([...]), and the connection line data ([]) are not needed to be represented in that format, and will be ignored in this task.
+# Hidden Layer
+# The number of nodes in the first layer is equal to the length of the node data in the input layer.
+For example, this is the input layer:
+data_1 = [
+[927, 310, ‘rectangle’, 24, 50, ‘solid’, (0, 0, 255), ‘black’, [194]],
+[1213, 2911, ‘rectangle’, 35, 49, ‘solid’, (253, 40, 102), ‘black’, [595, 860]],
+[1472, 4897, ‘round_rectangle’, 55, 100, ‘solid’, (162, 249, 46), ‘black’, [430, 485, 495, 283, 560, 577]],
+[1563, 5702, ‘round_rectangle’, 55, 100, ‘solid’, (162, 249, 46), ‘black’, [520, 493, 507, 521, 524]],
+[1780, 2022, 'circle', 50, 50, 'solid', (0, 0, 255), 'black', [608]]
+]
+
+The first 4 nodes in this layer are the node input data of the first layer [‘1213’, ‘1472’, ‘1563’, ‘1780’].
+# Output Layer
+For the above example, the number of nodes in the output layer is equal to 1 [‘927’].
+So the above example contains only one node “927”.
+data_2 = [[927, 415, ‘solid’, 74, 49, 'solid', (144, 224, 39), (0, 0, 255), [589]]
+# Hidden",,,deepseek-ai/deepseek-coder-1.3b-base,False
+3,True,2612.32275390625,19.217063903808594,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+Node No. of nodes in neural network: [1, 10, 4, 16, 12, 16]
+
+# [74 nodes(0 to 0.1), 800px, 400px] 
+Hidden layers1:
+['[1,       0.6332367473158172,  4, 46.12370966681267,      107.87059833567007,  0, (147, 147, 86), (0, 0, 249), ['2', '3', '5', '8']]'
+
+'[2,       0.7096666666666667,  4, 50.4799866698889,       109.44558694273256,  0, (156, 63, 180), (0, 0, 243), ['3']]'
+
+'[3,       0.691357959153547,  4, 53.53292758126703,       112.90880737498477,  0, (165, 61, 198), (0, 0, 244), ['4']]'
+
+'[4,       0.6833886279981464,  4, 52.84777147601916,       110.29190014904003, 54, (75, 0, 130), (0, 0, 244), ['5']]'
+
+'[5,       0.717358285794852,  4, 56.70131087145182,       112.28459125359255,  0, (123, 100, 245), (0, 0, 244),",,,deepseek-ai/deepseek-coder-1.3b-base,False
+4,True,2612.32275390625,18.619568586349487,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+The model is initialized to something like below:
+
+
+*
+
+*Input layer size: 2
+
+*Nodes per hidden layer (2 in this example): 4, 6
+
+*Nodes in output layer size: 1
+
+
+The nodes are ordered as follows:
+Input nodes 1 and 2
+First hidden layer nodes 1 through 4
+Second hidden layer nodes 5 through 6
+Output layer node 1
+In this example:
+1st hidden layer: 4, 5, 6, 7
+2nd hidden laye: 12, 13
+If the model represents the structure of a real neural network,
+
+
+*
+
+*Inputs of the network: 2
+
+*Hidden layers of the network: 2 by 4, 2 by 6
+
+*Outputs of the network: 1
+
+*Hidden nodes of each hidden layer: 4 by 2, 6 by 2
+
+*Nodes of the output layer: 2 by 1
+There should be 4 nodes in 2 hidden layers, and 2 and 1 nodes in the output layer in this example.
+The network is represented in a way like a 2D array in Python. If this is the case, the list of lists in a Python list representing the network should thus be: 
+[[0, 1, 2, 3, 0, 0, 0, 0.5, 0.5, 0.5, 0, 0.5, 0.5, 1, 0, 0],
+ [0, 0, 2, 2, 1, 1, 2, 0, 0, 1, 1, 0, 1, 0, 0, 2, 0, 0, 2, 0, 2],
+ [0, 4, 0, 0.5, 0, 0, 0.5, 0, 1, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 6]]
+
+The model is represented with the format that is presented below. If the information below is not the case, 
+you should convert it.
+(in this case, 2)
+inputNodes = 2
+hIDLayerNodeArray = [[4, 1, 0.5],
+                     [5, 1, 0.5],
+                     [6, 1,",,,deepseek-ai/deepseek-coder-1.3b-base,False
+5,True,2612.32275390625,18.135961771011353,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. For example, it is very very important to get right in this homework before you submit.
+model = [[13,[426,156,71,61,28,8,228,78,None],22,[440,67.0,117.15150277528783],1.1],
+        [14,[426,156,71,61,28,8,228,78,13],18,[629,67.0,117.15150277528783],1.1],
+        [15,[426,156,71,61,28,8,228,78,13],22,[485,97,128,99,46,15,216,78,79],1.1],
+        [16,[426,156,71,61,28,8,228,78,13],26,[784,97,128,99,46,15,216,78,80],1.1],
+        [17,[426,156,71,61,28,8,228,78,14],30,[454,47.0,86.62241388615136,99.451],1.1],
+        [18,[890,486,71,61,28,131,58,68,81],23,[496,47.0,86.62241388615136,99.451],1.1],
+        [19,[884,482,71,61,28,131,58,68,81],26,[679,47.0,86.62241388615136,99.451],1.1],
+        [20,[878,478,71,61,28,131,58,68,81],29,[",,,deepseek-ai/deepseek-coder-1.3b-base,False
+6,True,2612.32275390625,18.775795459747314,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+Input 1:
+[ 0, 123, 450, ""rectangle"", 50, 50,  ""solid"", ""white"", ""white"", [] ]
+Input 2:
+[ 1, 243, 10, ""circle"", 50, 40,  ""solid"", ""gray"", ""black"", [] ]
+Hidden layer 1:
+[ 1, 45, 31, ""rectangle"", 10, 10,  ""solid"", ""salmon"", ""orange"", [ 2 ] ]
+Hidden layer 1:
+[ 2, 290, 310, ""rectangle"", 10, 10,  ""solid"", ""orange"", ""orange"", [ ] ]
+Input 1:
+[ 0, 380, 330, ""rectangle"", 10, 10,  ""solid"", ""white"", ""white"", [] ]
+Input 2:
+[ 1, 243, 10, ""circle"", 50, 40,  ""solid"", ""gray"", ""black"", [] ]
+Hidden layer 1:
+[ 1, 45, 31, ""rectangle"", 10, 10,  ""solid"", ""salmon"", ""orange"", [ 2, 3 ] ]
+Hidden layer 1:
+[ 2, 290, 310, ""rectangle"", 10, 10,  ""solid"", ""orange"", ""orange"", [ 4 ] ]
+Hidden layer 1:
+[ 3, 495, 375, ""rectangle"", 10, 10,  ""solid"", ""orange"", ""orange"", [ 5 ] ]
+Hidden layer 1:
+[ 4, 243, 375, ""rectangle"", 10, 10,  ""solid"", ""orange"", ""orange"", [ 6 ] ]
+Hidden layer 1:
+[ 5, 350, 440, ""rectangle"", 10, 10,  ""solid"", ""orange"", ""orange"", [] ]
+Hidden layer 1:
+[ 6, 495, 470, ""rectangle"", 10, 10,  ""solid"", ""orange"", ""orange"", [ ] ]
+Output layer:
+[ 7, 590",,,deepseek-ai/deepseek-coder-1.3b-base,False
+7,True,2612.32275390625,18.305919885635376,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+The function should not return anything.
+import random
+import random
+random.seed(123)
+
+def node(num=None, x_pos=None, y_pos=None, shape=None, width=None, height=None, line_s=None, background_color=None, line_color=None, node_s=None, connection=None):
+    random.seed(123)
+    # if argument-less function
+    if not num:
+        num = 0
+    if not x_pos:
+        x_pos = 0
+    if not y_pos:
+        y_pos = 0
+    if not shape:
+        shape = 'rectangle'
+    if not width:
+        width = 100
+    if not height:
+        height = 100
+    if not line_s:
+        line_s = 'solid'
+    if not background_color:
+        if type(background_color) == str:
+            background_color = random.sample([
+                'rgb(107, 170, 13)', 
+                'rgb(29, 203, 42)',
+                'rgb(228, 15, 69)', 
+                'rgb(168, 42, 42)',
+                'rgb(27, 200, 16)',
+                'rgb(234, 20, 184)',
+                'rgb(229, 152, 32)',
+                'rgb(53, 234, 28)',
+                'rgb(142, 172, 222)',
+                'rgb(243, 113, 221)'
+                ], 1)
+            background_color = background_color[0]
+        else:
+            background_color = None
+    if not line_color:
+        if type(line_color) == str:
+            line_color = random.sample([
+                'rgb(107, 170, 13)', 
+                'rgb(29, 203, 42)',
+                'rgb(228, 15, 69)', 
+                'rgb(168, 42, 42)',
+                'rgb",,,deepseek-ai/deepseek-coder-1.3b-base,False
+8,True,2612.32275390625,18.628286361694336,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+
+Layer_1_Input = [
+    [ 0, 50, ""rectangle"", 200, -10, 'solid', (255, 255, 255), (0, 0, 0), [2]],
+    #[0, 150, ""Rectangle"", 200, -10, 'solid', (255, 255, 255), (0, 0, 0), [2]]
+    ]
+
+Layer_1_Hidden = [
+    #[3, 50, ""rectangle"", 400, -10, 'dashed', (255, 165, 0), (0, 0, 0), []],
+    [4, 40, ""round rectangle"", 380, -10, 'solid', (255, 255, 255), (0, 130, 0), []],
+    [5, 20, ""circle"", 130, -10,'dashed', (0, 0, 0), (130, 130, 130), []]]
+
+Layer_2_Hidden = [
+    [7, 50, ""Rectangle"", 360, -10, 'solid', (51, 255, 255), (0, 0, 0), []]]
+
+Layer_1_Output = [
+    [6, 50, ""circle"", 450, -10, 'solid', (255, 255, 255), (0, 0, 0), []]]
+
+What is a common problem in Deep Learning?
+
+Your task is to provide high readability representation of your Deep Learning Model.
+Note: This task is open books. You are more than welcome to take notes, write a few sentences if you wish and ask questions. Also, 
+note that the following representation follows the order written by me below from left to right.
+
+
+A: You need to use a dictionary to store the information.
+You can use something like this:
+'''
+layer1_input = {
+    'i0' : ('rec','#133453', 'white', [-5,-6, 'white']],
+    'i1':{'node':'#345353','shape':'rect','width':50,'",,,deepseek-ai/deepseek-coder-1.3b-base,False
+9,True,2612.32275390625,18.205090045928955,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+
+[[0,[670, 345, Rectangle, 30, 10, SOLID, (77.85398163397448, 191.03602558139542, 15.384615384615383), (0, 0, 255)],[9,1,33,5,58,SOLID,[235, 234, 190],[0, 0, 245],[2],[6]],[8]],
+[0,[748, 345, Rectangle, 36, 10, SOLID,(26.133813722549017, 42.437509000492144, 15.384615384615383),(0, 0, 255)],[11,1,50,6,343,SOLID,[243, 234, 190], (0, 0, 245),[2],[7]],[8]],
+[10,[274, 142, 360, 62, 126,SOLID, (210.9701492537314, 224.21875000000007, 40.38461538461538), (0, 0, 255)]]]
+
+""""""
+
+node_0 = [0,[670, 345, 'Rectangle', 30, 10, 'SOLID', (77.85398163397448, 191.03602558139542, 15.384615384615383), (0, 0, 255)],[9,1,33,5,58, 'SOLID', [235, 234, 190], (0, 0, 245),[2],[6]],[",,,deepseek-ai/deepseek-coder-1.3b-base,False
+10,True,2612.32275390625,18.64176893234253,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. 
+The connection lines between nodes always line up so that can easier to draw.
+
+Sample Output
+
+[[[11, 278.833, 108.5, 'rectangle', 60, 100, 'solid', (210, 210, 210), (51, 51, 51), []],
+  [21, 317.75, 161.167, 'rectangle', 5, 19, 'solid',  (255, 255, 255), (51, 51, 51), []],
+  [23, 302.125, 217.75, 'rectangle', 36, 100,  'solid',  (210, 210, 210), (51, 51, 51), []],
+  [26, 332.188, 166.875, 'rectangle', 5, 100,  'solid',  (210, 210, 210), (51, 51, 51), []],
+  [27, 324, 222.25, 'circle', 7, 7, 'solid',  (255, 255, 255), (51, 51, 51), []],
+  [33, 286.875, 228.938, 'circle', 7, 7, 'solid',  (255, 255, 255), (51, 51, 51), []],
+  [36, 255, 288.563, 'rectangle', 150, 30,  'solid',  (210, 210, 210), (51, 51, 51), []],
+  [37, 234.625, 284.438, 'rectangle', 160, 5,  'solid',  (210, 210, 210), (51, 51, 51), []],
+  [38, 225.",,,deepseek-ai/deepseek-coder-1.3b-base,False
+11,True,2612.32275390625,18.903390407562256,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. Below is a list that I have used in the code.
+model = [1, [900,600, ""rectangle"", 200, 40, ""solid"", (0, 0, 255), (0, 0, 0), [2,3,4,5,6,7]],
+        2, [900, 0, ""rectangle"", 200, 40, ""solid"", (0, 0, 255), (0, 0, 0), [3]],
+        3, [820, 0, ""circle"", 200, 200, ""solid"", (0, 255, 0), (0, 0, 0), [3,4,5,6,7,8,9]],
+        4, [-300, 0, ""circle"", 150, 200, ""dashed"", (255, 255, 0), (0, 0, 0), [3,4,5,6,7,8,9]],
+        5, [2200, 0, ""roundrectangle"", 700, 150, ""dissolve"", (255, 0, 255), (0, 0, 0), [1,2,4,5]],
+        6, [620, 0, ""rectangle"", 250, 40, ""solid"", (0, 100, 100), (0, 0, 0), [1,2,3,4,5,6]]]
+
+
+*How to print the following diagram using a loop which has the following code:
+
+
++----------------------------------------------------+
+|         (1)     model[1]                               |
+|              model[1][1]                       model[3] |
+|         (2)     model[2]                               |
+|              model[2][1]                       model[4] |
+|         (3)                         model[5]             |
+|         model[5][1]                                      |
+|                                                       |
++----------------------------------------------------+
+|                                        ****+***+***+ |
+|**************************************************  **|
+|                                                 |
+|*                                                *|
++                                                 |
+|**************************************************+***+***
+|                      **********                  |
+|                        ****+***                   |
+|                        *********",,,deepseek-ai/deepseek-coder-1.3b-base,False
+12,True,2612.32275390625,18.36825919151306,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+
+[4, 420, 790, 
+""rectangle"", 25, 35, ""solid"", 
+color=(255, 0, 0), 
+color_connectionline=(0, 0, 0), 
+connectionline_nodes=[2]]
+
+[4, 420, 780, 
+""rectangle"", 25, 35, ""solid"", 
+color=(255, 255, 0), 
+color_connectionline=(0, 0, 0), 
+connectionline_nodes=[1, 2]]
+
+[4, 420, 765, 
+""rectangle"", 25, 35, ""solid"", 
+color=(255, 0, 255), 
+color_connectionline=(0, 0, 0), 
+connectionline_nodes=[3, 4, 5]]
+
+[4, 420, 735, 
+""rectangle"", 25, 35, ""solid"", 
+color=(0, 0, 255), 
+color_connectionline=(0, 0, 0), 
+connectionline_nodes=[6, 7, 8, 9, 10]]
+
+
+
+Your code should produce following
+
+
+A model trained to learn, at a learning rate of 0.3 (0.3 is arbitrary), and 0.1 (0.1 is arbitrary).
+The training set should be shown to be random and should be of the following format:
+
+
+The training set needs to be shown to be a single curve, not a list of curves.
+Please note that there are multiple points in the training set that should lie on the same curve.
+When shown in the same curve, it needs to be shown without shuffling of the original data.
+The training set needs to be shown in such a way that the network can predict the curve that is a line at all times.
+The dataset has shown a line up to three points, and has shown three lines up to three points.
+Your code should produce following
+
+[4, 420, 780, 
+""rectangle"", 25, 30, ""solid"", 
+color=(255, 0, 255), 
+color_connectionline=(0, 0, 0), 
+connectionline_",,,deepseek-ai/deepseek-coder-1.3b-base,False
+13,True,2612.32275390625,5.345159530639648,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+
+First Layer
+['#']--1-->['#']--2-->['#']
+|           |
+|           |
+| 3          |
+|           |
+|           |
+
+Second Layer
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+Third Layer
+|
+|
+|
+|
+|
+|
+|
+|
+
+Fourth Layer
+|
+|
+|
+|
+|
+
+Fifth Layer
+|
+|
+|
+|
+|
+
+Sixth Layer 
+#
+#
+#
+#
+#
+#
+#
+
+'''
+",,,deepseek-ai/deepseek-coder-1.3b-base,False
+14,True,2612.31982421875,18.106126070022583,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+
+1 --> [ 0, 0, rectangle, 16, 50, solid, [None, [2, 0, None, [1], 307, 50, [1,2,3], [[0, 96, 255, (33, 33, 33), 0, 0]], [16, 60, 60, 60]
+
+2 --> [0, 0, rectangle, 16, 50, dashed, [None, [3, 14, None, None, 308, 60, [2, 3]], [16, 60]
+3 --> [0, 0, rectangle, 238, 100, dashed, [None, [3, 4, None, None, 309, 110, [2, 4]], [238, 100]
+4 --> [0, 0, rectangle, 308, 50, solid, [None, [3, 2, None, None, 310, 60, [4, 5, 3, 6]]], [308, 50]
+5 --> [0, 0, rectangle, 309, 60, dashed, [None, [5, 6, None, None, 311, 70, [4, 6, 5, 7]]], [309, 60]
+6 --> [ 0, 0, rectangle, 310, 60, solid, [None, [5, 3, None, None, 312, 70, [6, 7, 8, 10]]], [310, 60]
+7 --> [ 0, 0, rectangle, 311, 70, dashed, [None, [6, 8, None, None, 313, 80, [6, 8, 7]], [311, 70]
+8 --> [ 0, 0, rectangle, 312, 70, dashed, [None, [7, 10, None, None, 314, 90, [6, 8, 7, 10, 9, 11]], [312, 70]",,,deepseek-ai/deepseek-coder-1.3b-base,False
+15,True,2612.32275390625,18.995298385620117,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+""""""
+
+representation = [
+[1, 500, 200, ""rectangle"", 100, 50, ""dashed"", (0, 0, 0), (0, 0, 0), []],
+[2, 500, 200, ""rectangle"", 100, 50, ""dashed"", (0, 0, 0), (0, 0, 0), []],
+[3, 800, 100, ""circle"", 50, 50, ""solid"", (255, 128, 128), (0, 0, 0), []],
+[4, 360, 145, ""round-rectangle"", 70, 70, ""solid"", (255, 255, 0), (0, 0, 0), []],
+[5, 800, 300, ""circle"", 50, 50, ""solid"", (77, 184, 110), (255, 255, 255), []],
+[6, 840, 55, ""circle"", 50, 50, ""solid"", (255, 118, 70), (0, 0, 0), []],
+[7, 360, 240, ""round-rectangle"", 70, 70, ""solid"", (255, 255, 0), (0, 0, 0), []],
+[8, 590, 100, ""round-rectangle"", 70, 70, ""solid"", (255, 118, 118), (255, 255, 255), []],
+[9, 450, 95, ""rectangle"", 100, 50, ""dashed"", (0, 0, 0), (0, 0, 0), []],
+[10, 520, 100, ""rectangle"", 100, 50, ""dashed"", (0, 0, 0), (0, 0, 0), []],
+[11, 870, 45, ""round-rectangle"", 70, ",,,deepseek-ai/deepseek-coder-1.3b-base,False
+16,True,2612.32275390625,10.398652791976929,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. 
+
+([] ,[x, y ,shape, width, height, line shape, (R, G, B)], [x, y,  width, height, ])
+
+## Example
+```
+[[], [445, 211, 51, 32, 75, 'solid', (0, 255, 0), (68, 240, 62)], [484, 308, 31, 28, 137, 'solid', (255, 255, 255), (0, 0, 0), 0], [753, 681, 43, 26, 172, 'solid', (229, 60, 96), (0, 0, 0), 0], [867, 677, 23, 18, 81, 'solid', (253, 246, 13), (0, 0, 0), 0], [970, 676, 50, 15, 60, 'solid', (248, 151, 122), (0, 0, 0), 0], [], [], []],
+```
+
+
+",,,deepseek-ai/deepseek-coder-1.3b-base,False
+17,True,2612.3212890625,3.3561339378356934,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. 
+For example, we will show this in a diagram such as following figure:
+![figure 1](https://dl.dropboxusercontent.com/u/22616925/Udacity/Project_2/figure5.png)
+
+![figure 2](https://dl.dropboxusercontent.com/u/22616925/Udacity/Project_2/figure1.png)
+",,,deepseek-ai/deepseek-coder-1.3b-base,False
+18,True,2612.3193359375,18.543588638305664,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability.
+
+INPUT NODE 1 (N = 1)
+--------------------
+Input node 1 has 2 attributes: width (px), its Y coordinate (px), and the shape (circle),
+and the size of the input (R*W*2).
+
+
+INPUT NODE 2 (N = 2)
+--------------------
+Input node 2 has 2 attributes: width (px), its X coordinate (px), and the shape (circle),
+and the size of the input (R*W*2).
+
+
+
+
+
+
+
+LAYER 1 (L = 1): 8 input nodes from (2*W), nodes 1, 2, 3 and 4 of the layer.
+Layer 1 is to have 4 hidden nodes and it is made up of nodes 32 and 43. The number of
+input nodes in layer 1 is a constant of 8.
+
+ACTIVATION FUNCTION: Relu
+
+LAYER 2 (L = 2): 4 hidden nodes.
+Layer 2 is to have 1 hidden node at node 32, whose activation function is ReLU. 
+
+LAYER 3 (L = 3): 4 hidden nodes.
+Layer 3 is to have 1 hidden node at node 43, whose activation function is linear. 
+
+OUTPUT LAYER: 1 hidden node.
+Output layer is to have one hidden node at node 9, whose activation function is linear. 
+
+
+```python
+# list that contains the node in each of the layer.
+# for example, node_list[0] will give the nodes inside the output layer.
+# For example, node_list[0] = [out_layer_1, out_layer_2, out_layer_3]
+
+node_list = [  [ [1, 1, 2, 10, 20, 1, [(255, 0, 0)]
+                , [(150, 255, 255)]]   ,
+                    
+                [2, 11, 9, 12.5, 25, 2, [(255, 0, 0)]
+                , [(150, 255, 255)]],      
+                [3, 38.5, 7.5, 10, 25, 2, [(255, 0, 0)]
+                , [(150, 255,",,,deepseek-ai/deepseek-coder-1.3b-base,False
+19,True,2612.32275390625,18.45080018043518,,"Represent below as a Python list.
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers, and 1 node in the output layer in the following format.
+At this time, each node is represented in the format of Python list ""[node No., X position (px), Y position (px), shape (rectangle, round rectangle or circle), width (px), height (px), connection line shape (solid or dashed),  background color, connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and 
+X position range is 0-1000 and Y position range is 0-600.
+It is important to draw a representation of high readability. For instance, I have written the colors and shapes in a Python dictionary for further use.
+
+# Model
+
+# Model for testing the following model
+model = tf.keras.models.Sequential()
+model.add(tf.keras.layers.Dense(4,input_shape=(1,), activation='sigmoid'))
+model.add(tf.keras.layers.Dense(6, activation='sigmoid'))
+model.add(tf.keras.layers.Dense(2, activation='sigmoid'))
+# Test Model
+
+# Get a dictionary of all model's parameters and print these to see that all the values are the same as described below.
+
+
+import numpy as np
+import random
+color = [np.array([255,255,255]), np.array([255,165,0]), np.array([255,0,0]), np.array([0,0,0]), np.array([128,128,128]), np.array([255,255,0]), np.array([128,0,0]), np.array([0,255,0]), np.array([0,255,255]), np.array([0,0,255])]
+shape = [{'shape':'rectangle', 'color': color[0], 'fill':'none', 'width':10, 'height':10}, {'shape':'round rectangle', 'color': color[1], 'fill':'none', 'corner':0.2, 'width':10, 'height':10}, {'shape': 'circle', 'color': color[2], 'fill': 'none', 'width':10, 'height':10}, {'shape':'bar', 'color': color[3], 'fill':'none', 'width':10, 'height':10}, {'shape':'circle', 'color': color[4], 'fill':'none', 'width':10, 'height':10}]
+
+model_params = model.to_json()
+print(""Below are the model parameters:"")
+print(""************************************"")
+print(model_params)
+
+# Get all node information for one node
+
+# Get the nodes information for the first node and the model in the form of Python dictionary ""node_info"" at each index.
+
+node_info = model_params.split(':",,,deepseek-ai/deepseek-coder-1.3b-base,False
