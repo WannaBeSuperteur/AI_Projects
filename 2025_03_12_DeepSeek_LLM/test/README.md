@@ -7,6 +7,7 @@
   * [3-2. 후보 모델 선정](#3-2-후보-모델-선정)
   * [3-3. Quantization 방법](#3-3-quantization-방법)
   * [3-4. 각 LLM 별 상세 결과](#3-4-각-llm-별-상세-결과)
+  * [3-5. 1차 테스트의 기본 형식 준수 답변](#3-5-1차-테스트의-기본-형식-준수-답변)
 
 ## 1. 테스트 목적
 
@@ -18,9 +19,9 @@
 
 * 선택한 환경
   * Google Colab
-  * Auto-GPTQ 가 지원되지 않는 큰 모델
-    * T4 GPU (15GB) + 고용량 RAM → **T4 GPU (15GB) + 일반 RAM**
   * Auto-GPTQ 가 지원되는 작은 모델
+    * T4 GPU (15GB) + 고용량 RAM → **T4 GPU (15GB) + 일반 RAM**
+  * Auto-GPTQ 가 지원되지 않는 큰 모델
     * **A100 GPU (40GB) + 일반 RAM** 
 * 이유
   * 다음 로컬 환경에서 대부분의 LLM이 Out-of-memory 발생
@@ -33,17 +34,22 @@
 
 ## 3. 테스트 진행 및 결과
 
-* 최종 Fine-Tuning 할 모델 (1차 테스트)
+* 최종 Fine-Tuning 할 모델 (1차 테스트, 2차 테스트 모두)
   * 14개 LLM 중, **deepseek-coder-1.3b-instruct** 를 채택
+  * 모델 크기가 충분히 작으므로 **양자화 미 적용**
 * 이유
-  * 테스트 프롬프트를 이용하여 생성한 답변에 대한 Human Evaluation 결과, **DeepSeek-Coder-V2-Lite-Instruct** 과 함께 최고 품질 판정
-  * 최고 품질의 답변을 생성한 2개의 모델 중 **deepseek-coder-1.3b-instruct** 이 메모리 사용량 및 응답 시간 측면에서 훨씬 우수함
-    * Fine-Tuning 도 비교적 빨리 진행할 수 있을 것으로 기대됨 
+  * 1차 테스트 
+    * 테스트 프롬프트를 이용하여 생성한 답변에 대한 Human Evaluation 결과, **DeepSeek-Coder-V2-Lite-Instruct** 과 함께 최고 품질 판정
+    * 최고 품질의 답변을 생성한 2개의 모델 중 **deepseek-coder-1.3b-instruct** 이 메모리 사용량 및 응답 시간 측면에서 훨씬 우수함
+      * Fine-Tuning 도 비교적 빨리 진행할 수 있을 것으로 기대됨 
+  * 2차 테스트
+    * 8개 모델 중 **deepseek-coder-1.3b-instruct (13 / 20 회), deepseek-coder-6.7b-instruct (12 / 20 회)** 만이 20회 중 10회 이상 형식에 맞는 답변을 함
+    * 2개의 모델 중 크기 및 메모리 사용량이 비교적 적은 **deepseek-coder-1.3b-instruct** 를 최종 채택
 
-| 구분     | 설명                                             | 결과                                            | 채택 모델                            |
-|--------|------------------------------------------------|-----------------------------------------------|----------------------------------|
-| 1차 테스트 | 테스트 프롬프트로 **모든 후보 모델로 1번씩 생성**, 최선의 모델 탐색      | 규모가 비교적 작은 8개의 모델 중에서도 고품질 답변이 나오는 모델이 있음을 확인 | **deepseek-coder-1.3b-instruct** |
-| 2차 테스트 | 변경된 프롬프트로 **비교적 작은 8개 모델로 20번씩 생성**, 최선의 모델 탐색 | **(최종)**                                      | **(최종)**                         |
+| 구분     | 설명                                             | 결과                                                                             | 채택 모델                                 |
+|--------|------------------------------------------------|--------------------------------------------------------------------------------|---------------------------------------|
+| 1차 테스트 | 테스트 프롬프트로 **모든 후보 모델로 1번씩 생성**, 최선의 모델 탐색      | 규모가 비교적 작은 8개의 모델 중에서도 고품질 답변이 나오는 모델이 있음을 확인                                  | **deepseek-coder-1.3b-instruct**      |
+| 2차 테스트 | 변경된 프롬프트로 **비교적 작은 8개 모델로 20번씩 생성**, 최선의 모델 탐색 | **(최종)** 평가 대상 8개 모델 중, **deepseek-coder-1.3b-instruct** 모델의 정확도가 가장 높은 것으로 판단 | **(최종) deepseek-coder-1.3b-instruct** |
 
 ### 3-1. 코드 파일 설명 및 테스트 프롬프트
 
@@ -71,6 +77,11 @@ X position range is 0-1000 and Y position range is 0-600.
 
 * 테스트 프롬프트 (2차 테스트)
   * 1차 테스트 프롬프트에서 ```width``` ```height``` 도형 속성 추가 및 ```(px)``` 를 추가 명시
+  * node 의 representation format 이 ```Python list``` 임을 명시
+  * connection line shape 를 ```solid or dashed``` 로 명시
+  * 도형의 shape 를 ```rectangle, round rectangle or circle``` 로 명시
+  * 색상 표시 포맷을 ```in range 0-255``` 에서 ```between 0 and 255``` 로 수정
+  * 마지막에 가독성이 좋은 다이어그램을 만드는 것이 중요하다고 명시
 
 ```
 Represent below as a Python list.
@@ -78,12 +89,15 @@ Represent below as a Python list.
 A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers,
 and 1 node in the output layer in the following format.
 
-At this time, each node is represented in the format of "[node No., X position (px), Y position (px), shape,
-width (px), height (px), connection line shape, background color, connection line color,
-list of node No. s of other nodes pointed to by the connection line]".
+At this time, each node is represented in the format of Python list "[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]".
 
-At this time, the color is represented in the format of tuple (R, G, B), in range 0-255, and
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
 X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.
 ```
 
 * 테스트 프롬프트에서 다음 부분만이 실제 User Prompt 이고, 나머지는 [프롬프트 엔지니어링](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Prompt_Engineering.md) 을 위해 추가한 부분임.
@@ -130,7 +144,7 @@ and 1 node in the output layer in the following format.
 
 ### 3-3. Quantization 방법
 
-Quantization 방법은 [GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) 를 사용
+필요 시, Quantization 방법은 [GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) 를 사용
 
 * 본 프로젝트 특성상 **개발 일정에 맞춘 빠르고 효율적인 양자화**가 필요
 * [PTQ (Post-training Quantization)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-1-ptq-vs-qat) 방법론 적용
@@ -139,24 +153,26 @@ Quantization 방법은 [GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/
 
 ### 3-4. 각 LLM 별 상세 결과
 
-* 모든 모델은 양자화 적용 없이 적절한 환경에서 실행 성공함
+* 모든 모델은 **양자화 적용 없이** 적절한 환경에서 실행 성공함
 
-| 모델                                            | 사용 메모리    | 답변 시간  | 답변 품질 (1차 테스트)         | 답변 품질 (2차 테스트)     | 테스트 환경   |
-|-----------------------------------------------|-----------|--------|------------------------|--------------------|----------|
-| DeepSeek-V2-Lite                              | 31,126 MB | 92.1 s | 기본 형식 미준수              |                    | A100 GPU |
-| DeepSeek-V2-Lite-Chat                         | 31,126 MB | 63.1 s | 기본 형식 부분적 준수           |                    | A100 GPU |
-| **DeepSeek-Coder-V2-Lite-Base**               | 31,148 MB | 90.7 s | **기본 형식 준수**           |                    | A100 GPU |
-| **DeepSeek-Coder-V2-Lite-Instruct**           | 31,148 MB | 66.8 s | **기본 형식 준수 + 비교적 고품질** |                    | A100 GPU |
-| deepseek-coder-6.7b-instruct                  | 12,857 MB | 26.3 s | 기본 형식 미준수              | 형식 준수 **N / 20 개** | T4 GPU   |
-| **deepseek-coder-7b-instruct-v1.5**           | 13,180 MB | 25.3 s | **기본 형식 준수**           | 형식 준수 **N / 20 개** | T4 GPU   |
-| **deepseek-coder-1.3b-instruct<br>(✅ 최종 채택)** | 2,576 MB  | 19.5 s | **기본 형식 준수 + 비교적 고품질** | 형식 준수 **N / 20 개** | T4 GPU   |
-| deepseek-coder-6.7b-base                      | 12,865 MB | 24.8 s | 기본 형식 부분적 준수           | 형식 준수 **N / 20 개** | T4 GPU   |
-| deepseek-coder-7b-base-v1.5                   | 13,188 MB | 26.1 s | 기본 형식 미준수              | 형식 준수 **N / 20 개** | T4 GPU   |
-| deepseek-coder-1.3b-base                      | 2,576 MB  | 22.9 s | 기본 형식 미준수              | 형식 준수 **N / 20 개** | T4 GPU   |
-| **deepseek-llm-7b-chat**                      | 13,189 MB | 31.9 s | **기본 형식 준수**           | 형식 준수 **N / 20 개** | T4 GPU   |
-| deepseek-llm-7b-base                          | 13,189 MB | 26.8 s | 기본 형식 미준수              | 형식 준수 **N / 20 개** | T4 GPU   |
-| deepseek-moe-16b-chat                         | 31,475 MB | 53.5 s | 기본 형식 부분적 준수           |                    | A100 GPU |
-| deepseek-moe-16b-base                         | 31,472 MB | 86.2 s | 기본 형식 미준수              |                    | A100 GPU |
+| 모델                                            | 사용 메모리    | 답변 시간<br>**(1차 테스트)** | 답변 품질<br>(1차 테스트)      | 답변 품질<br>(2차 테스트)                                                                    | 테스트 환경   |
+|-----------------------------------------------|-----------|-----------------------|------------------------|--------------------------------------------------------------------------------------|----------|
+| DeepSeek-V2-Lite                              | 31,126 MB | 92.1 s                | 기본 형식 미준수              |                                                                                      | A100 GPU |
+| DeepSeek-V2-Lite-Chat                         | 31,126 MB | 63.1 s                | 기본 형식 부분적 준수           |                                                                                      | A100 GPU |
+| **DeepSeek-Coder-V2-Lite-Base**               | 31,148 MB | 90.7 s                | **기본 형식 준수**           |                                                                                      | A100 GPU |
+| **DeepSeek-Coder-V2-Lite-Instruct**           | 31,148 MB | 66.8 s                | **기본 형식 준수 + 비교적 고품질** |                                                                                      | A100 GPU |
+| deepseek-coder-6.7b-instruct                  | 12,857 MB | 26.3 s                | 기본 형식 미준수              | [형식 준수 **12 / 20 개**](2nd_test_result/llm_report_deepseek-coder-6.7b-instruct.csv)   | T4 GPU   |
+| **deepseek-coder-7b-instruct-v1.5**           | 13,180 MB | 25.3 s                | **기본 형식 준수**           | [형식 준수 **9 / 20 개**](2nd_test_result/llm_report_deepseek-coder-7b-instruct-v1.5.csv) | T4 GPU   |
+| **deepseek-coder-1.3b-instruct<br>(✅ 최종 채택)** | 2,576 MB  | 19.5 s                | **기본 형식 준수 + 비교적 고품질** | [형식 준수 **13 / 20 개**](2nd_test_result/llm_report_deepseek-coder-1.3b-instruct.csv)   | T4 GPU   |
+| deepseek-coder-6.7b-base                      | 12,865 MB | 24.8 s                | 기본 형식 부분적 준수           | [형식 준수 **3 / 20 개**](2nd_test_result/llm_report_deepseek-coder-6.7b-base.csv)        | T4 GPU   |
+| deepseek-coder-7b-base-v1.5                   | 13,188 MB | 26.1 s                | 기본 형식 미준수              | [형식 준수 **9 / 20 개**](2nd_test_result/llm_report_deepseek-coder-7b-base-v1.5.csv)     | T4 GPU   |
+| deepseek-coder-1.3b-base                      | 2,576 MB  | 22.9 s                | 기본 형식 미준수              | [형식 준수 **2 / 20 개**](2nd_test_result/llm_report_deepseek-coder-1.3b-base.csv)        | T4 GPU   |
+| **deepseek-llm-7b-chat**                      | 13,189 MB | 31.9 s                | **기본 형식 준수**           | [형식 준수 **9 / 20 개**](2nd_test_result/llm_report_deepseek-llm-7b-chat.csv)            | T4 GPU   |
+| deepseek-llm-7b-base                          | 13,189 MB | 26.8 s                | 기본 형식 미준수              | [형식 준수 **0 / 20 개**](2nd_test_result/llm_report_deepseek-llm-7b-base.csv)            | T4 GPU   |
+| deepseek-moe-16b-chat                         | 31,475 MB | 53.5 s                | 기본 형식 부분적 준수           |                                                                                      | A100 GPU |
+| deepseek-moe-16b-base                         | 31,472 MB | 86.2 s                | 기본 형식 미준수              |                                                                                      | A100 GPU |
+
+### 3-5. 1차 테스트의 기본 형식 준수 답변
 
 **1. DeepSeek-Coder-V2-Lite-Base 의 답변**
 
