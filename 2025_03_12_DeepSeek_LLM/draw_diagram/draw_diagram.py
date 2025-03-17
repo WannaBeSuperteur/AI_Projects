@@ -6,6 +6,7 @@ import math
 WIDTH = 1000
 HEIGHT = 600
 DASH_INTERVAL = 20  # interval for dashed arrow
+ARROW_MARGIN = 4
 
 canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
 diagram_dict = {}
@@ -70,7 +71,7 @@ def draw_round_rectangle(x, y, width, height, color, thickness):
 # Last Update Date : 2025.03.17
 # - circle 그릴 때 anti-aliasing 누락 수정 (lineType=cv2.LINE_AA)
 # - rectangle 그릴 때 pt1, pt2 의 좌표를 int 자료형이 되도록 수정
-# - 기타 버그 수정 (도형 그리기 순서 등)
+# - 기타 버그 수정 (도형 그리기 순서, ellipse size 등)
 
 # Arguments:
 # - x      (int)   : 도형의 x 좌표
@@ -107,7 +108,7 @@ def generate_node(x, y, width, height, shape, color):
         elif 'circle' in shape:
             cv2.ellipse(canvas,
                         center=(x, y),
-                        axes=(width, height),
+                        axes=(int(width / 2), int(height / 2)),
                         angle=0,
                         startAngle=0,
                         endAngle=360,
@@ -118,7 +119,8 @@ def generate_node(x, y, width, height, shape, color):
 
 # Diagram 의 화살표 생성 시, 화살표의 끝점의 좌표 계산
 # Create Date : 2025.03.16
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - destination point 계산 오류 및 margin 수정
 
 # Arguments:
 # - x0          (int)   : 시작점 도형의 x 좌표
@@ -136,14 +138,17 @@ def generate_node(x, y, width, height, shape, color):
 def compute_dest_point(x0, y0, x1, y1, dest_shape, dest_width, dest_height):
     x_dest, y_dest = None, None
 
+    width_shift = dest_width / 2 + ARROW_MARGIN
+    height_shift = dest_height / 2 + ARROW_MARGIN
+
     # round rectangle or rectangle
     if 'rect' in dest_shape:
         if abs(x0 - x1) >= abs(y0 - y1):
-            x_dest = x1 - dest_width
+            x_dest = x1 - width_shift if x0 < x1 else x1 + width_shift
             y_dest = y1
         else:
             x_dest = x1
-            y_dest = y1 - dest_height
+            y_dest = y1 - height_shift if y0 < y1 else y1 + height_shift
 
     # circle
     elif 'circle' in dest_shape:
@@ -153,16 +158,19 @@ def compute_dest_point(x0, y0, x1, y1, dest_shape, dest_width, dest_height):
 
         elif x0 == x1:
             x_dest = x1
-            y_dest = y1 - dest_height if y0 < y1 else y1 + dest_height
+            y_dest = y1 - height_shift if y0 < y1 else y1 + height_shift
 
         elif y0 == y1:
-            x_dest = x1 - dest_width if x0 < x1 else x1 + dest_width
+            x_dest = x1 - width_shift if x0 < x1 else x1 + width_shift
             y_dest = y1
 
         else:
-            angle = math.atan2(y1 - y0, x1 - x0)
-            x_dest = x1 - math.cos(angle) * dest_width
-            y_dest = y1 - math.sin(angle) * dest_height
+            angle = math.atan((y1 - y0) / (x1 - x0))
+            abs_cos = abs(math.cos(angle))
+            abs_sin = abs(math.sin(angle))
+
+            x_dest = x1 - abs_cos * width_shift if x0 < x1 else x1 + abs_cos * width_shift
+            y_dest = y1 - abs_sin * height_shift if y0 < y1 else y1 + abs_sin * height_shift
 
     return x_dest, y_dest
 
@@ -206,6 +214,7 @@ def compute_dash_width_and_height(x0, y0, x_dest, y_dest):
 # Last Update Date : 2025.03.17
 # - line 그릴 때 pt1, pt2 의 좌표를 int 자료형이 되도록 수정
 # - dashed line 그리는 반복의 종료 조건 판정 버그 수정
+# - 기타 버그 수정
 
 # Arguments:
 # - x0          (int)   : 시작점 도형의 x 좌표
@@ -232,7 +241,7 @@ def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
     while True:
         cv2.line(canvas,
                  pt1=(int(x), int(y)),
-                 pt2=(int(x + dash_width), int(x + dash_height)),
+                 pt2=(int(x + dash_width), int(y + dash_height)),
                  color=arrow_color,
                  thickness=1,
                  lineType=cv2.LINE_AA)
@@ -250,7 +259,8 @@ def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
 
 # Diagram 의 화살표 생성
 # Create Date : 2025.03.16
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - arrow 의 dest point 를 계산된 dest point 로 수정
 
 # Arguments:
 # - x0          (int)   : 시작점 도형의 x 좌표
@@ -275,10 +285,11 @@ def generate_arrow(x0, y0, x1, y1, arrow_shape, arrow_color, dest_shape, dest_wi
     if 'solid' in arrow_shape:
         cv2.arrowedLine(canvas,
                         pt1=(x0, y0),
-                        pt2=(x1, y1),
+                        pt2=(int(x_dest), int(y_dest)),
                         color=arrow_color,
                         thickness=1,
-                        line_type=cv2.LINE_AA)
+                        line_type=cv2.LINE_AA,
+                        tipLength=0.05)
 
     # dotted (dashed) arrow
     elif 'dot' in arrow_shape or 'dash' in arrow_shape:
@@ -405,6 +416,11 @@ def generate_diagram_each_line(line_text):
     # draw arrows first
     for node_no, info in diagram_dict.items():
         for connected_node_no in info['connected_nodes']:
+
+            # source = dest 인 경우 pass
+            if node_no == connected_node_no:
+                continue
+
             if connected_node_no in diagram_dict.keys():
                 dest_node_info = diagram_dict[connected_node_no]
 
