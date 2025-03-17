@@ -71,36 +71,45 @@ def generate_dl_model_structure(layer_config_seed):
 
         input_size = input_sizes[conv_config_seed % 8]
         conv_pool_cnt = conv_pool_times[conv_config_seed % 8]
+        consecutive_conv_layers = [(2 if random.random() < 0.3 else 1) for _ in range(conv_pool_cnt)]
 
         # size after Conv. and Pool. layers
         conv_pool_size = []
+        conv_pool_layer_type = []
         current_size = input_size
 
         for c in range(conv_pool_cnt):
-            current_size -= 2
-            conv_pool_size.append(current_size)
+
+            # conv. layers
+            for cc in range(consecutive_conv_layers[c]):
+                current_size -= 2
+                conv_pool_size.append(current_size)
+                conv_pool_layer_type.append('conv')
+
+            # pooling layer
             current_size = current_size // 2
             conv_pool_size.append(current_size)
+            conv_pool_layer_type.append('pool')
 
         # hidden layer (dense after Conv. + Pool, fully-connected)
         hidden_layers = (conv_config_seed // 8) % 3 + 1
 
         if hidden_layers == 1:
-            hidden_node_counts = [[64], [128], [256]]
-            hidden_nodes = hidden_node_counts[(conv_config_seed // (8 * 3)) % 3]
+            hidden_node_counts = [[64], [128], [256], [512], [1024]]
+            hidden_nodes = hidden_node_counts[(conv_config_seed // (8 * 3)) % 5]
 
         elif hidden_layers == 2:
-            hidden_node_counts = [[256, 32], [512, 64], [512, 128], [1024, 256]]
-            hidden_nodes = hidden_node_counts[(conv_config_seed // (8 * 3)) % 4]
+            hidden_node_counts = [[256, 32], [512, 64], [512, 128], [1024, 64], [1024, 128], [1024, 256]]
+            hidden_nodes = hidden_node_counts[(conv_config_seed // (8 * 3)) % 6]
 
         else:  # hidden_layers == 3
-            hidden_node_counts = [[256, 64, 16], [512, 128, 16], [512, 256, 64], [1024, 256, 64]]
-            hidden_nodes = hidden_node_counts[(conv_config_seed // (8 * 3)) % 4]
+            hidden_node_counts = [[256, 64, 16], [512, 128, 16], [512, 128, 32], [512, 256, 64], [1024, 256, 64]]
+            hidden_nodes = hidden_node_counts[(conv_config_seed // (8 * 3)) % 5]
 
         # output layer
-        output_nodes = (layer_config_seed // (8 * 3 * 3 * 4)) % 2 + 1
+        output_nodes = (layer_config_seed // (8 * 3 * 5 * 6)) % 2 + 1
 
-        layer_type = ['cnn_input'] + ['conv', 'pool'] * conv_pool_cnt + ['dense'] * (hidden_layers + 1)
+        layer_type = ['cnn_input'] + conv_pool_layer_type + ['dense'] * (hidden_layers + 1)
         layer_size = [input_size] + conv_pool_size + hidden_nodes + [output_nodes]
 
     return layer_type, layer_size
@@ -120,19 +129,27 @@ def generate_dl_model_structure(layer_config_seed):
 # - user_prompt   (str) : Prompt Engineering 을 위한 앞뒤 부분을 제외한 순수 유저 프롬프트
 
 def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
-    user_prompt_part0_candidates = ['A deep learning model', 'DL model', 'neural network', 'NN']
+    is_cnn = (layer_type[0] == 'cnn_input')
+
+    if is_cnn:
+        user_prompt_part0_candidates = ['A deep learning model', 'DL model', 'neural network',
+                                        'NN', 'NN model', 'neural net']
+    else:
+        user_prompt_part0_candidates = ['Convolutional neural network', 'Conv neural network',
+                                        'DL model', 'neural network', 'CNN', 'CNN model']
+
     user_prompt_part1_candidates = ['with', 'of', 'consist of']
 
     input_node_names = ['input layer nodes', 'input nodes', 'input elements', 'input size']
     hidden_layer_names = ['hidden layers', 'hiddens', 'intermediate layers', 'hidden layer', 'mid layers']
     output_node_names = ['output layer nodes', 'output nodes', 'output elements', 'output size']
 
-    user_prompt = (user_prompt_part0_candidates[prompt_seed % 4] + ' ' +
-                   user_prompt_part1_candidates[(prompt_seed // 4) % 3] + ' ')
+    user_prompt = (user_prompt_part0_candidates[prompt_seed % 6] + ' ' +
+                   user_prompt_part1_candidates[(prompt_seed // 6) % 3] + ' ')
 
-    # 모든 Conv. + Pool. 레이어를 묶어서 한번에 표현
+    # 한 group (1~2 Conv. + 1 Pool.) 내의 모든 Conv. 레이어를 묶어서 한번에 표현
     say_conv_pool_at_once = random.random() < 0.4
-    said_conv_pool_once = False
+    last_pooling_layer_idx = 0
 
     for idx, (t, s) in enumerate(zip(layer_type, layer_size)):
         additional_and = "and " if random.random() < 0.5 else ""
@@ -149,12 +166,19 @@ def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
                 pooling_type = ""
 
             if say_conv_pool_at_once:
-                if not said_conv_pool_once:
-                    said_conv_pool_once = True
-                    conv_layers = layer_type.count('conv')
-                    pool_layers = layer_type.count('pool')
 
-                    user_prompt += f'{conv_layers} 3 x 3 {conv} layers and {pool_layers} 2 x 2 {pooling_type}pooling layers, {additional_then}'
+                # Conv. + Pool. 그룹의 마지막 레이어인 Pooling Layer 에서만 해당 그룹의 종류 별 레이어 개수 체크
+                if t == 'conv':
+                    continue
+
+                current_conv_and_pool_group = layer_type[last_pooling_layer_idx : idx+1]
+                conv_layers = current_conv_and_pool_group.count('conv')
+                last_pooling_layer_idx = idx
+
+                if conv_layers > 1:
+                    user_prompt += f'{conv_layers} 3 x 3 {conv} layers and a 2 x 2 {pooling_type}pooling layer, {additional_then}'
+                else:
+                    user_prompt += f'a 3 x 3 {conv} layer and a 2 x 2 {pooling_type}pooling layer, {additional_then}'
 
             else:
                 r = random.random()
@@ -189,22 +213,32 @@ def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
                     else:
                         user_prompt += f'2*2 {pooling_type}pooling layer, {additional_then}'
 
+        # CNN input layer
+        elif t == 'cnn_input':
+            additional_img = ' image' if random.random() < 0.5 else ''
+            img_size = f'{s} * {s}' if random.random() < 0.5 else f'{s} x {s}'
+            user_prompt += f'{img_size} input{additional_img}, '
+
         # input layer (dense)
         elif idx == 0:
-            user_prompt += f'{s} {input_node_names[(prompt_seed // (4 * 3)) % 4]}, '
+            input_node_name = input_node_names[(prompt_seed // (6 * 3)) % 4]
+            user_prompt += f'{s} {input_node_name}, '
 
         # output layer (dense)
         elif idx == len(layer_type) - 1:
-            user_prompt += f'and {s} {output_node_names[(prompt_seed // (4 * 3 * 4 * 5)) % 4]} '
+            output_node_name = output_node_names[(prompt_seed // (6 * 3 * 4 * 5)) % 4]
+            user_prompt += f'and {s} {output_node_name} '
 
         # last hidden layer (dense)
         elif idx == len(layer_type) - 2:
+            hidden_layer_name = hidden_layer_names[(prompt_seed // (6 * 3 * 4)) % 5]
+
             if idx == 1 or layer_type[idx - 1] in ['conv', 'pool']:  # only one hidden layer
-                user_prompt += f'and {s} nodes in {hidden_layer_names[(prompt_seed // (4 * 3 * 4)) % 5]}, '
+                user_prompt += f'and {s} nodes in {hidden_layer_name}, '
+
             else:
                 r = random.random()
                 additional_and = "and " if random.random() < 0.5 else ""
-                hidden_layer_name = hidden_layer_names[(prompt_seed // (4 * 3 * 4)) % 5]
                 hidden_layer_cnt = (len(layer_type) - 2) - (layer_type.count('conv') + layer_type.count('pool'))
 
                 if r < 0.25:

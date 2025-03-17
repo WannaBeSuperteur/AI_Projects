@@ -13,9 +13,9 @@
 
 * [Supervised Fine-Tuning (SFT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) 용 데이터셋 생성 코드
   * 생성된 데이터셋을 ```sft_dataset.csv``` 에 저장
-* 총 500 개 규모 데이터셋
-  * 딥러닝 모델 구조 관련 200 개
-  * 기타 300 개
+* 총 700 개 규모 데이터셋
+  * 딥러닝 모델 구조 관련 280 개
+  * 기타 420 개
 
 ## 2. ```orpo_dataset.py``` 설명
 
