@@ -100,6 +100,25 @@
 
 ### 4-1. 도식 생성을 위한 LLM 프롬프트
 
+LLM 테스트를 위한 [2차 프롬프트](test/README.md#3-1-코드-파일-설명-및-테스트-프롬프트) 에서 connection line shape 의 종류가 2가지에서 4가지로 확대된 것을 제외하고 완전히 동일하다.
+
+```
+Represent below as a Python list.
+
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers,
+and 1 node in the output layer in the following format.
+
+At this time, each node is represented in the format of Python list "[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid arrow, dashed arrow, solid line or dashed line),
+background color, connection line color, list of node No. s of other nodes pointed to by the connection line]".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.
+```
+
 ### 4-2. LLM Fine-Tuning
 
 * LLaMA 등 기존 LLM 보다는, **최신 트렌드인 DeepSeek 모델을 Fine-tuning** 하는 것을 본 프로젝트의 목표로 함.
