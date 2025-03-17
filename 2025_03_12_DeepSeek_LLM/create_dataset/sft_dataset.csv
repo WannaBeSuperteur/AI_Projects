@@ -1,0 +1,1561 @@
+,input_data,user_prompt,output_data
+0,"Represent below as a Python list.
+
+DL model of 5 input layer nodes, 6, 1, and 6 nodes in each of the 3 hidden layer nodes, and 2 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 5 input layer nodes, 6, 1, and 6 nodes in each of the 3 hidden layer nodes, and 2 output layer nodes ",
+1,"Represent below as a Python list.
+
+A deep learning model of 6 input layer nodes, and 1 nodes in each of the 1 hidden size, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 6 input layer nodes, and 1 nodes in each of the 1 hidden size, and 1 output nodes ",
+2,"Represent below as a Python list.
+
+NN with 6 3 x 3 convolutional layers and 6 2 x 2 max pooling layers, then and 2 nodes in each of the 12 hidden size, and 256 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 6 3 x 3 convolutional layers and 6 2 x 2 max pooling layers, then and 2 nodes in each of the 12 hidden size, and 256 output nodes ",
+3,"Represent below as a Python list.
+
+neural network consist of 3 x 3 conv layer, 2 x 2 max pooling layer, then convolutional layer (output is 383 x 383), then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 max pooling layer, conv layer (output is 46 x 46), 2 x 2 average pooling layer, conv layer (output is 22 x 22), and then 2 x 2 average pooling layer, then convolutional layer (output: 10 x 10 feature map), and 2 x 2 average pooling layer, convolutional layer (output is 4 x 4), 2 x 2 max pooling layer, 1, and 256 nodes in each of the 17 hidden nodes, and 32 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 3 x 3 conv layer, 2 x 2 max pooling layer, then convolutional layer (output is 383 x 383), then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 max pooling layer, conv layer (output is 46 x 46), 2 x 2 average pooling layer, conv layer (output is 22 x 22), and then 2 x 2 average pooling layer, then convolutional layer (output: 10 x 10 feature map), and 2 x 2 average pooling layer, convolutional layer (output is 4 x 4), 2 x 2 max pooling layer, 1, and 256 nodes in each of the 17 hidden nodes, and 32 output nodes ",
+4,"Represent below as a Python list.
+
+neural network with 6 input elements, 1, 4, and 3 nodes in each of the 3 hidden size, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with 6 input elements, 1, 4, and 3 nodes in each of the 3 hidden size, and 1 output layer nodes ",
+5,"Represent below as a Python list.
+
+NN with 4 input elements, 6, and 3 nodes in each of the 2 nodes, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 4 input elements, 6, and 3 nodes in each of the 2 nodes, and 2 output size ",
+6,"Represent below as a Python list.
+
+DL model of 2 input elements, 1, 8, and 3 nodes in each of the 3 nodes, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 2 input elements, 1, 8, and 3 nodes in each of the 3 nodes, and 1 output layer nodes ",
+7,"Represent below as a Python list.
+
+NN consist of 3 input size, and 2 nodes in each of the 1 nodes, and 2 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of 3 input size, and 2 nodes in each of the 1 nodes, and 2 output layer nodes ",
+8,"Represent below as a Python list.
+
+NN of 5 3 x 3 conv layers and 5 2 x 2 max pooling layers, and 2 nodes in each of the 10 hidden size, and 128 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 5 3 x 3 conv layers and 5 2 x 2 max pooling layers, and 2 nodes in each of the 10 hidden size, and 128 output layer nodes ",
+9,"Represent below as a Python list.
+
+DL model with 4 input nodes, and 1 nodes in each of the 1 hidden layer nodes, and 2 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 4 input nodes, and 1 nodes in each of the 1 hidden layer nodes, and 2 output layer nodes ",
+10,"Represent below as a Python list.
+
+NN with 3 x 3 convolutional layer, 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 max pooling layer, 3 x 3 convolutional layer, 2 x 2 max pooling layer, then conv layer (output: 94 x 94 feature map), then 2 x 2 max pooling layer, then conv layer (output is 46 x 46), 2 x 2 average pooling layer, then conv layer (output: 22 x 22 feature map), then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, convolutional layer (output is 4 x 4), then 2 x 2 average pooling layer, then 1, 1024, and 256 nodes in each of the 18 hidden size, and 64 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 3 x 3 convolutional layer, 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 max pooling layer, 3 x 3 convolutional layer, 2 x 2 max pooling layer, then conv layer (output: 94 x 94 feature map), then 2 x 2 max pooling layer, then conv layer (output is 46 x 46), 2 x 2 average pooling layer, then conv layer (output: 22 x 22 feature map), then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, convolutional layer (output is 4 x 4), then 2 x 2 average pooling layer, then 1, 1024, and 256 nodes in each of the 18 hidden size, and 64 output layer nodes ",
+11,"Represent below as a Python list.
+
+neural network consist of 6 input nodes, and 4 nodes in each of the 1 nodes, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 6 input nodes, and 4 nodes in each of the 1 nodes, and 1 output layer nodes ",
+12,"Represent below as a Python list.
+
+neural network of 3 x 3 convolutional layer, then 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 average pooling layer, then conv layer (output is 126 x 126), and then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, then convolutional layer (output is 30 x 30), 2 x 2 average pooling layer, then conv layer (output is 14 x 14), and then 2 x 2 max pooling layer, convolutional layer (output: 6 x 6 feature map), then 2 x 2 average pooling layer, 2, 1024, and 256 nodes in each of the 16 hidden nodes, and 64 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of 3 x 3 convolutional layer, then 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 average pooling layer, then conv layer (output is 126 x 126), and then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, then convolutional layer (output is 30 x 30), 2 x 2 average pooling layer, then conv layer (output is 14 x 14), and then 2 x 2 max pooling layer, convolutional layer (output: 6 x 6 feature map), then 2 x 2 average pooling layer, 2, 1024, and 256 nodes in each of the 16 hidden nodes, and 64 output size ",
+13,"Represent below as a Python list.
+
+DL model of 3 input elements, and 1 nodes in each of the 1 hidden layer nodes, and 1 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 3 input elements, and 1 nodes in each of the 1 hidden layer nodes, and 1 output size ",
+14,"Represent below as a Python list.
+
+NN consist of 6 input elements, 5, and 5 nodes in each of the 2 hidden nodes, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of 6 input elements, 5, and 5 nodes in each of the 2 hidden nodes, and 1 output nodes ",
+15,"Represent below as a Python list.
+
+DL model of 2 input nodes, and 2 nodes in each of the 1 hidden elements, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 2 input nodes, and 2 nodes in each of the 1 hidden elements, and 1 output nodes ",
+16,"Represent below as a Python list.
+
+neural network consist of 3 input nodes, and 4 nodes in each of the 1 hidden size, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 3 input nodes, and 4 nodes in each of the 1 hidden size, and 2 output nodes ",
+17,"Represent below as a Python list.
+
+neural network with 5 input size, and 4 nodes in each of the 1 hidden size, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with 5 input size, and 4 nodes in each of the 1 hidden size, and 2 output size ",
+18,"Represent below as a Python list.
+
+DL model of 6 3 x 3 convolutional layers and 6 2 x 2 average pooling layers, then and 2 nodes in each of the 12 hidden size, and 256 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 6 3 x 3 convolutional layers and 6 2 x 2 average pooling layers, then and 2 nodes in each of the 12 hidden size, and 256 output nodes ",
+19,"Represent below as a Python list.
+
+DL model of 5 3 x 3 convolutional layers and 5 2 x 2 average pooling layers, then 2, and 512 nodes in each of the 11 hidden elements, and 128 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 5 3 x 3 convolutional layers and 5 2 x 2 average pooling layers, then 2, and 512 nodes in each of the 11 hidden elements, and 128 output size ",
+20,"Represent below as a Python list.
+
+DL model with 2 input elements, 4, and 4 nodes in each of the 2 hidden elements, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 2 input elements, 4, and 4 nodes in each of the 2 hidden elements, and 2 output size ",
+21,"Represent below as a Python list.
+
+neural network with 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 3 x 3 convolutional layer, 2 x 2 max pooling layer, convolutional layer (output is 30 x 30), then 2 x 2 max pooling layer, 3 x 3 conv layer, and 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 average pooling layer, then 2, 256, and 64 nodes in each of the 12 hidden nodes, and 16 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 3 x 3 convolutional layer, 2 x 2 max pooling layer, convolutional layer (output is 30 x 30), then 2 x 2 max pooling layer, 3 x 3 conv layer, and 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 average pooling layer, then 2, 256, and 64 nodes in each of the 12 hidden nodes, and 16 output layer nodes ",
+22,"Represent below as a Python list.
+
+NN of 6 3 x 3 conv layers and 6 2 x 2 average pooling layers, then and 2 nodes in each of the 12 hidden elements, and 128 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 6 3 x 3 conv layers and 6 2 x 2 average pooling layers, then and 2 nodes in each of the 12 hidden elements, and 128 output elements ",
+23,"Represent below as a Python list.
+
+NN of 6 input elements, 2, 9, and 6 nodes in each of the 3 nodes, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 6 input elements, 2, 9, and 6 nodes in each of the 3 nodes, and 2 output size ",
+24,"Represent below as a Python list.
+
+DL model consist of convolutional layer (output is 512 x 512), then 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 average pooling layer, convolutional layer (output is 126 x 126), and 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 max pooling layer, then convolutional layer (output is 30 x 30), and 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 average pooling layer, conv layer (output is 6 x 6), and then 2 x 2 max pooling layer, 2, 256, and 64 nodes in each of the 16 hidden size, and 16 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of convolutional layer (output is 512 x 512), then 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 average pooling layer, convolutional layer (output is 126 x 126), and 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 max pooling layer, then convolutional layer (output is 30 x 30), and 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 average pooling layer, conv layer (output is 6 x 6), and then 2 x 2 max pooling layer, 2, 256, and 64 nodes in each of the 16 hidden size, and 16 output layer nodes ",
+25,"Represent below as a Python list.
+
+DL model consist of 5 input nodes, 5, and 4 nodes in each of the 2 hidden elements, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 5 input nodes, 5, and 4 nodes in each of the 2 hidden elements, and 1 output nodes ",
+26,"Represent below as a Python list.
+
+neural network consist of conv layer (output is 64 x 64), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, convolutional layer (output is 14 x 14), and then 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then 2, and 256 nodes in each of the 9 hidden elements, and 32 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of conv layer (output is 64 x 64), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, convolutional layer (output is 14 x 14), and then 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then 2, and 256 nodes in each of the 9 hidden elements, and 32 output layer nodes ",
+27,"Represent below as a Python list.
+
+A deep learning model with 5 3 x 3 convolutional layers and 5 2 x 2 average pooling layers, then 2, 256, and 64 nodes in each of the 12 hidden elements, and 16 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with 5 3 x 3 convolutional layers and 5 2 x 2 average pooling layers, then 2, 256, and 64 nodes in each of the 12 hidden elements, and 16 output size ",
+28,"Represent below as a Python list.
+
+DL model consist of convolutional layer (output is 512 x 512), 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and 2 x 2 average pooling layer, convolutional layer (output is 126 x 126), and then 2 x 2 max pooling layer, conv layer (output is 62 x 62), and 2 x 2 average pooling layer, then conv layer (output: 30 x 30 feature map), and then 2 x 2 max pooling layer, conv layer (output is 14 x 14), 2 x 2 average pooling layer, then convolutional layer (output is 6 x 6), and then 2 x 2 max pooling layer, and 2 nodes in each of the 14 hidden layer nodes, and 128 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of convolutional layer (output is 512 x 512), 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and 2 x 2 average pooling layer, convolutional layer (output is 126 x 126), and then 2 x 2 max pooling layer, conv layer (output is 62 x 62), and 2 x 2 average pooling layer, then conv layer (output: 30 x 30 feature map), and then 2 x 2 max pooling layer, conv layer (output is 14 x 14), 2 x 2 average pooling layer, then convolutional layer (output is 6 x 6), and then 2 x 2 max pooling layer, and 2 nodes in each of the 14 hidden layer nodes, and 128 output nodes ",
+29,"Represent below as a Python list.
+
+A deep learning model with conv layer (output is 32 x 32), then 2 x 2 average pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, conv layer (output is 6 x 6), then 2 x 2 max pooling layer, then 2, and 512 nodes in each of the 7 hidden size, and 128 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with conv layer (output is 32 x 32), then 2 x 2 average pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, conv layer (output is 6 x 6), then 2 x 2 max pooling layer, then 2, and 512 nodes in each of the 7 hidden size, and 128 output layer nodes ",
+30,"Represent below as a Python list.
+
+neural network with 6 3 x 3 conv layers and 6 2 x 2 average pooling layers, 1, 512, and 128 nodes in each of the 14 hidden elements, and 16 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with 6 3 x 3 conv layers and 6 2 x 2 average pooling layers, 1, 512, and 128 nodes in each of the 14 hidden elements, and 16 output layer nodes ",
+31,"Represent below as a Python list.
+
+neural network consist of 3 input layer nodes, 4, 5, and 1 nodes in each of the 3 hidden elements, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 3 input layer nodes, 4, 5, and 1 nodes in each of the 3 hidden elements, and 1 output elements ",
+32,"Represent below as a Python list.
+
+DL model consist of 4 3 x 3 conv layers and 4 2 x 2 max pooling layers, 2, 512, and 128 nodes in each of the 10 hidden elements, and 16 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 4 3 x 3 conv layers and 4 2 x 2 max pooling layers, 2, 512, and 128 nodes in each of the 10 hidden elements, and 16 output nodes ",
+33,"Represent below as a Python list.
+
+A deep learning model consist of 7 3 x 3 conv layers and 7 2 x 2 max pooling layers, 2, and 512 nodes in each of the 15 nodes, and 64 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 7 3 x 3 conv layers and 7 2 x 2 max pooling layers, 2, and 512 nodes in each of the 15 nodes, and 64 output nodes ",
+34,"Represent below as a Python list.
+
+A deep learning model of 6 input layer nodes, 3, 7, and 5 nodes in each of the 3 nodes, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 6 input layer nodes, 3, 7, and 5 nodes in each of the 3 nodes, and 2 output nodes ",
+35,"Represent below as a Python list.
+
+neural network of 4 input elements, and 2 nodes in each of the 1 nodes, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of 4 input elements, and 2 nodes in each of the 1 nodes, and 2 output nodes ",
+36,"Represent below as a Python list.
+
+neural network with 6 input nodes, 2, 8, and 4 nodes in each of the 3 hidden elements, and 2 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with 6 input nodes, 2, 8, and 4 nodes in each of the 3 hidden elements, and 2 output layer nodes ",
+37,"Represent below as a Python list.
+
+A deep learning model of 5 input layer nodes, 6, 2, and 6 nodes in each of the 3 nodes, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 5 input layer nodes, 6, 2, and 6 nodes in each of the 3 nodes, and 2 output size ",
+38,"Represent below as a Python list.
+
+NN with 6 3 x 3 convolutional layers and 6 2 x 2 average pooling layers, and 2 nodes in each of the 12 nodes, and 64 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 6 3 x 3 convolutional layers and 6 2 x 2 average pooling layers, and 2 nodes in each of the 12 nodes, and 64 output layer nodes ",
+39,"Represent below as a Python list.
+
+neural network consist of 3 x 3 conv layer, then 2 x 2 average pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then convolutional layer (output is 190 x 190), and 2 x 2 max pooling layer, then 3 x 3 conv layer, 2 x 2 max pooling layer, 3 x 3 conv layer, and 2 x 2 max pooling layer, convolutional layer (output is 22 x 22), then 2 x 2 max pooling layer, convolutional layer (output is 10 x 10), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and 2 x 2 average pooling layer, then 1, 1024, and 256 nodes in each of the 18 hidden nodes, and 64 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 3 x 3 conv layer, then 2 x 2 average pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then convolutional layer (output is 190 x 190), and 2 x 2 max pooling layer, then 3 x 3 conv layer, 2 x 2 max pooling layer, 3 x 3 conv layer, and 2 x 2 max pooling layer, convolutional layer (output is 22 x 22), then 2 x 2 max pooling layer, convolutional layer (output is 10 x 10), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and 2 x 2 average pooling layer, then 1, 1024, and 256 nodes in each of the 18 hidden nodes, and 64 output nodes ",
+40,"Represent below as a Python list.
+
+DL model with 3 x 3 convolutional layer, then 2 x 2 average pooling layer, convolutional layer (output is 127 x 127), 2 x 2 average pooling layer, convolutional layer (output is 62 x 62), 2 x 2 average pooling layer, 3 x 3 conv layer, and then 2 x 2 max pooling layer, 3 x 3 convolutional layer, and 2 x 2 average pooling layer, 3 x 3 conv layer, 2 x 2 average pooling layer, 2, and 1024 nodes in each of the 13 hidden nodes, and 256 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 3 x 3 convolutional layer, then 2 x 2 average pooling layer, convolutional layer (output is 127 x 127), 2 x 2 average pooling layer, convolutional layer (output is 62 x 62), 2 x 2 average pooling layer, 3 x 3 conv layer, and then 2 x 2 max pooling layer, 3 x 3 convolutional layer, and 2 x 2 average pooling layer, 3 x 3 conv layer, 2 x 2 average pooling layer, 2, and 1024 nodes in each of the 13 hidden nodes, and 256 output size ",
+41,"Represent below as a Python list.
+
+NN with conv layer (output: 256 x 256 feature map), then 2 x 2 max pooling layer, convolutional layer (output is 127 x 127), 2 x 2 max pooling layer, conv layer (output is 62 x 62), and then 2 x 2 max pooling layer, conv layer (output is 30 x 30), and then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, then and 2 nodes in each of the 12 hidden layer nodes, and 128 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with conv layer (output: 256 x 256 feature map), then 2 x 2 max pooling layer, convolutional layer (output is 127 x 127), 2 x 2 max pooling layer, conv layer (output is 62 x 62), and then 2 x 2 max pooling layer, conv layer (output is 30 x 30), and then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, then and 2 nodes in each of the 12 hidden layer nodes, and 128 output layer nodes ",
+42,"Represent below as a Python list.
+
+A deep learning model consist of 3 x 3 conv layer, and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, 2, 1024, and 256 nodes in each of the 8 hidden size, and 64 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 3 x 3 conv layer, and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, 2, 1024, and 256 nodes in each of the 8 hidden size, and 64 output layer nodes ",
+43,"Represent below as a Python list.
+
+A deep learning model of 2 input layer nodes, 6, and 5 nodes in each of the 2 hidden size, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 2 input layer nodes, 6, and 5 nodes in each of the 2 hidden size, and 2 output nodes ",
+44,"Represent below as a Python list.
+
+A deep learning model consist of 5 input size, and 1 nodes in each of the 1 nodes, and 2 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 5 input size, and 1 nodes in each of the 1 nodes, and 2 output layer nodes ",
+45,"Represent below as a Python list.
+
+NN consist of 5 input size, and 2 nodes in each of the 1 hidden size, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of 5 input size, and 2 nodes in each of the 1 hidden size, and 2 output size ",
+46,"Represent below as a Python list.
+
+A deep learning model consist of convolutional layer (output is 64 x 64), 2 x 2 max pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, convolutional layer (output is 14 x 14), and 2 x 2 max pooling layer, then convolutional layer (output is 6 x 6), then 2 x 2 average pooling layer, then and 2 nodes in each of the 8 hidden elements, and 128 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of convolutional layer (output is 64 x 64), 2 x 2 max pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, convolutional layer (output is 14 x 14), and 2 x 2 max pooling layer, then convolutional layer (output is 6 x 6), then 2 x 2 average pooling layer, then and 2 nodes in each of the 8 hidden elements, and 128 output nodes ",
+47,"Represent below as a Python list.
+
+A deep learning model with 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 average pooling layer, then 3 x 3 conv layer, and 2 x 2 average pooling layer, then conv layer (output is 14 x 14), and then 2 x 2 average pooling layer, then 3 x 3 conv layer, and 2 x 2 max pooling layer, 2, 1024, and 256 nodes in each of the 12 hidden nodes, and 64 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 average pooling layer, then 3 x 3 conv layer, and 2 x 2 average pooling layer, then conv layer (output is 14 x 14), and then 2 x 2 average pooling layer, then 3 x 3 conv layer, and 2 x 2 max pooling layer, 2, 1024, and 256 nodes in each of the 12 hidden nodes, and 64 output layer nodes ",
+48,"Represent below as a Python list.
+
+NN of 3 input elements, 5, and 6 nodes in each of the 2 hidden elements, and 2 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 3 input elements, 5, and 6 nodes in each of the 2 hidden elements, and 2 output elements ",
+49,"Represent below as a Python list.
+
+NN with 3 input size, and 4 nodes in each of the 1 hidden layer nodes, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 3 input size, and 4 nodes in each of the 1 hidden layer nodes, and 2 output nodes ",
+50,"Represent below as a Python list.
+
+NN consist of 3 input elements, and 4 nodes in each of the 1 hidden size, and 1 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of 3 input elements, and 4 nodes in each of the 1 hidden size, and 1 output size ",
+51,"Represent below as a Python list.
+
+NN with 6 3 x 3 convolutional layers and 6 2 x 2 max pooling layers, 1, 512, and 256 nodes in each of the 14 nodes, and 64 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 6 3 x 3 convolutional layers and 6 2 x 2 max pooling layers, 1, 512, and 256 nodes in each of the 14 nodes, and 64 output layer nodes ",
+52,"Represent below as a Python list.
+
+neural network of 8 3 x 3 convolutional layers and 8 2 x 2 average pooling layers, then 1, and 512 nodes in each of the 17 hidden layer nodes, and 128 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of 8 3 x 3 convolutional layers and 8 2 x 2 average pooling layers, then 1, and 512 nodes in each of the 17 hidden layer nodes, and 128 output size ",
+53,"Represent below as a Python list.
+
+DL model with conv layer (output is 256 x 256), then 2 x 2 average pooling layer, then convolutional layer (output is 127 x 127), and then 2 x 2 average pooling layer, then convolutional layer (output is 62 x 62), and then 2 x 2 max pooling layer, then conv layer (output is 30 x 30), and then 2 x 2 average pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, convolutional layer (output is 6 x 6), and then 2 x 2 average pooling layer, 2, 512, and 128 nodes in each of the 14 hidden elements, and 16 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with conv layer (output is 256 x 256), then 2 x 2 average pooling layer, then convolutional layer (output is 127 x 127), and then 2 x 2 average pooling layer, then convolutional layer (output is 62 x 62), and then 2 x 2 max pooling layer, then conv layer (output is 30 x 30), and then 2 x 2 average pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, convolutional layer (output is 6 x 6), and then 2 x 2 average pooling layer, 2, 512, and 128 nodes in each of the 14 hidden elements, and 16 output layer nodes ",
+54,"Represent below as a Python list.
+
+A deep learning model of 4 input layer nodes, 4, and 3 nodes in each of the 2 hidden nodes, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 4 input layer nodes, 4, and 3 nodes in each of the 2 hidden nodes, and 1 output nodes ",
+55,"Represent below as a Python list.
+
+DL model consist of 3 input layer nodes, and 3 nodes in each of the 1 hidden size, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 3 input layer nodes, and 3 nodes in each of the 1 hidden size, and 2 output nodes ",
+56,"Represent below as a Python list.
+
+A deep learning model consist of 3 3 x 3 conv layers and 3 2 x 2 average pooling layers, and 1 nodes in each of the 6 hidden size, and 128 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 3 3 x 3 conv layers and 3 2 x 2 average pooling layers, and 1 nodes in each of the 6 hidden size, and 128 output size ",
+57,"Represent below as a Python list.
+
+DL model with 3 input elements, 6, 2, and 2 nodes in each of the 3 nodes, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 3 input elements, 6, 2, and 2 nodes in each of the 3 nodes, and 1 output layer nodes ",
+58,"Represent below as a Python list.
+
+NN of 3 input elements, 6, and 6 nodes in each of the 2 hidden nodes, and 2 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 3 input elements, 6, and 6 nodes in each of the 2 hidden nodes, and 2 output elements ",
+59,"Represent below as a Python list.
+
+DL model with 6 input nodes, 6, 6, and 3 nodes in each of the 3 nodes, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 6 input nodes, 6, 6, and 3 nodes in each of the 3 nodes, and 1 output elements ",
+60,"Represent below as a Python list.
+
+NN with 3 x 3 convolutional layer, and 2 x 2 average pooling layer, conv layer (output: 255 x 255 feature map), 2 x 2 max pooling layer, 3 x 3 conv layer, and 2 x 2 max pooling layer, then conv layer (output is 62 x 62), 2 x 2 average pooling layer, then conv layer (output is 30 x 30), 2 x 2 max pooling layer, then conv layer (output is 14 x 14), 2 x 2 average pooling layer, 3 x 3 conv layer, and then 2 x 2 max pooling layer, then and 2 nodes in each of the 14 hidden nodes, and 128 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 3 x 3 convolutional layer, and 2 x 2 average pooling layer, conv layer (output: 255 x 255 feature map), 2 x 2 max pooling layer, 3 x 3 conv layer, and 2 x 2 max pooling layer, then conv layer (output is 62 x 62), 2 x 2 average pooling layer, then conv layer (output is 30 x 30), 2 x 2 max pooling layer, then conv layer (output is 14 x 14), 2 x 2 average pooling layer, 3 x 3 conv layer, and then 2 x 2 max pooling layer, then and 2 nodes in each of the 14 hidden nodes, and 128 output elements ",
+61,"Represent below as a Python list.
+
+A deep learning model consist of 8 3 x 3 convolutional layers and 8 2 x 2 max pooling layers, then 1, 512, and 256 nodes in each of the 18 hidden layer nodes, and 64 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 8 3 x 3 convolutional layers and 8 2 x 2 max pooling layers, then 1, 512, and 256 nodes in each of the 18 hidden layer nodes, and 64 output size ",
+62,"Represent below as a Python list.
+
+DL model consist of 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, 2, and 512 nodes in each of the 13 nodes, and 64 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, 2, and 512 nodes in each of the 13 nodes, and 64 output elements ",
+63,"Represent below as a Python list.
+
+A deep learning model with 6 input nodes, 2, and 3 nodes in each of the 2 hidden size, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with 6 input nodes, 2, and 3 nodes in each of the 2 hidden size, and 1 output elements ",
+64,"Represent below as a Python list.
+
+NN of 5 input size, 5, 1, and 5 nodes in each of the 3 hidden size, and 2 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 5 input size, 5, 1, and 5 nodes in each of the 3 hidden size, and 2 output elements ",
+65,"Represent below as a Python list.
+
+A deep learning model with 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, then and 1 nodes in each of the 12 hidden elements, and 256 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, then and 1 nodes in each of the 12 hidden elements, and 256 output elements ",
+66,"Represent below as a Python list.
+
+neural network consist of 2 input nodes, and 1 nodes in each of the 1 nodes, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 2 input nodes, and 1 nodes in each of the 1 nodes, and 2 output nodes ",
+67,"Represent below as a Python list.
+
+A deep learning model consist of 3 input layer nodes, 1, and 1 nodes in each of the 2 nodes, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 3 input layer nodes, 1, and 1 nodes in each of the 2 nodes, and 1 output elements ",
+68,"Represent below as a Python list.
+
+A deep learning model consist of 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, 2, and 512 nodes in each of the 13 hidden nodes, and 64 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, 2, and 512 nodes in each of the 13 hidden nodes, and 64 output size ",
+69,"Represent below as a Python list.
+
+A deep learning model consist of 2 input size, 3, and 6 nodes in each of the 2 hidden size, and 1 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 2 input size, 3, and 6 nodes in each of the 2 hidden size, and 1 output size ",
+70,"Represent below as a Python list.
+
+DL model consist of 3 3 x 3 convolutional layers and 3 2 x 2 average pooling layers, 1, 512, and 256 nodes in each of the 8 hidden elements, and 64 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 3 3 x 3 convolutional layers and 3 2 x 2 average pooling layers, 1, 512, and 256 nodes in each of the 8 hidden elements, and 64 output elements ",
+71,"Represent below as a Python list.
+
+A deep learning model with convolutional layer (output is 28 x 28), and 2 x 2 average pooling layer, then convolutional layer (output is 13 x 13), and 2 x 2 max pooling layer, then conv layer (output is 5 x 5), 2 x 2 average pooling layer, then 1, 512, and 256 nodes in each of the 8 hidden elements, and 64 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with convolutional layer (output is 28 x 28), and 2 x 2 average pooling layer, then convolutional layer (output is 13 x 13), and 2 x 2 max pooling layer, then conv layer (output is 5 x 5), 2 x 2 average pooling layer, then 1, 512, and 256 nodes in each of the 8 hidden elements, and 64 output size ",
+72,"Represent below as a Python list.
+
+neural network consist of 3 3 x 3 convolutional layers and 3 2 x 2 average pooling layers, then and 2 nodes in each of the 6 hidden elements, and 64 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 3 3 x 3 convolutional layers and 3 2 x 2 average pooling layers, then and 2 nodes in each of the 6 hidden elements, and 64 output elements ",
+73,"Represent below as a Python list.
+
+DL model consist of 2 input layer nodes, and 1 nodes in each of the 1 hidden nodes, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 2 input layer nodes, and 1 nodes in each of the 1 hidden nodes, and 1 output nodes ",
+74,"Represent below as a Python list.
+
+DL model with 6 3 x 3 convolutional layers and 6 2 x 2 average pooling layers, then 2, and 512 nodes in each of the 13 hidden size, and 128 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 6 3 x 3 convolutional layers and 6 2 x 2 average pooling layers, then 2, and 512 nodes in each of the 13 hidden size, and 128 output nodes ",
+75,"Represent below as a Python list.
+
+neural network with conv layer (output is 28 x 28), and 2 x 2 max pooling layer, convolutional layer (output: 13 x 13 feature map), and then 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 max pooling layer, then 1, 256, and 64 nodes in each of the 8 hidden size, and 16 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with conv layer (output is 28 x 28), and 2 x 2 max pooling layer, convolutional layer (output: 13 x 13 feature map), and then 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 max pooling layer, then 1, 256, and 64 nodes in each of the 8 hidden size, and 16 output elements ",
+76,"Represent below as a Python list.
+
+DL model with 5 input nodes, 6, and 6 nodes in each of the 2 hidden nodes, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 5 input nodes, 6, and 6 nodes in each of the 2 hidden nodes, and 1 output layer nodes ",
+77,"Represent below as a Python list.
+
+NN consist of conv layer (output: 64 x 64 feature map), 2 x 2 average pooling layer, 3 x 3 conv layer, then 2 x 2 average pooling layer, convolutional layer (output is 14 x 14), then 2 x 2 average pooling layer, conv layer (output: 6 x 6 feature map), and 2 x 2 average pooling layer, then and 2 nodes in each of the 8 hidden size, and 64 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of conv layer (output: 64 x 64 feature map), 2 x 2 average pooling layer, 3 x 3 conv layer, then 2 x 2 average pooling layer, convolutional layer (output is 14 x 14), then 2 x 2 average pooling layer, conv layer (output: 6 x 6 feature map), and 2 x 2 average pooling layer, then and 2 nodes in each of the 8 hidden size, and 64 output elements ",
+78,"Represent below as a Python list.
+
+NN with 3 x 3 convolutional layer, and 2 x 2 average pooling layer, 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, convolutional layer (output: 14 x 14 feature map), then 2 x 2 max pooling layer, then conv layer (output: 6 x 6 feature map), and 2 x 2 average pooling layer, then and 2 nodes in each of the 8 hidden elements, and 256 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 3 x 3 convolutional layer, and 2 x 2 average pooling layer, 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, convolutional layer (output: 14 x 14 feature map), then 2 x 2 max pooling layer, then conv layer (output: 6 x 6 feature map), and 2 x 2 average pooling layer, then and 2 nodes in each of the 8 hidden elements, and 256 output layer nodes ",
+79,"Represent below as a Python list.
+
+neural network of 3 input size, 1, 6, and 6 nodes in each of the 3 hidden nodes, and 2 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of 3 input size, 1, 6, and 6 nodes in each of the 3 hidden nodes, and 2 output layer nodes ",
+80,"Represent below as a Python list.
+
+NN with 2 input layer nodes, 1, and 6 nodes in each of the 2 hidden layer nodes, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 2 input layer nodes, 1, and 6 nodes in each of the 2 hidden layer nodes, and 1 output elements ",
+81,"Represent below as a Python list.
+
+neural network of 3 input layer nodes, and 1 nodes in each of the 1 hidden layer nodes, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of 3 input layer nodes, and 1 nodes in each of the 1 hidden layer nodes, and 1 output elements ",
+82,"Represent below as a Python list.
+
+neural network of 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, conv layer (output is 13 x 13), then 2 x 2 average pooling layer, then conv layer (output: 5 x 5 feature map), and then 2 x 2 max pooling layer, then 1, 256, and 64 nodes in each of the 8 nodes, and 16 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, conv layer (output is 13 x 13), then 2 x 2 average pooling layer, then conv layer (output: 5 x 5 feature map), and then 2 x 2 max pooling layer, then 1, 256, and 64 nodes in each of the 8 nodes, and 16 output nodes ",
+83,"Represent below as a Python list.
+
+NN consist of 3 input layer nodes, and 1 nodes in each of the 1 nodes, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of 3 input layer nodes, and 1 nodes in each of the 1 nodes, and 1 output nodes ",
+84,"Represent below as a Python list.
+
+neural network consist of 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, 2, 512, and 128 nodes in each of the 14 hidden size, and 16 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 6 3 x 3 conv layers and 6 2 x 2 max pooling layers, 2, 512, and 128 nodes in each of the 14 hidden size, and 16 output size ",
+85,"Represent below as a Python list.
+
+NN of conv layer (output: 768 x 768 feature map), and 2 x 2 max pooling layer, then convolutional layer (output is 383 x 383), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, convolutional layer (output: 94 x 94 feature map), and 2 x 2 max pooling layer, conv layer (output is 46 x 46), 2 x 2 average pooling layer, then convolutional layer (output is 22 x 22), then 2 x 2 max pooling layer, 3 x 3 convolutional layer, and 2 x 2 average pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, and 1 nodes in each of the 16 hidden nodes, and 256 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of conv layer (output: 768 x 768 feature map), and 2 x 2 max pooling layer, then convolutional layer (output is 383 x 383), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, convolutional layer (output: 94 x 94 feature map), and 2 x 2 max pooling layer, conv layer (output is 46 x 46), 2 x 2 average pooling layer, then convolutional layer (output is 22 x 22), then 2 x 2 max pooling layer, 3 x 3 convolutional layer, and 2 x 2 average pooling layer, then 3 x 3 convolutional layer, then 2 x 2 max pooling layer, and 1 nodes in each of the 16 hidden nodes, and 256 output size ",
+86,"Represent below as a Python list.
+
+DL model of 2 input size, and 1 nodes in each of the 1 hidden size, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 2 input size, and 1 nodes in each of the 1 hidden size, and 1 output layer nodes ",
+87,"Represent below as a Python list.
+
+A deep learning model of 3 input layer nodes, 1, 3, and 4 nodes in each of the 3 hidden size, and 2 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 3 input layer nodes, 1, 3, and 4 nodes in each of the 3 hidden size, and 2 output elements ",
+88,"Represent below as a Python list.
+
+neural network of 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 3 x 3 convolutional layer, and 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 average pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, convolutional layer (output is 5 x 5), 2 x 2 max pooling layer, 1, and 512 nodes in each of the 13 hidden elements, and 64 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 3 x 3 convolutional layer, and 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 average pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, convolutional layer (output is 5 x 5), 2 x 2 max pooling layer, 1, and 512 nodes in each of the 13 hidden elements, and 64 output nodes ",
+89,"Represent below as a Python list.
+
+neural network of conv layer (output is 28 x 28), 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then conv layer (output is 5 x 5), and 2 x 2 max pooling layer, then 1, and 256 nodes in each of the 7 hidden size, and 32 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of conv layer (output is 28 x 28), 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then conv layer (output is 5 x 5), and 2 x 2 max pooling layer, then 1, and 256 nodes in each of the 7 hidden size, and 32 output size ",
+90,"Represent below as a Python list.
+
+NN consist of 8 3 x 3 convolutional layers and 8 2 x 2 max pooling layers, then 1, and 512 nodes in each of the 17 hidden size, and 64 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of 8 3 x 3 convolutional layers and 8 2 x 2 max pooling layers, then 1, and 512 nodes in each of the 17 hidden size, and 64 output size ",
+91,"Represent below as a Python list.
+
+A deep learning model of 7 3 x 3 conv layers and 7 2 x 2 average pooling layers, 2, and 512 nodes in each of the 15 hidden size, and 128 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 7 3 x 3 conv layers and 7 2 x 2 average pooling layers, 2, and 512 nodes in each of the 15 hidden size, and 128 output nodes ",
+92,"Represent below as a Python list.
+
+A deep learning model with conv layer (output is 512 x 512), and 2 x 2 average pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, and then 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 average pooling layer, then convolutional layer (output is 30 x 30), then 2 x 2 max pooling layer, then convolutional layer (output is 14 x 14), and 2 x 2 average pooling layer, convolutional layer (output: 6 x 6 feature map), and then 2 x 2 average pooling layer, 2, and 1024 nodes in each of the 15 hidden nodes, and 256 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with conv layer (output is 512 x 512), and 2 x 2 average pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, and then 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 average pooling layer, then convolutional layer (output is 30 x 30), then 2 x 2 max pooling layer, then convolutional layer (output is 14 x 14), and 2 x 2 average pooling layer, convolutional layer (output: 6 x 6 feature map), and then 2 x 2 average pooling layer, 2, and 1024 nodes in each of the 15 hidden nodes, and 256 output size ",
+93,"Represent below as a Python list.
+
+DL model with conv layer (output is 28 x 28), 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 average pooling layer, convolutional layer (output is 5 x 5), and then 2 x 2 max pooling layer, then and 1 nodes in each of the 6 hidden size, and 128 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with conv layer (output is 28 x 28), 2 x 2 max pooling layer, then 3 x 3 conv layer, then 2 x 2 average pooling layer, convolutional layer (output is 5 x 5), and then 2 x 2 max pooling layer, then and 1 nodes in each of the 6 hidden size, and 128 output elements ",
+94,"Represent below as a Python list.
+
+NN of 5 input elements, 6, and 4 nodes in each of the 2 hidden nodes, and 2 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 5 input elements, 6, and 4 nodes in each of the 2 hidden nodes, and 2 output elements ",
+95,"Represent below as a Python list.
+
+A deep learning model consist of 4 input nodes, 1, and 4 nodes in each of the 2 hidden layer nodes, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 4 input nodes, 1, and 4 nodes in each of the 2 hidden layer nodes, and 2 output size ",
+96,"Represent below as a Python list.
+
+NN consist of 5 input size, and 1 nodes in each of the 1 hidden layer nodes, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of 5 input size, and 1 nodes in each of the 1 hidden layer nodes, and 1 output elements ",
+97,"Represent below as a Python list.
+
+neural network of conv layer (output is 256 x 256), and 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 max pooling layer, then conv layer (output is 62 x 62), and then 2 x 2 max pooling layer, 3 x 3 convolutional layer, then 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, 2, and 512 nodes in each of the 13 hidden nodes, and 64 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network of conv layer (output is 256 x 256), and 2 x 2 average pooling layer, then 3 x 3 conv layer, 2 x 2 max pooling layer, then conv layer (output is 62 x 62), and then 2 x 2 max pooling layer, 3 x 3 convolutional layer, then 2 x 2 max pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, 2, and 512 nodes in each of the 13 hidden nodes, and 64 output nodes ",
+98,"Represent below as a Python list.
+
+A deep learning model of 7 3 x 3 conv layers and 7 2 x 2 average pooling layers, and 2 nodes in each of the 14 hidden layer nodes, and 64 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 7 3 x 3 conv layers and 7 2 x 2 average pooling layers, and 2 nodes in each of the 14 hidden layer nodes, and 64 output elements ",
+99,"Represent below as a Python list.
+
+neural network with 3 input layer nodes, 5, 7, and 3 nodes in each of the 3 hidden size, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with 3 input layer nodes, 5, 7, and 3 nodes in each of the 3 hidden size, and 1 output nodes ",
+100,"Represent below as a Python list.
+
+DL model of 6 input layer nodes, 6, and 6 nodes in each of the 2 hidden layer nodes, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 6 input layer nodes, 6, and 6 nodes in each of the 2 hidden layer nodes, and 2 output size ",
+101,"Represent below as a Python list.
+
+NN with 8 3 x 3 conv layers and 8 2 x 2 average pooling layers, then 1, 512, and 128 nodes in each of the 18 nodes, and 16 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN with 8 3 x 3 conv layers and 8 2 x 2 average pooling layers, then 1, 512, and 128 nodes in each of the 18 nodes, and 16 output layer nodes ",
+102,"Represent below as a Python list.
+
+neural network consist of 3 3 x 3 convolutional layers and 3 2 x 2 max pooling layers, 1, and 256 nodes in each of the 7 hidden elements, and 32 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of 3 3 x 3 convolutional layers and 3 2 x 2 max pooling layers, 1, and 256 nodes in each of the 7 hidden elements, and 32 output nodes ",
+103,"Represent below as a Python list.
+
+A deep learning model of 3 x 3 convolutional layer, and 2 x 2 max pooling layer, then conv layer (output is 383 x 383), and 2 x 2 max pooling layer, then 3 x 3 conv layer, and then 2 x 2 max pooling layer, convolutional layer (output is 94 x 94), and 2 x 2 max pooling layer, 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, then conv layer (output: 22 x 22 feature map), and then 2 x 2 average pooling layer, then convolutional layer (output is 10 x 10), and then 2 x 2 average pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, 1, 512, and 256 nodes in each of the 18 hidden layer nodes, and 64 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 3 x 3 convolutional layer, and 2 x 2 max pooling layer, then conv layer (output is 383 x 383), and 2 x 2 max pooling layer, then 3 x 3 conv layer, and then 2 x 2 max pooling layer, convolutional layer (output is 94 x 94), and 2 x 2 max pooling layer, 3 x 3 convolutional layer, and then 2 x 2 max pooling layer, then conv layer (output: 22 x 22 feature map), and then 2 x 2 average pooling layer, then convolutional layer (output is 10 x 10), and then 2 x 2 average pooling layer, 3 x 3 conv layer, 2 x 2 max pooling layer, 1, 512, and 256 nodes in each of the 18 hidden layer nodes, and 64 output nodes ",
+104,"Represent below as a Python list.
+
+DL model consist of 3 x 3 convolutional layer, and 2 x 2 average pooling layer, conv layer (output is 13 x 13), 2 x 2 average pooling layer, then conv layer (output is 5 x 5), and then 2 x 2 max pooling layer, then 1, and 256 nodes in each of the 7 nodes, and 32 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 3 x 3 convolutional layer, and 2 x 2 average pooling layer, conv layer (output is 13 x 13), 2 x 2 average pooling layer, then conv layer (output is 5 x 5), and then 2 x 2 max pooling layer, then 1, and 256 nodes in each of the 7 nodes, and 32 output nodes ",
+105,"Represent below as a Python list.
+
+DL model with 5 input elements, 5, and 3 nodes in each of the 2 hidden layer nodes, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 5 input elements, 5, and 3 nodes in each of the 2 hidden layer nodes, and 1 output elements ",
+106,"Represent below as a Python list.
+
+A deep learning model of 3 x 3 conv layer, and 2 x 2 average pooling layer, then conv layer (output is 255 x 255), and 2 x 2 average pooling layer, then 3 x 3 convolutional layer, then 2 x 2 average pooling layer, then conv layer (output: 62 x 62 feature map), 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, and then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 2, 512, and 256 nodes in each of the 16 hidden layer nodes, and 64 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model of 3 x 3 conv layer, and 2 x 2 average pooling layer, then conv layer (output is 255 x 255), and 2 x 2 average pooling layer, then 3 x 3 convolutional layer, then 2 x 2 average pooling layer, then conv layer (output: 62 x 62 feature map), 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and then 2 x 2 average pooling layer, then 3 x 3 conv layer, and then 2 x 2 max pooling layer, then 3 x 3 convolutional layer, 2 x 2 average pooling layer, then 2, 512, and 256 nodes in each of the 16 hidden layer nodes, and 64 output nodes ",
+107,"Represent below as a Python list.
+
+DL model with 8 3 x 3 convolutional layers and 8 2 x 2 average pooling layers, then 1, and 512 nodes in each of the 17 hidden elements, and 64 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model with 8 3 x 3 convolutional layers and 8 2 x 2 average pooling layers, then 1, and 512 nodes in each of the 17 hidden elements, and 64 output elements ",
+108,"Represent below as a Python list.
+
+DL model of 5 input layer nodes, and 1 nodes in each of the 1 nodes, and 1 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 5 input layer nodes, and 1 nodes in each of the 1 nodes, and 1 output nodes ",
+109,"Represent below as a Python list.
+
+A deep learning model consist of 3 input layer nodes, 1, and 4 nodes in each of the 2 hidden layer nodes, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model consist of 3 input layer nodes, 1, and 4 nodes in each of the 2 hidden layer nodes, and 1 output layer nodes ",
+110,"Represent below as a Python list.
+
+neural network with 5 input size, and 1 nodes in each of the 1 hidden elements, and 1 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network with 5 input size, and 1 nodes in each of the 1 hidden elements, and 1 output size ",
+111,"Represent below as a Python list.
+
+NN of 6 input size, 5, 5, and 5 nodes in each of the 3 hidden elements, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of 6 input size, 5, 5, and 5 nodes in each of the 3 hidden elements, and 2 output nodes ",
+112,"Represent below as a Python list.
+
+DL model consist of 4 input size, 2, and 2 nodes in each of the 2 hidden nodes, and 2 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 4 input size, 2, and 2 nodes in each of the 2 hidden nodes, and 2 output size ",
+113,"Represent below as a Python list.
+
+neural network consist of convolutional layer (output is 28 x 28), and then 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then conv layer (output: 5 x 5 feature map), then 2 x 2 average pooling layer, then 1, 512, and 256 nodes in each of the 8 hidden elements, and 64 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","neural network consist of convolutional layer (output is 28 x 28), and then 2 x 2 max pooling layer, 3 x 3 conv layer, then 2 x 2 max pooling layer, then conv layer (output: 5 x 5 feature map), then 2 x 2 average pooling layer, then 1, 512, and 256 nodes in each of the 8 hidden elements, and 64 output layer nodes ",
+114,"Represent below as a Python list.
+
+NN of convolutional layer (output is 28 x 28), and then 2 x 2 max pooling layer, then 3 x 3 conv layer, and 2 x 2 max pooling layer, then convolutional layer (output is 5 x 5), 2 x 2 average pooling layer, 1, 512, and 128 nodes in each of the 8 hidden elements, and 16 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN of convolutional layer (output is 28 x 28), and then 2 x 2 max pooling layer, then 3 x 3 conv layer, and 2 x 2 max pooling layer, then convolutional layer (output is 5 x 5), 2 x 2 average pooling layer, 1, 512, and 128 nodes in each of the 8 hidden elements, and 16 output size ",
+115,"Represent below as a Python list.
+
+DL model of conv layer (output is 28 x 28), then 2 x 2 average pooling layer, then conv layer (output is 13 x 13), and 2 x 2 average pooling layer, conv layer (output is 5 x 5), and 2 x 2 max pooling layer, then 1, and 1024 nodes in each of the 7 hidden elements, and 256 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of conv layer (output is 28 x 28), then 2 x 2 average pooling layer, then conv layer (output is 13 x 13), and 2 x 2 average pooling layer, conv layer (output is 5 x 5), and 2 x 2 max pooling layer, then 1, and 1024 nodes in each of the 7 hidden elements, and 256 output nodes ",
+116,"Represent below as a Python list.
+
+DL model consist of 4 input size, 2, 5, and 4 nodes in each of the 3 hidden elements, and 2 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model consist of 4 input size, 2, 5, and 4 nodes in each of the 3 hidden elements, and 2 output elements ",
+117,"Represent below as a Python list.
+
+A deep learning model with 3 3 x 3 conv layers and 3 2 x 2 average pooling layers, then 2, 256, and 64 nodes in each of the 8 hidden elements, and 16 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","A deep learning model with 3 3 x 3 conv layers and 3 2 x 2 average pooling layers, then 2, 256, and 64 nodes in each of the 8 hidden elements, and 16 output size ",
+118,"Represent below as a Python list.
+
+NN consist of convolutional layer (output is 28 x 28), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and 2 x 2 average pooling layer, conv layer (output is 5 x 5), and then 2 x 2 max pooling layer, then 1, 256, and 64 nodes in each of the 8 hidden nodes, and 16 output size in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","NN consist of convolutional layer (output is 28 x 28), and 2 x 2 max pooling layer, then 3 x 3 convolutional layer, and 2 x 2 average pooling layer, conv layer (output is 5 x 5), and then 2 x 2 max pooling layer, then 1, 256, and 64 nodes in each of the 8 hidden nodes, and 16 output size ",
+119,"Represent below as a Python list.
+
+DL model of 6 input size, 1, 7, and 3 nodes in each of the 3 hidden size, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","DL model of 6 input size, 1, 7, and 3 nodes in each of the 3 hidden size, and 1 output elements ",
