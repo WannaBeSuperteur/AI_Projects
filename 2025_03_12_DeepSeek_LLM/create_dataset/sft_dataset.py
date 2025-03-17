@@ -12,7 +12,7 @@ import common
 # - sft_dataset.csv 파일에 SFT dataset 저장
 
 def generate_sft_dataset():
-    dl_dataset = common.generate_dl_model_dataset(dataset_size=120)
+    dl_dataset = common.generate_dl_model_dataset(dataset_size=200)
     dataset = pd.concat([dl_dataset], axis=0)
 
     dataset.to_csv('sft_dataset.csv')

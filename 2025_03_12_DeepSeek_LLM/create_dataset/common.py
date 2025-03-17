@@ -1,8 +1,8 @@
 import pandas as pd
 import random
 
-MAX_PROMPT_SEED = 999999
-MAX_MODEL_STRUCTURE_SEED = 999999
+MAX_PROMPT_SEED = 9999999
+MAX_MODEL_STRUCTURE_SEED = 9999999
 
 
 # for prompt engineering
@@ -25,7 +25,7 @@ It is important to draw a representation of high readability."""
 # Last Update Date : -
 
 # Arguments:
-# - layer_config_seed (int) : 레이어 구성을 나타내는 int 값 (0 - 999,999)
+# - layer_config_seed (int) : 레이어 구성을 나타내는 int 값 (0 - 9,999,999)
 
 # Returns:
 # - layer_type (list(str)) : 딥러닝 모델의 각 레이어의 종류
@@ -34,8 +34,8 @@ It is important to draw a representation of high readability."""
 def generate_model_structure(layer_config_seed):
 
     # Dense
-    if layer_config_seed % 2 == 0:
-        dense_config_seed = layer_config_seed // 2
+    if layer_config_seed % 3 == 0:
+        dense_config_seed = layer_config_seed // 3
 
         # input layer
         input_nodes = dense_config_seed % 5 + 2
@@ -63,7 +63,7 @@ def generate_model_structure(layer_config_seed):
 
     # Conv. + Pool. + Dense (Convolutional Neural Network)
     else:
-        conv_config_seed = layer_config_seed // 2
+        conv_config_seed = layer_config_seed // 3
 
         # input layer
         input_sizes = [28, 32, 64, 128, 224, 256, 512, 768]
@@ -100,7 +100,7 @@ def generate_model_structure(layer_config_seed):
         # output layer
         output_nodes = (layer_config_seed // (8 * 3 * 3 * 4)) % 2 + 1
 
-        layer_type = ['conv', 'pool'] * conv_pool_cnt + ['dense'] * (hidden_layers + 1)
+        layer_type = [input_size] + ['conv', 'pool'] * conv_pool_cnt + ['dense'] * (hidden_layers + 1)
         layer_size = [input_size] + conv_pool_size + hidden_nodes + [output_nodes]
 
     return layer_type, layer_size
@@ -111,7 +111,7 @@ def generate_model_structure(layer_config_seed):
 # Last Update Date : -
 
 # Arguments:
-# - prompt_seed (int)       : 프롬프트 종류를 나타내는 int 값 (0 - 999,999)
+# - prompt_seed (int)       : 프롬프트 종류를 나타내는 int 값 (0 - 9,999,999)
 # - layer_type  (list(str)) : 딥러닝 모델의 각 레이어의 종류
 # - layer_size  (list(int)) : 딥러닝 모델의 각 레이어의 크기 (node 개수 or feature map 크기)
 
@@ -124,7 +124,7 @@ def generate_prompt(prompt_seed, layer_type, layer_size):
     user_prompt_part1_candidates = ['with', 'of', 'consist of']
 
     input_node_names = ['input layer nodes', 'input nodes', 'input elements', 'input size']
-    hidden_node_names = ['hidden layer nodes', 'hidden nodes', 'nodes', 'hidden elements', 'hidden size']
+    hidden_layer_names = ['hidden layers', 'hiddens', 'intermediate layers', 'hidden layer', 'mid layers']
     output_node_names = ['output layer nodes', 'output nodes', 'output elements', 'output size']
 
     user_prompt = (user_prompt_part0_candidates[prompt_seed % 4] + ' ' +
@@ -139,6 +139,7 @@ def generate_prompt(prompt_seed, layer_type, layer_size):
         additional_then = "then " if random.random() < 0.5 else ""
         additional_and_then = additional_and + additional_then
 
+        # Conv. or Pool. layer
         if t in ['conv', 'pool']:
             conv = "convolutional" if random.random() < 0.5 else "conv"
             pooling_type = "max" if random.random() < 0.5 else "average"
@@ -152,28 +153,71 @@ def generate_prompt(prompt_seed, layer_type, layer_size):
                     user_prompt += f'{conv_layers} 3 x 3 {conv} layers and {pool_layers} 2 x 2 {pooling_type} pooling layers, {additional_then}'
 
             else:
+                r = random.random()
+
+                # Convolutional Layer
                 if t == 'conv':
-                    if random.random() < 0.4:
+                    if r < 0.2:
+                        user_prompt += f'{conv} layer, {additional_and_then}'
+                    elif r < 0.35:
                         user_prompt += f'3 x 3 {conv} layer, {additional_and_then}'
-                    elif random.random() < 0.7:
+                    elif r < 0.5:
+                        user_prompt += f'3x3 {conv} layer, {additional_and_then}'
+                    elif r < 0.65:
+                        user_prompt += f'3 * 3 {conv} layer, {additional_and_then}'
+                    elif r < 0.8:
+                        user_prompt += f'3*3 {conv} layer, {additional_and_then}'
+                    elif r < 0.9:
                         user_prompt += f'{conv} layer (output is {s} x {s}), {additional_and_then}'
                     else:
                         user_prompt += f'{conv} layer (output: {s} x {s} feature map), {additional_and_then}'
 
+                # Pooling Layer
                 elif t == 'pool':
-                    user_prompt += f'2 x 2 {pooling_type} pooling layer, {additional_then}'
+                    if r < 0.3:
+                        user_prompt += f'{pooling_type} pooling layer, {additional_then}'
+                    elif r < 0.475:
+                        user_prompt += f'2 x 2 {pooling_type} pooling layer, {additional_then}'
+                    elif r < 0.65:
+                        user_prompt += f'2x2 {pooling_type} pooling layer, {additional_then}'
+                    elif r < 0.825:
+                        user_prompt += f'2 * 2 {pooling_type} pooling layer, {additional_then}'
+                    else:
+                        user_prompt += f'2*2 {pooling_type} pooling layer, {additional_then}'
 
+        # input layer (dense)
         elif idx == 0:
             user_prompt += f'{s} {input_node_names[(prompt_seed // (4 * 3)) % 4]}, '
 
+        # output layer (dense)
         elif idx == len(layer_type) - 1:
             user_prompt += f'and {s} {output_node_names[(prompt_seed // (4 * 3 * 4 * 5)) % 4]} '
 
+        # last hidden layer (dense)
         elif idx == len(layer_type) - 2:
-            user_prompt += f'and {s} nodes in each of the {len(layer_type) - 2} {hidden_node_names[(prompt_seed // (4 * 3 * 4)) % 5]}, '
+            if idx == 1 or layer_type[idx - 1] in ['conv', 'pool']:  # only one hidden layer
+                user_prompt += f'and {s} nodes in {hidden_layer_names[(prompt_seed // (4 * 3 * 4)) % 5]}, '
+            else:
+                r = random.random()
+                additional_and = "and " if random.random() < 0.5 else ""
+                hidden_layer_name = hidden_layer_names[(prompt_seed // (4 * 3 * 4)) % 5]
+                hidden_layer_cnt = (len(layer_type) - 2) - (layer_type.count('conv') + layer_type.count('pool'))
 
+                if r < 0.25:
+                    user_prompt += f'{additional_and}{s} nodes in each of the {hidden_layer_cnt} {hidden_layer_name}, '
+                elif r < 0.5:
+                    user_prompt += f'{additional_and}{s} nodes in the {hidden_layer_name}, '
+                elif r < 0.75:
+                    user_prompt += f'{additional_and}{s} nodes in {hidden_layer_cnt} {hidden_layer_name}, '
+                else:
+                    user_prompt += f'{additional_and}{s} nodes in {hidden_layer_name}, '
+
+        # hidden layer (dense)
         else:
-            user_prompt += f'{s}, '
+            if random.random() < 0.5:
+                user_prompt += f'{s}, '
+            else:
+                user_prompt += f'{s} '
 
     entire_prompt = PROMPT_PREFIX + user_prompt + PROMPT_SUFFIX
     return entire_prompt, user_prompt

@@ -12,7 +12,7 @@ import common
 # - orpo_dataset.csv 파일에 ORPO dataset 저장
 
 def generate_orpo_dataset():
-    dl_dataset = common.generate_dl_model_dataset(dataset_size=240)
+    dl_dataset = common.generate_dl_model_dataset(dataset_size=320)
     dataset = pd.concat([dl_dataset], axis=0)
 
     dataset.to_csv('orpo_dataset.csv')
