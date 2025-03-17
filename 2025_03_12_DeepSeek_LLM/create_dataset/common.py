@@ -31,7 +31,7 @@ It is important to draw a representation of high readability."""
 # - layer_type (list(str)) : 딥러닝 모델의 각 레이어의 종류
 # - layer_size (list(int)) : 딥러닝 모델의 각 레이어의 크기 (node 개수 or feature map 크기)
 
-def generate_model_structure(layer_config_seed):
+def generate_dl_model_structure(layer_config_seed):
 
     # Dense
     if layer_config_seed % 3 == 0:
@@ -119,7 +119,7 @@ def generate_model_structure(layer_config_seed):
 # - entire_prompt (str) : Deep Learning 모델 구조 관련 학습 데이터셋의 입력 프롬프트
 # - user_prompt   (str) : Prompt Engineering 을 위한 앞뒤 부분을 제외한 순수 유저 프롬프트
 
-def generate_prompt(prompt_seed, layer_type, layer_size):
+def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
     user_prompt_part0_candidates = ['A deep learning model', 'DL model', 'neural network', 'NN']
     user_prompt_part1_candidates = ['with', 'of', 'consist of']
 
@@ -234,7 +234,7 @@ def generate_prompt(prompt_seed, layer_type, layer_size):
 # Returns:
 # - model_output (str) : 다이어그램 형식의 텍스트 (draw_diagram/diagram.txt 참고)
 
-def generate_llm_output(layer_type, layer_size):
+def generate_dl_model_llm_output(layer_type, layer_size):
     return ''  # temp
 
 
@@ -257,13 +257,13 @@ def generate_dl_model_dataset(dataset_size):
     for i in range(dataset_size):
 
         # generate user prompt (LLM input)
-        layer_type, layer_size = generate_model_structure(random.randint(0, MAX_MODEL_STRUCTURE_SEED))
-        entire_prompt, user_prompt = generate_prompt(random.randint(0, MAX_PROMPT_SEED), layer_type, layer_size)
+        layer_type, layer_size = generate_dl_model_structure(random.randint(0, MAX_MODEL_STRUCTURE_SEED))
+        entire_prompt, user_prompt = generate_dl_model_prompt(random.randint(0, MAX_PROMPT_SEED), layer_type, layer_size)
         inputs.append(entire_prompt)
         user_prompts.append(user_prompt)
 
         # generate LLM output for training
-        llm_output = generate_llm_output(layer_type, layer_size)
+        llm_output = generate_dl_model_llm_output(layer_type, layer_size)
         outputs.append(llm_output)
 
     dl_dataset = pd.DataFrame({'input_data': inputs, 'user_prompt': user_prompts, 'output_data': outputs})
