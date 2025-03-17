@@ -47,16 +47,16 @@ def generate_dl_model_structure(layer_config_seed):
             hidden_nodes = [(dense_config_seed // (5 * 3)) % 4 + 1]
 
         elif hidden_layers == 2:
-            hidden_nodes = [(dense_config_seed // (5 * 3)) % 6 + 1,
-                            (dense_config_seed // (5 * 3 * 6)) % 6 + 1]
+            hidden_nodes = [(dense_config_seed // (5 * 3)) % 6 + 3,
+                            (dense_config_seed // (5 * 3 * 6)) % 6 + 3]
 
         else:  # hidden_layers == 3
-            hidden_nodes = [(dense_config_seed // (5 * 3)) % 6 + 1,
-                            (dense_config_seed // (5 * 3 * 6)) % 10 + 1,
-                            (dense_config_seed // (5 * 3 * 6 * 10)) % 6 + 1]
+            hidden_nodes = [(dense_config_seed // (5 * 3)) % 6 + 3,
+                            (dense_config_seed // (5 * 3 * 6)) % 6 + 6,
+                            (dense_config_seed // (5 * 3 * 6 * 6)) % 6 + 3]
 
         # output layer
-        output_nodes = (layer_config_seed // (5 * 3 * 6 * 10 * 6)) % 2 + 1
+        output_nodes = (layer_config_seed // (5 * 3 * 6 * 6 * 6)) % 2 + 1
 
         layer_type = ['dense'] * (hidden_layers + 2)
         layer_size = [input_nodes] + hidden_nodes + [output_nodes]
@@ -67,7 +67,7 @@ def generate_dl_model_structure(layer_config_seed):
 
         # input layer
         input_sizes = [28, 32, 64, 128, 224, 256, 512, 768]
-        conv_pool_times = [3, 3, 4, 5, 6, 6, 7, 8]
+        conv_pool_times = [2, 2, 3, 4, 5, 5, 6, 7]
 
         input_size = input_sizes[conv_config_seed % 8]
         conv_pool_cnt = conv_pool_times[conv_config_seed % 8]
@@ -100,7 +100,7 @@ def generate_dl_model_structure(layer_config_seed):
         # output layer
         output_nodes = (layer_config_seed // (8 * 3 * 3 * 4)) % 2 + 1
 
-        layer_type = [input_size] + ['conv', 'pool'] * conv_pool_cnt + ['dense'] * (hidden_layers + 1)
+        layer_type = ['cnn_input'] + ['conv', 'pool'] * conv_pool_cnt + ['dense'] * (hidden_layers + 1)
         layer_size = [input_size] + conv_pool_size + hidden_nodes + [output_nodes]
 
     return layer_type, layer_size
@@ -239,7 +239,7 @@ def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
 # - model_output (str) : 다이어그램 형식의 텍스트 (draw_diagram/diagram.txt 참고)
 
 def generate_dl_model_llm_output(layer_type, layer_size):
-    return ''  # temp
+    return f'type: {layer_type}\nsize: {layer_size}'  # temp
 
 
 # Deep Learning 모델 구조 관련 LLM 학습 데이터셋 생성
