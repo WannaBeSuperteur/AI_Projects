@@ -142,7 +142,11 @@ def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
         # Conv. or Pool. layer
         if t in ['conv', 'pool']:
             conv = "convolutional" if random.random() < 0.5 else "conv"
-            pooling_type = "max" if random.random() < 0.5 else "average"
+
+            if random.random() < 0.4:
+                pooling_type = "max " if random.random() < 0.5 else "average "
+            else:
+                pooling_type = ""
 
             if say_conv_pool_at_once:
                 if not said_conv_pool_once:
@@ -150,7 +154,7 @@ def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
                     conv_layers = layer_type.count('conv')
                     pool_layers = layer_type.count('pool')
 
-                    user_prompt += f'{conv_layers} 3 x 3 {conv} layers and {pool_layers} 2 x 2 {pooling_type} pooling layers, {additional_then}'
+                    user_prompt += f'{conv_layers} 3 x 3 {conv} layers and {pool_layers} 2 x 2 {pooling_type}pooling layers, {additional_then}'
 
             else:
                 r = random.random()
@@ -175,15 +179,15 @@ def generate_dl_model_prompt(prompt_seed, layer_type, layer_size):
                 # Pooling Layer
                 elif t == 'pool':
                     if r < 0.3:
-                        user_prompt += f'{pooling_type} pooling layer, {additional_then}'
+                        user_prompt += f'{pooling_type}pooling layer, {additional_then}'
                     elif r < 0.475:
-                        user_prompt += f'2 x 2 {pooling_type} pooling layer, {additional_then}'
+                        user_prompt += f'2 x 2 {pooling_type}pooling layer, {additional_then}'
                     elif r < 0.65:
-                        user_prompt += f'2x2 {pooling_type} pooling layer, {additional_then}'
+                        user_prompt += f'2x2 {pooling_type}pooling layer, {additional_then}'
                     elif r < 0.825:
-                        user_prompt += f'2 * 2 {pooling_type} pooling layer, {additional_then}'
+                        user_prompt += f'2 * 2 {pooling_type}pooling layer, {additional_then}'
                     else:
-                        user_prompt += f'2*2 {pooling_type} pooling layer, {additional_then}'
+                        user_prompt += f'2*2 {pooling_type}pooling layer, {additional_then}'
 
         # input layer (dense)
         elif idx == 0:
