@@ -2,9 +2,12 @@ import cv2
 import numpy as np
 import math
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
-WIDTH = 1000
-HEIGHT = 600
+from common_values import CANVAS_WIDTH as WIDTH, CANVAS_HEIGHT as HEIGHT
+
 DASH_INTERVAL = 20  # interval for dashed line
 LINE_MARGIN = 4
 

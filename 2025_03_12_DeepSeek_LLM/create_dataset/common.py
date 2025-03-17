@@ -2,6 +2,12 @@ import pandas as pd
 import numpy as np
 import random
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from common_values import CANVAS_WIDTH as WIDTH, CANVAS_HEIGHT as HEIGHT
+
 MAX_PROMPT_SEED = 9999999
 MAX_MODEL_STRUCTURE_SEED = 9999999
 BACKGROUND_COLOR_LIST = [(255, 255, 255), (240, 240, 240), (224, 224, 224), (208, 208, 208),
@@ -10,9 +16,6 @@ BACKGROUND_COLOR_LIST = [(255, 255, 255), (240, 240, 240), (224, 224, 224), (208
 LINE_COLOR_LIST = [(0, 0, 0), (32, 32, 32), (64, 64, 64), (96, 96, 96),
                    (32, 32, 64), (64, 64, 128), (64, 48, 32), (128, 96, 64),
                    (32, 64, 48), (64, 128, 96), (48, 32, 64), (96, 64, 128)]
-
-CANVAS_WIDTH = 1000
-CANVAS_HEIGHT = 600
 
 # for prompt engineering
 PROMPT_PREFIX = "Represent below as a Python list.\n\n"
