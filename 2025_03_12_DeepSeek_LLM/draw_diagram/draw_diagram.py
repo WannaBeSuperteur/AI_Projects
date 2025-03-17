@@ -16,6 +16,7 @@ diagram_dict = {}
 # Create Date : 2025.03.16
 # Last Update Date : 2025.03.17
 # - round_radius, top, left, bottom, right 을 int 로 type cast 적용
+# - circle centers 의 x, y 좌표 순서 버그 수정
 
 # Arguments:
 # - x         (int)   : 도형의 x 좌표
@@ -38,10 +39,10 @@ def draw_round_rectangle(x, y, width, height, color, thickness):
 
     # draw circles
     circle_centers = [
-        (top + round_radius, left + round_radius),     # top-left circle
-        (top + round_radius, right - round_radius),    # top-right circle
-        (bottom - round_radius, left + round_radius),  # bottom-left circle
-        (bottom - round_radius, right - round_radius)  # bottom-right circle
+        (left + round_radius, top + round_radius),     # top-left circle
+        (right - round_radius, top + round_radius),    # top-right circle
+        (left + round_radius, bottom - round_radius),  # bottom-left circle
+        (right - round_radius, bottom - round_radius)  # bottom-right circle
     ]
 
     for circle_center in circle_centers:
