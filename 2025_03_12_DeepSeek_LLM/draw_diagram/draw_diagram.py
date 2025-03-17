@@ -8,11 +8,13 @@ HEIGHT = 600
 DASH_INTERVAL = 20  # interval for dashed arrow
 
 canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
+diagram_dict = {}
 
 
 # Round Rectangle 그리기
 # Create Date : 2025.03.16
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - round_radius, top, left, bottom, right 을 int 로 type cast 적용
 
 # Arguments:
 # - x         (int)   : 도형의 x 좌표
@@ -26,12 +28,12 @@ canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
 # - canvas 에 해당 Round Rectangle 추가
 
 def draw_round_rectangle(x, y, width, height, color, thickness):
-    round_radius = min(0.1 * max(width, height), 0.5 * min(width, height))
+    round_radius = int(min(0.1 * max(width, height), 0.5 * min(width, height)))
 
-    top = y - height / 2
-    left = x - width / 2
-    bottom = y + height / 2
-    right = x + width / 2
+    top = y - int(height / 2)
+    left = x - int(width / 2)
+    bottom = y + int(height / 2)
+    right = x + int(width / 2)
 
     # draw circles
     circle_centers = [
@@ -60,7 +62,9 @@ def draw_round_rectangle(x, y, width, height, color, thickness):
 
 # Diagram 의 도형 생성
 # Create Date : 2025.03.16
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - circle 그릴 때 anti-aliasing 누락 수정 (lineType=cv2.LINE_AA)
+# - rectangle 그릴 때 pt1, pt2 의 좌표를 int 자료형이 되도록 수정
 
 # Arguments:
 # - x      (int)   : 도형의 x 좌표
@@ -88,8 +92,8 @@ def generate_node(x, y, width, height, shape, color):
         # rectangle
         elif 'rect' in shape:
             cv2.rectangle(canvas,
-                          pt1=(x - width / 2, y - height / 2),
-                          pt2=(x + width / 2, y + height / 2),
+                          pt1=(x - int(width / 2), y - int(height / 2)),
+                          pt2=(x + int(width / 2), y + int(height / 2)),
                           color=c,
                           thickness=t)
 
@@ -102,7 +106,8 @@ def generate_node(x, y, width, height, shape, color):
                         startAngle=0,
                         endAngle=360,
                         color=c,
-                        thickness=t)
+                        thickness=t,
+                        lineType=cv2.LINE_AA)
 
 
 # Diagram 의 화살표 생성 시, 화살표의 끝점의 좌표 계산
@@ -158,7 +163,8 @@ def compute_dest_point(x0, y0, x1, y1, dest_shape, dest_width, dest_height):
 
 # Diagram 의 점선 화살표를 그리기 위한 dash dot 의 가로, 세로 성분 길이 구하기
 # Create Date : 2025.03.16
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - dash width, height 계산 버그 수정
 
 # Arguments:
 # - x0     (int)   : 시작점 도형의 x 좌표
@@ -184,14 +190,16 @@ def compute_dash_width_and_height(x0, y0, x_dest, y_dest):
     else:
         angle = math.atan2(y_dest - y0, x_dest - x0)
         dash_width = math.cos(angle) * dash_length
-        dash_height = math.cos(angle) * dash_length
+        dash_height = math.sin(angle) * dash_length
 
     return dash_width, dash_height
 
 
 # Diagram 의 점선 화살표 그리기
 # Create Date : 2025.03.16
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - line 그릴 때 pt1, pt2 의 좌표를 int 자료형이 되도록 수정
+# - dashed line 그리는 반복의 종료 조건 판정 버그 수정
 
 # Arguments:
 # - x0          (int)   : 시작점 도형의 x 좌표
@@ -217,20 +225,21 @@ def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
 
     while True:
         cv2.line(canvas,
-                 pt1=(x, y),
-                 pt2=(x + dash_width, x + dash_height),
+                 pt1=(int(x), int(y)),
+                 pt2=(int(x + dash_width), int(x + dash_height)),
                  color=arrow_color,
                  thickness=1,
                  lineType=cv2.LINE_AA)
 
         x_next = x + 2.0 * dash_width
         y_next = y + 2.0 * dash_height
-        x = x_next
-        y = y_next
 
         # when passed destination point
         if (x - x_dest) * (x_next - x_dest) <= 0 and (y - y_dest) * (y_next - y_dest) <= 0:
             return
+
+        x = x_next
+        y = y_next
 
 
 # Diagram 의 화살표 생성
@@ -270,8 +279,101 @@ def generate_arrow(x0, y0, x1, y1, arrow_shape, arrow_color, dest_shape, dest_wi
         generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color)
 
 
+# 각 line 에서 diagram format 의 텍스트 찾기
+# Create Date : 2025.03.17
+# Last Update Date : -
+
+# Arguments:
+# - line_text (str) : 각 line 의 text 내용
+
+# Returns:
+# - diagram_formats (list(str)) : diagram format 텍스트의 리스트
+
+def find_diagram_formats(line_text):
+    diagram_format_start_idx = 0
+    diagram_formats = []
+    braket_count = 0
+    parentheses_count = 0
+
+    for i in range(len(line_text)):
+        if line_text[i] == '[':
+            braket_count += 1
+            if braket_count == 1:
+                diagram_format_start_idx = i
+
+        elif line_text[i] == ']':
+            braket_count -= 1
+            if braket_count == 0:
+                diagram_format = line_text[diagram_format_start_idx: i + 1]
+                diagram_formats.append(diagram_format)
+
+        elif line_text[i] == '(':
+            parentheses_count += 1
+
+        elif line_text[i] == ')':
+            parentheses_count -= 1
+
+        # (R, G, B) 부분 및 [connected_node1, connected_node2, ...] 부분 처리
+        elif line_text[i] == ',':
+            if parentheses_count == 1:  # (R, G, B) 부분
+                line_text = line_text[:i] + '@' + line_text[i+1:]
+
+            if braket_count == 2:  # [connected_node1, connected_node2, ...] 부분
+                line_text = line_text[:i] + '$' + line_text[i+1:]
+
+    return diagram_formats
+
+
+# 각 line 에서 찾은 diagram format 의 텍스트를 이용하여, 이를 이용하여 diagram dictionary 에 정보 추가
+# Create Date : 2025.03.17
+# Last Update Date : -
+
+# Arguments:
+# - diagram_formats (list(str)) : diagram format 텍스트의 리스트
+
+# Returns:
+# - diagram_dict 에 각각의 diagram format 텍스트의 내용으로부터 추출한 도형 정보를 추가
+
+def add_diagram_info(diagram_formats):
+    global diagram_dict
+
+    for diagram_format in diagram_formats:
+
+        # split by ","
+        diagram_format_split = diagram_format.replace(', ', ',')[1:-1].split(',')
+        node_no = diagram_format_split[0]
+
+        shape_x = int(diagram_format_split[1])
+        shape_y = int(diagram_format_split[2])
+        shape = diagram_format_split[3]
+        shape_width = int(diagram_format_split[4])
+        shape_height = int(diagram_format_split[5])
+
+        arrow_shape = diagram_format_split[6]
+
+        # R-G-B -> B-G-R color format change
+        shape_color_rgb = list(map(int, diagram_format_split[7][1:-1].replace('@ ', '@').split('@')))
+        arrow_color_rgb = list(map(int, diagram_format_split[8][1:-1].replace('@ ', '@').split('@')))
+        shape_color = (shape_color_rgb[2], shape_color_rgb[1], shape_color_rgb[0])
+        arrow_color = (arrow_color_rgb[2], arrow_color_rgb[1], arrow_color_rgb[0])
+
+        connected_nodes = diagram_format_split[9][1:-1].replace('$ ', '$').split('$')
+
+        diagram_dict[node_no] = {
+            'shape_x': shape_x,
+            'shape_y': shape_y,
+            'shape': shape,
+            'shape_width': shape_width,
+            'shape_height': shape_height,
+            'arrow_shape': arrow_shape,
+            'shape_color': shape_color,
+            'arrow_color': arrow_color,
+            'connected_nodes': connected_nodes
+        }
+
+
 # 각 line 을 읽고, 해당 line 의 정보를 이용하여 Diagram 에 도형 및 화살표 추가
-# Create Date : 2025.03.15
+# Create Date : 2025.03.17
 # Last Update Date : -
 
 # Arguments:
@@ -280,29 +382,54 @@ def generate_arrow(x0, y0, x1, y1, arrow_shape, arrow_color, dest_shape, dest_wi
 # Returns:
 # - canvas 에 해당 line 과 관련된 도형 추가
 
+# 참고:
+# - LLM 보안 (프롬프트를 이용한 해킹) 등의 이슈 우려로 인해 Python 의 eval() 함수를 사용하지 않음
+
 def generate_diagram_each_line(line_text):
+    global diagram_dict
 
     # remove quotes
     line_text = line_text.replace('"', '').replace("'", "")
 
     # find diagram shape line format from line text
+    diagram_formats = find_diagram_formats(line_text)
+    add_diagram_info(diagram_formats)
 
-    # split by ","
+    # draw diagram
+    for node_no, info in diagram_dict.items():
+        generate_node(x=info['shape_x'],
+                      y=info['shape_y'],
+                      width=info['shape_width'],
+                      height=info['shape_height'],
+                      shape=info['shape'],
+                      color=info['shape_color'])
 
-    # draw shape
+        for connected_node_no in info['connected_nodes']:
+            if connected_node_no in diagram_dict.keys():
+                dest_node_info = diagram_dict[connected_node_no]
 
-    raise NotImplementedError
+                generate_arrow(x0=info['shape_x'],
+                               y0=info['shape_y'],
+                               x1=dest_node_info['shape_x'],
+                               y1=dest_node_info['shape_y'],
+                               arrow_shape=info['arrow_shape'],
+                               arrow_color=info['arrow_color'],
+                               dest_shape=dest_node_info['shape'],
+                               dest_width=dest_node_info['shape_width'],
+                               dest_height=dest_node_info['shape_height'])
 
 
 # 파일을 읽어서 해당 파일에 쓰인 각 line 을 파싱하여 도형 및 화살표 추가
 # Create Date : 2025.03.16
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - 이미지 파일 저장 기능 추가
 
 # Arguments:
 # - file_path (str) : 다이어그램 정보가 텍스트 형태로 저장된 파일 경로
 
 # Returns:
 # - canvas 에 해당 파일의 정보를 이용하여 도형 추가
+# - 해당 canvas 를 이미지 파일로 저장
 
 def generate_diagram(file_path):
     f = open(file_path, 'r')
@@ -314,3 +441,7 @@ def generate_diagram(file_path):
             generate_diagram_each_line(line_text)
         except Exception as e:
             print(f'line {line_idx} : {e}')
+
+    # 파일 저장
+    cv2.imwrite('diagram.png', canvas)
+
