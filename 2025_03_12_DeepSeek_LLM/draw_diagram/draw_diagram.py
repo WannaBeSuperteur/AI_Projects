@@ -455,16 +455,17 @@ def generate_diagram_each_line(line_text):
 # 파일을 읽어서 해당 파일에 쓰인 각 line 을 파싱하여 도형 및 화살표 추가
 # Create Date : 2025.03.16
 # Last Update Date : 2025.03.17
-# - 이미지 파일 저장 기능 추가
+# - 이미지 파일 저장 기능 및 저장 경로 인수 추가
 
 # Arguments:
 # - file_path (str) : 다이어그램 정보가 텍스트 형태로 저장된 파일 경로
+# - save_path (str) : 다이어그램 이미지 저장 경로
 
 # Returns:
 # - canvas 에 해당 파일의 정보를 이용하여 도형 추가
 # - 해당 canvas 를 이미지 파일로 저장
 
-def generate_diagram(file_path):
+def generate_diagram(file_path, save_path):
     f = open(file_path, 'r')
     lines = f.readlines()
     f.close()
@@ -476,5 +477,5 @@ def generate_diagram(file_path):
             print(f'line {line_idx} : {e}')
 
     # 파일 저장
-    cv2.imwrite('diagram.png', canvas)
+    cv2.imwrite(save_path, canvas)
 
