@@ -44,7 +44,12 @@ def draw_round_rectangle(x, y, width, height, color, thickness):
     ]
 
     for circle_center in circle_centers:
-        cv2.circle(canvas, center=circle_center, radius=round_radius, color=color, lineType=cv2.LINE_AA)
+        cv2.circle(canvas,
+                   center=circle_center,
+                   radius=round_radius,
+                   color=color,
+                   thickness=thickness,
+                   lineType=cv2.LINE_AA)
 
     # draw rectangles
     cv2.rectangle(canvas,
@@ -65,6 +70,7 @@ def draw_round_rectangle(x, y, width, height, color, thickness):
 # Last Update Date : 2025.03.17
 # - circle 그릴 때 anti-aliasing 누락 수정 (lineType=cv2.LINE_AA)
 # - rectangle 그릴 때 pt1, pt2 의 좌표를 int 자료형이 되도록 수정
+# - 기타 버그 수정 (도형 그리기 순서 등)
 
 # Arguments:
 # - x      (int)   : 도형의 x 좌표
@@ -80,8 +86,8 @@ def draw_round_rectangle(x, y, width, height, color, thickness):
 def generate_node(x, y, width, height, shape, color):
     global canvas
 
-    colors = [color, (0, 0, 0)]  # background / edge line color
-    thickness = [-1, 1]          # thickness (-1 for background / 1 for edge line)
+    colors = [(0, 0, 0), color]  # edge / background line color
+    thickness = [3, -1]          # thickness (3 for edge line / -1 for background)
 
     for c, t in zip(colors, thickness):
 
@@ -374,7 +380,8 @@ def add_diagram_info(diagram_formats):
 
 # 각 line 을 읽고, 해당 line 의 정보를 이용하여 Diagram 에 도형 및 화살표 추가
 # Create Date : 2025.03.17
-# Last Update Date : -
+# Last Update Date : 2025.03.17
+# - 버그 수정 (도형 그리기 순서 등)
 
 # Arguments:
 # - line_text (str) : 각 line 의 text 내용
@@ -395,15 +402,8 @@ def generate_diagram_each_line(line_text):
     diagram_formats = find_diagram_formats(line_text)
     add_diagram_info(diagram_formats)
 
-    # draw diagram
+    # draw arrows first
     for node_no, info in diagram_dict.items():
-        generate_node(x=info['shape_x'],
-                      y=info['shape_y'],
-                      width=info['shape_width'],
-                      height=info['shape_height'],
-                      shape=info['shape'],
-                      color=info['shape_color'])
-
         for connected_node_no in info['connected_nodes']:
             if connected_node_no in diagram_dict.keys():
                 dest_node_info = diagram_dict[connected_node_no]
@@ -417,6 +417,15 @@ def generate_diagram_each_line(line_text):
                                dest_shape=dest_node_info['shape'],
                                dest_width=dest_node_info['shape_width'],
                                dest_height=dest_node_info['shape_height'])
+
+    # draw diagram
+    for node_no, info in diagram_dict.items():
+        generate_node(x=info['shape_x'],
+                      y=info['shape_y'],
+                      width=info['shape_width'],
+                      height=info['shape_height'],
+                      shape=info['shape'],
+                      color=info['shape_color'])
 
 
 # 파일을 읽어서 해당 파일에 쓰인 각 line 을 파싱하여 도형 및 화살표 추가
