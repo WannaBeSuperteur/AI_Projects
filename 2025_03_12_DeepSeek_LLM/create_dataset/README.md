@@ -21,9 +21,11 @@
 
 * [ORPO (Odd-Ratio Preference Optimization)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_DPO_ORPO.md#3-orpo-odds-ratio-preference-optimization) 용 데이터셋 생성 코드
   * 생성된 데이터셋을 ```orpo_dataset.csv``` 에 저장
-* 총 800 개 규모 데이터셋
+* 다음과 같이 총 800 개 규모 데이터셋을 바탕으로 ORPO 학습 데이터셋 생성
   * 딥러닝 모델 구조 관련 320 개
+    * 80 개는 SFT 이전 생성, 240 개는 SFT 된 LLM 에 의해 생성
   * 기타 480 개
+    * 120 개는 SFT 이전 생성, 360 개는 SFT 된 LLM 에 의해 생성
 
 ## 3. ```common.py``` 설명
 
