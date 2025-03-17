@@ -5,8 +5,8 @@ import math
 
 WIDTH = 1000
 HEIGHT = 600
-DASH_INTERVAL = 20  # interval for dashed arrow
-ARROW_MARGIN = 4
+DASH_INTERVAL = 20  # interval for dashed line
+LINE_MARGIN = 4
 
 canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
 diagram_dict = {}
@@ -138,8 +138,8 @@ def generate_node(x, y, width, height, shape, color):
 def compute_dest_point(x0, y0, x1, y1, dest_shape, dest_width, dest_height):
     x_dest, y_dest = None, None
 
-    width_shift = dest_width / 2 + ARROW_MARGIN
-    height_shift = dest_height / 2 + ARROW_MARGIN
+    width_shift = dest_width / 2 + LINE_MARGIN
+    height_shift = dest_height / 2 + LINE_MARGIN
 
     # round rectangle or rectangle
     if 'rect' in dest_shape:
@@ -209,24 +209,22 @@ def compute_dash_width_and_height(x0, y0, x_dest, y_dest):
     return dash_width, dash_height
 
 
-# Diagram 의 점선 화살표 그리기
+# Diagram 의 점선 그리기
 # Create Date : 2025.03.16
 # Last Update Date : 2025.03.17
-# - line 그릴 때 pt1, pt2 의 좌표를 int 자료형이 되도록 수정
-# - dashed line 그리는 반복의 종료 조건 판정 버그 수정
-# - 기타 버그 수정
+# - 3월 17일 신규 요구사항 (연결선의 종류 변경) 반영
 
 # Arguments:
-# - x0          (int)   : 시작점 도형의 x 좌표
-# - y0          (int)   : 시작점 도형의 y 좌표
-# - x_dest      (float) : 화살표 끝점의 x 좌표
-# - y_dest      (float) : 화살표 끝점의 y 좌표
-# - arrow_color (tuple) : 화살표의 색 (B-G-R 순)
+# - x0         (int)   : 시작점 도형의 x 좌표
+# - y0         (int)   : 시작점 도형의 y 좌표
+# - x_dest     (float) : 점선 끝점의 x 좌표
+# - y_dest     (float) : 점선 끝점의 y 좌표
+# - line_color (tuple) : 점선의 색 (B-G-R 순)
 
 # Returns:
-# - canvas 에 해당 점선 화살표 추가
+# - canvas 에 해당 점선 추가
 
-def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
+def generate_dashed_line(x0, y0, x_dest, y_dest, line_color):
 
     if y0 == y_dest and x0 == x_dest:
         return
@@ -242,7 +240,7 @@ def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
         cv2.line(canvas,
                  pt1=(int(x), int(y)),
                  pt2=(int(x + dash_width), int(y + dash_height)),
-                 color=arrow_color,
+                 color=line_color,
                  thickness=1,
                  lineType=cv2.LINE_AA)
 
@@ -257,18 +255,18 @@ def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
         y = y_next
 
 
-# Diagram 의 화살표 생성
+# Diagram 의 연결선 생성
 # Create Date : 2025.03.16
 # Last Update Date : 2025.03.17
-# - arrow 의 dest point 를 계산된 dest point 로 수정
+# - 3월 17일 신규 요구사항 (연결선의 종류 변경) 반영
 
 # Arguments:
 # - x0          (int)   : 시작점 도형의 x 좌표
 # - y0          (int)   : 시작점 도형의 y 좌표
 # - x1          (int)   : 끝점 도형의 x 좌표
 # - y1          (int)   : 끝점 도형의 y 좌표
-# - arrow_shape (str)   : 화살표의 모양 (실선, 점선 등)
-# - arrow_color (tuple) : 화살표의 색 (B-G-R 순)
+# - line_shape  (str)   : 연결선의 모양 (solid arrow, solid line, dashed line)
+# - line_color  (tuple) : 연결선의 색 (B-G-R 순)
 # - dest_shape  (int)   : 끝점 도형의 모양
 # - dest_width  (int)   : 끝점 도형의 가로 길이
 # - dest_height (int)   : 끝점 도형의 세로 길이
@@ -276,24 +274,33 @@ def generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color):
 # Returns:
 # - canvas 에 해당 화살표 추가
 
-def generate_arrow(x0, y0, x1, y1, arrow_shape, arrow_color, dest_shape, dest_width, dest_height):
+def generate_line(x0, y0, x1, y1, line_shape, line_color, dest_shape, dest_width, dest_height):
     global canvas
 
     x_dest, y_dest = compute_dest_point(x0, y0, x1, y1, dest_shape, dest_width, dest_height)
 
     # solid arrow
-    if 'solid' in arrow_shape:
+    if 'solid' in line_shape and 'arrow' in line_shape:
         cv2.arrowedLine(canvas,
                         pt1=(x0, y0),
                         pt2=(int(x_dest), int(y_dest)),
-                        color=arrow_color,
+                        color=line_color,
                         thickness=1,
                         line_type=cv2.LINE_AA,
                         tipLength=0.05)
 
-    # dotted (dashed) arrow
-    elif 'dot' in arrow_shape or 'dash' in arrow_shape:
-        generate_dashed_arrow(x0, y0, x_dest, y_dest, arrow_color)
+    # solid line
+    elif 'solid' in line_shape and 'line' in line_shape:
+        cv2.line(canvas,
+                 pt1=(x0, y0),
+                 pt2=(int(x_dest), int(y_dest)),
+                 color=line_color,
+                 thickness=1,
+                 lineType=cv2.LINE_AA)
+
+    # dotted (dashed) line
+    elif 'dash' in line_shape or 'dot' in line_shape:
+        generate_dashed_line(x0, y0, x_dest, y_dest, line_color)
 
 
 # 각 line 에서 diagram format 의 텍스트 찾기
@@ -366,13 +373,13 @@ def add_diagram_info(diagram_formats):
         shape_width = int(diagram_format_split[4])
         shape_height = int(diagram_format_split[5])
 
-        arrow_shape = diagram_format_split[6]
+        line_shape = diagram_format_split[6]
 
         # R-G-B -> B-G-R color format change
         shape_color_rgb = list(map(int, diagram_format_split[7][1:-1].replace('@ ', '@').split('@')))
-        arrow_color_rgb = list(map(int, diagram_format_split[8][1:-1].replace('@ ', '@').split('@')))
+        line_color_rgb = list(map(int, diagram_format_split[8][1:-1].replace('@ ', '@').split('@')))
         shape_color = (shape_color_rgb[2], shape_color_rgb[1], shape_color_rgb[0])
-        arrow_color = (arrow_color_rgb[2], arrow_color_rgb[1], arrow_color_rgb[0])
+        line_color = (line_color_rgb[2], line_color_rgb[1], line_color_rgb[0])
 
         connected_nodes = diagram_format_split[9][1:-1].replace('$ ', '$').split('$')
 
@@ -382,9 +389,9 @@ def add_diagram_info(diagram_formats):
             'shape': shape,
             'shape_width': shape_width,
             'shape_height': shape_height,
-            'arrow_shape': arrow_shape,
+            'line_shape': line_shape,
             'shape_color': shape_color,
-            'arrow_color': arrow_color,
+            'line_color': line_color,
             'connected_nodes': connected_nodes
         }
 
@@ -413,7 +420,7 @@ def generate_diagram_each_line(line_text):
     diagram_formats = find_diagram_formats(line_text)
     add_diagram_info(diagram_formats)
 
-    # draw arrows first
+    # draw lines first
     for node_no, info in diagram_dict.items():
         for connected_node_no in info['connected_nodes']:
 
@@ -424,15 +431,15 @@ def generate_diagram_each_line(line_text):
             if connected_node_no in diagram_dict.keys():
                 dest_node_info = diagram_dict[connected_node_no]
 
-                generate_arrow(x0=info['shape_x'],
-                               y0=info['shape_y'],
-                               x1=dest_node_info['shape_x'],
-                               y1=dest_node_info['shape_y'],
-                               arrow_shape=info['arrow_shape'],
-                               arrow_color=info['arrow_color'],
-                               dest_shape=dest_node_info['shape'],
-                               dest_width=dest_node_info['shape_width'],
-                               dest_height=dest_node_info['shape_height'])
+                generate_line(x0=info['shape_x'],
+                              y0=info['shape_y'],
+                              x1=dest_node_info['shape_x'],
+                              y1=dest_node_info['shape_y'],
+                              line_shape=info['line_shape'],
+                              line_color=info['line_color'],
+                              dest_shape=dest_node_info['shape'],
+                              dest_width=dest_node_info['shape_width'],
+                              dest_height=dest_node_info['shape_height'])
 
     # draw diagram
     for node_no, info in diagram_dict.items():
