@@ -132,7 +132,7 @@ def generate_dl_model_structure(layer_config_seed):
 # Last Update Date : -
 
 # Arguments:
-# - prompt_seed (int)       : 프롬프트 종류를 나타내는 int 값 (0 - 9,999,999)
+# - prompt_seed (int)       : 프롬프트 형식을 나타내는 int 값 (0 - 9,999,999)
 # - layer_types (list(str)) : 딥러닝 모델의 각 레이어의 종류
 # - layer_sizes (list(int)) : 딥러닝 모델의 각 레이어의 크기 (node 개수 or feature map 크기)
 
@@ -392,7 +392,7 @@ def generate_dl_model_llm_output_of_layer(layer_idx, layer_property, shapes_info
     return model_output_of_layer
 
 
-# Deep Learning 모델 구조 관련 모델 출력값 생성
+# Deep Learning 모델 구조 관련 LLM 출력값 생성
 # Create Date : 2025.03.18
 # Last Update Date : -
 
@@ -484,17 +484,67 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
     return model_output
 
 
-# Deep Learning 모델 구조 관련 LLM 학습 데이터셋 생성
+# Flow Chart 의 도형 Size, Type 를 랜덤으로 결정
+# Create Date : 2025.03.18
+# Last Update Date : -
+
+# Arguments:
+# - layer_config_seed (int) : 도형 구성을 나타내는 int 값 (0 - 9,999,999)
+
+# Returns:
+# - layer_types (list(str)) : 각 도형의 종류
+# - layer_sizes (list(int)) : 각 도형의 크기
+
+def generate_flow_chart_structure():
+    raise NotImplementedError
+
+
+# Flow Chart 구조 관련 사용자 입력 프롬프트 생성
 # Create Date : 2025.03.17
 # Last Update Date : -
 
 # Arguments:
-# - dataset_size (int) : 데이터셋 규모
+# - prompt_seed (int)       : 프롬프트 형식을 나타내는 int 값 (0 - 9,999,999)
+# - layer_types (list(str)) : 각 도형의 종류
+# - layer_sizes (list(int)) : 각 도형의 크기
+
+# Returns:
+# - entire_prompt (str) : Flow Chart 구조 관련 학습 데이터셋의 입력 프롬프트
+# - user_prompt   (str) : Prompt Engineering 을 위한 앞뒤 부분을 제외한 순수 유저 프롬프트
+
+def generate_flow_chart_prompt():
+    raise NotImplementedError
+
+
+# Deep Learning 모델 구조 관련 LLM 출력값 생성
+# Create Date : 2025.03.18
+# Last Update Date : -
+
+# Arguments:
+# - layer_types (list(str)) : 각 도형의 종류
+# - layer_sizes (list(int)) : 각 도형의 크기
+
+# Returns:
+# - model_output (str) : 다이어그램 형식의 텍스트 (draw_diagram/diagram.txt 참고)
+
+def generate_flow_chart_llm_output():
+    raise NotImplementedError
+
+
+# LLM 학습 데이터셋 생성
+# Create Date : 2025.03.18
+# Last Update Date : -
+
+# Arguments:
+# - dataset_size             (int)  : 데이터셋 규모
+# - generate_structure_func  (func) : shape type 및 shape size 등 다이어그램의 도형 정보 데이터 생성 함수
+# - generate_prompt_func     (func) : 도형 정보 데이터를 이용하여 User Prompt 를 생성하는 함수
+# - generate_llm_output_func (func) : User Prompt 에 대한 적절한 LLM Output (SFT 용) 생성하는 함수
 
 # Returns:
 # - dl_dataset (Pandas DataFrame) : Deep Learning 모델 구조 관련 학습 데이터셋
 
-def generate_dl_model_dataset(dataset_size):
+def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func, generate_llm_output_func):
     inputs = []
     outputs = []
     user_prompts = []
@@ -503,14 +553,48 @@ def generate_dl_model_dataset(dataset_size):
     for i in range(dataset_size):
 
         # generate user prompt (LLM input)
-        layer_types, layer_sizes = generate_dl_model_structure(random.randint(0, MAX_MODEL_STRUCTURE_SEED))
-        entire_prompt, user_prompt = generate_dl_model_prompt(random.randint(0, MAX_PROMPT_SEED), layer_types, layer_sizes)
+        shape_types, shape_sizes = generate_structure_func(random.randint(0, MAX_MODEL_STRUCTURE_SEED))
+        entire_prompt, user_prompt = generate_prompt_func(random.randint(0, MAX_PROMPT_SEED), shape_types, shape_sizes)
         inputs.append(entire_prompt)
         user_prompts.append(user_prompt)
 
         # generate LLM output for training
-        llm_output = generate_dl_model_llm_output(layer_types, layer_sizes)
+        llm_output = generate_llm_output_func(shape_types, shape_sizes)
         outputs.append(llm_output)
 
     dl_dataset = pd.DataFrame({'input_data': inputs, 'user_prompt': user_prompts, 'output_data': outputs})
     return dl_dataset
+
+
+# Deep Learning 모델 구조 관련 LLM 학습 데이터셋 생성
+# Create Date : 2025.03.17
+# Last Update Date : 2025.03.18
+# - generate_dataset 함수를 이용하여 단순화
+
+# Arguments:
+# - dataset_size (int) : 데이터셋 규모
+
+# Returns:
+# - dl_dataset (Pandas DataFrame) : Deep Learning 모델 구조 관련 학습 데이터셋
+
+def generate_dl_model_dataset(dataset_size):
+    return generate_dataset(dataset_size,
+                            generate_structure_func=generate_dl_model_structure,
+                            generate_prompt_func=generate_dl_model_prompt,
+                            generate_llm_output_func=generate_dl_model_llm_output)
+
+
+# Flow Chart 구조 관련 LLM 학습 데이터셋 생성
+# Create Date : 2025.03.18
+# Last Update Date : -
+
+# Arguments:
+# - dataset_size (int) : 데이터셋 규모
+
+# Returns:
+# - flow_chart_dataset (Pandas DataFrame) : Flow Chart 구조 관련 학습 데이터셋
+def generate_flow_chart_dataset(dataset_size):
+    return generate_dataset(dataset_size,
+                            generate_structure_func=generate_flow_chart_structure,
+                            generate_prompt_func=generate_flow_chart_prompt,
+                            generate_llm_output_func=generate_flow_chart_llm_output)

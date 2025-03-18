@@ -14,7 +14,8 @@ import os
 
 def generate_sft_dataset():
     dl_dataset = common.generate_dl_model_dataset(dataset_size=280)
-    dataset = pd.concat([dl_dataset], axis=0)
+    flow_chart_dataset = common.generate_flow_chart_dataset(dataset_size=420)
+    dataset = pd.concat([dl_dataset, flow_chart_dataset], axis=0)
 
     abs_path = os.path.abspath(os.path.dirname(__file__))
     dataset.to_csv(f'{abs_path}/sft_dataset.csv')
