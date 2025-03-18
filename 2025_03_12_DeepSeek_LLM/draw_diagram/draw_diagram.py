@@ -264,8 +264,9 @@ def generate_dashed_line(x0, y0, x_dest, y_dest, line_color):
 
 # Diagram 의 연결선 생성
 # Create Date : 2025.03.16
-# Last Update Date : 2025.03.17
+# Last Update Date : 2025.03.18
 # - 3월 17일 신규 요구사항 (연결선의 종류 변경) 반영
+# - tip length 수정
 
 # Arguments:
 # - x0          (int)   : 시작점 도형의 x 좌표
@@ -288,13 +289,15 @@ def generate_line(x0, y0, x1, y1, line_shape, line_color, dest_shape, dest_width
 
     # solid arrow
     if 'solid' in line_shape and 'arrow' in line_shape:
+        distance = math.sqrt((x_dest - x0) ** 2.0 + (y_dest - y0) ** 2.0)
+
         cv2.arrowedLine(canvas,
                         pt1=(x0, y0),
                         pt2=(int(x_dest), int(y_dest)),
                         color=line_color,
                         thickness=1,
                         line_type=cv2.LINE_AA,
-                        tipLength=0.05)
+                        tipLength=max(10.0 / distance, 0.05))
 
     # solid line
     elif 'solid' in line_shape and 'line' in line_shape:
