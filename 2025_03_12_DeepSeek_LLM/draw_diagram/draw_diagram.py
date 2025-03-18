@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import math
-import gc
 
 import os
 import sys
@@ -472,10 +471,11 @@ def generate_diagram_each_line(line_text):
 # - 해당 canvas 를 이미지 파일로 저장
 
 def generate_diagram_from_lines(lines, output_path):
-    global canvas
+    global canvas, diagram_dict
 
-    # 캔버스 초기화
+    # 캔버스 및 diagram dict 초기화
     canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
+    diagram_dict = {}
 
     for line_idx, line_text in enumerate(lines):
         try:
@@ -491,7 +491,7 @@ def generate_diagram_from_lines(lines, output_path):
 # Create Date : 2025.03.16
 # Last Update Date : 2025.03.18
 # - line 을 파싱하는 부분을 generate_diagram_from_lines 함수로 분리
-# - 경로 수정
+# - output 경로 수정
 
 # Arguments:
 # - file_path (str) : 다이어그램 정보가 텍스트 형태로 저장된 파일 경로
