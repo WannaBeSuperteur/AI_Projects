@@ -14,6 +14,7 @@
 * [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
   * [5-1. ```flash_attn``` 실행 불가 (해결 보류)](#5-1-flashattn-실행-불가-해결-보류)
   * [5-2. LLM 출력이 매번 동일함 (해결 완료)](#5-2-llm-출력이-매번-동일함-해결-완료)
+  * [5-3. 다이어그램 이미지 over-write](#5-3-다이어그램-이미지-over-write-해결-완료)
 
 ## 1. 프로젝트 개요
 
@@ -136,6 +137,7 @@ It is important to draw a representation of high readability.
 |------------------------|------------|-----|-------|-----------------------------------------|----------------------------------------------------------------------------------------------------------|
 | ```flash_attn``` 사용 불가 | 2025.03.14 | 낮음  | 보류    | ```nvcc -V``` 기준의 CUDA 버전 이슈            | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
 | LLM 출력이 매번 동일함         | 2025.03.15 | 보통  | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락 | 해당 함수의 랜덤 생성 인수 설정                                                                                       |
+| 다이어그램 이미지가 overwrite 됨 | 2025.03.18 | 보통  | 해결 완료 |                                         | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -207,4 +209,37 @@ with torch.no_grad():
     outputs = llm.generate(**inputs,
                            max_length=768,
                            do_sample=True)  # 랜덤 출력 (여기서부터 랜덤 출력 생성되게 하기 위함)
+```
+
+### 5-3. 다이어그램 이미지 over-write (해결 완료)
+
+**문제 상황**
+
+* [다이어그램 작성 코드인 draw_diagram.py](draw_diagram/draw_diagram.py) 의 ```generate_diagram_from_lines``` 함수를 통해 이미지 반복 생성 시,
+* 다이어그램 이미지를 그리기 위한 **NumPy array (canvas) 를 매 생성 시마다 초기화함에도 불구하고 overwrite** 됨
+
+**원인 및 해결 방법**
+
+* **1. 일정 시간 간격으로 다이어그램 생성 (해결 안됨)**
+  * 다이어그램 생성 시마다 0.35 초의 간격을 두고 생성하도록 interval 지정
+    * ```time.sleep(0.35)  # to prevent image overwriting``` 를 이용
+  * 근본적인 해결 방법은 아니라고 판단됨
+
+* **2. ```canvas.copy()``` 이용 (해결 안됨)**
+  * canvas 를 초기화해도 OpenCV 에 이전의 메모리가 남아 있을 수 있음
+  * 따라서, 이를 **원본이 아닌 복사된 canvas 에 도형을 그리는** 방식으로 해결 시도
+  * 코드
+
+```
+canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
+canvas = canvas.copy()
+```
+
+* **3. garbage collection (해결 안됨)**
+  * OpenCV의 해당 메모리를 초기화하는 것도 가능한 방법으로 판단하여 garbage collection 실시 
+  * 코드 
+
+```
+del canvas
+gc.collect()
 ```

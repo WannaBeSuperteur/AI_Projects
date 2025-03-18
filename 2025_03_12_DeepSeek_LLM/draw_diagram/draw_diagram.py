@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import math
+import gc
 
 import os
 import sys
@@ -17,9 +18,8 @@ diagram_dict = {}
 
 # Round Rectangle 그리기
 # Create Date : 2025.03.16
-# Last Update Date : 2025.03.17
-# - round_radius, top, left, bottom, right 을 int 로 type cast 적용
-# - circle centers 의 x, y 좌표 순서 버그 수정
+# Last Update Date : 2025.03.18
+# - global canvas 누락 해결
 
 # Arguments:
 # - x         (int)   : 도형의 x 좌표
@@ -33,6 +33,8 @@ diagram_dict = {}
 # - canvas 에 해당 Round Rectangle 추가
 
 def draw_round_rectangle(x, y, width, height, color, thickness):
+    global canvas
+
     round_radius = int(min(0.1 * max(width, height), 0.5 * min(width, height)))
 
     top = y - int(height / 2)
@@ -215,8 +217,9 @@ def compute_dash_width_and_height(x0, y0, x_dest, y_dest):
 
 # Diagram 의 점선 그리기
 # Create Date : 2025.03.16
-# Last Update Date : 2025.03.17
+# Last Update Date : 2025.03.18
 # - 3월 17일 신규 요구사항 (연결선의 종류 변경) 반영
+# - global canvas 누락 해결
 
 # Arguments:
 # - x0         (int)   : 시작점 도형의 x 좌표
@@ -229,6 +232,7 @@ def compute_dash_width_and_height(x0, y0, x_dest, y_dest):
 # - canvas 에 해당 점선 추가
 
 def generate_dashed_line(x0, y0, x_dest, y_dest, line_color):
+    global canvas
 
     if y0 == y_dest and x0 == x_dest:
         return
@@ -455,10 +459,39 @@ def generate_diagram_each_line(line_text):
                       color=info['shape_color'])
 
 
+# 읽어온 파일의 line 들을 각각의 line 으로 파싱하여 도형 및 화살표 추가
+# Create Date : 2025.03.18
+# Last Update Date : -
+
+# Arguments:
+# - lines       (list(str)) : 다이어그램 정보가 텍스트 형태로 저장된 파일 경로
+# - output_path (str)       : 다이어그램 파일 저장 경로
+
+# Returns:
+# - canvas 에 해당 파일의 정보를 이용하여 도형 추가
+# - 해당 canvas 를 이미지 파일로 저장
+
+def generate_diagram_from_lines(lines, output_path):
+    global canvas
+
+    # 캔버스 초기화
+    canvas = np.ones((HEIGHT, WIDTH, 3), dtype=np.uint8) * 255
+
+    for line_idx, line_text in enumerate(lines):
+        try:
+            generate_diagram_each_line(line_text)
+        except Exception as e:
+            print(f'line {line_idx} : {e}')
+
+    # 파일 저장
+    cv2.imwrite(output_path, canvas)
+
+
 # 파일을 읽어서 해당 파일에 쓰인 각 line 을 파싱하여 도형 및 화살표 추가
 # Create Date : 2025.03.16
-# Last Update Date : 2025.03.17
-# - 이미지 파일 저장 기능 추가
+# Last Update Date : 2025.03.18
+# - line 을 파싱하는 부분을 generate_diagram_from_lines 함수로 분리
+# - 경로 수정
 
 # Arguments:
 # - file_path (str) : 다이어그램 정보가 텍스트 형태로 저장된 파일 경로
@@ -472,12 +505,7 @@ def generate_diagram(file_path):
     lines = f.readlines()
     f.close()
 
-    for line_idx, line_text in enumerate(lines):
-        try:
-            generate_diagram_each_line(line_text)
-        except Exception as e:
-            print(f'line {line_idx} : {e}')
+    diagram_output_path = f'{os.path.abspath(os.path.dirname(__file__))}/diagram.png'
+    generate_diagram_from_lines(lines, output_path=diagram_output_path)
 
-    # 파일 저장
-    cv2.imwrite('diagram.png', canvas)
 

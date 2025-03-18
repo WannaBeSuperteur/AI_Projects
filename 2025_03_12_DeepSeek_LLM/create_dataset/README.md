@@ -3,7 +3,8 @@
 * [1. ```sft_dataset.py``` 설명](#1-sftdatasetpy-설명)
 * [2. ```orpo_dataset.py``` 설명](#2-orpodatasetpy-설명)
 * [3. ```common.py``` 설명](#3-commonpy-설명)
-* [4. ```convert_to_llm_dataset``` 설명](#4-converttollmdataset-설명)
+* [4. ```convert_to_llm_dataset.py``` 설명](#4-converttollmdatasetpy-설명)
+* [5. ```test_draw_diagram.py``` 설명](#5-testdrawdiagrampy-설명)
 
 ## 개요
 
@@ -31,9 +32,14 @@
 
 * SFT, ORPO 에 공통으로 사용되는 형태의 데이터셋 생성의 경우, 관련 함수를 common.py 에 정의
 
-## 4. ```convert_to_llm_dataset``` 설명
+## 4. ```convert_to_llm_dataset.py``` 설명
 
 * csv 형태의 데이터셋 파일을 실제 LLM 이 학습 가능한 형태의 데이터셋으로 변환
 * csv 형태의 데이터셋 파일
   * ```sft_dataset.csv```
   * ```orpo_dataset.csv```
+
+## 5. ```test_draw_diagram.py``` 설명
+
+* 해당 파일 실행 시, ```sft_dataset.csv``` 파일의 각 내용 (row) 을 읽어서 테스트 다이어그램 생성
+* 테스트 다이어그램은 ```test_diagrams``` 디렉토리에 생성
