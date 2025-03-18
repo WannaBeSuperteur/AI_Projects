@@ -275,7 +275,8 @@ def generate_dl_model_prompt(prompt_seed, layer_types, layer_sizes):
 
 # Deep Learning 모델 구조 관련 레이어 별 출력값을 생성하기 위한 shape 정보 계산
 # Create Date : 2025.03.17
-# Last Update Date : -
+# Last Update Date : 2025.03.18
+# - 각 layer 안에 속한 node 의 위치 및 가로/세로 길이 버그 수정
 
 # Arguments:
 # - layer_size        (int)  : 해당 레이어의 크기 (node 개수 or feature map 크기)
@@ -304,9 +305,9 @@ def generate_shapes_info_of_layer(layer_size, layer_idx, layer_cnt, diagram_dire
             node_xs = [layer_x for _ in range(layer_size)]
             node_ys = np.linspace(CANVAS_HEIGHT // 2 - layer_height // 2,
                                   CANVAS_HEIGHT // 2 + layer_height // 2,
-                                  layer_size)[1:-1]
+                                  layer_size + 2)[1:-1]
             node_widths = [layer_width for _ in range(layer_size)]
-            node_heights = [layer_height for _ in range(layer_size)]
+            node_heights = [layer_height // (2 * layer_size) for _ in range(layer_size)]
 
             for x, y, w, h in zip(node_xs, node_ys, node_widths, node_heights):
                 shapes_info.append({'x': x, 'y': y, 'w': w, 'h': h})
@@ -314,15 +315,15 @@ def generate_shapes_info_of_layer(layer_size, layer_idx, layer_cnt, diagram_dire
     else:  # vertical
         layer_x = CANVAS_WIDTH // 2
         layer_y = (layer_idx + 1) / (layer_cnt + 1) * CANVAS_HEIGHT
-        layer_width = int(0.6 * CANVAS_WIDTH * layer_lengths_relative)
+        layer_width = int(0.75 * CANVAS_WIDTH * layer_lengths_relative)
         layer_height = CANVAS_HEIGHT // (2 * layer_cnt)
 
         if draw_each_node:
             node_xs = np.linspace(CANVAS_WIDTH // 2 - layer_width // 2,
                                   CANVAS_WIDTH // 2 + layer_width // 2,
-                                  layer_size)[1:-1]
+                                  layer_size + 2)[1:-1]
             node_ys = [layer_y for _ in range(layer_size)]
-            node_widths = [layer_width for _ in range(layer_size)]
+            node_widths = [layer_width // (2 * layer_size) for _ in range(layer_size)]
             node_heights = [layer_height for _ in range(layer_size)]
 
             for x, y, w, h in zip(node_xs, node_ys, node_widths, node_heights):
