@@ -523,18 +523,45 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
 
 def generate_flow_chart_structure(shape_config_seed):
     node_info = {}
-    max_depth_from_start = shape_config_seed % 8 + 3
+    max_depth_from_start = shape_config_seed % 8 + 2
+    node_types = ['numeric', 'str', 'picture', 'db', 'chart', 'func', 'process']
 
-    first_node = [{'id': 0, 'depth': 0}]
-    dfs_stack = first_node + [{'id': i+1, 'depth': i+1} for i in range(max_depth_from_start)]
+    # 현재 node 의 type 에 따라, type 가 아직 정해지지 않은 인접한 node 의 type 결정
+
+    def get_adjacent_node_type(node_type):
+        if node_type in ['func', 'process']:
+            r = random.randint(0, 4)
+            return node_types[r]
+        else:
+            if random.random() < 0.3:
+                r = random.randint(0, 4)
+                return node_types[r]
+            else:
+                if random.random() < 0.4:
+                    return 'func'
+                else:
+                    return 'process'
+
+    # initialize DFS stack for generating nodes
+    first_node_type = node_types[(shape_config_seed // 8) % 6]
+    first_node = {'id': 0, 'type': first_node_type, 'depth': 0}
+
+    dfs_stack = [first_node]
+    for i in range(len(max_depth_from_start)):
+        prev_node_type = dfs_stack[-1]['type']
+        dfs_stack.append({'id': i, 'type': get_adjacent_node_type(prev_node_type), 'depth': i})
     dfs_stack = dfs_stack[::-1]
 
+    # generate first (max_depths + 1) consecutive nodes
     for i in range(max_depth_from_start + 1):
-        if i < max_depth_from_start:
-            node_info[i] = {'type': 'node', 'connected_node_ids': [i + 1]}
+        if i == 0:
+            node_info[i] = {'type': first_node_type, 'connected_node_ids': [1]}
+        elif i < max_depth_from_start:
+            node_info[i] = {'type': node_info[i - 1]['type'], 'connected_node_ids': [i + 1]}
         else:
-            node_info[i] = {'type': 'node', 'connected_node_ids': []}
+            node_info[i] = {'type': node_info[i - 1]['type'], 'connected_node_ids': []}
 
+    # generate nodes
     while len(dfs_stack) > 0:
         current_node = dfs_stack.pop(-1)
 
@@ -542,22 +569,26 @@ def generate_flow_chart_structure(shape_config_seed):
         if current_node['depth'] < max_depth_from_start:
             while random.random() < SUBTREE_PROB:
                 current_node_id = current_node['id']
+                current_node_type = current_node['type']
                 new_node_id = len(node_info)
+                new_node_type = get_adjacent_node_type(current_node_type)
 
                 node_info[current_node_id]['connected_node_ids'].append(new_node_id)
-                node_info[new_node_id] = {'type': 'node', 'connected_node_ids': []}
+                node_info[new_node_id] = {'type': new_node_type, 'connected_node_ids': []}
 
-                dfs_stack.append({'id': new_node_id, 'depth': current_node['depth'] + 1})
+                dfs_stack.append({'id': new_node_id, 'type': new_node_type, 'depth': current_node['depth'] + 1})
 
         # add inverse-subtrees (incoming node)
         if current_node['depth'] > 0:
             while random.random() < SUBTREE_PROB:
                 current_node_id = current_node['id']
+                current_node_type = current_node['type']
                 new_node_id = len(node_info)
+                new_node_type = get_adjacent_node_type(current_node_type)
 
-                node_info[new_node_id] = {'type': 'node', 'connected_node_ids': [current_node_id]}
+                node_info[new_node_id] = {'type': new_node_type, 'connected_node_ids': [current_node_id]}
 
-                dfs_stack.append({'id': new_node_id, 'depth': current_node['depth'] - 1})
+                dfs_stack.append({'id': new_node_id, 'type': new_node_type, 'depth': current_node['depth'] - 1})
 
     # shape_types, shape_sizes 지정
     shape_types = []
