@@ -4,9 +4,12 @@
 """
 This common.py contains functions for:
 
-Generating User Prompts (LLM input) and LLM outputs, for the two diagram types below:
- - Deep Learning Model (Dense, CNN)
- - Flow-Chart
+Generating Training Dataset, that is, User Prompts (LLM input) and LLM outputs,
+for LLM SFT (Supervised Fine-tuning) and ORPO (Odd-Ratio Preference Optimization),
+for the two diagram types below:
+
+ - 1. Deep Learning Model (Dense, CNN)
+ - 2. Flow-Chart
 
  [ shape config seed ] ---> ( generate_structure_func )
                                        |
@@ -36,6 +39,7 @@ BACKGROUND_COLOR_LIST = [(255, 255, 255), (240, 240, 240), (224, 224, 224), (208
 LINE_COLOR_LIST = [(0, 0, 0), (32, 32, 32), (64, 64, 64), (96, 96, 96),
                    (32, 32, 64), (64, 64, 128), (64, 48, 32), (128, 96, 64),
                    (32, 64, 48), (64, 128, 96), (48, 32, 64), (96, 64, 128)]
+SUBTREE_PROB = 0.2
 
 # for prompt engineering
 PROMPT_PREFIX = "Represent below as a Python list.\n\n"
@@ -512,11 +516,60 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
 # - shape_config_seed (int) : 도형 구성을 나타내는 int 값 (0 - 9,999,999)
 
 # Returns:
-# - shape_types (list(str)) : 각 도형의 종류
-# - shape_sizes (list(int)) : 각 도형의 크기
+# - shape_types (list(dict)) : 각 도형의 종류
+#                              [{'type': str, 'connected_node_ids': list(str)},
+#                               {'type': str, 'connected_node_ids': list(str)}, ...] 형식
+# - shape_sizes (list(int))  : 각 도형의 크기
 
 def generate_flow_chart_structure(shape_config_seed):
-    raise NotImplementedError
+    node_info = {}
+    max_depth_from_start = shape_config_seed % 8 + 3
+
+    first_node = [{'id': 0, 'depth': 0}]
+    dfs_stack = first_node + [{'id': i+1, 'depth': i+1} for i in range(max_depth_from_start)]
+    dfs_stack = dfs_stack[::-1]
+
+    for i in range(max_depth_from_start + 1):
+        if i < max_depth_from_start:
+            node_info[i] = {'type': 'node', 'connected_node_ids': [i + 1]}
+        else:
+            node_info[i] = {'type': 'node', 'connected_node_ids': []}
+
+    while len(dfs_stack) > 0:
+        current_node = dfs_stack.pop(-1)
+
+        # add subtrees
+        if current_node['depth'] < max_depth_from_start:
+            while random.random() < SUBTREE_PROB:
+                current_node_id = current_node['id']
+                new_node_id = len(node_info)
+
+                node_info[current_node_id]['connected_node_ids'].append(new_node_id)
+                node_info[new_node_id] = {'type': 'node', 'connected_node_ids': []}
+
+                dfs_stack.append({'id': new_node_id, 'depth': current_node['depth'] + 1})
+
+        # add inverse-subtrees (incoming node)
+        if current_node['depth'] > 0:
+            while random.random() < SUBTREE_PROB:
+                current_node_id = current_node['id']
+                new_node_id = len(node_info)
+
+                node_info[new_node_id] = {'type': 'node', 'connected_node_ids': [current_node_id]}
+
+                dfs_stack.append({'id': new_node_id, 'depth': current_node['depth'] - 1})
+
+    # shape_types, shape_sizes 지정
+    shape_types = []
+
+    for node_id, node_property in node_info.items():
+        shape_types.append({'type': node_property['type'],
+                            'connected_node_ids': node_property['connected_node_ids']})
+
+    shape_types.sort(key=lambda x: x['id'])
+    shape_sizes = [1.0 for _ in range(len(node_info))]
+
+    return shape_types, shape_sizes
 
 
 # Flow Chart 구조 관련 사용자 입력 프롬프트 생성
@@ -525,7 +578,9 @@ def generate_flow_chart_structure(shape_config_seed):
 
 # Arguments:
 # - prompt_seed (int)       : 프롬프트 형식을 나타내는 int 값 (0 - 9,999,999)
-# - shape_types (list(str)) : 각 도형의 종류
+# - shape_types (list(dict)) : 각 도형의 종류
+#                              [{'type': str, 'connected_node_ids': list(str)},
+#                               {'type': str, 'connected_node_ids': list(str)}, ...] 형식
 # - shape_sizes (list(int)) : 각 도형의 크기
 
 # Returns:
@@ -541,7 +596,9 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
 # Last Update Date : -
 
 # Arguments:
-# - shape_types (list(str)) : 각 도형의 종류
+# - shape_types (list(dict)) : 각 도형의 종류
+#                              [{'type': str, 'connected_node_ids': list(str)},
+#                               {'type': str, 'connected_node_ids': list(str)}, ...] 형식
 # - shape_sizes (list(int)) : 각 도형의 크기
 
 # Returns:
