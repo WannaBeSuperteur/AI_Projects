@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
-from common_values import CANVAS_WIDTH as WIDTH, CANVAS_HEIGHT as HEIGHT
+from common_values import CANVAS_WIDTH, CANVAS_HEIGHT
 
 MAX_PROMPT_SEED = 9999999
 MAX_MODEL_STRUCTURE_SEED = 9999999
@@ -286,8 +286,8 @@ def generate_dl_model_prompt(prompt_seed, layer_types, layer_sizes):
 # - draw_each_node    (bool) : 각 레이어의 node (Conv., Pool. 제외) 를 표시할 것인가?
 
 # Returns:
-# - shapes_info (dict) : shape 정보,
-#                        {'x': x (center), 'y': y (center), 'w': width, 'h': height}
+# - shapes_info (list(dict)) : shape 정보 리스트,
+#                              각 항목은 {'x': x (center), 'y': y (center), 'w': width, 'h': height}
 
 def generate_shapes_info_of_layer(layer_size, layer_idx, layer_cnt, diagram_direction, draw_each_node, max_layer_size):
 
@@ -295,7 +295,7 @@ def generate_shapes_info_of_layer(layer_size, layer_idx, layer_cnt, diagram_dire
     layer_lengths_relative = np.log(layer_size + 1) / np.log(max_layer_size + 1)
 
     if diagram_direction == 'horizontal':
-        layer_x = (layer_idx + 1) / CANVAS_WIDTH * (layer_cnt + 1)
+        layer_x = (layer_idx + 1) / (layer_cnt + 1) * CANVAS_WIDTH
         layer_y = CANVAS_HEIGHT // 2
         layer_width = CANVAS_WIDTH // (2 * layer_cnt)
         layer_height = int(0.6 * CANVAS_HEIGHT * layer_lengths_relative)
@@ -313,7 +313,7 @@ def generate_shapes_info_of_layer(layer_size, layer_idx, layer_cnt, diagram_dire
 
     else:  # vertical
         layer_x = CANVAS_WIDTH // 2
-        layer_y = (layer_idx + 1) / CANVAS_HEIGHT * (layer_cnt + 1)
+        layer_y = (layer_idx + 1) / (layer_cnt + 1) * CANVAS_HEIGHT
         layer_width = int(0.6 * CANVAS_WIDTH * layer_lengths_relative)
         layer_height = CANVAS_HEIGHT // (2 * layer_cnt)
 
@@ -337,8 +337,62 @@ def generate_shapes_info_of_layer(layer_size, layer_idx, layer_cnt, diagram_dire
     return shapes_info
 
 
+# Deep Learning 모델 구조 관련 레이어 별 shapes 정보를 이용하여 각 레이어에 대한 출력값을 생성
+# Create Date : 2025.03.18
+# Last Update Date : -
+
+# Arguments:
+# - layer_idx          (int)        : 출력값을 생성할 레이어의 번호 (index)
+# - layer_property     (dict)       : 해당 레이어에 대한 속성,
+#                                     {'back_color': 배경색, 'line_color': 연결선 색, 'shape': 도형 모양, 'line_shape': 연결선 모양}
+# - shapes_info        (list(dict)) : shape 정보의 리스트,
+#                                     각 항목은 {'x': x (center), 'y': y (center), 'w': width, 'h': height}
+# - node_cnt_per_layer (list)       : 각 layer 별 필요한 도형 (node) 의 개수 (Diagram 의 Shape ID 용)
+
+# Returns:
+# - model_output_of_layer (str) : 해당 layer 에 대한 다이어그램 형식의 텍스트 (draw_diagram/diagram.txt 참고)
+
+def generate_dl_model_llm_output_of_layer(layer_idx, layer_property, shapes_info, node_cnt_per_layer):
+
+    model_output_of_layer = ''
+    is_last_layer = (layer_idx == len(node_cnt_per_layer) - 1)
+
+    previous_all_layer_nodes_cnt = sum(node_cnt_per_layer[:layer_idx])
+    cur_layer_node_cnt = node_cnt_per_layer[layer_idx]
+    if is_last_layer:
+        next_layer_node_cnt = 0
+    else:
+        next_layer_node_cnt = node_cnt_per_layer[layer_idx + 1]
+
+    for i in range(cur_layer_node_cnt):
+        shape_id = previous_all_layer_nodes_cnt + i
+
+        center_x = int(shapes_info[i]['x'])
+        center_y = int(shapes_info[i]['y'])
+        shape = layer_property['shape']
+        width = int(shapes_info[i]['w'])
+        height = int(shapes_info[i]['h'])
+        line = layer_property['line_shape']
+
+        back_color = layer_property['back_color']
+        line_color = layer_property['line_color']
+
+        if is_last_layer:
+            connected_nodes = []
+        else:
+            connected_nodes = list(range(previous_all_layer_nodes_cnt + cur_layer_node_cnt,
+                                         previous_all_layer_nodes_cnt + cur_layer_node_cnt + next_layer_node_cnt))
+
+        model_output_of_layer_list = [shape_id, center_x, center_y, shape, width, height, line,
+                                      back_color, line_color, connected_nodes]
+
+        model_output_of_layer += str(model_output_of_layer_list) + '\n'
+
+    return model_output_of_layer
+
+
 # Deep Learning 모델 구조 관련 모델 출력값 생성
-# Create Date : 2025.03.17
+# Create Date : 2025.03.18
 # Last Update Date : -
 
 # Arguments:
@@ -362,15 +416,41 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
     back_colors = random.choices(BACKGROUND_COLOR_LIST, k=6)
     line_colors = random.choices(LINE_COLOR_LIST, k=6)
     shape = random.choices(['rectangle', 'round rectangle'], k=6)
+    line = random.choices(['solid arrow', 'solid line'], k=1)
 
-    property_each_layer_type = {'cnn_input': {'back': back_colors[0], 'line': line_colors[0], 'shape': shape[0]},
-                                'conv': {'back': back_colors[1], 'line': line_colors[1], 'shape': shape[1]},
-                                'pool': {'back': back_colors[2], 'line': line_colors[2], 'shape': shape[2]},
-                                'dense_input': {'back': back_colors[3], 'line': line_colors[3], 'shape': shape[3]},
-                                'dense_hidden': {'back': back_colors[4], 'line': line_colors[4], 'shape': shape[4]},
-                                'dense_output': {'back': back_colors[5], 'line': line_colors[5], 'shape': shape[5]}}
+    property_each_layer_type = {'cnn_input': {'back_color': back_colors[0],
+                                              'line_color': line_colors[0],
+                                              'shape': shape[0],
+                                              'line_shape': line[0]},
+
+                                'conv': {'back_color': back_colors[1],
+                                         'line_color': line_colors[1],
+                                         'shape': shape[1],
+                                         'line_shape': line[0]},
+
+                                'pool': {'back_color': back_colors[2],
+                                         'line_color': line_colors[2],
+                                         'shape': shape[2],
+                                         'line_shape': line[0]},
+
+                                'dense_input': {'back_color': back_colors[3],
+                                                'line_color': line_colors[3],
+                                                'shape': 'circle' if draw_each_node else shape[3],
+                                                'line_shape': 'solid arrow' if draw_each_node else line[0]},
+
+                                'dense_hidden': {'back_color': back_colors[4],
+                                                 'line_color': line_colors[4],
+                                                 'shape': 'circle' if draw_each_node else shape[4],
+                                                 'line_shape': 'solid arrow' if draw_each_node else line[0]},
+
+                                'dense_output': {'back_color': back_colors[5],
+                                                 'line_color': line_colors[5],
+                                                 'shape': 'circle' if draw_each_node else shape[5],
+                                                 'line_shape': 'solid arrow' if draw_each_node else line[0]}}
 
     # generate shape info for each layer
+    node_cnt_per_layer = []
+
     for layer_idx, (layer_type, layer_size) in enumerate(zip(layer_types, layer_sizes)):
         shapes_info = generate_shapes_info_of_layer(layer_size=layer_size,
                                                     layer_idx=layer_idx,
@@ -379,13 +459,26 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
                                                     draw_each_node=draw_each_node,
                                                     max_layer_size=max(layer_sizes))
         shapes_info_dict[layer_idx] = shapes_info
+        node_cnt_per_layer.append(len(shapes_info))
 
     # generate output for each layer
     for layer_idx, (layer_type, layer_size) in enumerate(zip(layer_types, layer_sizes)):
+        if layer_type == 'dense':
+            if layer_idx == 0:
+                layer_property = property_each_layer_type['dense_input']
+            elif layer_idx == n - 1:
+                layer_property = property_each_layer_type['dense_output']
+            else:
+                layer_property = property_each_layer_type['dense_hidden']
 
-        # TODO: implement
+        else:
+            layer_property = property_each_layer_type[layer_type]
 
-        model_output += model_output_of_layer + '\n'
+        model_output_of_layer = generate_dl_model_llm_output_of_layer(layer_idx,
+                                                                      layer_property,
+                                                                      shapes_info=shapes_info_dict[layer_idx],
+                                                                      node_cnt_per_layer=node_cnt_per_layer)
+        model_output += model_output_of_layer
 
     return model_output
 
