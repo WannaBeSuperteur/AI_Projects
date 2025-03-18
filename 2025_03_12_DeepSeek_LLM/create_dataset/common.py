@@ -1,3 +1,23 @@
+
+######## SUMMARY (BIRD-EYE VIEW) ########
+
+"""
+This common.py contains functions for:
+
+Generating User Prompts (LLM input) and LLM outputs, for the two diagram types below:
+ - Deep Learning Model (Dense, CNN)
+ - Flow-Chart
+
+ [ shape config seed ] ---> ( generate_structure_func )
+                                       |
+                                       V
+                             [ shape size, type info ] ---> ( generate_llm_output_func ) ---> "LLM Output"
+                                       |                                                           |
+                                       V                                                           V
+ [ user prompt seed ] -----> ( generate_prompt_func ) ------> "User Prompt" ------> { Supervised Fine-Tuning of LLM }
+"""
+
+
 import pandas as pd
 import numpy as np
 import random
@@ -489,30 +509,30 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
 # Last Update Date : -
 
 # Arguments:
-# - layer_config_seed (int) : 도형 구성을 나타내는 int 값 (0 - 9,999,999)
+# - shape_config_seed (int) : 도형 구성을 나타내는 int 값 (0 - 9,999,999)
 
 # Returns:
-# - layer_types (list(str)) : 각 도형의 종류
-# - layer_sizes (list(int)) : 각 도형의 크기
+# - shape_types (list(str)) : 각 도형의 종류
+# - shape_sizes (list(int)) : 각 도형의 크기
 
-def generate_flow_chart_structure():
+def generate_flow_chart_structure(shape_config_seed):
     raise NotImplementedError
 
 
 # Flow Chart 구조 관련 사용자 입력 프롬프트 생성
-# Create Date : 2025.03.17
+# Create Date : 2025.03.18
 # Last Update Date : -
 
 # Arguments:
 # - prompt_seed (int)       : 프롬프트 형식을 나타내는 int 값 (0 - 9,999,999)
-# - layer_types (list(str)) : 각 도형의 종류
-# - layer_sizes (list(int)) : 각 도형의 크기
+# - shape_types (list(str)) : 각 도형의 종류
+# - shape_sizes (list(int)) : 각 도형의 크기
 
 # Returns:
 # - entire_prompt (str) : Flow Chart 구조 관련 학습 데이터셋의 입력 프롬프트
 # - user_prompt   (str) : Prompt Engineering 을 위한 앞뒤 부분을 제외한 순수 유저 프롬프트
 
-def generate_flow_chart_prompt():
+def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     raise NotImplementedError
 
 
@@ -521,13 +541,13 @@ def generate_flow_chart_prompt():
 # Last Update Date : -
 
 # Arguments:
-# - layer_types (list(str)) : 각 도형의 종류
-# - layer_sizes (list(int)) : 각 도형의 크기
+# - shape_types (list(str)) : 각 도형의 종류
+# - shape_sizes (list(int)) : 각 도형의 크기
 
 # Returns:
 # - model_output (str) : 다이어그램 형식의 텍스트 (draw_diagram/diagram.txt 참고)
 
-def generate_flow_chart_llm_output():
+def generate_flow_chart_llm_output(shape_types, shape_sizes):
     raise NotImplementedError
 
 
