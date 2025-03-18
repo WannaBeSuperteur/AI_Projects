@@ -625,9 +625,115 @@ def generate_flow_chart_structure(shape_config_seed):
 # - user_prompt   (str) : Prompt Engineering 을 위한 앞뒤 부분을 제외한 순수 유저 프롬프트
 
 def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
+    n = len(shape_types)
+
+    user_prompt_start = ['process that includes ',
+                         'process of ',
+                         'machine learning model that ',
+                         'deep learning process of ',
+                         'data pre-processing algorithm of ',
+                         'algorithm that ']
+
+    user_prompt = random.choice(user_prompt_start)
+
+    numeric_names = ['matrix', 'tensor', 'numeric values', 'matrices', 'buffer']
+    str_names = ['string', 'text', 'tokens', 'sentence']
+    picture_names = ['picture', 'figure', 'png file', 'jpg file']
+    db_names = ['DB', 'database', 'data storage', 'data store']
+    chart_names = ['chart', 'graph', 'table', 'line chart', 'histogram', 'experiment result']
+    func_names = ['function', 'code file', 'python file', 'python code']
+    process_names = ['process', 'python code', 'pre-processing', 'feature engineering', 'PCA', 'processing']
+
+    default_numeric_name = numeric_names[prompt_seed % 5]
+    default_str_name = str_names[(prompt_seed // 5) % 4]
+    default_picture_name = picture_names[(prompt_seed // (5 * 4)) % 4]
+    default_db_name = db_names[(prompt_seed // (5 * 4 * 4)) % 4]
+    default_chart_name = chart_names[(prompt_seed // (5 * 4 * 4 * 4)) % 6]
+    default_func_name = func_names[(prompt_seed // (5 * 4 * 4 * 4 * 6)) % 4]
+    default_process_name = process_names[(prompt_seed // (5 * 4 * 4 * 4 * 6 * 4)) % 6]
+
+    # node 의 종류에 따라 이름 반환
+    def get_node_name(node_type_str):
+        if node_type_str == 'numeric':
+            return default_numeric_name if random.random() < 0.5 else random.choice(numeric_names)
+        elif node_type_str == 'str':
+            return default_str_name if random.random() < 0.5 else random.choice(str_names)
+        elif node_type_str == 'picture':
+            return default_picture_name if random.random() < 0.5 else random.choice(picture_names)
+        elif node_type_str == 'db':
+            return default_db_name if random.random() < 0.5 else random.choice(db_names)
+        elif node_type_str == 'chart':
+            return default_chart_name if random.random() < 0.5 else random.choice(chart_names)
+        elif node_type_str == 'func':
+            return default_func_name if random.random() < 0.5 else random.choice(func_names)
+        else:  # process
+            return default_process_name if random.random() < 0.5 else random.choice(process_names)
+
+    # add incoming node info
+    for i in range(n):
+        shape_types[i]['incoming_node_ids'] = []
+
+    for i in range(n):
+        for connected_node_id in shape_types[i]['connected_node_ids']:
+            shape_types[connected_node_id]['incoming_node_ids'].append(i)
+
     for s in shape_types:
         print(s)
-    raise NotImplementedError
+
+    # generate user prompt
+    for i in range(n):
+        node_type = shape_types[i]['type']
+
+        incoming_nodes = shape_types[i]['incoming_node_ids']
+        incoming_node_types = [shape_types[node_id]['type'] for node_id in incoming_nodes]
+
+        connected_nodes = shape_types[i]['connected_node_ids']
+        connected_node_types = [shape_types[node_id]['type'] for node_id in connected_nodes]
+
+        if random.random() < 0.5:
+            additional_and = "and " if random.random() < 0.5 else ""
+            additional_then = "then " if random.random() < 0.5 else ""
+            additional_and_then = additional_and + additional_then
+
+            user_prompt += 'process ' + node_type + ', with '
+
+            if random.random() < 0.5:
+                if len(incoming_node_types) > 0:
+                    user_prompt += 'with input ' + f' {additional_and_then} '.join(incoming_node_types)
+                    if len(connected_node_types) > 0:
+                        user_prompt += ', and output ' + f' {additional_and_then} '.join(connected_node_types) + '.'
+
+                elif len(connected_node_types) > 0:
+                    user_prompt += 'with output ' + f' {additional_and_then} '.join(connected_node_types) + '.'
+
+            else:
+                if len(incoming_node_types) > 0:
+                    user_prompt += 'with ' + f' {additional_and_then} '.join(incoming_node_types) + ' as input'
+                    if len(connected_node_types) > 0:
+                        user_prompt += ', and ' + f' {additional_and_then} '.join(connected_node_types) + ' as output.'
+
+                elif len(connected_node_types) > 0:
+                    user_prompt += 'with ' + f' {additional_and_then} '.join(connected_node_types) + ' as output.'
+
+        else:
+            if len(incoming_node_types) > 0:
+                user_prompt += 'inputs ' + ' and '.join(incoming_node_types)
+                if len(connected_node_types) > 0:
+                    user_prompt += ', and outputs ' + ' and '.join(connected_node_types)
+                user_prompt += ' and process ' + node_type + ' with them.'
+
+            elif len(connected_node_types) > 0:
+                user_prompt += 'outputs ' + ' and '.join(connected_node_types)
+                user_prompt += ' and process ' + node_type + ' with them.'
+
+            else:
+                user_prompt += ' process ' + node_type
+
+        if i < n - 1:
+            user_prompt += ', and '
+
+    entire_prompt = PROMPT_PREFIX + user_prompt + PROMPT_SUFFIX
+    return entire_prompt, user_prompt
 
 
 # Deep Learning 모델 구조 관련 LLM 출력값 생성
@@ -674,12 +780,16 @@ def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func
         inputs.append(entire_prompt)
         user_prompts.append(user_prompt)
 
+        # temp
+        print('====')
+        print(user_prompt)
+
         # generate LLM output for training
         llm_output = generate_llm_output_func(shape_types, shape_sizes)
         outputs.append(llm_output)
 
-    dl_dataset = pd.DataFrame({'input_data': inputs, 'user_prompt': user_prompts, 'output_data': outputs})
-    return dl_dataset
+    pd_dataset = pd.DataFrame({'input_data': inputs, 'user_prompt': user_prompts, 'output_data': outputs})
+    return pd_dataset
 
 
 # Deep Learning 모델 구조 관련 LLM 학습 데이터셋 생성
