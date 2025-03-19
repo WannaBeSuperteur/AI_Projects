@@ -27,6 +27,7 @@ for the two diagram types below:
 import pandas as pd
 import numpy as np
 import random
+from collections import defaultdict
 
 import os
 import sys
@@ -68,6 +69,8 @@ output_node_names = ['output layer nodes', 'output nodes', 'output elements', 'o
 
 
 # For Flow Chart Prompt
+NODE_GENERATE_STOP_AT = 15  # stop node generating when node count reaches this number
+
 user_prompt_start = ['process that ',
                      'machine learning model that ',
                      'deep learning algorithm that ',
@@ -77,6 +80,9 @@ user_prompt_start = ['process that ',
                      'data pre-processing algorithm that ',
                      'algorithm that ']
 contain_marks = ['consists of ', 'contains, ', 'includes, ']
+
+node_types = ['numeric', 'str', 'picture', 'db', 'chart', 'func', 'process']
+node_types_cnt = len(node_types)
 
 numeric_names = ['matrix', 'tensor', 'tensors', 'numeric values', 'matrices',
                  'buffer', 'buffers', 'numpy array', 'pytorch tensor', 'tensorflow tensor']
@@ -609,11 +615,9 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
 
 def generate_flow_chart_structure(shape_config_seed):
     node_info = {}
-    max_depth_from_start = shape_config_seed % 8 + 2
-    node_types = ['numeric', 'str', 'picture', 'db', 'chart', 'func', 'process']
+    max_depth_from_start = shape_config_seed % 8 + 3
 
     # 현재 node 의 type 에 따라, type 가 아직 정해지지 않은 인접한 node 의 type 결정
-
     def decide_adjacent_node_type(node_type):
         if node_type in ['func', 'process']:
             r = random.randint(0, 4)
@@ -668,6 +672,9 @@ def generate_flow_chart_structure(shape_config_seed):
 
                 dfs_stack.append({'id': new_node_id, 'type': new_node_type, 'depth': current_node['depth'] + 1})
 
+        if len(node_info) >= NODE_GENERATE_STOP_AT:
+            break
+
         # add inverse-subtrees (incoming node)
         if current_node['depth'] > 0:
             while random.random() < SUBTREE_PROB:
@@ -680,6 +687,9 @@ def generate_flow_chart_structure(shape_config_seed):
 
                 dfs_stack.append({'id': new_node_id, 'type': new_node_type, 'depth': current_node['depth'] - 1})
 
+        if len(node_info) >= NODE_GENERATE_STOP_AT:
+            break
+
     # shape_types, shape_sizes 지정
     shape_types = []
 
@@ -689,7 +699,15 @@ def generate_flow_chart_structure(shape_config_seed):
                             'connected_node_ids': node_property['connected_node_ids']})
 
     shape_types.sort(key=lambda x: x['id'])
-    shape_sizes = [1.0 for _ in range(len(node_info))]
+
+    shape_sizes = []
+    for shape_info in shape_types:
+        if shape_info['type'] in ['numeric', 'str']:
+            shape_sizes.append(0.7)
+        elif shape_info['type'] in ['picture', 'db', 'chart']:
+            shape_sizes.append(1.0)
+        else:
+            shape_sizes.append(0.4)
 
     return shape_types, shape_sizes
 
@@ -866,6 +884,117 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     return entire_prompt, user_prompt
 
 
+# 현재 node 및 현재 node 와 forward 방향으로 연결된 모든 node 에 대해, data 만 있는지 (process, function 이 없는지) 확인
+# Create Date : 2025.03.19
+# Last Update Date : -
+
+# Arguments:
+# - shape_info (list(dict)) : 각 도형의 종류 및 각종 정보
+#                             [{'id': int, 'type': str, 'connected_node_ids': list(str), 'depth': int},
+#                              {'id': int, 'type': str, 'connected_node_ids': list(str), 'depth': int}, ...] 형식
+# - node_id    (int)        : 확인을 원하는 도형의 node id
+
+# Returns:
+# - is_all_data (bool) : 해당 node 및 모든 connected node 에 대해, data 만 있는지 (process, function 이 없는지) 의 여부
+
+def is_this_and_all_connected_nodes_data(shape_info, node_id):
+    if shape_info[node_id]['type'] in ['func', 'process']:
+        return False
+
+    connected_node_ids = shape_info[node_id]['connected_node_ids']
+    for connected_node_id in connected_node_ids:
+        if shape_info[connected_node_id]['type'] in ['func', 'process']:
+            return False
+
+    return True
+
+
+# Flow Chart 구조 관련 LLM 출력값 생성 (다이어그램을 만들기 위한 데이터)
+# Create Date : 2025.03.19
+# Last Update Date : -
+
+# Arguments:
+# - shape_info  (list(dict)) : 각 도형의 종류 및 각종 정보
+#                              [{'id': int, 'type': str, 'connected_node_ids': list(str), 'depth': int},
+#                               {'id': int, 'type': str, 'connected_node_ids': list(str), 'depth': int}, ...] 형식
+# - shape_sizes (list(int)) : 각 도형의 크기
+
+# Returns:
+# - model_output (str) : 다이어그램 형식의 텍스트 (draw_diagram/diagram.txt 참고)
+
+def generate_flow_chart_llm_data(shape_info, shape_sizes):
+    max_depth = max(info['depth'] for info in shape_info)
+    min_depth = min(info['depth'] for info in shape_info)
+    diff = max_depth - min_depth
+
+    # count nodes per depth
+    nodes_count = defaultdict(lambda: {'count': 0, 'checked': 0})
+    for si in shape_info:
+        nodes_count[si['depth']]['count'] += 1
+    max_count_by_depth = max(nodes_count[i]['count'] for i in nodes_count.keys())
+
+    # horizontal / vertical
+    diagram_direction = 'horizontal' if diff >= 6 else 'vertical'
+
+    # property by node type
+    back_colors = random.choices(BACKGROUND_COLOR_LIST, k=node_types_cnt)
+    line_colors = random.choices(LINE_COLOR_LIST, k=node_types_cnt)
+    shape = random.choices(['rectangle', 'round rectangle'], k=node_types_cnt)
+    line = ['solid arrow'] * node_types_cnt
+
+    property_each_node_type = {}
+    for idx, node_type in enumerate(node_types):
+        property_each_node_type[node_type] = {'back_color': back_colors[idx],
+                                              'line_color': line_colors[idx],
+                                              'shape': shape[idx],
+                                              'line_shape': line[idx]}
+
+    # write LLM model output
+    model_output = ''
+
+    for si, ss in zip(shape_info, shape_sizes):
+        node_id = si['id']
+        node_type = si['type']
+        node_property = property_each_node_type[node_type]
+
+        count = nodes_count[si['depth']]['count']
+        checked = nodes_count[si['depth']]['checked']
+        node_position = (checked + 0.5) - count / 2  # positive for right/bottom, 0 for center, negative for left/top
+        nodes_count[si['depth']]['checked'] += 1
+
+        if diagram_direction == 'horizontal':
+            node_x = CANVAS_WIDTH * (0.5 + (si['depth'] - min_depth)) / (1.0 + diff)
+            node_y = CANVAS_HEIGHT * (0.5 + node_position / max_count_by_depth)
+
+        else:  # vertical
+            node_x = CANVAS_WIDTH * (0.5 + node_position / max_count_by_depth)
+            node_y = CANVAS_HEIGHT * (0.5 + (si['depth'] - min_depth)) / (1.0 + diff)
+
+        node_shape = node_property['shape']
+
+        node_size_base = 110 - 6 * max(max_count_by_depth, diff)
+        node_width = node_size_base * ss
+        node_height = node_size_base * ss
+        back_color = node_property['back_color']
+
+        if is_this_and_all_connected_nodes_data(shape_info, node_id):
+            line_shape = 'dashed line'
+        else:
+            line_shape = node_property['line_shape']
+        line_color = node_property['line_color']
+
+        connected_node_ids = si['connected_node_ids']
+
+        # represent as Python list and add (as string)
+        node_representation_list = [node_id, int(node_x), int(node_y), node_shape,
+                                    int(node_width), int(node_height), line_shape,
+                                    back_color, line_color, connected_node_ids]
+
+        model_output += f'{node_representation_list}\n'
+
+    return model_output
+
+
 # Flow Chart 구조 관련 LLM 출력값 생성
 # Create Date : 2025.03.19
 # Last Update Date : -
@@ -911,17 +1040,10 @@ def generate_flow_chart_llm_output(shape_types, shape_sizes):
         current_node_id = next_node_info['id']
         current_depth = next_node_info['depth']
 
-    # temp
-    for s in shape_types:
-        print(s)
+    # generate diagram output
+    model_output = generate_flow_chart_llm_data(shape_info=shape_types, shape_sizes=shape_sizes)
 
-    max_depth = max(info['depth'] for info in shape_types)
-    min_depth = min(info['depth'] for info in shape_types)
-
-    # temp
-    print(max_depth, min_depth)
-
-    raise NotImplementedError
+    return model_output
 
 
 # LLM 학습 데이터셋 생성

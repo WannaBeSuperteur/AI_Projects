@@ -19,6 +19,9 @@ def generate_diagram_from_csv():
     os.makedirs(f'{abs_path}/test_diagrams', exist_ok=True)
 
     for idx, output in enumerate(outputs):
+        if idx % 100 == 0:
+            print(f'progress : {idx} diagrams generated')
+
         lines = str(output).split('\n')
         output_path = f'{abs_path}/test_diagrams/diagram_{idx:06d}.png'
         generate_diagram_from_lines(lines, output_path)
