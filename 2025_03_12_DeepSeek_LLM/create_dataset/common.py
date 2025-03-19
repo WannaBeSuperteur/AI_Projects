@@ -609,6 +609,66 @@ def generate_flow_chart_structure(shape_config_seed):
     return shape_types, shape_sizes
 
 
+# Flow Chart 구조 중 Processing 을 나타내는 node 에 대한 사용자 입력 프롬프트 생성
+# Create Date : 2025.03.19
+# Last Update Date : -
+
+# Arguments:
+# - node_name            (str)       : Processing node 를 나타내는 이름
+# - incoming_node_names  (list(str)) : 해당 node 이전 단계를 나타내는 node 들을 나타내는 이름
+# - connected_node_names (list(str)) : 해당 node 이후 단계를 나타내는 node 들을 나타내는 이름
+
+# Returns:
+# - process_user_prompt (str) : 해당 Processing 을 나타내는 node 에 대한 사용자 입력 프롬프트
+
+def get_process_user_prompt(node_name, incoming_node_names, connected_node_names):
+    process_user_prompt = ''
+
+    if random.random() < 0.5:
+        additional_and = "and " if random.random() < 0.5 else ""
+        process_or_handle = random.choice(['inputs', 'handle', 'process'])
+
+        process_user_prompt += f'{node_name} that '
+
+        if random.random() < 0.5:
+            if len(incoming_node_names) > 0:
+                process_user_prompt += f'{process_or_handle} ' + f' {additional_and} '.join(incoming_node_names)
+                if len(connected_node_names) > 0:
+                    process_user_prompt += ', and outputs ' + f' {additional_and} '.join(connected_node_names)
+
+            elif len(connected_node_names) > 0:
+                process_user_prompt += 'outputs ' + f' {additional_and} '.join(connected_node_names)
+
+        else:
+            if len(incoming_node_names) > 0:
+                process_user_prompt += ', with ' + f' {additional_and} '.join(incoming_node_names) + ' as input'
+                if len(connected_node_names) > 0:
+                    process_user_prompt += ', and ' + f' {additional_and} '.join(connected_node_names) + ' as output'
+
+            elif len(connected_node_names) > 0:
+                process_user_prompt += 'with ' + f' {additional_and} '.join(connected_node_names) + ' as output'
+
+    else:
+        if len(incoming_node_names) > 0:
+            process_user_prompt += 'inputs ' + ' and '.join(incoming_node_names)
+            if len(connected_node_names) > 0:
+                process_user_prompt += ', and outputs ' + ' and '.join(connected_node_names)
+
+            it_or_them = 'it' if len(incoming_node_names) + len(connected_node_names) == 1 else 'them'
+            process_user_prompt += f' and process {it_or_them} with {node_name}'
+
+        elif len(connected_node_names) > 0:
+            process_user_prompt += 'outputs ' + ' and '.join(connected_node_names)
+
+            it_or_them = 'it' if len(connected_node_names) == 1 else 'them'
+            process_user_prompt += f' and process {it_or_them} with {node_name}'
+
+        else:
+            process_user_prompt += f' process {node_name}'
+
+    return process_user_prompt
+
+
 # Flow Chart 구조 관련 사용자 입력 프롬프트 생성
 # Create Date : 2025.03.19
 # Last Update Date : -
@@ -710,48 +770,7 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
 
         # 해당 node 가 처리 프로세스 (function, process) 인 경우
         if node_type in ['func', 'process']:
-            if random.random() < 0.5:
-                additional_and = "and " if random.random() < 0.5 else ""
-                process_or_handle = random.choice(['inputs', 'handle', 'process'])
-
-                user_prompt += f'{node_name} that '
-
-                if random.random() < 0.5:
-                    if len(incoming_node_names) > 0:
-                        user_prompt += f'{process_or_handle} ' + f' {additional_and} '.join(incoming_node_names)
-                        if len(connected_node_names) > 0:
-                            user_prompt += ', and outputs ' + f' {additional_and} '.join(connected_node_names)
-
-                    elif len(connected_node_names) > 0:
-                        user_prompt += 'outputs ' + f' {additional_and} '.join(connected_node_names)
-
-                else:
-                    if len(incoming_node_names) > 0:
-                        user_prompt += ', with ' + f' {additional_and} '.join(incoming_node_names) + ' as input'
-                        if len(connected_node_names) > 0:
-                            user_prompt += ', and ' + f' {additional_and} '.join(connected_node_names) + ' as output'
-
-                    elif len(connected_node_names) > 0:
-                        user_prompt += 'with ' + f' {additional_and} '.join(connected_node_names) + ' as output'
-
-            else:
-                if len(incoming_node_names) > 0:
-                    user_prompt += 'inputs ' + ' and '.join(incoming_node_names)
-                    if len(connected_node_names) > 0:
-                        user_prompt += ', and outputs ' + ' and '.join(connected_node_names)
-
-                    it_or_them = 'it' if len(incoming_node_names) + len(connected_node_names) == 1 else 'them'
-                    user_prompt += f' and process {it_or_them} with {node_name}'
-
-                elif len(connected_node_names) > 0:
-                    user_prompt += 'outputs ' + ' and '.join(connected_node_names)
-
-                    it_or_them = 'it' if len(connected_node_names) == 1 else 'them'
-                    user_prompt += f' and process {it_or_them} with {node_name}'
-
-                else:
-                    user_prompt += f' process {node_name}'
-
+            user_prompt += get_process_user_prompt(node_name, incoming_node_names, connected_node_names)
             user_prompt += get_phrase_between_each_node(i)
 
         # 해당 node 가 데이터이면서 앞의 node 도 모두 데이터인 경우
@@ -775,8 +794,8 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     return entire_prompt, user_prompt
 
 
-# Deep Learning 모델 구조 관련 LLM 출력값 생성
-# Create Date : 2025.03.18
+# Flow Chart 구조 관련 LLM 출력값 생성
+# Create Date : 2025.03.19
 # Last Update Date : -
 
 # Arguments:
