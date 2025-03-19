@@ -880,6 +880,47 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
 # - model_output (str) : 다이어그램 형식의 텍스트 (draw_diagram/diagram.txt 참고)
 
 def generate_flow_chart_llm_output(shape_types, shape_sizes):
+    visited = [False for _ in range(len(shape_types))]
+    visited[0] = True
+
+    current_node_id = 0
+    current_depth = 0
+    dfs_stack = []
+
+    while True:
+        shape_types[current_node_id]['depth'] = current_depth
+
+        # find connected / incoming nodes
+        connected_node_ids = shape_types[current_node_id]['connected_node_ids']
+        for cno_id in connected_node_ids:
+            if not visited[cno_id]:
+                dfs_stack.append({'id': cno_id, 'depth': current_depth + 1})
+                visited[cno_id] = True
+
+        incoming_node_ids = shape_types[current_node_id]['incoming_node_ids']
+        for ino_id in incoming_node_ids:
+            if not visited[ino_id]:
+                dfs_stack.append({'id': ino_id, 'depth': current_depth - 1})
+                visited[ino_id] = True
+
+        if len(dfs_stack) == 0:
+            break
+
+        # go to next node
+        next_node_info = dfs_stack.pop(-1)
+        current_node_id = next_node_info['id']
+        current_depth = next_node_info['depth']
+
+    # temp
+    for s in shape_types:
+        print(s)
+
+    max_depth = max(info['depth'] for info in shape_types)
+    min_depth = min(info['depth'] for info in shape_types)
+
+    # temp
+    print(max_depth, min_depth)
+
     raise NotImplementedError
 
 
@@ -909,10 +950,6 @@ def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func
         entire_prompt, user_prompt = generate_prompt_func(random.randint(0, MAX_PROMPT_SEED), shape_types, shape_sizes)
         inputs.append(entire_prompt)
         user_prompts.append(user_prompt)
-
-        # temp
-        print('====')
-        print(user_prompt)
 
         # generate LLM output for training
         llm_output = generate_llm_output_func(shape_types, shape_sizes)
