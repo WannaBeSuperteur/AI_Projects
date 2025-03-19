@@ -56,6 +56,32 @@ X position range is 0-1000 and Y position range is 0-600.
 It is important to draw a representation of high readability."""
 
 
+# For Deep Learning Model Prompt
+user_prompt_part1_candidates = ['with', 'of', 'consist of']
+
+input_node_names = ['input layer nodes', 'input nodes', 'input elements', 'input size']
+hidden_layer_names = ['hidden layers', 'hiddens', 'intermediate layers', 'hidden layer', 'mid layers']
+output_node_names = ['output layer nodes', 'output nodes', 'output elements', 'output size']
+
+
+# For Flow Chart Prompt
+user_prompt_start = ['process that ',
+                     'machine learning model that ',
+                     'deep learning process that ',
+                     'data pre-processing algorithm that ',
+                     'algorithm that ']
+contain_marks = ['consists of ', 'contains ', 'includes ']
+
+numeric_names = ['matrix', 'tensor', 'tensors', 'numeric values', 'matrices',
+                 'buffer', 'buffers', 'numpy array', 'pytorch tensor', 'tensorflow tensor']
+str_names = ['string', 'text', 'tokens', 'sentence', 'pandas dataframe']
+picture_names = ['picture', 'figure', 'png file', 'jpg file']
+db_names = ['DB', 'database', 'data storage', 'data store']
+chart_names = ['chart', 'graph', 'table', 'line chart', 'histogram', 'experiment result']
+func_names = ['function', 'code file', 'python file', 'python code']
+process_names = ['process', 'python code', 'pre-processing', 'feature engineering', 'PCA', 'processing']
+
+
 # Layer Type, Layer Size 를 랜덤으로 결정
 # Create Date : 2025.03.17
 # Last Update Date : -
@@ -173,12 +199,6 @@ def generate_dl_model_prompt(prompt_seed, layer_types, layer_sizes):
     else:
         user_prompt_part0_candidates = ['Convolutional neural network', 'Conv neural network',
                                         'DL model', 'neural network', 'CNN', 'CNN model']
-
-    user_prompt_part1_candidates = ['with', 'of', 'consist of']
-
-    input_node_names = ['input layer nodes', 'input nodes', 'input elements', 'input size']
-    hidden_layer_names = ['hidden layers', 'hiddens', 'intermediate layers', 'hidden layer', 'mid layers']
-    output_node_names = ['output layer nodes', 'output nodes', 'output elements', 'output size']
 
     user_prompt = (user_prompt_part0_candidates[prompt_seed % 6] + ' ' +
                    user_prompt_part1_candidates[(prompt_seed // 6) % 3] + ' ')
@@ -687,24 +707,7 @@ def get_process_user_prompt(node_name, incoming_node_names, connected_node_names
 def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     n = len(shape_types)
 
-    user_prompt_start = ['process that ',
-                         'process that ',
-                         'machine learning model that ',
-                         'deep learning process that ',
-                         'data pre-processing algorithm that ',
-                         'algorithm that ']
-    contain_marks = ['consists of ', 'contains ', 'includes ']
-
     user_prompt = random.choice(user_prompt_start) + random.choice(contain_marks)
-
-    numeric_names = ['matrix', 'tensor', 'tensors', 'numeric values', 'matrices',
-                     'buffer', 'buffers', 'numpy array', 'pytorch tensor', 'tensorflow tensor']
-    str_names = ['string', 'text', 'tokens', 'sentence', 'pandas dataframe']
-    picture_names = ['picture', 'figure', 'png file', 'jpg file']
-    db_names = ['DB', 'database', 'data storage', 'data store']
-    chart_names = ['chart', 'graph', 'table', 'line chart', 'histogram', 'experiment result']
-    func_names = ['function', 'code file', 'python file', 'python code']
-    process_names = ['process', 'python code', 'pre-processing', 'feature engineering', 'PCA', 'processing']
 
     default_numeric_name = numeric_names[prompt_seed % 10]
     default_str_name = str_names[(prompt_seed // 10) % 5]
@@ -788,7 +791,7 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     for unnn_mark in ['-', '*']:
         unnn_mark_str = f'{unnn_mark} '
         if user_prompt.endswith(unnn_mark_str):
-            user_prompt = user_prompt[:-len(unnn_mark_str)]
+            user_prompt = user_prompt[:-len(unnn_mark_str)] + '\n'
 
     entire_prompt = PROMPT_PREFIX + user_prompt + PROMPT_SUFFIX
     return entire_prompt, user_prompt
