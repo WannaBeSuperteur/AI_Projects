@@ -610,7 +610,7 @@ def generate_flow_chart_structure(shape_config_seed):
 
 
 # Flow Chart 구조 관련 사용자 입력 프롬프트 생성
-# Create Date : 2025.03.18
+# Create Date : 2025.03.19
 # Last Update Date : -
 
 # Arguments:
@@ -627,30 +627,38 @@ def generate_flow_chart_structure(shape_config_seed):
 def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     n = len(shape_types)
 
-    user_prompt_start = ['process that includes ',
-                         'process of ',
+    user_prompt_start = ['process that ',
+                         'process that ',
                          'machine learning model that ',
-                         'deep learning process of ',
-                         'data pre-processing algorithm of ',
+                         'deep learning process that ',
+                         'data pre-processing algorithm that ',
                          'algorithm that ']
+    contain_marks = ['consists of ', 'contains ', 'includes ']
 
-    user_prompt = random.choice(user_prompt_start)
+    user_prompt = random.choice(user_prompt_start) + random.choice(contain_marks)
 
-    numeric_names = ['matrix', 'tensor', 'numeric values', 'matrices', 'buffer']
-    str_names = ['string', 'text', 'tokens', 'sentence']
+    numeric_names = ['matrix', 'tensor', 'tensors', 'numeric values', 'matrices',
+                     'buffer', 'buffers', 'numpy array', 'pytorch tensor', 'tensorflow tensor']
+    str_names = ['string', 'text', 'tokens', 'sentence', 'pandas dataframe']
     picture_names = ['picture', 'figure', 'png file', 'jpg file']
     db_names = ['DB', 'database', 'data storage', 'data store']
     chart_names = ['chart', 'graph', 'table', 'line chart', 'histogram', 'experiment result']
     func_names = ['function', 'code file', 'python file', 'python code']
     process_names = ['process', 'python code', 'pre-processing', 'feature engineering', 'PCA', 'processing']
 
-    default_numeric_name = numeric_names[prompt_seed % 5]
-    default_str_name = str_names[(prompt_seed // 5) % 4]
-    default_picture_name = picture_names[(prompt_seed // (5 * 4)) % 4]
-    default_db_name = db_names[(prompt_seed // (5 * 4 * 4)) % 4]
-    default_chart_name = chart_names[(prompt_seed // (5 * 4 * 4 * 4)) % 6]
-    default_func_name = func_names[(prompt_seed // (5 * 4 * 4 * 4 * 6)) % 4]
-    default_process_name = process_names[(prompt_seed // (5 * 4 * 4 * 4 * 6 * 4)) % 6]
+    default_numeric_name = numeric_names[prompt_seed % 10]
+    default_str_name = str_names[(prompt_seed // 10) % 5]
+    default_picture_name = picture_names[(prompt_seed // (10 * 5)) % 4]
+    default_db_name = db_names[(prompt_seed // (10 * 5 * 4)) % 4]
+    default_chart_name = chart_names[(prompt_seed // (10 * 5 * 4 * 4)) % 6]
+    default_func_name = func_names[(prompt_seed // (10 * 5 * 4 * 4 * 6)) % 4]
+    default_process_name = process_names[(prompt_seed // (10 * 5 * 4 * 4 * 6 * 4)) % 6]
+
+    # divide parts of each node by new-line
+    divide_by_newline = random.random() < 0.75
+    numbering_mark = '-' if random.random() < 0.5 else '*'
+    if divide_by_newline:
+        user_prompt += f'\n{numbering_mark} '
 
     # node 의 종류에 따라 이름 반환
     def get_node_name(node_type_str):
@@ -669,6 +677,17 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
         else:  # process
             return default_process_name if random.random() < 0.5 else random.choice(process_names)
 
+    # phrase between each node
+    def get_phrase_between_each_node(idx):
+        if idx < n - 1:
+            if divide_by_newline:
+                return f'\n{numbering_mark} '
+            else:
+                additional_then = "then " if random.random() < 0.5 else ""
+                return f', and {additional_then}'
+        else:
+            return '.'
+
     # add incoming node info
     for i in range(n):
         shape_types[i]['incoming_node_ids'] = []
@@ -677,60 +696,80 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
         for connected_node_id in shape_types[i]['connected_node_ids']:
             shape_types[connected_node_id]['incoming_node_ids'].append(i)
 
-    for s in shape_types:
-        print(s)
-
     # generate user prompt
     for i in range(n):
         node_type = shape_types[i]['type']
+        node_name = get_node_name(node_type)
 
         incoming_nodes = shape_types[i]['incoming_node_ids']
         incoming_node_types = [shape_types[node_id]['type'] for node_id in incoming_nodes]
+        incoming_node_names = [get_node_name(shape_types[node_id]['type']) for node_id in incoming_nodes]
 
         connected_nodes = shape_types[i]['connected_node_ids']
-        connected_node_types = [shape_types[node_id]['type'] for node_id in connected_nodes]
+        connected_node_names = [get_node_name(shape_types[node_id]['type']) for node_id in connected_nodes]
 
-        if random.random() < 0.5:
-            additional_and = "and " if random.random() < 0.5 else ""
-            additional_then = "then " if random.random() < 0.5 else ""
-            additional_and_then = additional_and + additional_then
-
-            user_prompt += 'process ' + node_type + ', with '
-
+        # 해당 node 가 처리 프로세스 (function, process) 인 경우
+        if node_type in ['func', 'process']:
             if random.random() < 0.5:
-                if len(incoming_node_types) > 0:
-                    user_prompt += 'with input ' + f' {additional_and_then} '.join(incoming_node_types)
-                    if len(connected_node_types) > 0:
-                        user_prompt += ', and output ' + f' {additional_and_then} '.join(connected_node_types) + '.'
+                additional_and = "and " if random.random() < 0.5 else ""
+                process_or_handle = random.choice(['inputs', 'handle', 'process'])
 
-                elif len(connected_node_types) > 0:
-                    user_prompt += 'with output ' + f' {additional_and_then} '.join(connected_node_types) + '.'
+                user_prompt += f'{node_name} that '
 
-            else:
-                if len(incoming_node_types) > 0:
-                    user_prompt += 'with ' + f' {additional_and_then} '.join(incoming_node_types) + ' as input'
-                    if len(connected_node_types) > 0:
-                        user_prompt += ', and ' + f' {additional_and_then} '.join(connected_node_types) + ' as output.'
+                if random.random() < 0.5:
+                    if len(incoming_node_names) > 0:
+                        user_prompt += f'{process_or_handle} ' + f' {additional_and} '.join(incoming_node_names)
+                        if len(connected_node_names) > 0:
+                            user_prompt += ', and outputs ' + f' {additional_and} '.join(connected_node_names)
 
-                elif len(connected_node_types) > 0:
-                    user_prompt += 'with ' + f' {additional_and_then} '.join(connected_node_types) + ' as output.'
+                    elif len(connected_node_names) > 0:
+                        user_prompt += 'outputs ' + f' {additional_and} '.join(connected_node_names)
 
-        else:
-            if len(incoming_node_types) > 0:
-                user_prompt += 'inputs ' + ' and '.join(incoming_node_types)
-                if len(connected_node_types) > 0:
-                    user_prompt += ', and outputs ' + ' and '.join(connected_node_types)
-                user_prompt += ' and process ' + node_type + ' with them.'
+                else:
+                    if len(incoming_node_names) > 0:
+                        user_prompt += ', with ' + f' {additional_and} '.join(incoming_node_names) + ' as input'
+                        if len(connected_node_names) > 0:
+                            user_prompt += ', and ' + f' {additional_and} '.join(connected_node_names) + ' as output'
 
-            elif len(connected_node_types) > 0:
-                user_prompt += 'outputs ' + ' and '.join(connected_node_types)
-                user_prompt += ' and process ' + node_type + ' with them.'
+                    elif len(connected_node_names) > 0:
+                        user_prompt += 'with ' + f' {additional_and} '.join(connected_node_names) + ' as output'
 
             else:
-                user_prompt += ' process ' + node_type
+                if len(incoming_node_names) > 0:
+                    user_prompt += 'inputs ' + ' and '.join(incoming_node_names)
+                    if len(connected_node_names) > 0:
+                        user_prompt += ', and outputs ' + ' and '.join(connected_node_names)
 
-        if i < n - 1:
-            user_prompt += ', and '
+                    it_or_them = 'it' if len(incoming_node_names) + len(connected_node_names) == 1 else 'them'
+                    user_prompt += f' and process {it_or_them} with {node_name}'
+
+                elif len(connected_node_names) > 0:
+                    user_prompt += 'outputs ' + ' and '.join(connected_node_names)
+
+                    it_or_them = 'it' if len(connected_node_names) == 1 else 'them'
+                    user_prompt += f' and process {it_or_them} with {node_name}'
+
+                else:
+                    user_prompt += f' process {node_name}'
+
+            user_prompt += get_phrase_between_each_node(i)
+
+        # 해당 node 가 데이터이면서 앞의 node 도 모두 데이터인 경우
+        elif (node_type not in ['func', 'process'] and len(incoming_node_names) > 0 and
+              incoming_node_types.count('func') == 0 and incoming_node_types.count('process') == 0):
+
+            process_name = get_node_name('process')
+            user_prompt += f'a {process_name} converts ' + ' and '.join(incoming_node_names) + ' '
+            user_prompt += f'into {node_name}'
+
+            user_prompt += get_phrase_between_each_node(i)
+
+    # remove duplicated spaces and unnecessary numbering marks
+    user_prompt = user_prompt.replace(' , ', ', ').replace('  ', ' ')
+    for unnn_mark in ['-', '*']:
+        unnn_mark_str = f'{unnn_mark} '
+        if user_prompt.endswith(unnn_mark_str):
+            user_prompt = user_prompt[:-len(unnn_mark_str)]
 
     entire_prompt = PROMPT_PREFIX + user_prompt + PROMPT_SUFFIX
     return entire_prompt, user_prompt
