@@ -180,9 +180,161 @@ def generate_dl_model_structure(layer_config_seed):
     return layer_types, layer_sizes
 
 
+# Deep Learning 모델 구조 관련, layer type 별 사용자 입력 프롬프트에 추가할 부분 생성 (Conv. + Pool. 그룹의 모든 각 레이어 체크 시)
+# Create Date : 2025.03.19
+# Last Update Date : -
+
+# Arguments:
+# - layer_type          (str) : 딥러닝 모델의 해당 레이어의 종류
+# - layer_size          (int) : 딥러닝 모델의 해당 레이어의 크기 (node 개수 or feature map 크기)
+# - conv                (str) : Conv. layer 를 나타내는 단어
+# - pooling_type        (str) : Pooling layer 의 type (max, average) 을 나타내는 단어
+# - additional_then     (str) : 확률적으로 추가되는 'then ' 접속사 (또는 empty string)
+# - additional_and_then (str) : 확률적으로 추가되는 'and ', 'then ' 또는 'and then ' 접속사 (또는 empty string)
+
+# Returns:
+# - added_user_prompt (str) : 사용자 입력 프롬프트에 추가할 부분
+
+def get_dl_model_prompt_not_conv_pool_at_once(layer_type, layer_size, conv, pooling_type,
+                                              additional_then, additional_and_then):
+    r = random.random()
+
+    # Convolutional Layer
+    if layer_type == 'conv':
+        if r < 0.2:
+            return f'{conv} layer, {additional_and_then}'
+        elif r < 0.35:
+            return f'3 x 3 {conv} layer, {additional_and_then}'
+        elif r < 0.5:
+            return f'3x3 {conv} layer, {additional_and_then}'
+        elif r < 0.65:
+            return f'3 * 3 {conv} layer, {additional_and_then}'
+        elif r < 0.8:
+            return f'3*3 {conv} layer, {additional_and_then}'
+        elif r < 0.9:
+            return f'{conv} layer (output is {layer_size} x {layer_size}), {additional_and_then}'
+        else:
+            return f'{conv} layer (output: {layer_size} x {layer_size} feature map), {additional_and_then}'
+
+    # Pooling Layer
+    else:
+        if r < 0.3:
+            return f'{pooling_type}pooling layer, {additional_then}'
+        elif r < 0.475:
+            return f'2 x 2 {pooling_type}pooling layer, {additional_then}'
+        elif r < 0.65:
+            return f'2x2 {pooling_type}pooling layer, {additional_then}'
+        elif r < 0.825:
+            return f'2 * 2 {pooling_type}pooling layer, {additional_then}'
+        else:
+            return f'2*2 {pooling_type}pooling layer, {additional_then}'
+
+
+# Deep Learning 모델 구조 관련, layer type 별 사용자 입력 프롬프트에 추가할 부분 생성
+# Create Date : 2025.03.19
+# Last Update Date : -
+
+# Arguments:
+# - layer_idx              (int)       : 해당 레이어의 인덱스 (모든 레이어 중)
+# - layer_type             (str)       : 딥러닝 모델의 해당 레이어의 종류
+# - layer_size             (int)       : 딥러닝 모델의 해당 레이어의 크기 (node 개수 or feature map 크기)
+# - layer_types            (list(str)) : 딥러닝 모델의 모든 레이어의 종류
+# - last_pooling_layer_idx (int)       : 딥러닝 모델 전체를 기준으로, 마지막 pooling layer 의 인덱스
+# - prompt_seed            (int)       : 프롬프트 형식을 나타내는 int 값 (0 - 9,999,999)
+# - say_conv_pool_at_once  (bool)      : Conv. + Pool. 그룹의 마지막 레이어인 Pooling Layer 에서만 레이어 개수 체크할지 여부
+
+# Returns:
+# - added_user_prompt       (str) : layer type 별 사용자 입력 프롬프트에 추가할 부분
+# - last_pooling_layer_idx_ (int) : last_pooling_layer_idx 의 업데이트된 값
+
+def get_dl_model_prompt_of_layer_type(layer_idx, layer_type, layer_size, layer_types,
+                                      prompt_seed, last_pooling_layer_idx, say_conv_pool_at_once):
+
+    added_user_prompt = ''
+    last_pooling_layer_idx_ = last_pooling_layer_idx
+
+    additional_and = "and " if random.random() < 0.5 else ""
+    additional_then = "then " if random.random() < 0.5 else ""
+    additional_and_then = additional_and + additional_then
+
+    # Conv. or Pool. layer
+    if layer_type in ['conv', 'pool']:
+        conv = "convolutional" if random.random() < 0.5 else "conv"
+
+        if random.random() < 0.4:
+            pooling_type = "max " if random.random() < 0.5 else "average "
+        else:
+            pooling_type = ""
+
+        # Conv. + Pool. 그룹의 마지막 레이어인 Pooling Layer 에서만 해당 그룹의 종류 별 레이어 개수 체크
+        if say_conv_pool_at_once:
+            if layer_type == 'conv':
+                return '', last_pooling_layer_idx
+
+            current_conv_and_pool_group = layer_types[last_pooling_layer_idx_ : layer_idx + 1]
+            conv_layers = current_conv_and_pool_group.count('conv')
+            last_pooling_layer_idx_ = layer_idx
+
+            if conv_layers > 1:
+                added_user_prompt += f'{conv_layers} 3 x 3 {conv} layers and a 2 x 2 {pooling_type}pooling layer, {additional_then}'
+            else:
+                added_user_prompt += f'a 3 x 3 {conv} layer and a 2 x 2 {pooling_type}pooling layer, {additional_then}'
+
+        else:
+            added_user_prompt += get_dl_model_prompt_not_conv_pool_at_once(layer_type, layer_size, conv, pooling_type,
+                                                                           additional_then, additional_and_then)
+
+    # CNN input layer
+    elif layer_type == 'cnn_input':
+        additional_img = ' image' if random.random() < 0.5 else ''
+        img_size = f'{layer_size} * {layer_size}' if random.random() < 0.5 else f'{layer_size} x {layer_size}'
+        added_user_prompt += f'{img_size} input{additional_img}, '
+
+    # input layer (dense)
+    elif layer_idx == 0:
+        input_node_name = input_node_names[(prompt_seed // (6 * 3)) % 4]
+        added_user_prompt += f'{layer_size} {input_node_name}, '
+
+    # output layer (dense)
+    elif layer_idx == len(layer_types) - 1:
+        output_node_name = output_node_names[(prompt_seed // (6 * 3 * 4 * 5)) % 4]
+        added_user_prompt += f'and {layer_size} {output_node_name} '
+
+    # last hidden layer (dense)
+    elif layer_idx == len(layer_types) - 2:
+        hidden_layer_name = hidden_layer_names[(prompt_seed // (6 * 3 * 4)) % 5]
+
+        if layer_idx == 1 or layer_types[layer_idx - 1] in ['conv', 'pool']:  # only one hidden layer
+            added_user_prompt += f'and {layer_size} nodes in {hidden_layer_name}, '
+
+        else:
+            r = random.random()
+            additional_and = "and " if random.random() < 0.5 else ""
+            hidden_layer_cnt = (len(layer_types) - 2) - (layer_types.count('conv') + layer_types.count('pool'))
+
+            if r < 0.25:
+                added_user_prompt += f'{additional_and}{layer_size} nodes in each of the {hidden_layer_cnt} {hidden_layer_name}, '
+            elif r < 0.5:
+                added_user_prompt += f'{additional_and}{layer_size} nodes in the {hidden_layer_name}, '
+            elif r < 0.75:
+                added_user_prompt += f'{additional_and}{layer_size} nodes in {hidden_layer_cnt} {hidden_layer_name}, '
+            else:
+                added_user_prompt += f'{additional_and}{layer_size} nodes in {hidden_layer_name}, '
+
+    # hidden layer (dense)
+    else:
+        if random.random() < 0.5:
+            added_user_prompt += f'{layer_size}, '
+        else:
+            added_user_prompt += f'{layer_size} '
+
+    return added_user_prompt, last_pooling_layer_idx_
+
+
 # Deep Learning 모델 구조 관련 사용자 입력 프롬프트 생성
 # Create Date : 2025.03.17
-# Last Update Date : -
+# Last Update Date : 2025.03.19
+# - layer type 에 따른 프롬프트 생성을 별도 함수 (get_dl_model_prompt_of_layer_type) 로 분리
 
 # Arguments:
 # - prompt_seed (int)       : 프롬프트 형식을 나타내는 int 값 (0 - 9,999,999)
@@ -211,110 +363,17 @@ def generate_dl_model_prompt(prompt_seed, layer_types, layer_sizes):
     last_pooling_layer_idx = 0
 
     for idx, (t, s) in enumerate(zip(layer_types, layer_sizes)):
-        additional_and = "and " if random.random() < 0.5 else ""
-        additional_then = "then " if random.random() < 0.5 else ""
-        additional_and_then = additional_and + additional_then
 
-        # Conv. or Pool. layer
-        if t in ['conv', 'pool']:
-            conv = "convolutional" if random.random() < 0.5 else "conv"
+        added_user_prompt, updated_last_pool_idx = get_dl_model_prompt_of_layer_type(layer_idx=idx,
+                                                                                     layer_type=t,
+                                                                                     layer_size=s,
+                                                                                     layer_types=layer_types,
+                                                                                     prompt_seed=prompt_seed,
+                                                                                     last_pooling_layer_idx=last_pooling_layer_idx,
+                                                                                     say_conv_pool_at_once=say_conv_pool_at_once)
 
-            if random.random() < 0.4:
-                pooling_type = "max " if random.random() < 0.5 else "average "
-            else:
-                pooling_type = ""
-
-            if say_conv_pool_at_once:
-
-                # Conv. + Pool. 그룹의 마지막 레이어인 Pooling Layer 에서만 해당 그룹의 종류 별 레이어 개수 체크
-                if t == 'conv':
-                    continue
-
-                current_conv_and_pool_group = layer_types[last_pooling_layer_idx : idx+1]
-                conv_layers = current_conv_and_pool_group.count('conv')
-                last_pooling_layer_idx = idx
-
-                if conv_layers > 1:
-                    user_prompt += f'{conv_layers} 3 x 3 {conv} layers and a 2 x 2 {pooling_type}pooling layer, {additional_then}'
-                else:
-                    user_prompt += f'a 3 x 3 {conv} layer and a 2 x 2 {pooling_type}pooling layer, {additional_then}'
-
-            else:
-                r = random.random()
-
-                # Convolutional Layer
-                if t == 'conv':
-                    if r < 0.2:
-                        user_prompt += f'{conv} layer, {additional_and_then}'
-                    elif r < 0.35:
-                        user_prompt += f'3 x 3 {conv} layer, {additional_and_then}'
-                    elif r < 0.5:
-                        user_prompt += f'3x3 {conv} layer, {additional_and_then}'
-                    elif r < 0.65:
-                        user_prompt += f'3 * 3 {conv} layer, {additional_and_then}'
-                    elif r < 0.8:
-                        user_prompt += f'3*3 {conv} layer, {additional_and_then}'
-                    elif r < 0.9:
-                        user_prompt += f'{conv} layer (output is {s} x {s}), {additional_and_then}'
-                    else:
-                        user_prompt += f'{conv} layer (output: {s} x {s} feature map), {additional_and_then}'
-
-                # Pooling Layer
-                elif t == 'pool':
-                    if r < 0.3:
-                        user_prompt += f'{pooling_type}pooling layer, {additional_then}'
-                    elif r < 0.475:
-                        user_prompt += f'2 x 2 {pooling_type}pooling layer, {additional_then}'
-                    elif r < 0.65:
-                        user_prompt += f'2x2 {pooling_type}pooling layer, {additional_then}'
-                    elif r < 0.825:
-                        user_prompt += f'2 * 2 {pooling_type}pooling layer, {additional_then}'
-                    else:
-                        user_prompt += f'2*2 {pooling_type}pooling layer, {additional_then}'
-
-        # CNN input layer
-        elif t == 'cnn_input':
-            additional_img = ' image' if random.random() < 0.5 else ''
-            img_size = f'{s} * {s}' if random.random() < 0.5 else f'{s} x {s}'
-            user_prompt += f'{img_size} input{additional_img}, '
-
-        # input layer (dense)
-        elif idx == 0:
-            input_node_name = input_node_names[(prompt_seed // (6 * 3)) % 4]
-            user_prompt += f'{s} {input_node_name}, '
-
-        # output layer (dense)
-        elif idx == len(layer_types) - 1:
-            output_node_name = output_node_names[(prompt_seed // (6 * 3 * 4 * 5)) % 4]
-            user_prompt += f'and {s} {output_node_name} '
-
-        # last hidden layer (dense)
-        elif idx == len(layer_types) - 2:
-            hidden_layer_name = hidden_layer_names[(prompt_seed // (6 * 3 * 4)) % 5]
-
-            if idx == 1 or layer_types[idx - 1] in ['conv', 'pool']:  # only one hidden layer
-                user_prompt += f'and {s} nodes in {hidden_layer_name}, '
-
-            else:
-                r = random.random()
-                additional_and = "and " if random.random() < 0.5 else ""
-                hidden_layer_cnt = (len(layer_types) - 2) - (layer_types.count('conv') + layer_types.count('pool'))
-
-                if r < 0.25:
-                    user_prompt += f'{additional_and}{s} nodes in each of the {hidden_layer_cnt} {hidden_layer_name}, '
-                elif r < 0.5:
-                    user_prompt += f'{additional_and}{s} nodes in the {hidden_layer_name}, '
-                elif r < 0.75:
-                    user_prompt += f'{additional_and}{s} nodes in {hidden_layer_cnt} {hidden_layer_name}, '
-                else:
-                    user_prompt += f'{additional_and}{s} nodes in {hidden_layer_name}, '
-
-        # hidden layer (dense)
-        else:
-            if random.random() < 0.5:
-                user_prompt += f'{s}, '
-            else:
-                user_prompt += f'{s} '
+        user_prompt += added_user_prompt
+        last_pooling_layer_idx = updated_last_pool_idx
 
     entire_prompt = PROMPT_PREFIX + user_prompt + PROMPT_SUFFIX
     return entire_prompt, user_prompt
@@ -632,7 +691,7 @@ def generate_flow_chart_structure(shape_config_seed):
     return shape_types, shape_sizes
 
 
-# Flow Chart 구조 중 Processing 을 나타내는 node 에 대한 사용자 입력 프롬프트 생성
+# Flow Chart 구조 중 Processing 을 나타내는 node 에 대한 사용자 입력 프롬프트의 부분 생성
 # Create Date : 2025.03.19
 # Last Update Date : -
 
@@ -642,7 +701,7 @@ def generate_flow_chart_structure(shape_config_seed):
 # - connected_node_names (list(str)) : 해당 node 이후 단계를 나타내는 node 들을 나타내는 이름
 
 # Returns:
-# - process_user_prompt (str) : 해당 Processing 을 나타내는 node 에 대한 사용자 입력 프롬프트
+# - process_user_prompt (str) : 해당 Processing 을 나타내는 node 에 대한 사용자 입력 프롬프트의 부분
 
 def get_process_user_prompt(node_name, incoming_node_names, connected_node_names):
     process_user_prompt = ''
