@@ -70,10 +70,13 @@ output_node_names = ['output layer nodes', 'output nodes', 'output elements', 'o
 # For Flow Chart Prompt
 user_prompt_start = ['process that ',
                      'machine learning model that ',
-                     'deep learning process that ',
+                     'deep learning algorithm that ',
+                     'Langchain process that ',
+                     'RAG process that ',
+                     'LLM process that ',
                      'data pre-processing algorithm that ',
                      'algorithm that ']
-contain_marks = ['consists of ', 'contains ', 'includes ']
+contain_marks = ['consists of ', 'contains, ', 'includes, ']
 
 numeric_names = ['matrix', 'tensor', 'tensors', 'numeric values', 'matrices',
                  'buffer', 'buffers', 'numpy array', 'pytorch tensor', 'tensorflow tensor']
@@ -592,7 +595,8 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
 
 # Flow Chart 의 도형 Size, Type 를 랜덤으로 결정
 # Create Date : 2025.03.18
-# Last Update Date : -
+# Last Update Date : 2025.03.19
+# - process/func 의 인접 노드에 process/func 이 있을 수 있는 버그 해결
 
 # Arguments:
 # - shape_config_seed (int) : 도형 구성을 나타내는 int 값 (0 - 9,999,999)
@@ -610,7 +614,7 @@ def generate_flow_chart_structure(shape_config_seed):
 
     # 현재 node 의 type 에 따라, type 가 아직 정해지지 않은 인접한 node 의 type 결정
 
-    def get_adjacent_node_type(node_type):
+    def decide_adjacent_node_type(node_type):
         if node_type in ['func', 'process']:
             r = random.randint(0, 4)
             return node_types[r]
@@ -624,15 +628,8 @@ def generate_flow_chart_structure(shape_config_seed):
                 else:
                     return 'process'
 
-    # initialize DFS stack for generating nodes
     first_node_type = node_types[(shape_config_seed // 8) % 6]
     first_node = {'id': 0, 'type': first_node_type, 'depth': 0}
-
-    dfs_stack = [first_node]
-    for i in range(max_depth_from_start):
-        prev_node_type = dfs_stack[-1]['type']
-        dfs_stack.append({'id': i, 'type': get_adjacent_node_type(prev_node_type), 'depth': i})
-    dfs_stack = dfs_stack[::-1]
 
     # generate first (max_depths + 1) consecutive nodes
     for i in range(max_depth_from_start + 1):
@@ -641,12 +638,18 @@ def generate_flow_chart_structure(shape_config_seed):
                             'connected_node_ids': [1]}
 
         elif i < max_depth_from_start:
-            node_info[i] = {'type': get_adjacent_node_type(node_info[i - 1]['type']),
+            node_info[i] = {'type': decide_adjacent_node_type(node_info[i - 1]['type']),
                             'connected_node_ids': [i + 1]}
 
         else:
-            node_info[i] = {'type': get_adjacent_node_type(node_info[i - 1]['type']),
+            node_info[i] = {'type': decide_adjacent_node_type(node_info[i - 1]['type']),
                             'connected_node_ids': []}
+
+    # initialize DFS stack to generate nodes
+    dfs_stack = [first_node]
+    for i in range(max_depth_from_start):
+        dfs_stack.append({'id': i, 'type': node_info.get(i)['type'], 'depth': i})
+    dfs_stack = dfs_stack[::-1]
 
     # generate nodes
     while len(dfs_stack) > 0:
@@ -658,7 +661,7 @@ def generate_flow_chart_structure(shape_config_seed):
                 current_node_id = current_node['id']
                 current_node_type = current_node['type']
                 new_node_id = len(node_info)
-                new_node_type = get_adjacent_node_type(current_node_type)
+                new_node_type = decide_adjacent_node_type(current_node_type)
 
                 node_info[current_node_id]['connected_node_ids'].append(new_node_id)
                 node_info[new_node_id] = {'type': new_node_type, 'connected_node_ids': []}
@@ -671,7 +674,7 @@ def generate_flow_chart_structure(shape_config_seed):
                 current_node_id = current_node['id']
                 current_node_type = current_node['type']
                 new_node_id = len(node_info)
-                new_node_type = get_adjacent_node_type(current_node_type)
+                new_node_type = decide_adjacent_node_type(current_node_type)
 
                 node_info[new_node_id] = {'type': new_node_type, 'connected_node_ids': [current_node_id]}
 
@@ -707,40 +710,42 @@ def get_process_user_prompt(node_name, incoming_node_names, connected_node_names
     process_user_prompt = ''
 
     if random.random() < 0.5:
-        additional_and = "and " if random.random() < 0.5 else ""
+        additional_and = " and " if random.random() < 0.5 else ", "
         process_or_handle = random.choice(['inputs', 'handle', 'process'])
 
         process_user_prompt += f'{node_name} that '
 
         if random.random() < 0.5:
             if len(incoming_node_names) > 0:
-                process_user_prompt += f'{process_or_handle} ' + f' {additional_and} '.join(incoming_node_names)
+                process_user_prompt += f'{process_or_handle} {additional_and.join(incoming_node_names)}'
                 if len(connected_node_names) > 0:
-                    process_user_prompt += ', and outputs ' + f' {additional_and} '.join(connected_node_names)
+                    process_user_prompt += f', and outputs {additional_and.join(connected_node_names)}'
 
             elif len(connected_node_names) > 0:
-                process_user_prompt += 'outputs ' + f' {additional_and} '.join(connected_node_names)
+                process_user_prompt += f'outputs {additional_and.join(connected_node_names)}'
 
         else:
             if len(incoming_node_names) > 0:
-                process_user_prompt += ', with ' + f' {additional_and} '.join(incoming_node_names) + ' as input'
+                process_user_prompt += f', with {additional_and.join(incoming_node_names)} as input'
                 if len(connected_node_names) > 0:
-                    process_user_prompt += ', and ' + f' {additional_and} '.join(connected_node_names) + ' as output'
+                    process_user_prompt += f', and {additional_and.join(connected_node_names)} as output'
 
             elif len(connected_node_names) > 0:
-                process_user_prompt += 'with ' + f' {additional_and} '.join(connected_node_names) + ' as output'
+                process_user_prompt += f'with {additional_and.join(connected_node_names)} as output'
 
     else:
+        and_mark = ' and ' if random.random() < 0.5 else ', '
+
         if len(incoming_node_names) > 0:
-            process_user_prompt += 'inputs ' + ' and '.join(incoming_node_names)
+            process_user_prompt += f'inputs {and_mark.join(incoming_node_names)}'
             if len(connected_node_names) > 0:
-                process_user_prompt += ', and outputs ' + ' and '.join(connected_node_names)
+                process_user_prompt += f', and outputs {and_mark.join(connected_node_names)}'
 
             it_or_them = 'it' if len(incoming_node_names) + len(connected_node_names) == 1 else 'them'
             process_user_prompt += f' and process {it_or_them} with {node_name}'
 
         elif len(connected_node_names) > 0:
-            process_user_prompt += 'outputs ' + ' and '.join(connected_node_names)
+            process_user_prompt += f'outputs {and_mark.join(connected_node_names)}'
 
             it_or_them = 'it' if len(connected_node_names) == 1 else 'them'
             process_user_prompt += f' and process {it_or_them} with {node_name}'
@@ -784,6 +789,9 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     numbering_mark = '-' if random.random() < 0.5 else '*'
     if divide_by_newline:
         user_prompt += f'\n{numbering_mark} '
+    else:
+        additional_first = 'first, ' if random.random() < 0.5 else ''
+        user_prompt += additional_first
 
     # node 의 종류에 따라 이름 반환
     def get_node_name(node_type_str):
@@ -848,12 +856,11 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
 
             user_prompt += get_phrase_between_each_node(i)
 
-    # remove duplicated spaces and unnecessary numbering marks
+    # remove duplicated spaces and unnecessary marks
     user_prompt = user_prompt.replace(' , ', ', ').replace('  ', ' ')
-    for unnn_mark in ['-', '*']:
-        unnn_mark_str = f'{unnn_mark} '
-        if user_prompt.endswith(unnn_mark_str):
-            user_prompt = user_prompt[:-len(unnn_mark_str)] + '\n'
+    for unn_mark in ['and then ', 'and ', '- ', '* ', ', \n']:
+        if user_prompt.endswith(unn_mark):
+            user_prompt = user_prompt[:-len(unn_mark)] + '\n'
 
     entire_prompt = PROMPT_PREFIX + user_prompt + PROMPT_SUFFIX
     return entire_prompt, user_prompt
