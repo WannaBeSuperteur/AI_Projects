@@ -11,12 +11,15 @@ for the two diagram types below:
  - 1. Deep Learning Model (Dense, CNN)
  - 2. Flow-Chart
 
+ (int)                      (process)
  [ shape config seed ] ---> ( generate_structure_func )
                                        |
-                                       V
+                                       |
+                             (data)    V                    (process)
                              [ shape size, type info ] ---> ( generate_llm_output_func ) ---> "LLM Output"
                                        |                                                           |
-                                       V                                                           V
+                                       |                                                           |
+ (int)                       (process) V                                                           V
  [ user prompt seed ] -----> ( generate_prompt_func ) ------> "User Prompt" ------> { Supervised Fine-Tuning of LLM }
 """
 
