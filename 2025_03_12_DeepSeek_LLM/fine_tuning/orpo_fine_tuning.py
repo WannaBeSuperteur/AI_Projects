@@ -1,8 +1,12 @@
-import pandas as pd
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
 from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
+from sklearn.model_selection import train_test_split
+
+import pandas as pd
+
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
@@ -78,28 +82,32 @@ def save_orpo_llm(llm):
 # Last Update Date : -
 
 # Arguments:
-# - llm (LLM) : SFT + ORPO 로 Fine-tuning 된 LLM
-# - llm_prompt (str) : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
+# - llm              (LLM)       : SFT + ORPO 로 Fine-tuning 된 LLM
+# - llm_prompts      (list(str)) : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
+# - llm_dest_outputs (list(str)) : 해당 LLM 의 목표 output 답변
 
 # Returns:
-# - llm_answer (str) : 해당 LLM 의 답변
+# - llm_answers (list(str)) : 해당 LLM 의 답변
+# - score       (float)     : 해당 LLM 의 성능 score
 
-def test_orpo_llm(llm, llm_prompt):
+def test_orpo_llm(llm, llm_prompts, llm_dest_outputs):
     raise NotImplementedError
 
 
 if __name__ == '__main__':
     orpo_dataset_path = f'{PROJECT_DIR_PATH}/create_dataset/orpo_dataset_llm.csv'
     df = pd.read_csv(orpo_dataset_path)
+    df_train, df_valid = train_test_split(df, test_size=0.2, random_state=2025)
 
     # LLM Fine-tuning
-    llm = run_fine_tuning(df)
+    llm = run_fine_tuning(df_train)
     save_orpo_llm(llm)
 
     # LLM 테스트
     llm = load_orpo_llm()
-    llm_prompt = TEST_PROMPT
-    llm_answer = test_orpo_llm(llm, llm_prompt)
+    llm_prompts = df_valid['input_data'].tolist()
+    llm_dest_outputs = df_valid['output_data'].tolist()
 
-    print(f'LLM Prompt:\n{llm_prompt}')
-    print(f'\nLLM Answer:\n{llm_answer}')
+    llm_answer, score = test_orpo_llm(llm, llm_prompts, llm_dest_outputs)
+
+    print(f'\nLLM Score :\n{score}')

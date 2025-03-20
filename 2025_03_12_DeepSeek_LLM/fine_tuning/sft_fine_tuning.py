@@ -1,15 +1,15 @@
-import pandas as pd
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
 from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
+from sklearn.model_selection import train_test_split
+from common import compute_output_score
+
+import pandas as pd
+
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-
-TEST_PROMPT = ("CNN with 128 x 128 input size, a 3 x 3 convolutional layer and a 2 x 2 pooling layer, " +
-               "then 2 3 x 3 convolutional layers and a 2 x 2 pooling layer, 2 3 x 3 convolutional layers " +
-               "and a 2 x 2 pooling layer, a 3 x 3 conv layer and a 2 x 2 pooling layer, " +
-               "then and 1024 nodes in hiddens, and 1 output size")
 
 
 # SFT 실시
@@ -24,6 +24,7 @@ TEST_PROMPT = ("CNN with 128 x 128 input size, a 3 x 3 convolutional layer and a
 # - llm (LLM) : SFT 로 Fine-tuning 된 LLM
 
 def run_fine_tuning(dataset_df):
+    print(dataset_df)
     raise NotImplementedError
 
 
@@ -60,28 +61,32 @@ def save_sft_llm(llm):
 # Last Update Date : -
 
 # Arguments:
-# - llm (LLM) : SFT 로 Fine-tuning 된 LLM
-# - llm_prompt (str) : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
+# - llm              (LLM)       : SFT 로 Fine-tuning 된 LLM
+# - llm_prompts      (list(str)) : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
+# - llm_dest_outputs (list(str)) : 해당 LLM 의 목표 output 답변
 
 # Returns:
-# - llm_answer (str) : 해당 LLM 의 답변
+# - llm_answers (list(str)) : 해당 LLM 의 답변
+# - score       (float)     : 해당 LLM 의 성능 score
 
-def test_sft_llm(llm, llm_prompt):
+def test_sft_llm(llm, llm_prompts, llm_dest_outputs):
     raise NotImplementedError
 
 
 if __name__ == '__main__':
     sft_dataset_path = f'{PROJECT_DIR_PATH}/create_dataset/sft_dataset_llm.csv'
     df = pd.read_csv(sft_dataset_path)
+    df_train, df_valid = train_test_split(df, test_size=0.2, random_state=2025)
 
     # LLM Fine-tuning
-    llm = run_fine_tuning(df)
+    llm = run_fine_tuning(df_train)
     save_sft_llm(llm)
 
     # LLM 테스트
     llm = load_sft_llm()
-    llm_prompt = TEST_PROMPT
-    llm_answer = test_sft_llm(llm, llm_prompt)
+    llm_prompts = df_valid['input_data'].tolist()
+    llm_dest_outputs = df_valid['output_data'].tolist()
 
-    print(f'LLM Prompt:\n{llm_prompt}')
-    print(f'\nLLM Answer:\n{llm_answer}')
+    llm_answer, score = test_sft_llm(llm, llm_prompts, llm_dest_outputs)
+
+    print(f'\nLLM Score :\n{score}')

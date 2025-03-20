@@ -3,6 +3,7 @@
 * [1. LLM Fine-Tuning](#1-llm-fine-tuning)
 * [2. Supervised Fine-Tuning (SFT)](#2-supervised-fine-tuning-sft)
 * [3. Odd-Radio Preference Optimizaiton (ORPO)](#3-odd-radio-preference-optimizaiton-orpo)
+* [4. 코드 실행 순서](#4-코드-실행-순서)
 
 ## 1. LLM Fine-Tuning
 
@@ -20,6 +21,8 @@
 ![image](../../images/250312_4.PNG)
 
 **2. Fine-Tuning 상세**
+
+* SFT, ORPO 각각 데이터셋 중 **80% 를 train, 20% 를 validation** 에 사용 (test dataset 따로 없음)
 
 | 방법                                       | 데이터셋                                                                                                                                              | 데이터셋 파일                                                        |
 |------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
@@ -83,3 +86,17 @@ TBU
 **3. Fine-Tuning 결과**
 
 TBU
+
+## 4. 코드 실행 순서
+
+* 준비 사항
+  * ```create_dataset/sft_dataset_llm.csv```
+  * ```create_dataset/orpo_dataset_llm.csv``` 의 중간 버전 (SFT format 의 score = 1.0 인 데이터만 존재)
+
+* 실행 순서
+
+```commandline
+python sft_fine_tuning.py
+python orpo_create_dataset.py
+python orpo_fine_tuning.py
+```
