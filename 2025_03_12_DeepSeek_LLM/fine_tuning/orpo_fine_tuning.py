@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
+import torch
 from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
 from sklearn.model_selection import train_test_split
 
@@ -95,6 +96,11 @@ def test_orpo_llm(llm, llm_prompts, llm_dest_outputs):
 
 
 if __name__ == '__main__':
+
+    # check cuda is available
+    assert torch.cuda.is_available(), "CUDA MUST BE AVAILABLE"
+    print(f'cuda is available with device {torch.cuda.get_device_name()}')
+
     orpo_dataset_path = f'{PROJECT_DIR_PATH}/create_dataset/orpo_dataset_llm.csv'
     df = pd.read_csv(orpo_dataset_path)
     df_train, df_valid = train_test_split(df, test_size=0.2, random_state=2025)

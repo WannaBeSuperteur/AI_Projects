@@ -11,6 +11,7 @@
 
 * LLM
   * **deepseek-coder-1.3b-instruct**
+  * [14개 후보 LLM 대상 테스트 결과, 해당 LLM 이 성능 및 속도 측면에서 가장 우수](../test_llm/README.md#3-테스트-진행-및-결과)
 * Fine-Tuning 방법
   * [Supervised Fine-Tuning (SFT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
     * 지도학습을 통해 모델이 diagram format 에 맞는 text 를 생성하도록 유도
