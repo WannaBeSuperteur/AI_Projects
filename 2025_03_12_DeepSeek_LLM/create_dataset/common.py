@@ -33,7 +33,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
-from common_values import CANVAS_WIDTH, CANVAS_HEIGHT
+from common_values import CANVAS_WIDTH, CANVAS_HEIGHT, PROMPT_PREFIX, PROMPT_SUFFIX
 
 MAX_PROMPT_SEED = 9999999
 MAX_MODEL_STRUCTURE_SEED = 9999999
@@ -44,20 +44,6 @@ LINE_COLOR_LIST = [(0, 0, 0), (32, 32, 32), (64, 64, 64), (96, 96, 96),
                    (32, 32, 64), (64, 64, 128), (64, 48, 32), (128, 96, 64),
                    (32, 64, 48), (64, 128, 96), (48, 32, 64), (96, 64, 128)]
 SUBTREE_PROB = 0.2
-
-# for prompt engineering
-PROMPT_PREFIX = "Represent below as a Python list.\n\n"
-PROMPT_SUFFIX = """in the following format.
-
-At this time, each node is represented in the format of Python list "[node No.,
-X position (px), Y position (px), shape (rectangle, round rectangle or circle),
-width (px), height (px), connection line shape (solid or dashed), background color,
-connection line color, list of node No. s of other nodes pointed to by the connection line]".
-
-At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
-X position range is 0-1000 and Y position range is 0-600.
-
-It is important to draw a representation of high readability."""
 
 
 # For Deep Learning Model Prompt
