@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # *.csv 데이터셋을 LLM 이 직접 학습 가능한 학습 데이터셋으로 변환
-# Create Date : 2025.03.19
+# Create Date : 2025.03.20
 # Last Update Date : -
 
 # Arguments:
@@ -15,16 +15,18 @@ import os
 def convert_to_llm_data(csv_path, train_option):
     assert train_option in ['sft', 'orpo']
 
-    if train_option == 'sft':
-        df = pd.read_csv(csv_path)
-        df = df[['input_data', 'output_data']]
-        df = df.sample(frac=1)  # shuffle rows
+    df = pd.read_csv(csv_path)
+    df = df[['input_data', 'output_data']]
 
-        save_path = csv_path.replace('_dataset.csv', '_dataset_llm.csv')
-        df.to_csv(save_path, index=False)
+    # ORPO 의 경우 SFT 의 학습 데이터셋과 동일한 포맷의 input, output 은 score = 1.0 으로 처리
+    if train_option == 'orpo':
+        df['score'] = 1.0
 
-    else:  # ORPO
-        raise NotImplementedError
+    # shuffle rows
+    df = df.sample(frac=1)
+
+    save_path = csv_path.replace('_dataset.csv', '_dataset_llm.csv')
+    df.to_csv(save_path, index=False)
 
 
 if __name__ == '__main__':
