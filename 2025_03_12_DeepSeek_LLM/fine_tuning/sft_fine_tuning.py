@@ -19,6 +19,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # to prevent "RuntimeError: chunk expects at least a 1-dimensional tensor"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+os.environ["TORCH_USE_CUDA_DSA"] = '1'
 
 
 # SFT 실시
@@ -62,7 +64,7 @@ def run_fine_tuning(df_train, df_valid):
     training_args = SFTConfig(
         learning_rate=0.0002,  # lower learning rate is recommended for fine tuning
         num_train_epochs=2,
-        logging_steps=5,  # logging frequency
+        logging_steps=1,  # logging frequency
         gradient_checkpointing=True,
         output_dir=output_dir,
         save_total_limit=3,  # max checkpoint count to save

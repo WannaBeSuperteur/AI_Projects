@@ -141,6 +141,7 @@ It is important to draw a representation of high readability.
 | LLM 출력이 매번 동일함                                  | 2025.03.15 | 보통     | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락       | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
 | 다이어그램 이미지가 overwrite 됨                          | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**              | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
 | ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류) | 2025.03.20 | **심각** | 해결 완료 | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임 | - batch size 설정                                                                                          |
+| SFT 중 CUDA error: unknown error                 | 2025.03.20 | **심각** | 해결 중  |                                               | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**            |           |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -259,6 +260,7 @@ gc.collect()
 
 * LLM의 Supervised Fine-tuning (SFT) 학습 중 다음과 같은 오류 발생
   * ```RuntimeError: CUDA error: CUBLAS_STATUS_NOT_SUPPORTED when calling `cublasGemmStridedBatchedEx(handle, opa, opb, (int)m, (int)n, (int)k, (void*)&falpha, a, CUDA_R_16BF, (int)lda, stridea, b, CUDA_R_16BF, (int)ldb, strideb, (void*)&fbeta, c, CUDA_R_16BF, (int)ldc, stridec, (int)num_batches, compute_type, CUBLAS_GEMM_DEFAULT_TENSOR_OP)```
+* 원인 : Pre-trained LLM 을 가져올 때, ```torch.dtype = bfloat16``` 으로 설정하여 해당 오류 발생
 
 **해결 시도 방법**
 
@@ -275,4 +277,48 @@ gc.collect()
 ```python
 original_llm = AutoModelForCausalLM.from_pretrained(model_path,
                                                     torch_dtype=torch.float16).cuda()
+```
+
+### 5-5. SFT 중 CUDA error: unknown error
+
+**문제 상황 및 원인 요약**
+
+* SFT 실행 중 약 30분 후 다음과 같은 오류 발생
+
+```
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: CUDA error: the launch timed out and was terminated
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+ 11%|████████████████████                                                                                                                                                                       | 30/280 [28:16<3:55:40, 56.56s/it]
+```
+
+**해결 시도 방법**
+
+* **1. ```CUDA_LAUNCH_BLOCKING=1``` 설정 (해결 안됨)**
+  * ```fine_tuning/sft_fine_tuning.py``` 의 상단에 다음 설정 추가
+    * ```os.environ['CUDA_LAUNCH_BLOCKING'] = "1"``` 
+  * 결과: 해결 안됨
+
+```
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: CUDA error: unknown error
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+ 12%|██████████████████████▋                                                                                                                                                                    | 34/280 [33:23<4:01:37, 58.93s/it]
+```
+
+* **2. ```TORCH_USE_CUDA_DSA=1``` 설정 (해결 안됨)**
+  * ```fine_tuning/sft_fine_tuning.py``` 의 상단에 다음 설정 추가
+    * ```os.environ["TORCH_USE_CUDA_DSA"] = '1'``` 
+  * 결과: 해결 안됨
+
+```
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: CUDA error: unknown error
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+ 12%|██████████████████████▋                                                                                                                                                                    | 34/280 [32:00<3:51:33, 56.48s/it]
 ```
