@@ -316,7 +316,10 @@ RuntimeError: CUDA error: CUBLAS_STATUS_EXECUTION_FAILED when calling `cublasGem
 **문제 원인**
 
 * **GPU 메모리 초과로 추정**
-* batch size 4 로도 GPU 메모리 (12GB) 를 초과하게 됨
+* Gradient Checkpointing 미 적용 시, **batch size 4 로도 GPU 메모리 (12GB) 를 초과** 하게 됨
+
+![image](../images/250312_6.PNG)
+
 * Out of memory 대신 ```CUBLAS_STATUS_EXECUTION_FAILED``` 가 발생하는 이유는 불명
 * Gradient Checkpointing 과의 연관성 (추정)
   * **Gradient Checkpointing 을 하는 경우, 이로 인해 메모리가 절약됨**
