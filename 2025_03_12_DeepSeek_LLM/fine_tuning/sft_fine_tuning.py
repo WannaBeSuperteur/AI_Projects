@@ -81,10 +81,10 @@ def run_fine_tuning(df_train, df_valid):
     response_template = tokenizer.encode(f"\n{response_template}", add_special_tokens=False)[2:]
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
-    class MemoryCheckCallback(TrainerCallback):
-        def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-            memory_mb = torch.cuda.memory_allocated() // (1024 * 1024)
-            print(f'GPU memory used : {memory_mb} MB')
+#    class MemoryCheckCallback(TrainerCallback):
+#        def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+#            memory_mb = torch.cuda.memory_allocated() // (1024 * 1024)
+#            print(f'GPU memory used : {memory_mb} MB')
 
     trainer = SFTTrainer(
         lora_llm,
@@ -96,7 +96,7 @@ def run_fine_tuning(df_train, df_valid):
         args=training_args,
         data_collator=collator,
         compute_metrics=compute_output_score,
-        callbacks=[MemoryCheckCallback()]
+#        callbacks=[MemoryCheckCallback()]  # 실제 nvidia-smi 로 확인한 Memory usage 와 다르게, 매 step 마다 일정하게 표시됨
     )
 
     trainer.train()
