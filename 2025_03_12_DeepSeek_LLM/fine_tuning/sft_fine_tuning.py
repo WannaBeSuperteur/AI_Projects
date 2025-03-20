@@ -46,7 +46,7 @@ def run_fine_tuning(df_train, df_valid):
 
     original_llm = AutoModelForCausalLM.from_pretrained(model_path,
                                                         torch_dtype=torch.float16).cuda()
-    original_llm.gradient_checkpointing_enable()
+#    original_llm.gradient_checkpointing_enable()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     tokenizer.padding_side = 'right'
@@ -65,11 +65,11 @@ def run_fine_tuning(df_train, df_valid):
         learning_rate=0.0002,  # lower learning rate is recommended for fine tuning
         num_train_epochs=2,
         logging_steps=1,  # logging frequency
-        gradient_checkpointing=True,
+#        gradient_checkpointing=True,
         output_dir=output_dir,
         save_total_limit=3,  # max checkpoint count to save
-        per_device_train_batch_size=4,  # batch size per device during training
-        per_device_eval_batch_size=4  # batch size per device during validation
+        per_device_train_batch_size=1,  # batch size per device during training
+        per_device_eval_batch_size=1  # batch size per device during validation
     )
 
     dataset = DatasetDict()

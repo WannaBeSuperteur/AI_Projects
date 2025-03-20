@@ -16,6 +16,7 @@
   * [5-2. LLM 출력이 매번 동일함 (해결 완료)](#5-2-llm-출력이-매번-동일함-해결-완료)
   * [5-3. 다이어그램 이미지 over-write (해결 완료)](#5-3-다이어그램-이미지-over-write-해결-완료)
   * [5-4. CUBLAS_STATUS_NOT_SUPPORTED (해결 완료)](#5-4-cublas_status_not_supported-해결-완료)
+  * [5-5. SFT 중 CUDA error: unknown error](#5-5-sft-중-cuda-error-unknown-error)
 
 ## 1. 프로젝트 개요
 
@@ -281,7 +282,7 @@ original_llm = AutoModelForCausalLM.from_pretrained(model_path,
 
 ### 5-5. SFT 중 CUDA error: unknown error
 
-**문제 상황 및 원인 요약**
+**문제 상황**
 
 * SFT 실행 중 약 30분 후 다음과 같은 오류 발생
 
@@ -294,6 +295,33 @@ Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
 
  11%|████████████████████                                                                                                                                                                       | 30/280 [28:16<3:55:40, 56.56s/it]
 ```
+
+![image](../images/250312_5.PNG)
+
+* ```gradient_checkpointing``` (가중치를 메모리에 일부만 저장하는 방식) 을 하지 않을 때는 **학습 시작 직후** 다음과 같이 **CUBLAS_STATUS_EXECUTION_FAILED** 오류 발생
+
+```
+  File "C:\Users\20151\AppData\Local\Programs\Python\Python38\lib\site-packages\transformers\models\llama\modeling_llama.py", line 258, in forward
+    down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+  File "C:\Users\20151\AppData\Local\Programs\Python\Python38\lib\site-packages\torch\nn\modules\module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "C:\Users\20151\AppData\Local\Programs\Python\Python38\lib\site-packages\torch\nn\modules\module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\20151\AppData\Local\Programs\Python\Python38\lib\site-packages\torch\nn\modules\linear.py", line 117, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: CUDA error: CUBLAS_STATUS_EXECUTION_FAILED when calling `cublasGemmEx( handle, opa, opb, m, n, k, &falpha, a, CUDA_R_16F, lda, b, CUDA_R_16F, ldb, &fbeta, c, CUDA_R_16F, ldc, CUDA_R_32F, CUBLAS_GEMM_DEFAULT_TENSOR_OP)`
+  0%|                                                                                                                                                                                                      | 0/280 [00:09<?, ?it/s]
+```
+
+**문제 원인**
+
+* **GPU 메모리 초과로 추정**
+* batch size 4 로도 GPU 메모리 (12GB) 를 초과하게 됨
+* Out of memory 대신 ```CUBLAS_STATUS_EXECUTION_FAILED``` 가 발생하는 이유는 불명
+* Gradient Checkpointing 과의 연관성 (추정)
+  * **Gradient Checkpointing 을 하는 경우, 이로 인해 메모리가 절약됨**
+  * 이로 인해 Gradient Checkpointing 없이 학습할 때 batch size 4 에서 바로 오류가 발생하는 것과 달리, batch size 4 로도 30분 동안은 학습 진행 가능
+  * 그러다 30분 정도 시점에서 메모리 초과가 발생하여 학습이 강제 중지됨 
 
 **해결 시도 방법**
 
@@ -321,4 +349,23 @@ RuntimeError: CUDA error: unknown error
 Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
 
  12%|██████████████████████▋                                                                                                                                                                    | 34/280 [32:00<3:51:33, 56.48s/it]
+```
+
+* **3. LLM 학습 시, batch size = 1 로 설정** 
+  * 결과
+    * Gradient Checkpointing 미 적용 시, (TBU)
+    * Gradient Checkpointing 적용 시, (TBU)
+  * 상세 코드
+
+```python
+    training_args = SFTConfig(
+        learning_rate=0.0002,  # lower learning rate is recommended for fine tuning
+        num_train_epochs=2,
+        logging_steps=1,  # logging frequency
+#        gradient_checkpointing=True,
+        output_dir=output_dir,
+        save_total_limit=3,  # max checkpoint count to save
+        per_device_train_batch_size=1,  # batch size per device during training
+        per_device_eval_batch_size=1  # batch size per device during validation
+    )
 ```
