@@ -5,7 +5,8 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import torch
 from datasets import DatasetDict, Dataset
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainerCallback, TrainingArguments, TrainerState, \
+    TrainerControl
 
 from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
 from sklearn.model_selection import train_test_split
@@ -46,7 +47,7 @@ def run_fine_tuning(df_train, df_valid):
 
     original_llm = AutoModelForCausalLM.from_pretrained(model_path,
                                                         torch_dtype=torch.float16).cuda()
-#    original_llm.gradient_checkpointing_enable()
+    original_llm.gradient_checkpointing_enable()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     tokenizer.padding_side = 'right'
@@ -65,10 +66,10 @@ def run_fine_tuning(df_train, df_valid):
         learning_rate=0.0002,  # lower learning rate is recommended for fine tuning
         num_train_epochs=2,
         logging_steps=1,  # logging frequency
-#        gradient_checkpointing=True,
+        gradient_checkpointing=True,
         output_dir=output_dir,
         save_total_limit=3,  # max checkpoint count to save
-        per_device_train_batch_size=1,  # batch size per device during training
+        per_device_train_batch_size=2,  # batch size per device during training
         per_device_eval_batch_size=1  # batch size per device during validation
     )
 
@@ -80,6 +81,11 @@ def run_fine_tuning(df_train, df_valid):
     response_template = tokenizer.encode(f"\n{response_template}", add_special_tokens=False)[2:]
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
+    class MemoryCheckCallback(TrainerCallback):
+        def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+            memory_mb = torch.cuda.memory_allocated() // (1024 * 1024)
+            print(f'GPU memory used : {memory_mb} MB')
+
     trainer = SFTTrainer(
         lora_llm,
         train_dataset=dataset['train'],
@@ -89,7 +95,8 @@ def run_fine_tuning(df_train, df_valid):
         max_seq_length=2048,  # 한번에 입력 가능한 최대 token 개수 (클수록 GPU 메모리 사용량 증가)
         args=training_args,
         data_collator=collator,
-        compute_metrics=compute_output_score
+        compute_metrics=compute_output_score,
+        callbacks=[MemoryCheckCallback()]
     )
 
     trainer.train()
