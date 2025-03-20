@@ -14,8 +14,8 @@
 * [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
   * [5-1. ```flash_attn``` 실행 불가 (해결 보류)](#5-1-flashattn-실행-불가-해결-보류)
   * [5-2. LLM 출력이 매번 동일함 (해결 완료)](#5-2-llm-출력이-매번-동일함-해결-완료)
-  * [5-3. 다이어그램 이미지 over-write](#5-3-다이어그램-이미지-over-write-해결-완료)
-  * [5-4. CUBLAS_STATUS_NOT_SUPPORTED](#5-4-cublas_status_not_supported)
+  * [5-3. 다이어그램 이미지 over-write (해결 완료)](#5-3-다이어그램-이미지-over-write-해결-완료)
+  * [5-4. CUBLAS_STATUS_NOT_SUPPORTED (해결 완료)](#5-4-cublas_status_not_supported-해결-완료)
 
 ## 1. 프로젝트 개요
 
@@ -135,12 +135,12 @@ It is important to draw a representation of high readability.
 
 **이슈 요약**
 
-| 이슈                                              | 날짜         | 심각성    | 상태    | 원인                                      | 시도했으나 실패한 해결 방법                                                                                          |
-|-------------------------------------------------|------------|--------|-------|-----------------------------------------|----------------------------------------------------------------------------------------------------------|
-| ```flash_attn``` 사용 불가                          | 2025.03.14 | 낮음     | 보류    | ```nvcc -V``` 기준의 CUDA 버전 이슈            | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
-| LLM 출력이 매번 동일함                                  | 2025.03.15 | 보통     | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락 | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
-| 다이어그램 이미지가 overwrite 됨                          | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**        | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
-| ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류) | 2025.03.20 | **심각** | 해결 중  |                                         | - batch size 설정                                                                                          |
+| 이슈                                              | 날짜         | 심각성    | 상태    | 원인                                            | 시도했으나 실패한 해결 방법                                                                                          |
+|-------------------------------------------------|------------|--------|-------|-----------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| ```flash_attn``` 사용 불가                          | 2025.03.14 | 낮음     | 보류    | ```nvcc -V``` 기준의 CUDA 버전 이슈                  | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
+| LLM 출력이 매번 동일함                                  | 2025.03.15 | 보통     | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락       | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
+| 다이어그램 이미지가 overwrite 됨                          | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**              | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
+| ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류) | 2025.03.20 | **심각** | 해결 완료 | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임 | - batch size 설정                                                                                          |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -253,7 +253,7 @@ gc.collect()
   * 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈** 로 판단하여 이를 해결
   * 결과: 이 방법으로 해결 성공🎉
 
-### 5-4. CUBLAS_STATUS_NOT_SUPPORTED
+### 5-4. CUBLAS_STATUS_NOT_SUPPORTED (해결 완료)
 
 **문제 상황 및 원인 요약**
 
@@ -266,4 +266,13 @@ gc.collect()
   * ```training_args``` 에 다음을 추가
     * ```per_device_train_batch_size=4,  # batch size per device during training```
     * ```per_device_eval_batch_size=4  # batch size per device during validation```
-  * 결과 : 이 방법으로 해결되지 않음
+  * 결과: 이 방법으로 해결되지 않음
+
+* **2. bfloat16 을 float16 으로 변경**
+  * LLM 을 가져올 때 ```bfloat16``` 자료형을 사용했기 때문에 해당 오류 발생, ```float16``` 으로 수정
+  * 결과: 이 방법으로 해결 성공🎉
+
+```python
+original_llm = AutoModelForCausalLM.from_pretrained(model_path,
+                                                    torch_dtype=torch.float16).cuda()
+```

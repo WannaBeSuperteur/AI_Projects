@@ -43,7 +43,7 @@ def run_fine_tuning(df_train, df_valid):
     output_dir = "sft_model"
 
     original_llm = AutoModelForCausalLM.from_pretrained(model_path,
-                                                        torch_dtype=torch.bfloat16).cuda()
+                                                        torch_dtype=torch.float16).cuda()
     original_llm.gradient_checkpointing_enable()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -61,8 +61,8 @@ def run_fine_tuning(df_train, df_valid):
 
     training_args = SFTConfig(
         learning_rate=0.0002,  # lower learning rate is recommended for fine tuning
-        num_train_epochs=30,
-        logging_steps=1,  # logging frequency
+        num_train_epochs=2,
+        logging_steps=5,  # logging frequency
         gradient_checkpointing=True,
         output_dir=output_dir,
         save_total_limit=3,  # max checkpoint count to save
