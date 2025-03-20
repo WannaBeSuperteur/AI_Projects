@@ -15,6 +15,7 @@
   * [5-1. ```flash_attn``` 실행 불가 (해결 보류)](#5-1-flashattn-실행-불가-해결-보류)
   * [5-2. LLM 출력이 매번 동일함 (해결 완료)](#5-2-llm-출력이-매번-동일함-해결-완료)
   * [5-3. 다이어그램 이미지 over-write](#5-3-다이어그램-이미지-over-write-해결-완료)
+  * [5-4. CUBLAS_STATUS_NOT_SUPPORTED](#5-4-cublas_status_not_supported)
 
 ## 1. 프로젝트 개요
 
@@ -134,11 +135,12 @@ It is important to draw a representation of high readability.
 
 **이슈 요약**
 
-| 이슈                     | 날짜         | 심각성 | 상태    | 원인                                      | 시도했으나 실패한 해결 방법                                                                                          |
-|------------------------|------------|-----|-------|-----------------------------------------|----------------------------------------------------------------------------------------------------------|
-| ```flash_attn``` 사용 불가 | 2025.03.14 | 낮음  | 보류    | ```nvcc -V``` 기준의 CUDA 버전 이슈            | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
-| LLM 출력이 매번 동일함         | 2025.03.15 | 보통  | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락 | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
-| 다이어그램 이미지가 overwrite 됨 | 2025.03.18 | 보통  | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**        | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
+| 이슈                                              | 날짜         | 심각성    | 상태    | 원인                                      | 시도했으나 실패한 해결 방법                                                                                          |
+|-------------------------------------------------|------------|--------|-------|-----------------------------------------|----------------------------------------------------------------------------------------------------------|
+| ```flash_attn``` 사용 불가                          | 2025.03.14 | 낮음     | 보류    | ```nvcc -V``` 기준의 CUDA 버전 이슈            | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
+| LLM 출력이 매번 동일함                                  | 2025.03.15 | 보통     | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락 | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
+| 다이어그램 이미지가 overwrite 됨                          | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**        | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
+| ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류) | 2025.03.20 | **심각** | 해결 중  |                                         | - batch size 설정                                                                                          |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -155,7 +157,7 @@ It is important to draw a representation of high readability.
   * 오류 메시지 : ```deepseek_v2 isn't supported yet.``` 
 * 해당 문제 해결 없이도 [Supervised Fine-Tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) 의 선 진행을 통해 충분한 성능을 보일 것으로 기대되는 모델 존재
 
-**해결 시도 (모두 실패, 해결 보류 중)**
+**해결 시도 방법 (모두 실패, 해결 보류 중)**
 
 * **1. Windows 환경 변수 편집**
   * ```CUDA_PATH``` 환경 변수를 현재 설치된 11.7 이상의 CUDA 버전으로 갱신
@@ -196,7 +198,7 @@ It is important to draw a representation of high readability.
 * 테스트 프롬프트에 대해 LLM 이 생성하는 답변이 매번 동일함
 * LLM 을 이용하여 답변을 생성하는 ```generate()``` 함수의 ```do_sample=True``` 누락이 원인
 
-**원인 및 해결 방법**
+**해결 시도 방법**
 
 * **1. torch.manual_seed() 설정 (실패)**
   * 매번 생성 시도할 때마다, ```seed``` 의 값을 1씩 증가시킨 후 ```torch.manual_seed(seed)``` 를 적용하여 seed 값 업데이트
@@ -221,7 +223,7 @@ with torch.no_grad():
 * 다이어그램 이미지를 그리기 위한 **NumPy array (canvas) 를 매 생성 시마다 초기화함에도 불구하고 overwrite** 됨
 * 도형 그리기 알고리즘 구현상의 오류가 원인
 
-**원인 및 해결 방법**
+**해결 시도 방법**
 
 * **1. 일정 시간 간격으로 다이어그램 생성 (해결 안됨)**
   * 다이어그램 생성 시마다 0.35 초의 간격을 두고 생성하도록 interval 지정
@@ -249,4 +251,19 @@ gc.collect()
 
 * **4. 구현상의 오류 해결**
   * 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈** 로 판단하여 이를 해결
-  * 결과: 이 방법으로 해결 성공🎉 
+  * 결과: 이 방법으로 해결 성공🎉
+
+### 5-4. CUBLAS_STATUS_NOT_SUPPORTED
+
+**문제 상황 및 원인 요약**
+
+* LLM의 Supervised Fine-tuning (SFT) 학습 중 다음과 같은 오류 발생
+  * ```RuntimeError: CUDA error: CUBLAS_STATUS_NOT_SUPPORTED when calling `cublasGemmStridedBatchedEx(handle, opa, opb, (int)m, (int)n, (int)k, (void*)&falpha, a, CUDA_R_16BF, (int)lda, stridea, b, CUDA_R_16BF, (int)ldb, strideb, (void*)&fbeta, c, CUDA_R_16BF, (int)ldc, stridec, (int)num_batches, compute_type, CUBLAS_GEMM_DEFAULT_TENSOR_OP)```
+
+**해결 시도 방법**
+
+* **1. batch size 변경 (해결 안됨)**
+  * ```training_args``` 에 다음을 추가
+    * ```per_device_train_batch_size=4,  # batch size per device during training```
+    * ```per_device_eval_batch_size=4  # batch size per device during validation```
+  * 결과 : 이 방법으로 해결되지 않음

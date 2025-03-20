@@ -65,7 +65,9 @@ def run_fine_tuning(df_train, df_valid):
         logging_steps=1,  # logging frequency
         gradient_checkpointing=True,
         output_dir=output_dir,
-        save_total_limit=3  # max checkpoint count to save
+        save_total_limit=3,  # max checkpoint count to save
+        per_device_train_batch_size=4,  # batch size per device during training
+        per_device_eval_batch_size=4  # batch size per device during validation
     )
 
     dataset = DatasetDict()
