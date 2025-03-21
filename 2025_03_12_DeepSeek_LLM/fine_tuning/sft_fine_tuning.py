@@ -50,7 +50,8 @@ def run_fine_tuning(df_train, df_valid):
                                                         torch_dtype=torch.float16).cuda()
     original_llm.gradient_checkpointing_enable()
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, eos_token='<eos>')
+    tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = 'right'
 
     lora_config = LoraConfig(
@@ -119,7 +120,8 @@ def load_sft_llm():
 
     try:
         model = AutoModelForCausalLM.from_pretrained("sft_model").cuda()
-        tokenizer = AutoTokenizer.from_pretrained("sft_model")
+        tokenizer = AutoTokenizer.from_pretrained("sft_model", eos_token='<eos>')
+        tokenizer.pad_token = tokenizer.eos_token
         return model, tokenizer
 
     except Exception as e:
@@ -147,7 +149,7 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
     result_dict = {'prompt': [], 'answer': [], 'dest_output': [], 'time': [], 'score': []}
 
     for idx, (prompt, shape_info, dest_output) in enumerate(zip(llm_prompts, shape_infos, llm_dest_outputs)):
-        inputs = tokenizer(prompt, return_tensors='pt').to(llm.device)
+        inputs = tokenizer(f'### Question: {prompt}\n ### Answer: ',  return_tensors='pt').to(llm.device)
 
         with torch.no_grad():
             if idx == 0:
@@ -156,9 +158,8 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
             start = time.time()
             outputs = llm.generate(**inputs, max_length=1536, do_sample=True)
             generate_time = time.time() - start
-
-            llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            llm_answer = llm_answer[len(prompt):]  # prompt 부분을 제외한 answer 만 표시
+            llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True).replace('<|EOT|>', '')
+            llm_answer = llm_answer.split('### Answer: ')[1]  # prompt 부분을 제외한 answer 만 표시
 
         score = compute_output_score(shape_info=shape_info, output_data=llm_answer)
 

@@ -164,7 +164,8 @@ def compute_score(output_data, llm_dest_output):
 
 # DataFrame 에 학습 가능한 'text' column 추가
 # Create Date : 2025.03.20
-# Last Update Date : -
+# Last Update Date : 2025.03.21
+# - tokenizer 의 eos token 추가
 
 # Arguments:
 # - df        (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame
@@ -175,7 +176,7 @@ def compute_score(output_data, llm_dest_output):
 # - 해당 column 의 형식은 LLM 이 직접 학습 가능한 형태임
 
 def add_text_column_for_llm(df):
-    df['text'] = df.apply(lambda x: f"### Question: {x['input_data']}\n ### Answer: {x['output_data']}",
+    df['text'] = df.apply(lambda x: f"### Question: {x['input_data']}\n ### Answer: {x['output_data']}<eos>",
                           axis=1)
 
 
