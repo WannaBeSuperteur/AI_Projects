@@ -15,81 +15,18 @@ At this time, the color is represented in the format of tuple (R, G, B), between
 X position range is 0-1000 and Y position range is 0-600.
 
 It is important to draw a representation of high readability.","
-[0, 71, 100, 'round rectangle', 44, 44, 'solid arrow', (224, 224, 224), (64, 64, 64), [1]]
-[1, 214, 200, 'circle', 22, 22, 'solid arrow', (192, 192, 224), (32, 32, 32), [2]]
-[2, 357, 300, 'round rectangle', 74, 74, 'solid arrow', (224, 240, 232), (32, 32, 32), [3]]
-[3, 500, 300, 'circle', 74, 74, 'dashed line', (240, 232, 224), (32, 32, 32), [4]]
-[4, 642, 300, 'circle', 22, 22, 'solid arrow', (192, 192, 224), (32, 32, 32), [5]]
-[5, 785, 200, 'round rectangle', 74, 74, 'solid arrow', (192, 224, 208), (32, 32, 64), [6]]
-[6, 928, 300, 'round rectangle', 22, 22, 'solid arrow', (240, 240, 240), (64, 64, 128), []]
-[7, 71, 300, 'round rectangle', 74, 74, 'solid arrow', (224, 240, 232), (32, 32, 32), [1]]
-[8, 214, 400, 'round rectangle', 22, 22, 'solid arrow', (240, 240, 240), (64, 64, 128), [2]]
-[9, 214, 599, 'round rectangle', 74, 74, 'dashed line', (240, 240, 240), (32, 32, 32), []]
-[10, 357, 499, 'round rectangle', 22, 22, 'solid arrow', (240, 240, 240), (64, 64, 128), [3]]
-[11, 357, 600, 'circle', 74, 74, 'solid arrow', (240, 232, 224), (32, 32, 32), [4, 12]]
-[12, 500, 499, 'circle', 22, 22, 'solid arrow', (192, 192, 224), (32, 32, 32), []]
-[13, 500, 600, 'circle', 74, 74, 'solid arrow', (240, 232, 224), (32, 32, 32), [4]]
-[14, 500, 700, 'circle', 22, 22, 'solid arrow', (192, 192, 224), (32, 32, 32), [4]]
-[15, 642, 499, 'round rectangle', 74, 74, 'solid arrow', (224, 240, 232), (32, 32, 32), [5]]
-[16, 642, 600, 'round rectangle', 22, 22, 'solid arrow', (240, 240, 240), (64, 64, 128), []]
-[17, 785, 499, 'round rectangle', 22, 22, 'solid arrow', (240, 240, 240), (64, 64, 128), []]
-[18, 785, 600, 'round rectangle', 74, 74, 'dashed line', (240, 240, 240), (32, 32, 32), [6]]
-[19, 928, 500, 'circle', 22, 22, 'solid arrow', (192, 192, 224), (32, 32, 32), []]
-[20, 928, 600, 'round rectangle', 22, 22, 'solid arrow', (240, 240, 240), (64, 64, 128), []]
-[21, 214, 300, 'circle', 22, 22, 'solid arrow', (192, 192, 224), (32, 32","[0, 500, 60, 'round rectangle', 86, 86, 'dashed line', (224, 224, 224), (32, 32, 32), [1]]
+[0, 500, 50, 'rectangle', 51, 51, 'solid arrow', (208, 208, 208), (32, 32, 32), [1]]
+[1, 500, 150, 'rectangle', 25, 25, 'solid arrow', (255, 255, 255), (32, 64, 48), [2]]
+[2, 333, 250, 'round rectangle', 51, 51, 'solid arrow', (240, 240, 240), (64, 64, 128), [3]]
+[3, 500, 350, 'rectangle', 25, 25, 'solid arrow', (255, 255, 255), (32, 64, 48), [4]]
+[4, 333, 450, 'round rectangle', 51, 51, 'dashed line', (240, 240, 240), (64, 64, 128), [5, 6]]
+[5, 166, 550, 'rectangle', 51, 51, 'dashed line', (208, 208, 208), (32, 32, 32), []]
+[6, 500, 550, 'rectangle', 25, 25, 'solid arrow', (255, 255, 255), (32, 64, 48), []]
+[7, 666, 250, 'circle', 51, 51, 'solid arrow', (240, 232, 224), (32, 64, 48), [2]]
+[8, 833, 250, 'rectangle', 25, 25, 'solid arrow', (255, 255, 255), (32, 64, 48), [2]]
+[9, 93","[0, 500, 60, 'round rectangle', 86, 86, 'dashed line', (224, 224, 224), (32, 32, 32), [1]]
 [1, 500, 180, 'round rectangle', 51, 51, 'solid arrow', (240, 240, 240), (64, 48, 32), [2]]
 [2, 500, 300, 'circle', 25, 25, 'solid arrow', (240, 232, 224), (48, 32, 64), [3]]
 [3, 500, 420, 'round rectangle', 86, 86, 'solid arrow', (224, 208, 192), (32, 64, 48), [4]]
 [4, 500, 540, 'rectangle', 25, 25, 'solid arrow', (255, 255, 255), (32, 32, 32), []]
-",229.95169758796692,0.23809523809523808
-1,"Represent below as a Python list.
-
-neural net consist of 256 x 256 input, 3x3 convolutional layer, and 3 * 3 conv layer, then 2*2 average pooling layer, then conv layer, and then max pooling layer, then 3 * 3 conv layer, and 3x3 conv layer, then 2*2 pooling layer, then conv layer, then 3*3 conv layer, then pooling layer, 3x3 conv layer, and then 2*2 pooling layer, 512, 128 and 32 nodes in hiddens, and 2 output elements in the following format.
-
-At this time, each node is represented in the format of Python list ""[node No.,
-X position (px), Y position (px), shape (rectangle, round rectangle or circle),
-width (px), height (px), connection line shape (solid or dashed), background color,
-connection line color, list of node No. s of other nodes pointed to by the connection line]"".
-
-At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
-X position range is 0-1000 and Y position range is 0-600.
-
-It is important to draw a representation of high readability.","
-[0, 67, 300, 'rectangle', 37, 310, 'solid line', (224, 224, 240), (96, 96, 96), [1]]
-[1, 133, 300, 'rectangle', 37, 309, 'solid line', (208, 192, 224), (32, 32, 32), [2]]
-[2, 200, 300, 'rectangle', 37, 251, 'solid line', (224, 240, 232), (64, 64, 128), [3]]
-[3, 266, 300, 'rectangle', 37, 249, 'solid line', (208, 192, 224), (32, 32, 32), [4]]
-[4, 333, 300, 'rectangle', 37, 199, 'solid line', (208, 192, 224), (32, 32, 32), [5]]
-[5, 400, 300, 'rectangle', 37, 193, 'solid line', (208, 192, 224), (32, 32, 32), [6]]
-[6, 466, 300, 'rectangle', 37, 142, 'solid line', (208, 192, 224), (32, 32, 32), [7]]
-[7, 533, 300, 'rectangle', 37, 132, 'solid line', (208, 192, 224), (32, 32, 32), [8]]
-[8, 600, 300, 'rectangle', 37, 360, 'solid line', (224, 224, 240), (64, 48, 32), [9]]
-[9, 666, 300, 'rectangle', 37, 139, 'solid line', (208, 192, 224), (32, 32, 32), [10]]
-[10, 733, 300, 'rectangle', 37, 31, 'solid line', (224, 224, 240), (32, 64, 48), []]
-[11, 800, 300, 'round rectangle', 37, 35, 'solid line', (255, 255, 255), (32, 32, 64), [11]]
-[12, 866, 300, 'round rectangle', 37, 31, 'solid line', (255, 255, 255), (32, 32, 64), [13]]
-[13, 933, 300, 'round rectangle', 37, 31, 'solid line', (255, 255, 255), (32, 32, 64), []]
-[14, 999, 300, 'round rectangle', 37, 31, 'solid line', (255, 255, 255), (32, 32, 64), [13]]
-[15, 1066, 300, 'round rectangle', 37, 31, 'solid line', (255, 255, 255), (32, 32, 64), [13]]
-[16, 1133, 300, 'rectangle', 37, 63, 'solid line', (224, 224, 224), (0, 0, 0), [14]]
-[17, 1200, 300, 'rectangle', 37, 39, 'solid line', (224, 224, 224), (0, 0, 0), [15]]
-[18, 1266, 300, 'rectangle', 37, 23, 'solid line', (224, 224, 224), (0, 0, 0), [16]]
-[19, 1333, 300, 'rectangle', 37, 43, 'solid line', (224, 224, 224), (0, 0, 0), [17]]","[0, 52, 300, 'rectangle', 27, 320, 'solid line', (208, 192, 224), (64, 48, 32), [1]]
-[1, 105, 300, 'round rectangle', 27, 319, 'solid line', (240, 232, 224), (64, 128, 96), [2]]
-[2, 157, 300, 'round rectangle', 27, 319, 'solid line', (240, 232, 224), (64, 128, 96), [3]]
-[3, 210, 300, 'round rectangle', 27, 279, 'solid line', (255, 255, 255), (64, 64, 64), [4]]
-[4, 263, 300, 'round rectangle', 27, 278, 'solid line', (240, 232, 224), (64, 128, 96), [5]]
-[5, 315, 300, 'round rectangle', 27, 239, 'solid line', (255, 255, 255), (64, 64, 64), [6]]
-[6, 368, 300, 'round rectangle', 27, 237, 'solid line', (240, 232, 224), (64, 128, 96), [7]]
-[7, 421, 300, 'round rectangle', 27, 235, 'solid line', (240, 232, 224), (64, 128, 96), [8]]
-[8, 473, 300, 'round rectangle', 27, 196, 'solid line', (255, 255, 255), (64, 64, 64), [9]]
-[9, 526, 300, 'round rectangle', 27, 192, 'solid line', (240, 232, 224), (64, 128, 96), [10]]
-[10, 578, 300, 'round rectangle', 27, 187, 'solid line', (240, 232, 224), (64, 128, 96), [11]]
-[11, 631, 300, 'round rectangle', 27, 147, 'solid line', (255, 255, 255), (64, 64, 64), [12]]
-[12, 684, 300, 'round rectangle', 27, 138, 'solid line', (240, 232, 224), (64, 128, 96), [13]]
-[13, 736, 300, 'round rectangle', 27, 103, 'solid line', (255, 255, 255), (64, 64, 64), [14]]
-[14, 789, 300, 'round rectangle', 27, 360, 'solid line', (208, 208, 208), (32, 64, 48), [15]]
-[15, 842, 300, 'round rectangle', 27, 280, 'solid line', (208, 208, 208), (32, 64, 48), [16]]
-[16, 894, 300, 'round rectangle', 27, 201, 'solid line', (208, 208, 208), (32, 64, 48), [17]]
-[17, 947, 300, 'round rectangle', 27, 63, 'solid line', (240, 240, 240), (64, 64, 128), []]
-",203.66102957725525,0.7272727272727273
+",86.54025363922119,0.4

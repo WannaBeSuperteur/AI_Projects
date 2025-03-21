@@ -9,6 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from sklearn.model_selection import train_test_split
 from common import compute_output_score, add_text_column_for_llm
+from draw_diagram.draw_diagram import generate_diagram_from_lines
 from peft import LoraConfig, get_peft_model
 
 import pandas as pd
@@ -143,7 +144,9 @@ def load_sft_llm():
 # Returns:
 # - llm_answers (list(str)) : 해당 LLM 의 답변
 # - final_score (float)     : 해당 LLM 의 성능 score
+#
 # - log/log_llm_test_result.csv 에 해당 LLM 테스트 기록 저장
+# - 모델의 답변을 이용하여, sft_model_diagrams/diagram_{k}.png 다이어그램 파일 생성
 
 def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
     result_dict = {'prompt': [], 'answer': [], 'dest_output': [], 'time': [], 'score': []}
@@ -156,10 +159,20 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
                 print('llm output generating ...')
 
             start = time.time()
-            outputs = llm.generate(**inputs, max_length=1536, do_sample=True)
+            outputs = llm.generate(**inputs, max_length=768, do_sample=True)
             generate_time = time.time() - start
             llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True).replace('<|EOT|>', '')
             llm_answer = llm_answer.split('### Answer: ')[1]  # prompt 부분을 제외한 answer 만 표시
+
+        # llm answer 를 이용하여 Diagram 생성 및 저장
+        try:
+            llm_answer_lines = llm_answer.split('\n')
+            os.makedirs(f'{PROJECT_DIR_PATH}/fine_tuning/sft_model_diagrams', exist_ok=True)
+            diagram_save_path = f'{PROJECT_DIR_PATH}/fine_tuning/sft_model_diagrams/diagram_{idx:06d}.png'
+            generate_diagram_from_lines(llm_answer_lines, diagram_save_path)
+
+        except Exception as e:
+            print(f'SFT diagram generation failed: {e}')
 
         score = compute_output_score(shape_info=shape_info, output_data=llm_answer)
 

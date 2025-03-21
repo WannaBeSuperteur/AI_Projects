@@ -7,7 +7,11 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 from common_values import CANVAS_WIDTH as WIDTH, CANVAS_HEIGHT as HEIGHT
-from diagram_format_finder import find_diagram_formats, add_diagram_info
+
+try:
+    from diagram_format_finder import find_diagram_formats, add_diagram_info
+except:
+    from draw_diagram.diagram_format_finder import find_diagram_formats, add_diagram_info
 
 DASH_INTERVAL = 20  # interval for dashed line
 LINE_MARGIN = 4
