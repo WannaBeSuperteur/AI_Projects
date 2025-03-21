@@ -13,6 +13,7 @@ from peft import LoraConfig, get_peft_model
 
 import pandas as pd
 import numpy as np
+import time
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -81,11 +82,6 @@ def run_fine_tuning(df_train, df_valid):
     response_template = tokenizer.encode(f"\n{response_template}", add_special_tokens=False)[2:]
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
-#    class MemoryCheckCallback(TrainerCallback):
-#        def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-#            memory_mb = torch.cuda.memory_allocated() // (1024 * 1024)
-#            print(f'GPU memory used : {memory_mb} MB')
-
     trainer = SFTTrainer(
         lora_llm,
         train_dataset=dataset['train'],
@@ -94,9 +90,7 @@ def run_fine_tuning(df_train, df_valid):
         tokenizer=tokenizer,
         max_seq_length=2048,  # 한번에 입력 가능한 최대 token 개수 (클수록 GPU 메모리 사용량 증가)
         args=training_args,
-        data_collator=collator,
-        compute_metrics=compute_output_score,
-#        callbacks=[MemoryCheckCallback()]  # 실제 nvidia-smi 로 확인한 Memory usage 와 다르게, 매 step 마다 일정하게 표시됨
+        data_collator=collator
     )
 
     trainer.train()
@@ -145,11 +139,11 @@ def load_sft_llm():
 
 # Returns:
 # - llm_answers (list(str)) : 해당 LLM 의 답변
-# - score       (float)     : 해당 LLM 의 성능 score
+# - final_score (float)     : 해당 LLM 의 성능 score
+# - log/log_llm_test_result.csv 에 해당 LLM 테스트 기록 저장
 
 def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts):
-    llm_answers = []
-    scores = []
+    result_dict = {'prompt': [], 'answer': [], 'time': [], 'score': []}
 
     for idx, (prompt, shape_info) in enumerate(zip(llm_prompts, shape_infos)):
         inputs = tokenizer(prompt, return_tensors='pt').to(llm.device)
@@ -158,14 +152,26 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts):
             if idx == 0:
                 print('llm output generating ...')
 
-            outputs = llm.generate(**inputs, max_length=1024)
+            start = time.time()
+            outputs = llm.generate(**inputs, max_length=1536, do_sample=True)
+            generate_time = time.time() - start
+
             llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            score = compute_output_score(shape_info=shape_info, output_data=llm_answer)
+            llm_answer = llm_answer[len(prompt):]  # prompt 부분을 제외한 answer 만 표시
 
-            llm_answers.append(llm_answer)
-            scores.append(score)
+        score = compute_output_score(shape_info=shape_info, output_data=llm_answer)
 
-    return llm_answers, np.mean(scores)
+        result_dict['prompt'].append(prompt)
+        result_dict['answer'].append(llm_answer)
+        result_dict['time'].append(generate_time)
+        result_dict['score'].append(score)
+
+        pd.DataFrame(result_dict).to_csv(f'{PROJECT_DIR_PATH}/fine_tuning/log/log_llm_test_result.csv')
+
+    llm_answers = result_dict['answer']
+    final_score = np.mean(result_dict['score'])
+
+    return llm_answers, final_score
 
 
 if __name__ == '__main__':
@@ -196,5 +202,5 @@ if __name__ == '__main__':
     llm_prompts = df_valid['input_data'].tolist()
     shape_infos = df_valid['dest_shape_info'].tolist()
 
-    llm_answer, score = test_sft_llm(llm, tokenizer, shape_infos, llm_prompts)
-    print(f'\nLLM Score :\n{score}')
+    llm_answer, final_score = test_sft_llm(llm, tokenizer, shape_infos, llm_prompts)
+    print(f'\nLLM FINAL Score :\n{final_score}')
