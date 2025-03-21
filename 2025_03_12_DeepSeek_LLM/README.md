@@ -16,7 +16,7 @@
   * [5-2. LLM 출력이 매번 동일함 (해결 완료)](#5-2-llm-출력이-매번-동일함-해결-완료)
   * [5-3. 다이어그램 이미지 over-write (해결 완료)](#5-3-다이어그램-이미지-over-write-해결-완료)
   * [5-4. CUBLAS_STATUS_NOT_SUPPORTED (해결 완료)](#5-4-cublas_status_not_supported-해결-완료)
-  * [5-5. SFT 중 CUDA error: unknown error](#5-5-sft-중-cuda-error-unknown-error)
+  * [5-5. SFT 중 CUDA error: unknown error (해결 완료)](#5-5-sft-중-cuda-error-unknown-error-해결-완료)
 
 ## 1. 프로젝트 개요
 
@@ -142,7 +142,7 @@ It is important to draw a representation of high readability.
 | LLM 출력이 매번 동일함                                  | 2025.03.15 | 보통     | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락       | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
 | 다이어그램 이미지가 overwrite 됨                          | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**              | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
 | ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류) | 2025.03.20 | **심각** | 해결 완료 | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임 | - batch size 설정                                                                                          |
-| SFT 중 CUDA error: unknown error                 | 2025.03.20 | **심각** | 해결 중  |                                               | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**            |           |
+| SFT 중 CUDA error: unknown error                 | 2025.03.20 | **심각** | 해결 완료 | 큰 batch size 에 따른 Out-of-memory               | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**            |           |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -280,7 +280,7 @@ original_llm = AutoModelForCausalLM.from_pretrained(model_path,
                                                     torch_dtype=torch.float16).cuda()
 ```
 
-### 5-5. SFT 중 CUDA error: unknown error
+### 5-5. SFT 중 CUDA error: unknown error (해결 완료)
 
 **문제 상황**
 
@@ -356,7 +356,8 @@ Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
 
 * **3. LLM 학습 시, batch size 감소 (4 → 1 or 2)** 
   * 결과
-    * Gradient Checkpointing 적용 시, (TBU)
+    * Gradient Checkpointing 적용 시, batch size 2 에서 학습 정상 종료
+    * [상세 학습 로그](fine_tuning/log/log_train_batch_size_2.md)
   * 상세 코드
 
 ```python
