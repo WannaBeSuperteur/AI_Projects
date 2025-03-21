@@ -136,16 +136,17 @@ def load_sft_llm():
 # - tokenizer        (tokenizer)  : 해당 LLM 의 tokenizer
 # - shape_infos      (list(dict)) : 해당 LLM 이 valid/test dataset 의 각 prompt 에 대해 생성해야 할 도형들에 대한 정보
 # - llm_prompts      (list(str))  : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
+# - llm_dest_outputs (list(str))  : 해당 LLM 의 목표 output 답변
 
 # Returns:
 # - llm_answers (list(str)) : 해당 LLM 의 답변
 # - final_score (float)     : 해당 LLM 의 성능 score
 # - log/log_llm_test_result.csv 에 해당 LLM 테스트 기록 저장
 
-def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts):
-    result_dict = {'prompt': [], 'answer': [], 'time': [], 'score': []}
+def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
+    result_dict = {'prompt': [], 'answer': [], 'dest_output': [], 'time': [], 'score': []}
 
-    for idx, (prompt, shape_info) in enumerate(zip(llm_prompts, shape_infos)):
+    for idx, (prompt, shape_info, dest_output) in enumerate(zip(llm_prompts, shape_infos, llm_dest_outputs)):
         inputs = tokenizer(prompt, return_tensors='pt').to(llm.device)
 
         with torch.no_grad():
@@ -163,6 +164,7 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts):
 
         result_dict['prompt'].append(prompt)
         result_dict['answer'].append(llm_answer)
+        result_dict['dest_output'].append(dest_output)
         result_dict['time'].append(generate_time)
         result_dict['score'].append(score)
 
@@ -200,7 +202,8 @@ if __name__ == '__main__':
     print('LLM test start')
 
     llm_prompts = df_valid['input_data'].tolist()
+    llm_dest_outputs = df_valid['output_data'].tolist()
     shape_infos = df_valid['dest_shape_info'].tolist()
 
-    llm_answer, final_score = test_sft_llm(llm, tokenizer, shape_infos, llm_prompts)
+    llm_answer, final_score = test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs)
     print(f'\nLLM FINAL Score :\n{final_score}')
