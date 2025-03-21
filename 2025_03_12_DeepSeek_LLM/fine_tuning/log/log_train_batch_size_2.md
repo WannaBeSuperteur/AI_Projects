@@ -8,7 +8,7 @@
 ## 1. 학습 설정
 
 * training batch size = 2
-* gradient checkpointing 미사용
+* gradient checkpointing 적용
 
 ## 2. OOM 원인 분석
 

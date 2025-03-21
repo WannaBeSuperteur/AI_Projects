@@ -25,7 +25,7 @@ os.environ["TORCH_USE_CUDA_DSA"] = '1'
 
 
 # SFT 실시
-# Create Date : 2025.03.20
+# Create Date : 2025.03.21
 # Last Update Date : -
 
 # Arguments:
@@ -35,7 +35,8 @@ os.environ["TORCH_USE_CUDA_DSA"] = '1'
 #                                 columns: ['input_data', 'output_data']
 
 # Returns:
-# - llm (LLM) : SFT 로 Fine-tuning 된 LLM
+# - lora_llm  (LLM)       : SFT 로 Fine-tuning 된 LLM
+# - tokenizer (tokenizer) : 해당 LLM 에 대한 tokenizer
 
 def run_fine_tuning(df_train, df_valid):
 
@@ -106,29 +107,40 @@ def run_fine_tuning(df_train, df_valid):
     trainer.model.save_pretrained(checkpoint_output_dir)
     tokenizer.save_pretrained(checkpoint_output_dir)
 
-    return lora_llm
+    return lora_llm, tokenizer
 
 
 # SFT 테스트를 위한 모델 로딩
-# Create Date : 2025.03.20
+# Create Date : 2025.03.21
 # Last Update Date : -
 
 # Arguments:
 # - 없음
 
 # Returns:
-# - llm (LLM) : SFT 로 Fine-tuning 된 LLM
+# - llm       (LLM)       : SFT 로 Fine-tuning 된 LLM (없으면 None)
+# - tokenizer (tokenizer) : 해당 LLM 에 대한 tokenizer (LLM 이 없으면 None)
 
 def load_sft_llm():
-    raise NotImplementedError
+    print('loading LLM ...')
+
+    try:
+        model = AutoModelForCausalLM.from_pretrained("sft_model").cuda()
+        tokenizer = AutoTokenizer.from_pretrained("sft_model")
+        return model, tokenizer
+
+    except Exception as e:
+        print(f'loading LLM failed : {e}')
+        return None, None
 
 
 # SFT 로 Fine-Tuning 된 LLM 을 테스트
-# Create Date : 2025.03.20
+# Create Date : 2025.03.21
 # Last Update Date : -
 
 # Arguments:
 # - llm              (LLM)       : SFT 로 Fine-tuning 된 LLM
+# - tokenizer        (tokenizer) : 해당 LLM 의 tokenizer
 # - llm_prompts      (list(str)) : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
 # - llm_dest_outputs (list(str)) : 해당 LLM 의 목표 output 답변
 
@@ -136,7 +148,7 @@ def load_sft_llm():
 # - llm_answers (list(str)) : 해당 LLM 의 답변
 # - score       (float)     : 해당 LLM 의 성능 score
 
-def test_sft_llm(llm, llm_prompts, llm_dest_outputs):
+def test_sft_llm(llm, tokenizer, llm_prompts, llm_dest_outputs):
     raise NotImplementedError
 
 
@@ -147,20 +159,28 @@ if __name__ == '__main__':
     print(f'cuda is available with device {torch.cuda.get_device_name()}')
 
     sft_dataset_path = f'{PROJECT_DIR_PATH}/create_dataset/sft_dataset_llm.csv'
-    df = pd.read_csv(sft_dataset_path)
+    df = pd.read_csv(sft_dataset_path)[:10]
 
     add_text_column_for_llm(df)  # LLM 이 학습할 수 있도록 text column 추가
 
     df_train, df_valid = train_test_split(df, test_size=0.2, random_state=2025)
 
     # LLM Fine-tuning
-    llm = run_fine_tuning(df_train, df_valid)
+    llm, tokenizer = load_sft_llm()
+
+    if llm is None or tokenizer is None:
+        print('LLM load failed, fine tuning ...')
+        llm, tokenizer = run_fine_tuning(df_train, df_valid)
+    else:
+        print('LLM load successful!')
 
     # LLM 테스트
-    llm_for_test = load_sft_llm()
+    print('LLM test start, reloading LLM for test ...')
+
+    llm_for_test, tokenizer_for_test = load_sft_llm()
     llm_prompts = df_valid['input_data'].tolist()
     llm_dest_outputs = df_valid['output_data'].tolist()
 
-    llm_answer, score = test_sft_llm(llm_for_test, llm_prompts, llm_dest_outputs)
+    llm_answer, score = test_sft_llm(llm_for_test, tokenizer_for_test, llm_prompts, llm_dest_outputs)
 
     print(f'\nLLM Score :\n{score}')

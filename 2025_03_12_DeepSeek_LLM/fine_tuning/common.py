@@ -1,6 +1,6 @@
 
 # ORPO 용 데이터셋 생성할 때, 각 LLM output 의 score 평가
-# Create Date : 2025.03.20
+# Create Date : 2025.03.21
 # Last Update Date : -
 
 # Arguments:
@@ -10,6 +10,7 @@
 # - score (float) : input_data 에 대한 output_data 의 적절성 평가 score
 
 def compute_output_score(eval_preds):
+    print(eval_preds)
     raise NotImplementedError
 
 
