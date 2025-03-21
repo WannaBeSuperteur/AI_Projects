@@ -159,7 +159,7 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
                 print('llm output generating ...')
 
             start = time.time()
-            outputs = llm.generate(**inputs, max_length=768, do_sample=True)
+            outputs = llm.generate(**inputs, max_length=1536, do_sample=True)
             generate_time = time.time() - start
             llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True).replace('<|EOT|>', '')
             llm_answer = llm_answer.split('### Answer: ')[1]  # prompt 부분을 제외한 answer 만 표시

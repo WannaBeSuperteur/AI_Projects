@@ -1,0 +1,20 @@
+,input_data,output_data,score
+0,"Represent below as a Python list.
+
+deep learning algorithm that includes, deep learning model that process picture, text, and outputs text, DB, text, database, and AI model that handle text, and outputs line chart, and code file that, with graph as input, and string as output, and then a feature engineering converts png file into database, and then deep learning model that inputs jpg file, picture, and outputs database
+in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+[0, 71, 225, 'rectangle', 44, 44, 'solid arrow', (224, 240, 232), (32, 64, 48), [1]]
+[1, 214, 75, 'rectangle', 22, 22, 'solid arrow', (224, 208, 192), (64, 64, 128), [2]]
+[2, 357, 150, 'rectangle', 44, 44, 'solid arrow', (224, 240, 232), (32, 64, 48), [3, 9]]
+[3, 500, 225, 'round rectangle', 22, 22, 'solid arrow', (224, 240, 232), (0, 0, 0), [4]]
+[4, 642, 300",0.1875
