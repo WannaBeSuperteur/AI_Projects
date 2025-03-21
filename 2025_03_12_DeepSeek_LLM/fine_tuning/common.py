@@ -4,13 +4,15 @@
 # Last Update Date : -
 
 # Arguments:
-# - eval_preds : Valid data 에 대한 LLM 의 출력 답변 및 실제 목적한 output
+# - shape_info  (dict) : LLM 의 출력 답변을 통해 생성해야 할 도형의 정보
+# - output_data (str)  : LLM 의 출력 답변
 
 # Returns:
-# - score (float) : input_data 에 대한 output_data 의 적절성 평가 score
+# - score (float) : input_data 에 대한 output_data 의 적절성 평가 score (0.0 - 1.0)
 
-def compute_output_score(eval_preds):
-    print(eval_preds)
+def compute_output_score(shape_info, output_data):
+    print(f'shape_info : {shape_info}')
+    print(f'output_data : {output_data}')
     raise NotImplementedError
 
 
@@ -20,7 +22,7 @@ def compute_output_score(eval_preds):
 
 # Arguments:
 # - df        (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame
-#                                  columns: ['input_data', 'output_data']
+#                                  columns: ['input_data', 'output_data', 'dest_shape_info']
 
 # Returns:
 # - df 의 'text' column 추가

@@ -3,7 +3,8 @@ import os
 
 # *.csv 데이터셋을 LLM 이 직접 학습 가능한 학습 데이터셋으로 변환
 # Create Date : 2025.03.20
-# Last Update Date : -
+# Last Update Date : 2025.03.21
+# - task name 및 LLM 을 통해 생성해야 할 도형에 대한 정보를 LLM Data 의 DataFrame 에 추가 저장
 
 # Arguments:
 # - csv_path     (str) : *.csv 데이터셋 파일 경로
@@ -16,7 +17,7 @@ def convert_to_llm_data(csv_path, train_option):
     assert train_option in ['sft', 'orpo']
 
     df = pd.read_csv(csv_path)
-    df = df[['input_data', 'output_data']]
+    df = df[['input_data', 'output_data', 'dest_shape_info']]
 
     # ORPO 의 경우 SFT 의 학습 데이터셋과 동일한 포맷의 input, output 은 score = 1.0 으로 처리
     if train_option == 'orpo':

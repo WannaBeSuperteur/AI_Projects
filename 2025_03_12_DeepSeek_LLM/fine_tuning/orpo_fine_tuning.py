@@ -23,7 +23,7 @@ TEST_PROMPT = ("CNN with 128 x 128 input size, a 3 x 3 convolutional layer and a
 
 # Arguments:
 # - dataset_df (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame
-#                                   columns: ['input_data', 'output_data', 'score']
+#                                   columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
 
 # Returns:
 # - orpo_format_dataset (dict(list)) : ORPO 로 직접 학습 가능한 데이터 형식으로 변환된 데이터셋
@@ -39,7 +39,7 @@ def convert_df_to_orpo_format(dataset_df):
 
 # Arguments:
 # - dataset_df (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame
-#                                   columns: ['input_data', 'output_data', 'score']
+#                                   columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
 
 # Returns:
 # - llm (LLM) : SFT 로 Fine-tuning 된 LLM

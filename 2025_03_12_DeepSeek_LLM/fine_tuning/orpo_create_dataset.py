@@ -13,11 +13,11 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # Arguments:
 # - llm           (LLM)              : SFT 로 Fine-tuning 된 LLM
 # - sft_format_df (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame (from create_dataset/orpo_dataset_llm.csv)
-#                                      columns: ['input_data', 'output_data', 'score']
+#                                      columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
 
 # Returns:
 # - orpo_df (Pandas DataFrame) : ORPO 용 데이터가 추가된 데이터셋의 DataFrame
-#                                columns: ['input_data', 'output_data', 'score']
+#                                columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
 
 def add_orpo_dataset(llm, sft_format_df):
     raise NotImplementedError

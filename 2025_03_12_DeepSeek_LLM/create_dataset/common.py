@@ -1047,9 +1047,11 @@ def generate_flow_chart_llm_output(shape_types, shape_sizes):
 
 # LLM 학습 데이터셋 생성
 # Create Date : 2025.03.18
-# Last Update Date : -
+# Last Update Date : 2025.03.21
+# - DataFrame 에 task name 및 LLM 을 통해 생성해야 할 shape 의 정보 관련 항목 추가
 
 # Arguments:
+# - task_name                (str)  : DL Model or Flow-Chart 생성 task 의 이름 ('dl_model' or 'flowchart')
 # - dataset_size             (int)  : 데이터셋 규모
 # - generate_structure_func  (func) : shape type 및 shape size 등 다이어그램의 도형 정보 데이터 생성 함수
 # - generate_prompt_func     (func) : 도형 정보 데이터를 이용하여 User Prompt 를 생성하는 함수
@@ -1058,10 +1060,11 @@ def generate_flow_chart_llm_output(shape_types, shape_sizes):
 # Returns:
 # - dl_dataset (Pandas DataFrame) : Deep Learning 모델 구조 관련 학습 데이터셋
 
-def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func, generate_llm_output_func):
+def generate_dataset(task_name, dataset_size, generate_structure_func, generate_prompt_func, generate_llm_output_func):
     inputs = []
     outputs = []
     user_prompts = []
+    dest_shape_info = []
 
     # 데이터셋 생성
     for i in range(dataset_size):
@@ -1076,14 +1079,22 @@ def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func
         llm_output = generate_llm_output_func(shape_types, shape_sizes)
         outputs.append(llm_output)
 
-    pd_dataset = pd.DataFrame({'input_data': inputs, 'user_prompt': user_prompts, 'output_data': outputs})
+        dest_shape_info.append({'task_name': task_name,
+                                'shape_types': shape_types,
+                                'shape_sizes': shape_sizes})
+
+    pd_dataset = pd.DataFrame({'input_data': inputs,
+                               'user_prompt': user_prompts,
+                               'output_data': outputs,
+                               'dest_shape_info': dest_shape_info})
+
     return pd_dataset
 
 
 # Deep Learning 모델 구조 관련 LLM 학습 데이터셋 생성
 # Create Date : 2025.03.17
-# Last Update Date : 2025.03.18
-# - generate_dataset 함수를 이용하여 단순화
+# Last Update Date : 2025.03.21
+# - generate_dataset 함수에 task_name 인수 추가 반영
 
 # Arguments:
 # - dataset_size (int) : 데이터셋 규모
@@ -1092,7 +1103,8 @@ def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func
 # - dl_dataset (Pandas DataFrame) : Deep Learning 모델 구조 관련 학습 데이터셋
 
 def generate_dl_model_dataset(dataset_size):
-    return generate_dataset(dataset_size,
+    return generate_dataset(task_name='dl_model',
+                            dataset_size=dataset_size,
                             generate_structure_func=generate_dl_model_structure,
                             generate_prompt_func=generate_dl_model_prompt,
                             generate_llm_output_func=generate_dl_model_llm_output)
@@ -1100,7 +1112,8 @@ def generate_dl_model_dataset(dataset_size):
 
 # Flow Chart 구조 관련 LLM 학습 데이터셋 생성
 # Create Date : 2025.03.18
-# Last Update Date : -
+# Last Update Date : 2025.03.21
+# - generate_dataset 함수에 task_name 인수 추가 반영
 
 # Arguments:
 # - dataset_size (int) : 데이터셋 규모
@@ -1108,7 +1121,8 @@ def generate_dl_model_dataset(dataset_size):
 # Returns:
 # - flow_chart_dataset (Pandas DataFrame) : Flow Chart 구조 관련 학습 데이터셋
 def generate_flow_chart_dataset(dataset_size):
-    return generate_dataset(dataset_size,
+    return generate_dataset(task_name='flowchart',
+                            dataset_size=dataset_size,
                             generate_structure_func=generate_flow_chart_structure,
                             generate_prompt_func=generate_flow_chart_prompt,
                             generate_llm_output_func=generate_flow_chart_llm_output)

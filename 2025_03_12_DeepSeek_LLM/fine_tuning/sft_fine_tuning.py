@@ -5,15 +5,14 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import torch
 from datasets import DatasetDict, Dataset
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainerCallback, TrainingArguments, TrainerState, \
-    TrainerControl
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
 from sklearn.model_selection import train_test_split
 from common import compute_output_score, add_text_column_for_llm
 from peft import LoraConfig, get_peft_model
 
 import pandas as pd
+import numpy as np
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -30,9 +29,9 @@ os.environ["TORCH_USE_CUDA_DSA"] = '1'
 
 # Arguments:
 # - df_train (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame 중 Train Data
-#                                 columns: ['input_data', 'output_data']
+#                                 columns: ['input_data', 'output_data', 'dest_shape_info']
 # - df_valid (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame 중 Valid Data
-#                                 columns: ['input_data', 'output_data']
+#                                 columns: ['input_data', 'output_data', 'dest_shape_info']
 
 # Returns:
 # - lora_llm  (LLM)       : SFT 로 Fine-tuning 된 LLM
@@ -139,17 +138,34 @@ def load_sft_llm():
 # Last Update Date : -
 
 # Arguments:
-# - llm              (LLM)       : SFT 로 Fine-tuning 된 LLM
-# - tokenizer        (tokenizer) : 해당 LLM 의 tokenizer
-# - llm_prompts      (list(str)) : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
-# - llm_dest_outputs (list(str)) : 해당 LLM 의 목표 output 답변
+# - llm              (LLM)        : SFT 로 Fine-tuning 된 LLM
+# - tokenizer        (tokenizer)  : 해당 LLM 의 tokenizer
+# - shape_infos      (list(dict)) : 해당 LLM 이 valid/test dataset 의 각 prompt 에 대해 생성해야 할 도형들에 대한 정보
+# - llm_prompts      (list(str))  : 해당 LLM 에 전달할 User Prompt (Prompt Engineering 을 위해 추가한 부분 제외)
 
 # Returns:
 # - llm_answers (list(str)) : 해당 LLM 의 답변
 # - score       (float)     : 해당 LLM 의 성능 score
 
-def test_sft_llm(llm, tokenizer, llm_prompts, llm_dest_outputs):
-    raise NotImplementedError
+def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts):
+    llm_answers = []
+    scores = []
+
+    for idx, (prompt, shape_info) in enumerate(zip(llm_prompts, shape_infos)):
+        inputs = tokenizer(prompt, return_tensors='pt').to(llm.device)
+
+        with torch.no_grad():
+            if idx == 0:
+                print('llm output generating ...')
+
+            outputs = llm.generate(**inputs, max_length=1024)
+            llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            score = compute_output_score(shape_info=shape_info, output_data=llm_answer)
+
+            llm_answers.append(llm_answer)
+            scores.append(score)
+
+    return llm_answers, np.mean(scores)
 
 
 if __name__ == '__main__':
@@ -159,7 +175,7 @@ if __name__ == '__main__':
     print(f'cuda is available with device {torch.cuda.get_device_name()}')
 
     sft_dataset_path = f'{PROJECT_DIR_PATH}/create_dataset/sft_dataset_llm.csv'
-    df = pd.read_csv(sft_dataset_path)[:10]
+    df = pd.read_csv(sft_dataset_path)
 
     add_text_column_for_llm(df)  # LLM 이 학습할 수 있도록 text column 추가
 
@@ -175,12 +191,10 @@ if __name__ == '__main__':
         print('LLM load successful!')
 
     # LLM 테스트
-    print('LLM test start, reloading LLM for test ...')
+    print('LLM test start')
 
-    llm_for_test, tokenizer_for_test = load_sft_llm()
     llm_prompts = df_valid['input_data'].tolist()
-    llm_dest_outputs = df_valid['output_data'].tolist()
+    shape_infos = df_valid['dest_shape_info'].tolist()
 
-    llm_answer, score = test_sft_llm(llm_for_test, tokenizer_for_test, llm_prompts, llm_dest_outputs)
-
+    llm_answer, score = test_sft_llm(llm, tokenizer, shape_infos, llm_prompts)
     print(f'\nLLM Score :\n{score}')
