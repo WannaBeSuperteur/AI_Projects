@@ -357,7 +357,7 @@ Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
 * **3. LLM 학습 시, batch size 감소 (4 → 1 or 2)** 
   * 결과
     * Gradient Checkpointing 적용 시, batch size 2 에서 학습 정상 종료
-    * [상세 학습 로그](fine_tuning/log/log_train_batch_size_2.md)
+    * [상세 학습 로그](fine_tuning/log/log_train_sft_batch_size_2)
   * 상세 코드
 
 ```python

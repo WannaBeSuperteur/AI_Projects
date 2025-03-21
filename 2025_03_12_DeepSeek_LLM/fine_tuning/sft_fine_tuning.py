@@ -132,7 +132,8 @@ def load_sft_llm():
 
 # SFT 로 Fine-Tuning 된 LLM 을 테스트
 # Create Date : 2025.03.21
-# Last Update Date : -
+# Last Update Date : 2025.03.22
+# - log 파일명 수정 (log_llm_test_result.csv -> log_test_sft_result.csv)
 
 # Arguments:
 # - llm              (LLM)        : SFT 로 Fine-tuning 된 LLM
@@ -145,7 +146,7 @@ def load_sft_llm():
 # - llm_answers (list(str)) : 해당 LLM 의 답변
 # - final_score (float)     : 해당 LLM 의 성능 score
 #
-# - log/log_llm_test_result.csv 에 해당 LLM 테스트 기록 저장
+# - log/log_test_sft_result.csv 에 해당 LLM 테스트 기록 저장
 # - 모델의 답변을 이용하여, sft_model_diagrams/diagram_{k}.png 다이어그램 파일 생성
 
 def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
@@ -182,7 +183,7 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
         result_dict['time'].append(generate_time)
         result_dict['score'].append(score)
 
-        pd.DataFrame(result_dict).to_csv(f'{PROJECT_DIR_PATH}/fine_tuning/log/log_llm_test_result.csv')
+        pd.DataFrame(result_dict).to_csv(f'{PROJECT_DIR_PATH}/fine_tuning/log/log_test_sft_result.csv')
 
     llm_answers = result_dict['answer']
     final_score = np.mean(result_dict['score'])

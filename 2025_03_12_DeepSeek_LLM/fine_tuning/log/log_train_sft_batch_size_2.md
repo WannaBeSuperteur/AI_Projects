@@ -33,7 +33,7 @@
 
 ## 3. Loss 추이
 
-* [전체 학습 로그](log_train_batch_size_2.txt)
+* [전체 학습 로그](log_train_sft_batch_size_2.txt)
 * ```grad_norm``` (Gradient Norm)
   * Loss Function 의 Gradient 의 크기로, **이 값이 크다는 것은 학습이 불안정함** 을 나타낸다.
 

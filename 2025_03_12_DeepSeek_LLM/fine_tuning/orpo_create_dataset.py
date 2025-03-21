@@ -29,7 +29,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # - log/orpo_info_df.csv 에 ORPO 용 LLM 출력 평가 결과를 중간 저장
 
 def prepare_orpo_info(llm, tokenizer, orpo_format_df):
-    orpo_added_df = {'input_data': [], 'output_data': [], 'score': []}
+    orpo_info_df = {'input_data': [], 'output_data': [], 'score': []}
 
     for idx, row in orpo_format_df.iterrows():
         prompt = row['input_data']
@@ -53,13 +53,13 @@ def prepare_orpo_info(llm, tokenizer, orpo_format_df):
         except Exception as e:
             print(f'SFT diagram generation failed: {e}')
 
-        orpo_added_df['input_data'].append(prompt)
-        orpo_added_df['output_data'].append(llm_answer)
-        orpo_added_df['score'].append(score)
+        orpo_info_df['input_data'].append(prompt)
+        orpo_info_df['output_data'].append(llm_answer)
+        orpo_info_df['score'].append(score)
 
-        pd.DataFrame(orpo_added_df).to_csv(f'{PROJECT_DIR_PATH}/fine_tuning/log/orpo_info_df.csv')
+        pd.DataFrame(orpo_info_df).to_csv(f'{PROJECT_DIR_PATH}/fine_tuning/log/orpo_info_df.csv')
 
-    return orpo_added_df
+    return orpo_info_df
 
 
 # ORPO 용 데이터셋 (SFT 와 동일한 포맷) 의 DataFrame 에 ORPO 용 데이터 추가
