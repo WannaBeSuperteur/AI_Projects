@@ -61,9 +61,12 @@
   * ```fine_tuning/orpo_create_dataset.py```
   * 해당 코드 실행 시, ```create_dataset/orpo_dataset_llm.csv``` 에 ORPO 용 추가 데이터를 생성하여 추가
 
-**3. Fine-Tuning 결과**
+**4. Fine-Tuning 결과**
 
-TBU
+* 학습 설정
+  * training batch size = 1
+  * gradient checkpointing 적용
+  * [학습 결과](log/log_train_final_sft.md) (학습 종료 시점에서 **평균 training loss 0.075** 내외)
 
 ## 3. Odd-Radio Preference Optimizaiton (ORPO)
 
