@@ -191,7 +191,7 @@ TypeError: object of type 'NoneType' has no len()
   * 기존 모델 약 1.3B params 에서 약 130M params 로, **1/10 수준으로 감소**
 * 추론 속도가 **기존 모델보다도 오히려 느린** 것으로 의심
 
-<details><summary>DeepSeek 모델의 GPTQ 버전 코드 (fine_tuning/sft_fine_tuning.py)</summary>
+<details><summary>DeepSeek 모델의 GPTQ 버전을 적용한 SFT Fine-tuning 학습/추론 코드 (fine_tuning/sft_fine_tuning.py)</summary>
 
 ```python
 import os
