@@ -14,7 +14,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # ORPO 용 데이터셋 (SFT 와 동일한 포맷) 생성에 필요한 데이터 생성 (LLM 출력에 대한 평가 결과)
 # Create Date : 2025.03.22
-# Last Update Date : -
+# Last Update Date : 2025.03.22
+# - 모델이 생성하는 답변의 길이를 1280 tokens 로 고정
 
 # Arguments:
 # - llm            (LLM)              : SFT 로 Fine-tuning 된 LLM
@@ -36,9 +37,10 @@ def prepare_orpo_info(llm, tokenizer, orpo_format_df):
         dest_shape_info = row['dest_shape_info']
 
         inputs = tokenizer(f'### Question: {prompt}\n ### Answer: ', return_tensors='pt').to(llm.device)
+        input_length = inputs['input_ids'].shape[1]
 
         with torch.no_grad():
-            outputs = llm.generate(**inputs, max_length=1536, do_sample=True)
+            outputs = llm.generate(**inputs, max_length=input_length+1280, do_sample=True)
             llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True).replace('<|EOT|>', '')
             llm_answer = llm_answer.split('### Answer: ')[1]  # prompt 부분을 제외한 answer 만 표시
             score = compute_output_score(dest_shape_info, llm_answer)

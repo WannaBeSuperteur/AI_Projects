@@ -107,7 +107,8 @@ def run_fine_tuning(df_train, df_valid):
 
 # SFT 테스트를 위한 모델 로딩
 # Create Date : 2025.03.21
-# Last Update Date : -
+# Last Update Date : 2025.03.22
+# - 모델의 추론 (답변 생성) 속도 향상을 위해 compile + eval() 추가
 
 # Arguments:
 # - 없음
@@ -121,6 +122,9 @@ def load_sft_llm():
 
     try:
         model = AutoModelForCausalLM.from_pretrained("sft_model").cuda()
+        model = torch.compile(model)
+        model.eval()
+
         tokenizer = AutoTokenizer.from_pretrained("sft_model", eos_token='<eos>')
         tokenizer.pad_token = tokenizer.eos_token
         return model, tokenizer
@@ -134,6 +138,7 @@ def load_sft_llm():
 # Create Date : 2025.03.21
 # Last Update Date : 2025.03.22
 # - log 파일명 수정 (log_llm_test_result.csv -> log_test_sft_result.csv)
+# - 모델이 생성하는 답변의 길이를 1280 tokens 로 고정
 
 # Arguments:
 # - llm              (LLM)        : SFT 로 Fine-tuning 된 LLM
@@ -154,13 +159,14 @@ def test_sft_llm(llm, tokenizer, shape_infos, llm_prompts, llm_dest_outputs):
 
     for idx, (prompt, shape_info, dest_output) in enumerate(zip(llm_prompts, shape_infos, llm_dest_outputs)):
         inputs = tokenizer(f'### Question: {prompt}\n ### Answer: ',  return_tensors='pt').to(llm.device)
+        input_length = inputs['input_ids'].shape[1]
 
         with torch.no_grad():
             if idx == 0:
                 print('llm output generating ...')
 
             start = time.time()
-            outputs = llm.generate(**inputs, max_length=1536, do_sample=True)
+            outputs = llm.generate(**inputs, max_length=input_length+1280, do_sample=True)
             generate_time = time.time() - start
             llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True).replace('<|EOT|>', '')
             llm_answer = llm_answer.split('### Answer: ')[1]  # prompt 부분을 제외한 answer 만 표시

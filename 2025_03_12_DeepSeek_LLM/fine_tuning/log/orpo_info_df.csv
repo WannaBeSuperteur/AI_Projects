@@ -13,25 +13,29 @@ At this time, the color is represented in the format of tuple (R, G, B), between
 X position range is 0-1000 and Y position range is 0-600.
 
 It is important to draw a representation of high readability.","
-[0, 250, 50, 'rectangle', 80, 80, 'solid arrow', (208, 192, 224), (64, 64, 64), [1]]
-[1, 409, 150, 'rectangle', 24, 24, 'solid arrow', (224, 224, 224), (0, 0, 0), [2, 6]]
-[2, 300, 250, 'rectangle', 80, 80, 'solid arrow', (208, 192, 224), (64, 64, 64), [3, 8, 9]]
-[3, 100, 350, 'rectangle', 24, 24, 'solid arrow', (224, 224, 224), (0, 0, 0), [4, 11]]
-[4, 200, 450, 'rectangle', 48, 48, 'solid arrow', (208, 208, 208), (128, 96, 64), [5, 12]]
-[5, 300, 550, 'rectangle', 24, 24, 'solid arrow', (192, 224, 208), (96, 96, 96), []]
-[6, 500, 250, 'rectangle', 80, 80, 'dashed line', (208, 192, 224), (64, 64, 64), []]
-[7, 750, 50, 'circle', 80, 80, 'solid arrow', (224, 224, 240), (64, 64, 128), [1]]
-[8, 400, 350, 'rectangle', 24, 24, 'solid arrow', (224, 224, 224), (0, 0, 0), []]
-[9, 600, 350, 'circle', 80, 80, 'dashed line', (224, 224, 240), (64, 64, 128), []]
-[10, 850, 50, 'rectangle', 80, 80, 'solid arrow', (208, 192, 224), (64, 64, 64), [7]]
-[11, 500, 450, 'circle', 24, 24, 'solid arrow', (232, 224, 240), (64, 64, 128), []]
-[12, 700, 550, 'rectangle', 24, 24, 'solid arrow', (224, 224, 224), (0, 0, 0), []]
-[13, 950, 50, 'circle', 24, 24, 'solid arrow', (232, 224, 240), (64, 64, 128), [7]]
-[14, 700, 350, 'rectangle', 80, 80, 'solid arrow', (208, 192, 224), (64, 64, 64), [4]]
-[15, 900, 350, 'circle', 24, 24, 'solid arrow', (232, 224, 240), (64, 64, 128), [4]]
-[16, 600, 250, 'rectangle', 80, 80, 'dashed line', (208, 192, 224), (64, 64, 64), [12]]
-[17, 800, 250, 'circle', 80, 80, 'solid arrow', (224, 224, 240), (64, 64, 128), [12]]
-[18, 900, 250, 'circle', 24, 24, 'solid arrow', (232, 224, 240), (64, 64, 128), [12]]
-[19, 700, 250, 'rectangle', 80, 80, 'solid arrow', (208, 192, 224), (64, 64, 64), [12]]
-[20, 500, 450, 'rectangle', 48, 48, 'dashed line', (208, 208, 208), (128, 96, 64), [12]]
-[2",0.38461538461538464
+[0, 45, 150, 'round rectangle', 30, 30, 'solid arrow', (192, 192, 224), (64, 64, 64), [1, 11]]
+[1, 136, 150, 'circle', 15, 15, 'solid arrow', (192, 22",0.06666666666666667
+1,"Represent below as a Python list.
+
+deep learning algorithm that contains, 
+- python code that, with pytorch tensor and line chart as input, and figure as output
+- inputs figure, and outputs line chart and process them with neural network
+- CNN model that process chart, and outputs jpg file
+- inputs experiment result, numeric values, database and process them with python code
+- a processing converts line chart into text
+- processing that process string
+- NN that process string and experiment result
+
+in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+[0, 71, 300, 'rectangle', 44, 44, 'solid arrow', (192, 192, 224), (32, 64, 48), [1]]
+[1, 214, 300, 'rectangle', 22, 22, 'solid arrow', (192, 224, ",0.06666666666666667
