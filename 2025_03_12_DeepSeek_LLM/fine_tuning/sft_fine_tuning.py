@@ -5,7 +5,8 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import torch
 from datasets import DatasetDict, Dataset
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
+from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 
 from sklearn.model_selection import train_test_split
 from common import compute_output_score, add_text_column_for_llm
@@ -24,10 +25,13 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 os.environ["TORCH_USE_CUDA_DSA"] = '1'
 
+quantize_config = BaseQuantizeConfig(bits=4, group_size=128)
+
 
 # SFT 실시
 # Create Date : 2025.03.21
-# Last Update Date : -
+# Last Update Date : 2025.03.22
+# - Auto-GPTQ 적용
 
 # Arguments:
 # - df_train (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame 중 Train Data
@@ -47,8 +51,10 @@ def run_fine_tuning(df_train, df_valid):
     model_path = "deepseek-ai/deepseek-coder-1.3b-instruct"
     output_dir = "sft_model"
 
-    original_llm = AutoModelForCausalLM.from_pretrained(model_path,
-                                                        torch_dtype=torch.float16).cuda()
+    original_llm = AutoGPTQForCausalLM.from_pretrained(model_path,
+                                                       quantize_config=quantize_config,
+                                                       torch_dtype=torch.float16,
+                                                       hf_device_map={'': 0})
     original_llm.gradient_checkpointing_enable()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, eos_token='<eos>')
@@ -73,7 +79,8 @@ def run_fine_tuning(df_train, df_valid):
         output_dir=output_dir,
         save_total_limit=3,  # max checkpoint count to save
         per_device_train_batch_size=1,  # batch size per device during training
-        per_device_eval_batch_size=1  # batch size per device during validation
+        per_device_eval_batch_size=1,  # batch size per device during validation
+        remove_unused_columns=False  # to prevent GPTQ error
     )
 
     dataset = DatasetDict()
@@ -107,7 +114,8 @@ def run_fine_tuning(df_train, df_valid):
 
 # SFT 테스트를 위한 모델 로딩
 # Create Date : 2025.03.21
-# Last Update Date : -
+# Last Update Date : 2025.03.22
+# - Auto-GPTQ 적용
 
 # Arguments:
 # - 없음
@@ -120,8 +128,13 @@ def load_sft_llm():
     print('loading LLM ...')
 
     try:
-        model = AutoModelForCausalLM.from_pretrained("sft_model").cuda()
-        tokenizer = AutoTokenizer.from_pretrained("sft_model", eos_token='<eos>')
+        model = AutoGPTQForCausalLM.from_pretrained("sft_model",
+                                                    quantize_config=quantize_config,
+                                                    hf_device_map={'': 0})
+
+        tokenizer = AutoTokenizer.from_pretrained("sft_model",
+                                                  eos_token='<eos>')
+
         tokenizer.pad_token = tokenizer.eos_token
         return model, tokenizer
 
