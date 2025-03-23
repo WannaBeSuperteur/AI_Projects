@@ -1,0 +1,386 @@
+,prompt,answer,dest_output,time,score
+0,"Represent below as a Python list.
+
+LLM process that includes, 
+- a processing converts png file into sentence
+- CNN model that handle pandas dataframe, and outputs histogram
+- python code that inputs experiment result.in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+[0, 218, 410, 'rectangle', 235, 110, 'solid', (255, 255, 255), (255, 255, 255), [1]]  
+[1, 529, 371, 'rectangle', 185, 27, 'solid', (255, 255, 255), (255, 255, 255), [2]]  
+[2, 343, 461, 'rectangle', 265, 100, 'solid', (255, 255, 255), (255, 255, 255), [3]]  
+[3, 83, 532, 'circle', 226, 5, 'solid', (255, 255, 255), (255, 255, 255), [4]]  
+[4, 430, 242, 'circle', 109, 102, 'solid', (255, 255, 255), (255, 255, 255), [2]]  
+[5, 728, 409, 'circle', 170, 108, 'solid', (255, 255, 255), (255, 255, 255), [1]]  
+[6, 648, 537, 'rectangle', 235, 99, 'solid', (255, 255, 255), (255, 255, 255), [1]]  
+[7, 927, 182, 'rectangle', 270, 33, 'solid', (255, 255, 255), (255, 255, 255), [8]]  
+[8, 960, 643, 'round rectangle', 245, 88, 'solid', (255, 255, 255), (255, 255, 255), []]  
+[9, 729, 371, 'rectangle', 284, 38, 'solid', (255, 255, 255), (255, 255, 255), [7, 10]]  
+[10, 786, 283, 'rectangle', 50, 33, 'solid', (255, 255, 255), (255, 255, 255), [8]]  
+[11, 987, 602, 'rectangle', 277, 122, 'solid', (255, 255, 255), (255, 255, 255), [1]]
+
+ ","[0, 500, 60, 'round rectangle', 86, 86, 'dashed line', (224, 224, 224), (32, 32, 32), [1]]
+[1, 500, 180, 'round rectangle', 51, 51, 'solid arrow', (240, 240, 240), (64, 48, 32), [2]]
+[2, 500, 300, 'circle', 25, 25, 'solid arrow', (240, 232, 224), (48, 32, 64), [3]]
+[3, 500, 420, 'round rectangle', 86, 86, 'solid arrow', (224, 208, 192), (32, 64, 48), [4]]
+[4, 500, 540, 'rectangle', 25, 25, 'solid arrow', (255, 255, 255), (32, 32, 32), []]
+",148.08963823318481,0.4166666666666667
+1,"Represent below as a Python list.
+
+neural net consist of 256 x 256 input, 3x3 convolutional layer, and 3 * 3 conv layer, then 2*2 average pooling layer, then conv layer, and then max pooling layer, then 3 * 3 conv layer, and 3x3 conv layer, then 2*2 pooling layer, then conv layer, then 3*3 conv layer, then pooling layer, 3x3 conv layer, and then 2*2 pooling layer, 512, 128 and 32 nodes in hiddens, and 2 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+
+```python
+neural_net = [
+    [1, 50, 50, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [2, 75, 50, 'solid', 25, 25, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [3, 100, 50, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [4, 75, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [5, 75, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [6, 75, 100, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [7, 100, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [8, 75, 100, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [9, 125, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [10, 125, 100, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [11, 125, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [12, 125, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [13, 125, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [14, 125, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [15, 125, 75, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [16, 125, 75, 'round rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [17, 150, 75, 'solid', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [18, 125, 100, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [19, 125, 100, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [20, 150, 100, 'solid', 25, 25, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [21, 125, 125, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [22, 150, 125, 'rectangle', 25, 25, 'solid', (255, 255, 255), (0, 0, 0), []],
+    [23, 150, 125, 'rectangle', 25, 25, 'solid', (255","[0, 52, 300, 'rectangle', 27, 320, 'solid line', (208, 192, 224), (64, 48, 32), [1]]
+[1, 105, 300, 'round rectangle', 27, 319, 'solid line', (240, 232, 224), (64, 128, 96), [2]]
+[2, 157, 300, 'round rectangle', 27, 319, 'solid line', (240, 232, 224), (64, 128, 96), [3]]
+[3, 210, 300, 'round rectangle', 27, 279, 'solid line', (255, 255, 255), (64, 64, 64), [4]]
+[4, 263, 300, 'round rectangle', 27, 278, 'solid line', (240, 232, 224), (64, 128, 96), [5]]
+[5, 315, 300, 'round rectangle', 27, 239, 'solid line', (255, 255, 255), (64, 64, 64), [6]]
+[6, 368, 300, 'round rectangle', 27, 237, 'solid line', (240, 232, 224), (64, 128, 96), [7]]
+[7, 421, 300, 'round rectangle', 27, 235, 'solid line', (240, 232, 224), (64, 128, 96), [8]]
+[8, 473, 300, 'round rectangle', 27, 196, 'solid line', (255, 255, 255), (64, 64, 64), [9]]
+[9, 526, 300, 'round rectangle', 27, 192, 'solid line', (240, 232, 224), (64, 128, 96), [10]]
+[10, 578, 300, 'round rectangle', 27, 187, 'solid line', (240, 232, 224), (64, 128, 96), [11]]
+[11, 631, 300, 'round rectangle', 27, 147, 'solid line', (255, 255, 255), (64, 64, 64), [12]]
+[12, 684, 300, 'round rectangle', 27, 138, 'solid line', (240, 232, 224), (64, 128, 96), [13]]
+[13, 736, 300, 'round rectangle', 27, 103, 'solid line', (255, 255, 255), (64, 64, 64), [14]]
+[14, 789, 300, 'round rectangle', 27, 360, 'solid line', (208, 208, 208), (32, 64, 48), [15]]
+[15, 842, 300, 'round rectangle', 27, 280, 'solid line', (208, 208, 208), (32, 64, 48), [16]]
+[16, 894, 300, 'round rectangle', 27, 201, 'solid line', (208, 208, 208), (32, 64, 48), [17]]
+[17, 947, 300, 'round rectangle', 27, 63, 'solid line', (240, 240, 240), (64, 64, 128), []]
+",227.91415882110596,0.02564102564102564
+2,"Represent below as a Python list.
+
+NN consist of 128 * 128 input, a 3 x 3 conv layer and a 2 x 2 max pooling layer, then a 3 x 3 conv layer and a 2 x 2 pooling layer, then 2 3 x 3 conv layers and a 2 x 2 pooling layer, then a 3 x 3 convolutional layer and a 2 x 2 max pooling layer, and 1024 nodes in hidden layers, and 1 output layer nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","128*128
+ input_1 = [[2, 450, 94, ""rectangle"", 5, 5, ""solid"", (192, 154, 134), (107, 85, 85), []],
+             [2, 500, 140, ""rectangle"", 5, 5, ""solid"", (227, 208, 193), (123, 109, 109), []],
+             ...,
+             [2, 96, 960, ""rectangle"", 5, 5, ""solid"", (5, 209, 5), (5, 209, 5), []]
+             ]
+input_2 = [[2, 180, 370, ""rectangle"", 5, 5, ""solid"", (77, 84, 210), (44, 35, 233), []]]
+
+Convolutional layer 1, kernel size: 3 x 3, 
+Convolutional layer 2, kernel size: 3 x 3, 
+Pooling layer 1, stride 2 x 2, 
+Convolutional layer 3, kernel size: 3 x 3, 
+Pooling layer 2, stride 2 x 2, 
+Convolutional layer 4, kernel size: 3 x 3, 
+Pooling layer 3, stride 2 x 2, 
+Convolutional layer 5, kernel size: 3 x 3, 
+Pooling layer 4, stride 2 x 2, 
+Convolutional layer 6, kernel size: 3 x 3, 
+Pooling layer 5, stride 2 x 2
+
+##### Output Layer:
+[1, 780, 80, ""circle"", 5, 5, ""solid"", (60, 70, 63), (76, 65, 63), [5]]
+
+The list above represents the connections between different nodes. It could represent for example: 
+1-5: 3 connections meaning those are connected to the node 5. And 5-1, 5-2 etc. are also connected to the node 1.
+
+Connections are made based on the current positions of the nodes so the same connections can not be drawn in different positions.
+
+##### Hidden Layers:
+layer_1 = [[3,177,703, ""circle"", 1, 1, ""solid"", (27, 25, 241), (16, 15, 241), []], [3,193,703, ""circle"", 1, 1, ""solid"", (27, 25, 241),(16, 15, 241)],...] 
+(the list size varies 128x128 so there could be 128 of these in the hidden layer.
+
+#### Note that position in the output and input layers must match to make connections possible between these layers.
+","[0, 76, 300, 'round rectangle', 41, 252, 'solid line', (224, 224, 224), (64, 64, 64), [1]]
+[1, 153, 300, 'rectangle', 41, 251, 'solid line', (192, 192, 224), (96, 96, 96), [2]]
+[2, 230, 300, 'round rectangle', 41, 215, 'solid line', (255, 255, 255), (32, 64, 48), [3]]
+[3, 307, 300, 'rectangle', 41, 214, 'solid line', (192, 192, 224), (96, 96, 96), [4]]
+[4, 384, 300, 'round rectangle', 41, 178, 'solid line', (255, 255, 255), (32, 64, 48), [5]]
+[5, 461, 300, 'rectangle', 41, 174, 'solid line', (192, 192, 224), (96, 96, 96), [6]]
+[6, 538, 300, 'rectangle', 41, 171, 'solid line', (192, 192, 224), (96, 96, 96), [7]]
+[7, 615, 300, 'round rectangle', 41, 137, 'solid line', (255, 255, 255), (32, 64, 48), [8]]
+[8, 692, 300, 'rectangle', 41, 129, 'solid line', (192, 192, 224), (96, 96, 96), [9]]
+[9, 769, 300, 'round rectangle', 41, 93, 'solid line', (255, 255, 255), (32, 64, 48), [10]]
+[10, 846, 300, 'rectangle', 41, 360, 'solid line', (224, 240, 232), (128, 96, 64), [11]]
+[11, 923, 300, 'round rectangle', 41, 35, 'solid line', (255, 255, 255), (96, 96, 96), []]
+",126.1735610961914,0.07692307692307693
+3,"Represent below as a Python list.
+
+NN with 128 * 128 input, conv layer (output: 126 x 126 feature map), 2 * 2 pooling layer, then 3 x 3 conv layer, pooling layer, convolutional layer (output is 28 x 28), and 2x2 pooling layer, conv layer, pooling layer, 256 32 nodes in mid layers, and 1 output elements in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+
+Based on the description provided, the Python list representation would look like this:
+
+```python
+representation = [[""Node No."", ""X position (px)"", ""Y position (px)"", ""shape (rectangle, round rectangle or circle)"", ""width (px)"", ""height (px)"", ""connection line shape (solid or dashed)"", ""background color"", ""connection line color"", ""list of node No. s of other nodes pointed to by the connection line""],
+                  [1, 2, 3, ""circle"", 10, 10, [""solid""], (255, 255, 255), (0, 0, 0), [2, 3]],
+                  [2, 11, 11, ""circle"", 10, 10, [""solid""], (255, 255, 255), (0, 0, 0), [1]],
+                  [3, 21, 21, ""circle"", 10, 10, [""solid""], (255, 255, 255), (0, 0, 0), [4]],
+                  [4, 31, 31, ""circle"", 10, 10, [""solid""], (255, 255, 255), (0, 0, 0), []],
+                  [5, 41, 41, ""circle"", 111, 12, [""solid""], (0, 0, 0), (0, 0, 0), []],
+                  [6, 40, 71, ""rectangle"", 30, 20, [""solid""], (255, 255, 255), (0, 0, 0), [5, 7]],
+                  [7, 30, 81, ""rectangle"", 30, 70, [""solid""], (255, 255, 255), (0, 0, 0), [8]],
+                  [8, 20, 98, ""rectangle"", 20, 58, [""solid""], (255, 255, 255), (0, 0, 0), [9, 10]],
+                  [9, 15, 84, ""circle"", 10, 24, [""solid""], (255, 255, 255), (0, 0, 0), []],
+                  [10, 55, 40, ""rectangle"", 20, 20, [""solid""], (255, 255, 255), (0, 0, 0), []]]
+```
+
+This list represents the connections between the nodes of the Neural Network by drawing lines. Each line's attributes are provided in the order: Node No., X position (in pixels), Y position (in pixels), shape (circle, rectangle or round rectangle), width (size in pixels), height (size in pixels), connection line shapes (solid or dashed), background color, connection line color, and list of other node numbers which the node is pointing to by the line.
+
+The color is represented as an RGB tuple with values between 0 and 255. The X and Y positions are represented as integers within the provided ranges.
+
+Please note that the color and position values are just examples and might change based on your exact requirements.
+","[0, 76, 300, 'rectangle', 41, 315, 'solid line', (240, 232, 224), (32, 64, 48), [1]]
+[1, 153, 300, 'rectangle', 41, 314, 'solid line', (240, 240, 240), (64, 64, 64), [2]]
+[2, 230, 300, 'round rectangle', 41, 269, 'solid line', (208, 208, 208), (64, 64, 128), [3]]
+[3, 307, 300, 'rectangle', 41, 267, 'solid line', (240, 240, 240), (64, 64, 64), [4]]
+[4, 384, 300, 'round rectangle', 41, 222, 'solid line', (208, 208, 208), (64, 64, 128), [5]]
+[5, 461, 300, 'rectangle', 41, 218, 'solid line', (240, 240, 240), (64, 64, 64), [6]]
+[6, 538, 300, 'round rectangle', 41, 175, 'solid line', (208, 208, 208), (64, 64, 128), [7]]
+[7, 615, 300, 'rectangle', 41, 166, 'solid line', (240, 240, 240), (64, 64, 64), [8]]
+[8, 692, 300, 'round rectangle', 41, 126, 'solid line', (208, 208, 208), (64, 64, 128), [9]]
+[9, 769, 300, 'round rectangle', 41, 360, 'solid line', (232, 224, 240), (96, 64, 128), [10]]
+[10, 846, 300, 'round rectangle', 41, 226, 'solid line', (232, 224, 240), (96, 64, 128), [11]]
+[11, 923, 300, 'rectangle', 41, 44, 'solid line', (240, 232, 224), (64, 128, 96), []]
+",138.09854078292847,0.1
+4,"Represent below as a Python list.
+
+neural network of 256 * 256 input, 3*3 conv layer, then 3*3 convolutional layer, then max pooling layer, then conv layer, 2 * 2 max pooling layer, 3 x 3 conv layer, 2x2 max pooling layer, then 3 * 3 conv layer, and then conv layer, pooling layer, 3 x 3 convolutional layer, and 3x3 convolutional layer, 2 * 2 average pooling layer, then and 128 nodes in intermediate layers, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+
+```python
+layers = [
+    # 1st Convolution
+    [3, 0, 0, 'rectangle', 256, 256, 'solid', (0, 0, 0), (0, 0, 0)],
+    [2, 0, 7, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # 2nd Convolution
+    [3, 1, 7, 'rectangle', 256, 256, 'solid', (0, 0, 0), (0, 0, 0)],
+    [2, 2, 0, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # 3rd Convolution
+    [3, 4, 0, 'rectangle', 256, 256, 'solid', (0, 0, 0), (0, 0, 0)],
+    [2, 5, 7, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # 4th Convolution
+    [3, 8, 7, 'rectangle', 256, 256, 'solid', (0, 0, 0), (0, 0, 0)],
+    [2, 9, 0, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    [4, 4, 9, 'circle', 256, 256, 'solid', (0, 0, 0), (0, 0, 0)],
+    # 5th Convolution
+    [3, 12, 9, 'rectangle', 256, 256, 'solid', (0, 0, 0), (0, 0, 0)],
+    [2, 13, 2, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Max Pool of Convolution Layer 1
+    [1, 14, 2, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 2
+    [5, 14, 2, 'square', 256, 256, 'solid', (0, 0, 0), (0, 0, 0)],
+    [3, 16, 2, 'square', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 3
+    [1, 17, 14, 'circle', 128, 128, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 4
+    [3, 5, 5, 'circle', 64, 64, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 5
+    [3, 8, 14, 'circle', 64, 64, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 6
+    [3, 8, 25, 'circle', 64, 64, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 7
+    [3, 11, 24, 'square', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 8
+    [3, 11, 25, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 9
+    [3, 14, 25, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 10
+    [3, 14, 26, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 11
+    [3, 17, 26, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 12
+    [3, 17, 27, 'rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0)],
+    # Layer 13
+    [4, 2, 11, 'circle', 256, 25","[0, 58, 300, 'rectangle', 31, 360, 'solid line', (232, 224, 240), (32, 32, 32), [1]]
+[1, 117, 300, 'round rectangle', 31, 359, 'solid line', (224, 208, 192), (64, 64, 64), [2]]
+[2, 176, 300, 'round rectangle', 31, 358, 'solid line', (224, 208, 192), (64, 64, 64), [3]]
+[3, 235, 300, 'rectangle', 31, 314, 'solid line', (208, 192, 224), (32, 64, 48), [4]]
+[4, 294, 300, 'round rectangle', 31, 313, 'solid line', (224, 208, 192), (64, 64, 64), [5]]
+[5, 352, 300, 'rectangle', 31, 268, 'solid line', (208, 192, 224), (32, 64, 48), [6]]
+[6, 411, 300, 'round rectangle', 31, 266, 'solid line', (224, 208, 192), (64, 64, 64), [7]]
+[7, 470, 300, 'rectangle', 31, 222, 'solid line', (208, 192, 224), (32, 64, 48), [8]]
+[8, 529, 300, 'round rectangle', 31, 218, 'solid line', (224, 208, 192), (64, 64, 64), [9]]
+[9, 588, 300, 'round rectangle', 31, 213, 'solid line', (224, 208, 192), (64, 64, 64), [10]]
+[10, 647, 300, 'rectangle', 31, 171, 'solid line', (208, 192, 224), (32, 64, 48), [11]]
+[11, 705, 300, 'round rectangle', 31, 161, 'solid line', (224, 208, 192), (64, 64, 64), [12]]
+[12, 764, 300, 'round rectangle', 31, 149, 'solid line', (224, 208, 192), (64, 64, 64), [13]]
+[13, 823, 300, 'rectangle', 31, 104, 'solid line', (208, 192, 224), (32, 64, 48), [14]]
+[14, 882, 300, 'round rectangle', 31, 315, 'solid line', (224, 240, 232), (0, 0, 0), [15]]
+[15, 941, 300, 'round rectangle', 31, 71, 'solid line', (224, 224, 240), (128, 96, 64), []]
+",223.81214928627014,0.0
+5,"Represent below as a Python list.
+
+neural net of 256 x 256 input, a 3 x 3 convolutional layer and a 2 x 2 max pooling layer, a 3 x 3 convolutional layer and a 2 x 2 average pooling layer, then a 3 x 3 convolutional layer and a 2 x 2 average pooling layer, then 2 3 x 3 convolutional layers and a 2 x 2 max pooling layer, 2 3 x 3 conv layers and a 2 x 2 pooling layer, 512, and 128 nodes in each of the 2 hidden layer, and 2 output nodes in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+
+```python
+# Neural network definition
+neural_net = [
+    [0, 0, 0, 'round rectangle', 256, 256, 'solid', (0, 0, 0), (0, 0, 0), []],
+    [1, 0, 0, 'round rectangle', 3, 3, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [2, 0, 1, 'round rectangle', 3, 3, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [3, 0, 3, 'round rectangle', 96, 96, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [4, 0, 4, 'round rectangle', 256, 256, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [5, 1, 4, 'round rectangle', 256, 256, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [6, 3, 4, 'round rectangle', 256, 256, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [7, 5, 4, 'round rectangle', 256, 256, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [8, 7, 4, 'round rectangle', 96, 96, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [9, 10, 6, 'round rectangle', 64, 64, 'solid', (0, 0, 0), (0, 0, 0), []],
+    [10, 12, 9, 'round rectangle', 16, 16, 'solid', (0, 0, 0), (0, 0, 0), []],
+    [11, 17, 12, 'round rectangle', 8, 8, 'solid', (0, 0, 0), (0, 0, 0), []],
+    [12, 21, 12, 'round rectangle', 32, 32, 'solid', (0, 0, 0), (0, 0, 0), []],
+    [13, 28, 12, 'round rectangle', 16, 16, 'solid', (0, 0, 0), (0, 0, 0), []],
+    [14, 35, 13, 'round rectangle', 10, 10, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [15, 42, 13, 'round rectangle', 20, 20, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [16, 51, 14, 'round rectangle', 256, 256, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [17, 61, 15, 'round rectangle', 256, 256, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [18, 73, 17, 'round rectangle', 192, 192, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [19, 86, 17, 'round rectangle', 256, 256, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [20, 99, 19, 'round rectangle', 192, 192, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [21, 113, 20, 'round rectangle', 32, 32, 'solid', (255, 255, 255), (255, 255, 255), []],
+    [22, 1","[0, 58, 300, 'rectangle', 31, 320, 'solid line', (255, 255, 255), (96, 64, 128), [1]]
+[1, 117, 300, 'rectangle', 31, 319, 'solid line', (208, 208, 208), (96, 64, 128), [2]]
+[2, 176, 300, 'rectangle', 31, 279, 'solid line', (224, 224, 224), (96, 96, 96), [3]]
+[3, 235, 300, 'rectangle', 31, 279, 'solid line', (208, 208, 208), (96, 64, 128), [4]]
+[4, 294, 300, 'rectangle', 31, 239, 'solid line', (224, 224, 224), (96, 96, 96), [5]]
+[5, 352, 300, 'rectangle', 31, 237, 'solid line', (208, 208, 208), (96, 64, 128), [6]]
+[6, 411, 300, 'rectangle', 31, 198, 'solid line', (224, 224, 224), (96, 96, 96), [7]]
+[7, 470, 300, 'rectangle', 31, 194, 'solid line', (208, 208, 208), (96, 64, 128), [8]]
+[8, 529, 300, 'rectangle', 31, 190, 'solid line', (208, 208, 208), (96, 64, 128), [9]]
+[9, 588, 300, 'rectangle', 31, 152, 'solid line', (224, 224, 224), (96, 96, 96), [10]]
+[10, 647, 300, 'rectangle', 31, 143, 'solid line', (208, 208, 208), (96, 64, 128), [11]]
+[11, 705, 300, 'rectangle', 31, 132, 'solid line', (208, 208, 208), (96, 64, 128), [12]]
+[12, 764, 300, 'rectangle', 31, 92, 'solid line', (224, 224, 224), (96, 96, 96), [13]]
+[13, 823, 300, 'round rectangle', 31, 360, 'solid line', (192, 192, 224), (96, 64, 128), [14]]
+[14, 882, 300, 'round rectangle', 31, 280, 'solid line', (192, 192, 224), (96, 64, 128), [15]]
+[15, 941, 300, 'round rectangle', 31, 63, 'solid line', (255, 255, 255), (48, 32, 64), []]
+",224.4406807422638,0.02702702702702703
+6,"Represent below as a Python list.
+
+data pre-processing algorithm that consists of 
+* deep learning model that handle graph, and outputs data storage
+* inputs data store, and outputs numeric values and process them with process
+* code file that handle pytorch tensor, and outputs jpg file
+* inputs picture, and outputs DB and process them with NN
+* outputs tensor and process it with AI model.in the following format.
+
+At this time, each node is represented in the format of Python list ""[node No.,
+X position (px), Y position (px), shape (rectangle, round rectangle or circle),
+width (px), height (px), connection line shape (solid or dashed), background color,
+connection line color, list of node No. s of other nodes pointed to by the connection line]"".
+
+At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
+X position range is 0-1000 and Y position range is 0-600.
+
+It is important to draw a representation of high readability.","
+[1, 107, 63, 'rectangle', 53, 78, 'solid', (255, 255, 255), 'grey', [2, 3, 4, 5]]
+[2, 55, 68, 'circle', 72, 77, 'solid', (230, 0, 255), (255, 255, 0), [3]]
+[3, 59, 42, 'round rectangle', 47, 70, 'solid', (245, 150, 245), (70, 220, 70), [4, 2, 5]]
+[4, 97, 66, 'round rectangle', 57, 76, 'solid', (215, 255, 215), (150, 0, 150), [5]]
+[5, 93, 73, 'round rectangle', 81, 61, 'solid', (250, 30, 250), (100, 150, 100), []]
+[6, 68, 74, 'rectangle', 49, 77, 'solid', (188, 188, 255), (0, 0, 255), [6]]
+[7, 107, 60, 'rectangle', 67, 64, 'solid', (253, 253, 255), (0, 255, 255), [1, 8]]
+[8, 147, 51, 'round rectangle', 45, 69, 'solid', (255, 130, 200), (150, 100, 150), [2, 11, 7]]
+[9, 148, 47, 'circle', 59, 37, 'solid', (255, 255, 200), (0, 255, 0), [7]]
+[10, 72, 57, 'rectangle', 44, 63, 'solid', (128, 128, 128), (0, 0, 128), [8]]
+[11, 106, 59, 'rectangle', 79, 48, 'solid', (245, 245, 245), (0, 255, 0), [9]] ]
+
+
+[('10px', '10px'), '0.3427207435294118', False, 
+ ('grey', 0, 3252), ('rgb(255, 255, 255)', 255, 255), True]
+[('10px', '10px'), '0.28533722210110393', False, 
+ ('grey', 0, 3222), ('rgb(240, 238, 239)', 240, 238), True]
+[('10px', '10px'), '0.7636713865749135', False, 
+ ('grey', 0, 4463), ('rgb(164, 64, 192)', 86, 255), True]
+[('10px', '10px'), '0.84047991993207105', False, 
+ ('grey', 0, 5608), ('rgb(204, 230, 230)', 204, 230), True]
+[('10px', '10px'), '0.07430699499261027', False, 
+ ('grey', 0, 6912), ('rgb(0, 0, 102)', 0, 102), True]
+[('42.222222222222225px', '42.222222222222225px'), '0.07430699499261027', False, 
+ ('grey', 0, 7954), ('rgb(0, 0, 102)', 0, 102), True]
+[('16.666666666666668px', '16.666666666666668px'), '0.07430699499261027', False, 
+ ('grey', 0, 8869), ('rgb(28, 168, 221)', 28, 221), True]
+[('9px', '9px'), '0.","[0, 55, 300, 'rectangle', 62, 62, 'solid arrow', (240, 240, 240), (32, 32, 64), [1]]
+[1, 166, 300, 'circle', 18, 18, 'solid arrow', (240, 240, 240), (64, 48, 32), [2]]
+[2, 277, 300, 'circle', 62, 62, 'solid arrow', (224, 208, 192), (64, 64, 64), [3]]
+[3, 388, 150, 'rectangle', 18, 18, 'solid arrow', (240, 240, 240), (32, 32, 32), [4]]
+[4, 500, 300, 'rectangle', 37, 37, 'solid arrow', (208, 208, 208), (32, 32, 32), [5]]
+[5, 611, 300, 'round rectangle', 18, 18, 'solid arrow', (240, 232, 224), (32, 32, 64), [6]]
+[6, 722, 300, 'round rectangle', 62, 62, 'solid arrow', (192, 192, 224), (32, 32, 32), [7]]
+[7, 833, 300, 'circle', 18, 18, 'solid arrow', (240, 240, 240), (64, 48, 32), [8]]
+[8, 944, 300, 'circle', 62, 62, 'dashed line', (224, 208, 192), (64, 64, 64), []]
+[9, 388, 450, 'circle', 18, 18, 'solid arrow', (240, 240, 240), (64, 48, 32), [4]]
+",223.45227360725403,0.25

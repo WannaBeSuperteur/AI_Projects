@@ -33,7 +33,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
-from common_values import CANVAS_WIDTH, CANVAS_HEIGHT
+from common_values import CANVAS_WIDTH, CANVAS_HEIGHT, PROMPT_PREFIX, PROMPT_SUFFIX
 
 MAX_PROMPT_SEED = 9999999
 MAX_MODEL_STRUCTURE_SEED = 9999999
@@ -44,20 +44,6 @@ LINE_COLOR_LIST = [(0, 0, 0), (32, 32, 32), (64, 64, 64), (96, 96, 96),
                    (32, 32, 64), (64, 64, 128), (64, 48, 32), (128, 96, 64),
                    (32, 64, 48), (64, 128, 96), (48, 32, 64), (96, 64, 128)]
 SUBTREE_PROB = 0.2
-
-# for prompt engineering
-PROMPT_PREFIX = "Represent below as a Python list.\n\n"
-PROMPT_SUFFIX = """in the following format.
-
-At this time, each node is represented in the format of Python list "[node No.,
-X position (px), Y position (px), shape (rectangle, round rectangle or circle),
-width (px), height (px), connection line shape (solid or dashed), background color,
-connection line color, list of node No. s of other nodes pointed to by the connection line]".
-
-At this time, the color is represented in the format of tuple (R, G, B), between 0 and 255, and
-X position range is 0-1000 and Y position range is 0-600.
-
-It is important to draw a representation of high readability."""
 
 
 # For Deep Learning Model Prompt
@@ -81,7 +67,7 @@ user_prompt_start = ['process that ',
                      'algorithm that ']
 contain_marks = ['consists of ', 'contains, ', 'includes, ']
 
-node_types = ['numeric', 'str', 'picture', 'db', 'chart', 'func', 'process']
+node_types = ['numeric', 'str', 'picture', 'db', 'chart', 'func', 'process', 'model']
 node_types_cnt = len(node_types)
 
 numeric_names = ['matrix', 'tensor', 'tensors', 'numeric values', 'matrices',
@@ -92,6 +78,8 @@ db_names = ['DB', 'database', 'data storage', 'data store']
 chart_names = ['chart', 'graph', 'table', 'line chart', 'histogram', 'experiment result']
 func_names = ['function', 'code file', 'python file', 'python code']
 process_names = ['process', 'python code', 'pre-processing', 'feature engineering', 'PCA', 'processing']
+model_names = ['AI model', 'model', 'deep learning model', 'machine learning model', 'LLM', 'language model',
+               'CNN model', 'neural network', 'NN']
 
 
 # Layer Type, Layer Size 를 랜덤으로 결정
@@ -601,8 +589,9 @@ def generate_dl_model_llm_output(layer_types, layer_sizes):
 
 # Flow Chart 의 도형 Size, Type 를 랜덤으로 결정
 # Create Date : 2025.03.18
-# Last Update Date : 2025.03.19
+# Last Update Date : 2025.03.20
 # - process/func 의 인접 노드에 process/func 이 있을 수 있는 버그 해결
+# - 도형이 나타낼 수 있는 요소 유형 중 'model' 추가에 따른 수정
 
 # Arguments:
 # - shape_config_seed (int) : 도형 구성을 나타내는 int 값 (0 - 9,999,999)
@@ -619,7 +608,7 @@ def generate_flow_chart_structure(shape_config_seed):
 
     # 현재 node 의 type 에 따라, type 가 아직 정해지지 않은 인접한 node 의 type 결정
     def decide_adjacent_node_type(node_type):
-        if node_type in ['func', 'process']:
+        if node_type in ['func', 'process', 'model']:
             r = random.randint(0, 4)
             return node_types[r]
         else:
@@ -627,10 +616,13 @@ def generate_flow_chart_structure(shape_config_seed):
                 r = random.randint(0, 4)
                 return node_types[r]
             else:
-                if random.random() < 0.4:
+                r = random.random()
+                if r < 0.2:
                     return 'func'
-                else:
+                elif r < 0.5:
                     return 'process'
+                else:
+                    return 'model'
 
     first_node_type = node_types[(shape_config_seed // 8) % 6]
     first_node = {'id': 0, 'type': first_node_type, 'depth': 0}
@@ -703,11 +695,11 @@ def generate_flow_chart_structure(shape_config_seed):
     shape_sizes = []
     for shape_info in shape_types:
         if shape_info['type'] in ['numeric', 'str']:
-            shape_sizes.append(0.7)
+            shape_sizes.append(0.6)
         elif shape_info['type'] in ['picture', 'db', 'chart']:
             shape_sizes.append(1.0)
         else:
-            shape_sizes.append(0.4)
+            shape_sizes.append(0.3)
 
     return shape_types, shape_sizes
 
@@ -776,7 +768,8 @@ def get_process_user_prompt(node_name, incoming_node_names, connected_node_names
 
 # Flow Chart 구조 관련 사용자 입력 프롬프트 생성
 # Create Date : 2025.03.19
-# Last Update Date : -
+# Last Update Date : 2025.03.20
+# - 도형이 나타낼 수 있는 요소 유형 중 'model' 추가에 따른 수정
 
 # Arguments:
 # - prompt_seed (int)        : 프롬프트 형식을 나타내는 int 값 (0 - 9,999,999)
@@ -801,6 +794,7 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     default_chart_name = chart_names[(prompt_seed // (10 * 5 * 4 * 4)) % 6]
     default_func_name = func_names[(prompt_seed // (10 * 5 * 4 * 4 * 6)) % 4]
     default_process_name = process_names[(prompt_seed // (10 * 5 * 4 * 4 * 6 * 4)) % 6]
+    default_model_name = model_names[(prompt_seed // (10 * 5 * 4 * 4 * 6 * 4 * 6)) % 9]
 
     # divide parts of each node by new-line
     divide_by_newline = random.random() < 0.75
@@ -825,8 +819,10 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
             return default_chart_name if random.random() < 0.5 else random.choice(chart_names)
         elif node_type_str == 'func':
             return default_func_name if random.random() < 0.5 else random.choice(func_names)
-        else:  # process
+        elif node_type_str == 'process':
             return default_process_name if random.random() < 0.5 else random.choice(process_names)
+        else:  # model
+            return default_model_name if random.random() < 0.5 else random.choice(model_names)
 
     # phrase between each node
     def get_phrase_between_each_node(idx):
@@ -859,14 +855,15 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
         connected_nodes = shape_types[i]['connected_node_ids']
         connected_node_names = [get_node_name(shape_types[node_id]['type']) for node_id in connected_nodes]
 
-        # 해당 node 가 처리 프로세스 (function, process) 인 경우
-        if node_type in ['func', 'process']:
+        # 해당 node 가 처리 프로세스 (function, process, model) 인 경우
+        if node_type in ['func', 'process', 'model']:
             user_prompt += get_process_user_prompt(node_name, incoming_node_names, connected_node_names)
             user_prompt += get_phrase_between_each_node(i)
 
         # 해당 node 가 데이터이면서 앞의 node 도 모두 데이터인 경우
-        elif (node_type not in ['func', 'process'] and len(incoming_node_names) > 0 and
-              incoming_node_types.count('func') == 0 and incoming_node_types.count('process') == 0):
+        elif (node_type not in ['func', 'process', 'model'] and len(incoming_node_names) > 0 and
+              incoming_node_types.count('func') == 0 and incoming_node_types.count('process') == 0 and
+              incoming_node_types.count('model') == 0):
 
             process_name = get_node_name('process')
             user_prompt += f'a {process_name} converts ' + ' and '.join(incoming_node_names) + ' '
@@ -884,9 +881,10 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
     return entire_prompt, user_prompt
 
 
-# 현재 node 및 현재 node 와 forward 방향으로 연결된 모든 node 에 대해, data 만 있는지 (process, function 이 없는지) 확인
+# 현재 node 및 현재 node 와 forward 방향으로 연결된 모든 node 에 대해, data 만 있는지 (process, function, model 이 없는지) 확인
 # Create Date : 2025.03.19
-# Last Update Date : -
+# Last Update Date : 2025.03.20
+# - 도형이 나타낼 수 있는 요소 유형 중 'model' 추가에 따른 수정
 
 # Arguments:
 # - shape_info (list(dict)) : 각 도형의 종류 및 각종 정보
@@ -895,15 +893,15 @@ def generate_flow_chart_prompt(prompt_seed, shape_types, shape_sizes):
 # - node_id    (int)        : 확인을 원하는 도형의 node id
 
 # Returns:
-# - is_all_data (bool) : 해당 node 및 모든 connected node 에 대해, data 만 있는지 (process, function 이 없는지) 의 여부
+# - is_all_data (bool) : 해당 node 및 모든 connected node 에 대해, data 만 있는지 (process, function, model 이 없는지) 의 여부
 
 def is_this_and_all_connected_nodes_data(shape_info, node_id):
-    if shape_info[node_id]['type'] in ['func', 'process']:
+    if shape_info[node_id]['type'] in ['func', 'process', 'model']:
         return False
 
     connected_node_ids = shape_info[node_id]['connected_node_ids']
     for connected_node_id in connected_node_ids:
-        if shape_info[connected_node_id]['type'] in ['func', 'process']:
+        if shape_info[connected_node_id]['type'] in ['func', 'process', 'model']:
             return False
 
     return True
@@ -911,7 +909,8 @@ def is_this_and_all_connected_nodes_data(shape_info, node_id):
 
 # Flow Chart 구조 관련 LLM 출력값 생성 (다이어그램을 만들기 위한 데이터)
 # Create Date : 2025.03.19
-# Last Update Date : -
+# Last Update Date : 2025.03.20
+# - DB, model 의 경우에는 circle 로 표시하도록 수정
 
 # Arguments:
 # - shape_info  (list(dict)) : 각 도형의 종류 및 각종 정보
@@ -946,7 +945,7 @@ def generate_flow_chart_llm_data(shape_info, shape_sizes):
     for idx, node_type in enumerate(node_types):
         property_each_node_type[node_type] = {'back_color': back_colors[idx],
                                               'line_color': line_colors[idx],
-                                              'shape': shape[idx],
+                                              'shape': 'circle' if node_type in ['db', 'model'] else shape[idx],
                                               'line_shape': line[idx]}
 
     # write LLM model output
@@ -1048,9 +1047,11 @@ def generate_flow_chart_llm_output(shape_types, shape_sizes):
 
 # LLM 학습 데이터셋 생성
 # Create Date : 2025.03.18
-# Last Update Date : -
+# Last Update Date : 2025.03.21
+# - DataFrame 에 task name 및 LLM 을 통해 생성해야 할 shape 의 정보 관련 항목 추가
 
 # Arguments:
+# - task_name                (str)  : DL Model or Flow-Chart 생성 task 의 이름 ('dl_model' or 'flowchart')
 # - dataset_size             (int)  : 데이터셋 규모
 # - generate_structure_func  (func) : shape type 및 shape size 등 다이어그램의 도형 정보 데이터 생성 함수
 # - generate_prompt_func     (func) : 도형 정보 데이터를 이용하여 User Prompt 를 생성하는 함수
@@ -1059,10 +1060,11 @@ def generate_flow_chart_llm_output(shape_types, shape_sizes):
 # Returns:
 # - dl_dataset (Pandas DataFrame) : Deep Learning 모델 구조 관련 학습 데이터셋
 
-def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func, generate_llm_output_func):
+def generate_dataset(task_name, dataset_size, generate_structure_func, generate_prompt_func, generate_llm_output_func):
     inputs = []
     outputs = []
     user_prompts = []
+    dest_shape_info = []
 
     # 데이터셋 생성
     for i in range(dataset_size):
@@ -1077,14 +1079,22 @@ def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func
         llm_output = generate_llm_output_func(shape_types, shape_sizes)
         outputs.append(llm_output)
 
-    pd_dataset = pd.DataFrame({'input_data': inputs, 'user_prompt': user_prompts, 'output_data': outputs})
+        dest_shape_info.append({'task_name': task_name,
+                                'shape_types': shape_types,
+                                'shape_sizes': shape_sizes})
+
+    pd_dataset = pd.DataFrame({'input_data': inputs,
+                               'user_prompt': user_prompts,
+                               'output_data': outputs,
+                               'dest_shape_info': dest_shape_info})
+
     return pd_dataset
 
 
 # Deep Learning 모델 구조 관련 LLM 학습 데이터셋 생성
 # Create Date : 2025.03.17
-# Last Update Date : 2025.03.18
-# - generate_dataset 함수를 이용하여 단순화
+# Last Update Date : 2025.03.21
+# - generate_dataset 함수에 task_name 인수 추가 반영
 
 # Arguments:
 # - dataset_size (int) : 데이터셋 규모
@@ -1093,7 +1103,8 @@ def generate_dataset(dataset_size, generate_structure_func, generate_prompt_func
 # - dl_dataset (Pandas DataFrame) : Deep Learning 모델 구조 관련 학습 데이터셋
 
 def generate_dl_model_dataset(dataset_size):
-    return generate_dataset(dataset_size,
+    return generate_dataset(task_name='dl_model',
+                            dataset_size=dataset_size,
                             generate_structure_func=generate_dl_model_structure,
                             generate_prompt_func=generate_dl_model_prompt,
                             generate_llm_output_func=generate_dl_model_llm_output)
@@ -1101,7 +1112,8 @@ def generate_dl_model_dataset(dataset_size):
 
 # Flow Chart 구조 관련 LLM 학습 데이터셋 생성
 # Create Date : 2025.03.18
-# Last Update Date : -
+# Last Update Date : 2025.03.21
+# - generate_dataset 함수에 task_name 인수 추가 반영
 
 # Arguments:
 # - dataset_size (int) : 데이터셋 규모
@@ -1109,7 +1121,8 @@ def generate_dl_model_dataset(dataset_size):
 # Returns:
 # - flow_chart_dataset (Pandas DataFrame) : Flow Chart 구조 관련 학습 데이터셋
 def generate_flow_chart_dataset(dataset_size):
-    return generate_dataset(dataset_size,
+    return generate_dataset(task_name='flowchart',
+                            dataset_size=dataset_size,
                             generate_structure_func=generate_flow_chart_structure,
                             generate_prompt_func=generate_flow_chart_prompt,
                             generate_llm_output_func=generate_flow_chart_llm_output)

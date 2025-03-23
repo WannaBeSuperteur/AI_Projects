@@ -8,6 +8,11 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 from common_values import CANVAS_WIDTH as WIDTH, CANVAS_HEIGHT as HEIGHT
 
+try:
+    from diagram_format_finder import find_diagram_formats, add_diagram_info
+except:
+    from draw_diagram.diagram_format_finder import find_diagram_formats, add_diagram_info
+
 DASH_INTERVAL = 20  # interval for dashed line
 LINE_MARGIN = 4
 
@@ -313,103 +318,10 @@ def generate_line(x0, y0, x1, y1, line_shape, line_color, dest_shape, dest_width
         generate_dashed_line(x0, y0, x_dest, y_dest, line_color)
 
 
-# 각 line 에서 diagram format 의 텍스트 찾기
-# Create Date : 2025.03.17
-# Last Update Date : -
-
-# Arguments:
-# - line_text (str) : 각 line 의 text 내용
-
-# Returns:
-# - diagram_formats (list(str)) : diagram format 텍스트의 리스트
-
-def find_diagram_formats(line_text):
-    diagram_format_start_idx = 0
-    diagram_formats = []
-    braket_count = 0
-    parentheses_count = 0
-
-    for i in range(len(line_text)):
-        if line_text[i] == '[':
-            braket_count += 1
-            if braket_count == 1:
-                diagram_format_start_idx = i
-
-        elif line_text[i] == ']':
-            braket_count -= 1
-            if braket_count == 0:
-                diagram_format = line_text[diagram_format_start_idx: i + 1]
-                diagram_formats.append(diagram_format)
-
-        elif line_text[i] == '(':
-            parentheses_count += 1
-
-        elif line_text[i] == ')':
-            parentheses_count -= 1
-
-        # (R, G, B) 부분 및 [connected_node1, connected_node2, ...] 부분 처리
-        elif line_text[i] == ',':
-            if parentheses_count == 1:  # (R, G, B) 부분
-                line_text = line_text[:i] + '@' + line_text[i+1:]
-
-            if braket_count == 2:  # [connected_node1, connected_node2, ...] 부분
-                line_text = line_text[:i] + '$' + line_text[i+1:]
-
-    return diagram_formats
-
-
-# 각 line 에서 찾은 diagram format 의 텍스트를 이용하여, 이를 이용하여 diagram dictionary 에 정보 추가
-# Create Date : 2025.03.17
-# Last Update Date : -
-
-# Arguments:
-# - diagram_formats (list(str)) : diagram format 텍스트의 리스트
-
-# Returns:
-# - diagram_dict 에 각각의 diagram format 텍스트의 내용으로부터 추출한 도형 정보를 추가
-
-def add_diagram_info(diagram_formats):
-    global diagram_dict
-
-    for diagram_format in diagram_formats:
-
-        # split by ","
-        diagram_format_split = diagram_format.replace(', ', ',')[1:-1].split(',')
-        node_no = diagram_format_split[0]
-
-        shape_x = int(diagram_format_split[1])
-        shape_y = int(diagram_format_split[2])
-        shape = diagram_format_split[3]
-        shape_width = int(diagram_format_split[4])
-        shape_height = int(diagram_format_split[5])
-
-        line_shape = diagram_format_split[6]
-
-        # R-G-B -> B-G-R color format change
-        shape_color_rgb = list(map(int, diagram_format_split[7][1:-1].replace('@ ', '@').split('@')))
-        line_color_rgb = list(map(int, diagram_format_split[8][1:-1].replace('@ ', '@').split('@')))
-        shape_color = (shape_color_rgb[2], shape_color_rgb[1], shape_color_rgb[0])
-        line_color = (line_color_rgb[2], line_color_rgb[1], line_color_rgb[0])
-
-        connected_nodes = diagram_format_split[9][1:-1].replace('$ ', '$').split('$')
-
-        diagram_dict[node_no] = {
-            'shape_x': shape_x,
-            'shape_y': shape_y,
-            'shape': shape,
-            'shape_width': shape_width,
-            'shape_height': shape_height,
-            'line_shape': line_shape,
-            'shape_color': shape_color,
-            'line_color': line_color,
-            'connected_nodes': connected_nodes
-        }
-
-
 # 각 line 을 읽고, 해당 line 의 정보를 이용하여 Diagram 에 도형 및 화살표 추가
 # Create Date : 2025.03.17
-# Last Update Date : 2025.03.17
-# - 버그 수정 (도형 그리기 순서 등)
+# Last Update Date : 2025.03.21
+# - add_diagram_info 함수 변경으로 diagram_dict 를 인수로 추가
 
 # Arguments:
 # - line_text (str) : 각 line 의 text 내용
@@ -428,7 +340,7 @@ def generate_diagram_each_line(line_text):
 
     # find diagram shape line format from line text
     diagram_formats = find_diagram_formats(line_text)
-    add_diagram_info(diagram_formats)
+    add_diagram_info(diagram_formats, diagram_dict)
 
     # draw lines first
     for node_no, info in diagram_dict.items():
