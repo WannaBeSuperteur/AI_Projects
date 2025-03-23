@@ -62,6 +62,7 @@
 
 * 학습 데이터 정보
   * 총 900 개의 Diagram 및 그 평가 점수 (0~5)
+  * 90도/180도/270도 회전 및 상하 flip [Augmentation](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_Image_Augmentation.md) 적용하여, 원본의 8 배 분량으로 이미지 데이터셋 증대
   * ```scores.csv```
 * 학습 데이터 상세
   * ```training_data/base``` : [SFT Fine-tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) 을 위해 생성한 700 개의 Diagram
@@ -87,6 +88,7 @@ TBU
 * Auto-Encoder 학습 데이터 정보
   * 총 700 개의 Diagram 및 그 평가 점수 (0~5)
     * 위 **2-1.** 의 데이터 중 SFT Fine-tuning 을 위해 생성한 것만을 이용
+  * 90도/180도/270도 회전 [Augmentation](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_Image_Augmentation.md) 적용하여 원본의 4배 분량으로 이미지 데이터셋 증대
   * ```scores.csv``` 를 읽어서, ```img_path``` column 값을 이용하여 별도 추출
 * Auto-Encoder 학습 데이터 상세
   * ```training_data/base``` : SFT Fine-tuning 을 위해 생성한 700 개의 Diagram 
