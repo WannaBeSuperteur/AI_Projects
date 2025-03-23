@@ -17,6 +17,7 @@
   * [5-3. 다이어그램 이미지 over-write (해결 완료)](#5-3-다이어그램-이미지-over-write-해결-완료)
   * [5-4. CUBLAS_STATUS_NOT_SUPPORTED (해결 완료)](#5-4-cublas_status_not_supported-해결-완료)
   * [5-5. SFT 중 CUDA error: unknown error (해결 완료)](#5-5-sft-중-cuda-error-unknown-error-해결-완료)
+  * [5-6. Fine-Tuning 된 모델 추론 속도 저하 (해결 보류)](#5-6-fine-tuning-된-모델-추론-속도-저하-해결-보류)
 
 ## 1. 프로젝트 개요
 
@@ -143,6 +144,7 @@ It is important to draw a representation of high readability.
 | 다이어그램 이미지가 overwrite 됨                          | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**              | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
 | ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류) | 2025.03.20 | **심각** | 해결 완료 | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임 | - batch size 설정                                                                                          |
 | SFT 중 CUDA error: unknown error                 | 2025.03.20 | **심각** | 해결 완료 | 큰 batch size 에 따른 Out-of-memory               | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**            |           |
+| Fine-Tuning 된 모델 추론 속도 저하                       | 2025.03.22 | 보통     | 보류    | 환경 제약 & task 특성 (추정)                          | - Auto-GPTQ 사용 **(해결 안됨)**<br>- 추가 라이브러리 사용 **(실패)**<br>- LLM 관련 설정값 변경 **(해결 안됨)**                      |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -193,7 +195,7 @@ It is important to draw a representation of high readability.
       * 실패
       * ```ERROR: flash_attn-2.6.3+cu122torch2.4.0cxx11abiFALSE-cp311-cp311-win_amd64.whl is not a supported wheel on this platform.```
 
-## 5-2. LLM 출력이 매번 동일함 (해결 완료)
+### 5-2. LLM 출력이 매번 동일함 (해결 완료)
 
 **문제 상황 및 원인 요약**
 
@@ -372,3 +374,64 @@ Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
         per_device_eval_batch_size=1  # batch size per device during validation
     )
 ```
+
+### 5-6. Fine-Tuning 된 모델 추론 속도 저하 (해결 보류)
+
+**문제 상황 및 원인 요약**
+
+* LLM Fine Tuning 후, Diagram 1개를 생성하는 데 3분 이상 소요
+* 본 프로젝트를 하나의 제품이라고 하면, 제품을 사용하는 유저 입장에서 좋은 사용자 경험을 제공하기 어려운 상황
+
+**해결 보류 사유**
+
+* GPU 성능 제약, Windows 10 OS 에서의 vLLM 등 라이브러리 사용 불가 등 환경적 제약을 프로젝트 일정 내에 극복하기 어렵다고 판단
+* task 의 특성상 response 의 token 개수가 1000개 이상으로 많이 필요하고, 이로 인해 긴 시간이 소요됨. 즉 **긴 시간 소요는 task 의 특성이라는 근본적인 이유 때문임**
+
+**해결 시도한 방법**
+
+* Auto-GPTQ 사용 **(속도 향상 안됨)**
+  * 시도 자체는 성공했으나, **학습 및 추론 속도 향상이 체감되지 않음**
+  * [기존 모델의 GPTQ 적용된 버전](https://huggingface.co/TheBloke/deepseek-coder-1.3b-instruct-GPTQ) 적용 시,
+    * 적용 자체는 **성공**
+    * GPU 메모리 사용량 감소는 체감되지만, **학습/추론 속도 개선은 체감 안됨**
+    * 기존 모델 대비 파라미터 개수 감소로, 실제 유저 사용 시 성능 저하 우려
+    * 추론 속도가 **기존 모델보다도 오히려 느린** 것으로 의심
+  * [상세 시도 기록](fine_tuning/log/log_try_apply_GPTQ.md) 
+* 모델 생성 과정에서의 num_return_sequences (생성하는 answer 의 개수) 수정 **(속도 향상 불가)**
+  * 기본값이 '1'이기 때문 
+* vLLM 사용 **(현재 Linux 에서만 지원, Windows 에서 지원 안됨)**
+* LoRA Config 에서 ```inference mode = True``` 적용 **(속도 향상 안됨)**
+
+```python
+def load_sft_llm():
+    print('loading LLM ...')
+
+    try:
+        model = AutoModelForCausalLM.from_pretrained("sft_model").cuda()
+
+        lora_config = LoraConfig(
+            r=16,  # Rank of LoRA
+            lora_alpha=16,
+            lora_dropout=0.05,  # Dropout for LoRA
+            init_lora_weights="gaussian",  # LoRA weight initialization
+            inference_mode=True,
+            target_modules=['q_proj', 'v_proj', 'k_proj', 'o_proj']
+        )
+        model = get_peft_model(model, lora_config)
+```
+
+* 추가 라이브러리 사용 **(실패)**
+  * [Intel Extension (streamer 도 같이 적용)](https://discuss.pytorch.kr/t/transformer-intel-extension/2997)
+
+```
+FAILED:  No module named 'neural_compressor.conf'
+```
+
+* 추가 라이브러리 없이 streamer 만 사용 **(속도 향상 안됨)**
+  * 모델 출력이 실시간으로 표시되는 효과만 있음
+* 기타 방법들 **(```model.eval()``` 에서 5% 정도 속도 향상 추정)**
+  * ```model = torch.compile(model)``` : 속도 향상 없음
+  * **```model.eval()``` : 5% 정도 향상 추정**
+  * ```model.half()``` + ```float16``` 적용 : 오류 발생
+    * ```inputs = tokenizer(prompt, return_tensors="pt").to("cuda", torch.float16)``` 형식
+  * ```do_sample=False``` : 속도 향상 없음 + **동일 context 에 대해 다양한 문장 생성 안됨**
