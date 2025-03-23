@@ -107,8 +107,9 @@ def run_fine_tuning(df_train, df_valid):
 
 # SFT 테스트를 위한 모델 로딩
 # Create Date : 2025.03.21
-# Last Update Date : 2025.03.22
+# Last Update Date : 2025.03.23
 # - 모델의 추론 (답변 생성) 속도 향상을 위해 compile + eval() 추가
+# - PROJECT_DIR_PATH 를 이용한 절대 경로화
 
 # Arguments:
 # - 없음
@@ -121,11 +122,11 @@ def load_sft_llm():
     print('loading LLM ...')
 
     try:
-        model = AutoModelForCausalLM.from_pretrained("sft_model").cuda()
+        model = AutoModelForCausalLM.from_pretrained(f"{PROJECT_DIR_PATH}/sft_model").cuda()
         model = torch.compile(model)
         model.eval()
 
-        tokenizer = AutoTokenizer.from_pretrained("sft_model", eos_token='<eos>')
+        tokenizer = AutoTokenizer.from_pretrained(f"{PROJECT_DIR_PATH}/sft_model", eos_token='<eos>')
         tokenizer.pad_token = tokenizer.eos_token
         return model, tokenizer
 

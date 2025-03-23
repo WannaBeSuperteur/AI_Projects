@@ -1,57 +1,74 @@
 import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-
 import torch
-from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
+from datasets import Dataset
 from sklearn.model_selection import train_test_split
-
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import pandas as pd
-
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
-TEST_PROMPT = ("CNN with 128 x 128 input size, a 3 x 3 convolutional layer and a 2 x 2 pooling layer, " +
-               "then 2 3 x 3 convolutional layers and a 2 x 2 pooling layer, 2 3 x 3 convolutional layers " +
-               "and a 2 x 2 pooling layer, a 3 x 3 conv layer and a 2 x 2 pooling layer, " +
-               "then and 1024 nodes in hiddens, and 1 output size")
-
 
 # ORPO Fine-Tuning 을 위해 Pandas DataFrame 을 ORPO 형식 {"prompt": [...], "chosen": [...], "rejected": [...]} 으로 변환
-# Create Date : 2025.03.20
+# Create Date : 2025.03.23
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame
-#                                   columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
+# - df_train (Pandas DataFrame) : ORPO 형식 Train Data 의 DataFrame
+#                                 columns: ['prompt', 'chosen', 'rejected']
+# - df_valid (Pandas DataFrame) : ORPO 형식 Valid Data 의 DataFrame
+#                                 columns: ['prompt', 'chosen', 'rejected']
 
 # Returns:
-# - orpo_format_dataset (dict(list)) : ORPO 로 직접 학습 가능한 데이터 형식으로 변환된 데이터셋
-#                                      형식: {"prompt": [...], "chosen": [...], "rejected": [...]}
+# - orpo_train_dict (dict(list)) : Train Data 가 ORPO 로 직접 학습 가능한 데이터 형식으로 변환된 데이터셋
+#                                  형식: {"prompt": [...], "chosen": [...], "rejected": [...]}
+# - orpo_valid_dict (dict(list)) : Valid Data 가 ORPO 로 직접 학습 가능한 데이터 형식으로 변환된 데이터셋
+#                                  형식: {"prompt": [...], "chosen": [...], "rejected": [...]}
 
-def convert_df_to_orpo_format(dataset_df):
-    raise NotImplementedError
+def convert_df_to_orpo_format(df_train, df_valid):
+    orpo_train_dict = {
+        'prompt': df_train['prompt'].apply(lambda x: f"### Question: {x}\n ### Answer: ").tolist(),
+        'chosen': df_train['chosen'].apply(lambda x: f"{x}<eos>").tolist(),
+        'rejected': df_train['rejected'].apply(lambda x: f"{x}<eos>").tolist()
+    }
+    orpo_valid_dict = {
+        'prompt': df_valid['prompt'].apply(lambda x: f"### Question: {x}\n ### Answer: ").tolist(),
+        'chosen': df_valid['chosen'].apply(lambda x: f"{x}<eos>").tolist(),
+        'rejected': df_valid['rejected'].apply(lambda x: f"{x}<eos>").tolist()
+    }
+
+    return orpo_train_dict, orpo_valid_dict
 
 
 # ORPO Fine-Tuning 실시
-# Create Date : 2025.03.20
+# Create Date : 2025.03.23
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame
-#                                   columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
+# - df_train (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame 중 Train Data
+#                                 columns: ['input_data', 'output_data', 'dest_shape_info']
+# - df_valid (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame 중 Valid Data
+#                                 columns: ['input_data', 'output_data', 'dest_shape_info']
 
 # Returns:
-# - llm (LLM) : SFT 로 Fine-tuning 된 LLM
+# - lora_llm  (LLM)       : SFT 로 Fine-tuning 된 LLM
+# - tokenizer (tokenizer) : 해당 LLM 에 대한 tokenizer
 
-def run_fine_tuning(dataset_df):
-    orpo_format_dataset = convert_df_to_orpo_format(dataset_df)
+def run_fine_tuning(df_train, df_valid):
+
+    # Dataset 변환
+    orpo_train, orpo_valid = convert_df_to_orpo_format(df_train, df_valid)
+
+    orpo_train_dataset = Dataset.from_dict(orpo_train)
+    orpo_valid_dataset = Dataset.from_dict(orpo_valid)
+
+    print(orpo_train_dataset)
+    print(orpo_valid_dataset)
 
     raise NotImplementedError
 
 
 # ORPO 테스트를 위한 모델 로딩
-# Create Date : 2025.03.20
+# Create Date : 2025.03.23
 # Last Update Date : -
 
 # Arguments:
@@ -61,21 +78,20 @@ def run_fine_tuning(dataset_df):
 # - llm (LLM) : SFT + ORPO 로 Fine-tuning 된 LLM
 
 def load_orpo_llm():
-    raise NotImplementedError
+    print('loading LLM ...')
 
+    try:
+        model = AutoModelForCausalLM.from_pretrained(f"{PROJECT_DIR_PATH}/orpo_model").cuda()
+        model = torch.compile(model)
+        model.eval()
 
-# SFT + ORPO 로 Fine-Tuning 된 LLM 저장
-# Create Date : 2025.03.20
-# Last Update Date : -
+        tokenizer = AutoTokenizer.from_pretrained(f"{PROJECT_DIR_PATH}/orpo_model", eos_token='<eos>')
+        tokenizer.pad_token = tokenizer.eos_token
+        return model, tokenizer
 
-# Arguments:
-# - llm (LLM) : SFT + ORPO 로 Fine-tuning 된 LLM
-
-# Returns:
-# - 해당 LLM 을 파일로 저장
-
-def save_orpo_llm(llm):
-    raise NotImplementedError
+    except Exception as e:
+        print(f'loading LLM failed : {e}')
+        return None, None
 
 
 # SFT + ORPO 로 Fine-Tuning 된 LLM 을 테스트
@@ -102,15 +118,21 @@ if __name__ == '__main__':
     print(f'cuda is available with device {torch.cuda.get_device_name()}')
 
     orpo_dataset_path = f'{PROJECT_DIR_PATH}/create_dataset/orpo_dataset_llm.csv'
-    df = pd.read_csv(orpo_dataset_path)
+    df = pd.read_csv(orpo_dataset_path, index_col=0)
     df_train, df_valid = train_test_split(df, test_size=0.2, random_state=2025)
 
     # LLM Fine-tuning
-    llm = run_fine_tuning(df_train)
-    save_orpo_llm(llm)
+    llm, tokenizer = load_orpo_llm()
+
+    if llm is None or tokenizer is None:
+        print('LLM load failed, fine tuning ...')
+        llm, tokenizer = run_fine_tuning(df_train, df_valid)
+    else:
+        print('LLM load successful!')
 
     # LLM 테스트
-    llm = load_orpo_llm()
+    print('LLM test start')
+
     llm_prompts = df_valid['input_data'].tolist()
     llm_dest_outputs = df_valid['output_data'].tolist()
 
