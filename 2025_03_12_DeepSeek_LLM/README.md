@@ -137,14 +137,15 @@ It is important to draw a representation of high readability.
 
 **이슈 요약**
 
-| 이슈                                              | 날짜         | 심각성    | 상태    | 원인                                            | 시도했으나 실패한 해결 방법                                                                                          |
-|-------------------------------------------------|------------|--------|-------|-----------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| ```flash_attn``` 사용 불가                          | 2025.03.14 | 낮음     | 보류    | ```nvcc -V``` 기준의 CUDA 버전 이슈                  | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
-| LLM 출력이 매번 동일함                                  | 2025.03.15 | 보통     | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락       | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
-| 다이어그램 이미지가 overwrite 됨                          | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**              | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
-| ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류) | 2025.03.20 | **심각** | 해결 완료 | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임 | - batch size 설정                                                                                          |
-| SFT 중 CUDA error: unknown error                 | 2025.03.20 | **심각** | 해결 완료 | 큰 batch size 에 따른 Out-of-memory               | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**            |           |
-| Fine-Tuning 된 모델 추론 속도 저하                       | 2025.03.22 | 보통     | 보류    | 환경 제약 & task 특성 (추정)                          | - Auto-GPTQ 사용 **(해결 안됨)**<br>- 추가 라이브러리 사용 **(실패)**<br>- LLM 관련 설정값 변경 **(해결 안됨)**                      |
+| 이슈                                                                                                                                                    | 날짜         | 심각성    | 상태    | 원인 (및 해결 방법)                                              | 시도했으나 실패한 해결 방법                                                                                          |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------|-------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| ```flash_attn``` 사용 불가                                                                                                                                | 2025.03.14 | 낮음     | 보류    | ```nvcc -V``` 기준의 CUDA 버전 이슈                              | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)** |
+| LLM 출력이 매번 동일함                                                                                                                                        | 2025.03.15 | 보통     | 해결 완료 | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락                   | - ```torch.manual_seed()``` 설정 **(실패)**                                                                  |
+| 다이어그램 이미지가 overwrite 됨                                                                                                                                | 2025.03.18 | 보통     | 해결 완료 | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**                          | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**  |
+| ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류)                                                                                                       | 2025.03.20 | **심각** | 해결 완료 | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임             | - batch size 설정                                                                                          |
+| SFT 중 CUDA error: unknown error                                                                                                                       | 2025.03.20 | **심각** | 해결 완료 | 큰 batch size 에 따른 Out-of-memory                           | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**            |           |
+| Fine-Tuning 된 모델 추론 속도 저하                                                                                                                             | 2025.03.22 | 보통     | 보류    | 환경 제약 & task 특성 (추정)                                      | - Auto-GPTQ 사용 **(해결 안됨)**<br>- 추가 라이브러리 사용 **(실패)**<br>- LLM 관련 설정값 변경 **(해결 안됨)**                      |
+| ORPO 학습 중 경고 및 오류<br>- ```Trainer.tokenizer is now deprecated.``` 경고 메시지<br>- ```AttributeError: 'generator' object has no attribute 'generate'``` 오류 | 2025.03.23 | **심각** | 해결 완료 | transformers, trl 라이브러리 호환 안됨 → transformers 라이브러리 다운그레이드 | - trl 라이브러리 업그레이드 **(실패)**                                                                               |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -435,3 +436,39 @@ FAILED:  No module named 'neural_compressor.conf'
   * ```model.half()``` + ```float16``` 적용 : 오류 발생
     * ```inputs = tokenizer(prompt, return_tensors="pt").to("cuda", torch.float16)``` 형식
   * ```do_sample=False``` : 속도 향상 없음 + **동일 context 에 대해 다양한 문장 생성 안됨**
+
+## 5-7. ORPO 학습 중 경고 메시지 및 오류 (해결 완료)
+
+**문제 상황 및 원인 요약**
+
+* ORPO 학습 초반 mapping 단계에서 아래와 같은 경고
+  * ```Trainer.tokenizer is now deprecated. You should use Trainer.processing_class instead.```
+* ORPO 학습 중 ```'generator' object has no attribute 'generate'``` 오류
+
+```
+  File "C:\Users\20151\AppData\Local\Programs\Python\Python38\lib\site-packages\trl\trainer\orpo_trainer.py", line 852, in get_batch_samples
+    policy_output = model.generate(
+AttributeError: 'generator' object has no attribute 'generate'
+```
+
+* 문제 원인
+  * 라이브러리 호환 이슈 
+  * 현재 설치된 ```transformers==4.46.3``` 과 ```trl==0.11.4``` 가 호환되지 않음 
+
+**해결 시도한 방법**
+
+* pip 을 이용하여 ```trl==0.12.0``` 설치 **(실패)**
+  * 명령어 : ```pip install trl==0.12.0```
+  * 실패 이유 : Python 3.8.1 기준 pip 에서 trl 의 최대 버전이 ```0.11.4``` 임
+* GitHub release 된 링크를 통해 ```trl``` 라이브러리 최신 버전 설치 **(실패)**
+  * 명령어 : ```pip wheel git+https://github.com/huggingface/trl.git```
+  * 실패 이유 : Python 3.9.0 이상 필요
+    * ```ERROR: Package 'trl' requires a different Python: 3.8.1 not in '>=3.9'``` 
+* ```transformers==4.45.0``` 으로 다운그레이드
+  * 의사결정 이유 
+    * Python 을 3.8.1 에서 3.9.0 으로 업그레이드 시, 모든 코드에 대한 정상 작동 여부 재확인 필요
+    * 그러나, 현실적으로 자원 소비가 크다고 판단
+    * 본 프로젝트에서는 ```transformers==4.45.0``` 으로 다운그레이드, 다음 프로젝트부터 Python version up
+  * 결과
+    * 이 방법으로 **경고 메시지 및 오류 모두 해결 성공 🎉**
+    * SFT Fine-Tuning 학습 및 테스트, SFT 된 모델을 이용한 다이어그램 생성 모두 정상 작동 확인
