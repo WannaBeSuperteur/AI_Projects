@@ -1,9 +1,13 @@
 import os
 import torch
-from datasets import Dataset
-from sklearn.model_selection import train_test_split
-from transformers import AutoModelForCausalLM, AutoTokenizer
 import pandas as pd
+
+from datasets import Dataset, DatasetDict
+from sklearn.model_selection import train_test_split
+
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from trl import ORPOTrainer, ORPOConfig, DataCollatorForCompletionOnlyLM
+from peft import LoraConfig, get_peft_model
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
@@ -50,7 +54,7 @@ def convert_df_to_orpo_format(df_train, df_valid):
 #                                 columns: ['input_data', 'output_data', 'dest_shape_info']
 
 # Returns:
-# - lora_llm  (LLM)       : SFT 로 Fine-tuning 된 LLM
+# - lora_llm  (LLM)       : ORPO 로 Fine-tuning 된 LLM
 # - tokenizer (tokenizer) : 해당 LLM 에 대한 tokenizer
 
 def run_fine_tuning(df_train, df_valid):
@@ -61,10 +65,68 @@ def run_fine_tuning(df_train, df_valid):
     orpo_train_dataset = Dataset.from_dict(orpo_train)
     orpo_valid_dataset = Dataset.from_dict(orpo_valid)
 
-    print(orpo_train_dataset)
-    print(orpo_valid_dataset)
+    # SFT 학습된 모델 및 tokenizer 불러오기
+    model_path = f"{PROJECT_DIR_PATH}/sft_model"
+    output_dir = "orpo_model"
 
-    raise NotImplementedError
+    sft_llm = AutoModelForCausalLM.from_pretrained(model_path,
+                                                   torch_dtype=torch.float16).cuda()
+    sft_llm.gradient_checkpointing_enable()
+
+    tokenizer = AutoTokenizer.from_pretrained(model_path, eos_token='<eos>')
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = 'right'
+
+    # Training Configurations (LoRA, ORPO, ...)
+    lora_config = LoraConfig(
+        r=16,                           # Rank of LoRA
+        lora_alpha=16,
+        lora_dropout=0.05,              # Dropout for LoRA
+        init_lora_weights="gaussian",   # LoRA weight initialization
+        target_modules=['q_proj', 'v_proj', 'k_proj', 'o_proj']
+    )
+    lora_llm = get_peft_model(sft_llm, lora_config)
+    lora_llm.print_trainable_parameters()
+
+    training_args = ORPOConfig(
+        learning_rate=1e-5,             # lower learning rate is recommended for fine tuning
+        num_train_epochs=4,
+        logging_steps=1,                # logging frequency
+        gradient_checkpointing=True,
+        output_dir=output_dir,
+        save_total_limit=3,             # max checkpoint count to save
+        per_device_train_batch_size=1,  # batch size per device during training
+        per_device_eval_batch_size=1,   # batch size per device during validation
+        max_length=1536,                # max length of (prompt + LLM answer)
+        max_prompt_length=512,          # max length of (ONLY prompt)
+        remove_unused_columns=False
+    )
+
+    dataset = DatasetDict()
+    dataset['train'] = orpo_train_dataset
+    dataset['valid'] = orpo_valid_dataset
+
+    response_template = '### Answer:'
+    response_template = tokenizer.encode(f"\n{response_template}", add_special_tokens=False)[2:]
+    collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
+
+    trainer = ORPOTrainer(
+        lora_llm,
+        train_dataset=dataset['train'],
+        eval_dataset=dataset['valid'],
+        tokenizer=tokenizer,
+        args=training_args,
+        data_collator=collator
+    )
+
+    trainer.train()
+    trainer.save_model(output_dir)
+
+    checkpoint_output_dir = os.path.join(output_dir, 'deepseek_checkpoint')
+    trainer.model.save_pretrained(checkpoint_output_dir)
+    tokenizer.save_pretrained(checkpoint_output_dir)
+
+    return lora_llm, tokenizer
 
 
 # ORPO 테스트를 위한 모델 로딩

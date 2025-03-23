@@ -27,7 +27,8 @@ os.environ["TORCH_USE_CUDA_DSA"] = '1'
 
 # SFT 실시
 # Create Date : 2025.03.21
-# Last Update Date : -
+# Last Update Date : 2025.03.23
+# - LLM Config 의 설명 comment 줄 맞춤
 
 # Arguments:
 # - df_train (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame 중 Train Data
@@ -56,24 +57,24 @@ def run_fine_tuning(df_train, df_valid):
     tokenizer.padding_side = 'right'
 
     lora_config = LoraConfig(
-        r=16,  # Rank of LoRA
+        r=16,                           # Rank of LoRA
         lora_alpha=16,
-        lora_dropout=0.05,  # Dropout for LoRA
-        init_lora_weights="gaussian",  # LoRA weight initialization
+        lora_dropout=0.05,              # Dropout for LoRA
+        init_lora_weights="gaussian",   # LoRA weight initialization
         target_modules=['q_proj', 'v_proj', 'k_proj', 'o_proj']
     )
     lora_llm = get_peft_model(original_llm, lora_config)
     lora_llm.print_trainable_parameters()
 
     training_args = SFTConfig(
-        learning_rate=0.0002,  # lower learning rate is recommended for fine tuning
+        learning_rate=0.0002,           # lower learning rate is recommended for fine tuning
         num_train_epochs=4,
-        logging_steps=1,  # logging frequency
+        logging_steps=1,                # logging frequency
         gradient_checkpointing=True,
         output_dir=output_dir,
-        save_total_limit=3,  # max checkpoint count to save
+        save_total_limit=3,             # max checkpoint count to save
         per_device_train_batch_size=1,  # batch size per device during training
-        per_device_eval_batch_size=1  # batch size per device during validation
+        per_device_eval_batch_size=1    # batch size per device during validation
     )
 
     dataset = DatasetDict()
@@ -90,7 +91,7 @@ def run_fine_tuning(df_train, df_valid):
         eval_dataset=dataset['valid'],
         dataset_text_field='text',
         tokenizer=tokenizer,
-        max_seq_length=1536,  # 한번에 입력 가능한 최대 token 개수 (클수록 GPU 메모리 사용량 증가)
+        max_seq_length=1536,              # 한번에 입력 가능한 최대 token 개수 (클수록 GPU 메모리 사용량 증가)
         args=training_args,
         data_collator=collator
     )
