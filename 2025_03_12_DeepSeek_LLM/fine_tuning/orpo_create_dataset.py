@@ -65,11 +65,11 @@ def prepare_orpo_info(llm, tokenizer, orpo_format_df):
 
 
 # ORPO 용 데이터셋 (SFT 와 동일한 포맷) 의 DataFrame 에 ORPO 용 데이터 추가
-# Create Date : 2025.03.22
+# Create Date : 2025.03.23
 # Last Update Date : -
 
 # Arguments:
-# - orpo_format_df (Pandas DataFrame) : 학습 데이터셋 csv 파일로부터 얻은 DataFrame (from create_dataset/orpo_dataset_llm.csv)
+# - orpo_format_df (Pandas DataFrame) : 일부 생성한 학습 데이터셋 csv 파일로부터 얻은 DataFrame (from create_dataset/orpo_dataset_llm.csv)
 #                                       columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
 # - orpo_info_df   (Pandas DataFrame) : ORPO 용 데이터셋 생성에 필요한 LLM 출력 평가 결과의 DataFrame
 #                                       columns: ['input_data', 'output_data', 'score']
@@ -79,18 +79,51 @@ def prepare_orpo_info(llm, tokenizer, orpo_format_df):
 #                                columns: ['input_data', 'output_data', 'dest_shape_info', 'score']
 
 def add_orpo_dataset(orpo_format_df, orpo_info_df):
-    raise NotImplementedError
+
+    orpo_info_df['output_data'] = orpo_info_df['output_data'].apply(lambda x: x[1:] if x[0] in ['\n', '\t'] else x)
+
+    orpo_format_df.rename(columns={'output_data': 'dest_output_data'}, inplace=True)
+    orpo_format_df.drop(columns=['score', 'dest_shape_info'], inplace=True)
+
+    orpo_info_df.rename(columns={'output_data': 'llm_answer'}, inplace=True)
+    orpo_info_df.drop(columns=['input_data'], inplace=True)
+
+    orpo_df = pd.concat([orpo_format_df, orpo_info_df], axis=1)
+    orpo_df = orpo_df[orpo_df['score'] < 1.0]
+
+    orpo_df.rename(columns={'input_data': 'prompt',
+                            'dest_output_data': 'chosen',
+                            'llm_answer': 'rejected'}, inplace=True)
+    orpo_df.drop(columns=['score'], inplace=True)
+    orpo_df.reset_index()
+
+    print('ORPO Final Dataset :')
+    print(orpo_df)
+
+    return orpo_df
 
 
 if __name__ == '__main__':
-    llm, tokenizer = load_sft_llm()
     orpo_format_dataset_path = f'{PROJECT_DIR_PATH}/create_dataset/orpo_dataset_llm.csv'
     orpo_format_df = pd.read_csv(orpo_format_dataset_path)
 
     # 이미 ORPO 용 데이터가 추가된 경우 오류 반환
-    assert min(orpo_format_df['score']) == 1.0, 'ORPO DATA ALREADY ADDED'
+    orpo_format_df_columns = list(orpo_format_df.columns)
+    assert 'chosen' not in orpo_format_df_columns and 'rejected' not in orpo_format_df_columns, 'ORPO DATA ALREADY ADDED'
 
-    orpo_info_df = prepare_orpo_info(llm, tokenizer, orpo_format_df)
+    # LLM, tokenizer 로딩
+    llm, tokenizer = load_sft_llm()
+
+    orpo_info_df_path = f'{PROJECT_DIR_PATH}/fine_tuning/log/orpo_info_df.csv'
+
+    if os.path.exists(orpo_info_df_path):
+        print('orpo_info_df.csv exists')
+        orpo_info_df = pd.read_csv(orpo_info_df_path, index_col=0)
+
+    else:
+        print('orpo_info_df.csv not exists, creating ...')
+        orpo_info_df = prepare_orpo_info(llm, tokenizer, orpo_format_df)
+
     orpo_df = add_orpo_dataset(orpo_format_df, orpo_info_df)
 
     orpo_df.to_csv(f'{PROJECT_DIR_PATH}/create_dataset/orpo_dataset_llm.csv')
