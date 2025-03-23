@@ -2,7 +2,7 @@
 
 * [1. LLM Fine-Tuning](#1-llm-fine-tuning)
 * [2. Supervised Fine-Tuning (SFT)](#2-supervised-fine-tuning-sft)
-* [3. Odd-Radio Preference Optimizaiton (ORPO)](#3-odd-radio-preference-optimizaiton-orpo)
+* [3. Odd-Radio Preference Optimizaiton (ORPO) **(실패, 미 적용)**](#3-odd-radio-preference-optimizaiton-orpo)
 * [4. 코드 실행 순서](#4-코드-실행-순서)
 
 ## 1. LLM Fine-Tuning
@@ -90,7 +90,7 @@
 
 ![image](../../images/250312_14.PNG)
 
-## 3. Odd-Radio Preference Optimizaiton (ORPO)
+## 3. Odd-Radio Preference Optimizaiton (ORPO) (실패, 미 적용)
 
 **1. 데이터셋**
 
@@ -108,7 +108,8 @@
 
 **3. Fine-Tuning 결과**
 
-TBU
+* [Cuda OOM 으로 인한 학습 실패](../README.md#5-8-orpo-학습-시-cuda-out-of-memory-해결-실패)
+* 환경적 제약에 의한 문제로, 본 프로젝트 일정 내에는 극복 불가 판단
 
 ## 4. 코드 실행 순서
 
