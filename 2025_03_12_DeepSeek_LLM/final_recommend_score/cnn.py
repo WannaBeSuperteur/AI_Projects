@@ -10,7 +10,8 @@ from torchinfo import summary
 
 from sklearn.model_selection import KFold
 import pandas as pd
-import time
+import cv2
+import numpy as np
 
 import os
 import sys
@@ -45,38 +46,38 @@ class BaseScoreCNN(nn.Module):
         self.pool1 = nn.MaxPool2d(2, 2)
 
         self.conv3 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=3),
+            nn.Conv2d(64, 128, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
         self.pool2 = nn.MaxPool2d(2, 2)
 
         self.conv4 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3),
+            nn.Conv2d(128, 256, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
         self.pool3 = nn.MaxPool2d(2, 2)
 
         self.conv5 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=3),
+            nn.Conv2d(256, 512, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
         self.conv6 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=3),
+            nn.Conv2d(512, 512, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
 
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(128 * 10 * 10, 128),
+            nn.Linear(512 * 10 * 10, 512),
             nn.Sigmoid(),
             nn.Dropout(0.45)
         )
         self.fc_final = nn.Sequential(
-            nn.Linear(128, 1),
+            nn.Linear(512, 1),
             nn.Sigmoid()
         )
 
@@ -96,7 +97,7 @@ class BaseScoreCNN(nn.Module):
         x = self.conv5(x)  # 12
         x = self.conv6(x)  # 10
 
-        x = x.view(-1, 128 * 10 * 10)
+        x = x.view(-1, 512 * 10 * 10)
 
         # Fully Connected
         x = self.fc1(x)
@@ -157,9 +158,7 @@ class DiagramImageDataset(Dataset):
 
 def load_dataset(dataset_df):
     transform = transforms.Compose([transforms.ToPILImage(),
-                                    transforms.Resize((IMG_HEIGHT, IMG_WIDTH)),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.5,), (0.5,))])
+                                    transforms.ToTensor()])
 
     diagram_image_dataset = DiagramImageDataset(dataset_df, transform=transform)
 
@@ -325,8 +324,26 @@ def predict_score_image(test_loader, cnn_models):
 
 if __name__ == '__main__':
 
-    # load dataset
     dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/final_recommend_score/scores.csv')
+
+    # resize images to (128, 128)
+    img_paths = dataset_df['img_path'].tolist()
+
+    for idx, img_path in enumerate(img_paths):
+        if idx % 100 == 0:
+            print(f'resizing diagram image progress : {idx}')
+
+        img_full_path = f'{TRAIN_DATA_DIR_PATH}/{img_path}'
+        img = cv2.imread(img_full_path, cv2.IMREAD_COLOR)
+
+        # already resized
+        if np.shape(img) == (IMG_WIDTH, IMG_HEIGHT, 3):
+            continue
+
+        img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)  # resize with ANTI-ALIAS
+        cv2.imwrite(img_full_path, img)
+
+    # load dataset
     dataset_df = dataset_df.sample(frac=1)
     train_loader, test_loader = load_dataset(dataset_df)
 
