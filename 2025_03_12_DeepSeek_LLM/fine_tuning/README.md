@@ -25,10 +25,10 @@
 
 * SFT, ORPO 각각 데이터셋 중 **80% 를 train, 20% 를 validation** 에 사용 (test dataset 따로 없음)
 
-| 방법                                       | 데이터셋                                                                                                                                              | 데이터셋 파일                                                        |
-|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
-| Supervised Fine-Tuning (SFT)             | **총 700 개 규모** 데이터셋<br>- 딥러닝 모델 구조 관련 280 개<br>- 기타 420 개                                                                                         | [sft_dataset_llm.csv](../create_dataset/sft_dataset_llm.csv)   |
-| Odd-Radio Preference Optimizaiton (ORPO) | **총 800 개 규모** 데이터셋<br>- 딥러닝 모델 구조 관련 320 개 (80 개는 SFT 이전 생성, 240 개는 SFT 된 LLM 에 의해 생성)<br>- 기타 480개 (120 개는 SFT 이전 생성, 360 개는 SFT 된 LLM 에 의해 생성) | [orpo_dataset_llm.csv](../create_dataset/orpo_dataset_llm.csv) |
+| 방법                                       | 데이터셋                                                      | 데이터셋 파일                                                        |
+|------------------------------------------|-----------------------------------------------------------|----------------------------------------------------------------|
+| Supervised Fine-Tuning (SFT)             | **총 700 개 규모** 데이터셋<br>- 딥러닝 모델 구조 관련 280 개<br>- 기타 420 개 | [sft_dataset_llm.csv](../create_dataset/sft_dataset_llm.csv)   |
+| Odd-Radio Preference Optimizaiton (ORPO) | **총 199 개 규모** 데이터셋                                       | [orpo_dataset_llm.csv](../create_dataset/orpo_dataset_llm.csv) |
 
 ## 2. Supervised Fine-Tuning (SFT)
 
@@ -60,13 +60,34 @@
 * SFT 된 모델을 이용한 ORPO 용 데이터 생성 코드
   * ```fine_tuning/orpo_create_dataset.py```
   * 해당 코드 실행 시, ```create_dataset/orpo_dataset_llm.csv``` 에 ORPO 용 추가 데이터를 생성하여 추가
-
-**4. Fine-Tuning 결과**
-
 * 학습 설정
   * training batch size = 1
   * gradient checkpointing 적용
   * [학습 결과](log/log_train_final_sft.md) (학습 종료 시점에서 **평균 training loss 0.075** 내외)
+
+**4. Fine-Tuning 결과**
+
+* 결과 요약
+  * 데이터 포맷에 대한 Fine-tuning 자체는 제대로 된 듯함 
+    * [최초의 deepseek-coder-1.3b-instruct LLM](../test_llm/README.md/#3-테스트-진행-및-결과) 이 형식에 맞게 응답한 것이 **13 / 20 개** 였는데 비해, [ORPO 데이터셋 생성용으로 작성한 프롬프트 200개](../create_dataset/orpo_dataset_llm.csv) 를 이용하여 테스트 결과 **(일단 형식을 맞춘 것은) 199 / 200 개** 임
+  * 실제 유저가 원하는 다이어그램 생성은 미흡함
+    * 신경망, CNN 모델, Flow-Chart 다이어그램 중 일부는 의도한 다이어그램 형태에 상당히 근접함
+    * 그러나, 도형이 겹치거나 canvas 범위를 넘어가는 등 가독성이 떨어지는 부분이 있음
+
+* 상세 이미지
+  * 총 다이어그램 200 개 
+
+**1 ~ 90 번째 다이어그램**
+
+![image](../../images/250312_12.PNG)
+
+**91 ~ 150 번째 다이어그램**
+
+![image](../../images/250312_13.PNG)
+
+**151 ~ 200 번째 다이어그램**
+
+![image](../../images/250312_14.PNG)
 
 ## 3. Odd-Radio Preference Optimizaiton (ORPO)
 
@@ -74,13 +95,10 @@
 
 * ```create_dataset/orpo_dataset_llm.csv```
   * **SFT 된 모델로 ORPO 용 추가 데이터를 생성한 후** 의 csv 파일이어야 함
-* 다음과 같이 총 800 개 규모 데이터셋을 바탕으로 ORPO 학습 데이터셋 생성
-  * 딥러닝 모델 구조 관련 320 개
-    * 80 개는 SFT 이전 생성 **(SFT 와 동일한 format 의 데이터셋)**
-    * 240 개는 SFT 된 LLM 에 의해 생성
-  * 기타 480 개
-    * 120 개는 SFT 이전 생성 **(SFT 와 동일한 format 의 데이터셋)**
-    * 360 개는 SFT 된 LLM 에 의해 생성
+* 총 199 개 규모 데이터셋을 바탕으로 ORPO 학습 데이터셋 생성
+  * 원래 LLM 이 목표로 하는 output 을 chosen 으로 간주
+  * SFT 로 Fine-Tuning 된 모델을 이용하여 생성한 output 을 rejected 로 간주
+  * 200개 데이터 중 1개는 SFT 로 Fine-Tuning 된 모델이 출력한 output 에 대한 점수가 만점이므로, rejected 로 간주 불가하여 데이터셋에서 제외
 
 **2. Fine-Tuning 코드**
 
