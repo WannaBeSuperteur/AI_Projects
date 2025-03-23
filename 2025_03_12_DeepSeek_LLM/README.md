@@ -18,6 +18,7 @@
   * [5-4. CUBLAS_STATUS_NOT_SUPPORTED (해결 완료)](#5-4-cublas_status_not_supported-해결-완료)
   * [5-5. SFT 중 CUDA error: unknown error (해결 완료)](#5-5-sft-중-cuda-error-unknown-error-해결-완료)
   * [5-6. Fine-Tuning 된 모델 추론 속도 저하 (해결 보류)](#5-6-fine-tuning-된-모델-추론-속도-저하-해결-보류)
+  * [5-7. ORPO 학습 중 경고 메시지 및 오류 (해결 완료)](#5-7-orpo-학습-중-경고-메시지-및-오류-해결-완료)
 
 ## 1. 프로젝트 개요
 
@@ -391,7 +392,7 @@ Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
 **해결 시도한 방법**
 
 * Auto-GPTQ 사용 **(속도 향상 안됨)**
-  * 시도 자체는 성공했으나, **학습 및 추론 속도 향상이 체감되지 않음**
+  * [기존 모델의 GPTQ 적용된 버전](https://huggingface.co/TheBloke/deepseek-coder-1.3b-instruct-GPTQ) 을 이용하는 방법으로 시도 자체는 성공했으나, **학습 및 추론 속도 향상이 체감되지 않음**
   * [기존 모델의 GPTQ 적용된 버전](https://huggingface.co/TheBloke/deepseek-coder-1.3b-instruct-GPTQ) 적용 시,
     * 적용 자체는 **성공**
     * GPU 메모리 사용량 감소는 체감되지만, **학습/추론 속도 개선은 체감 안됨**
