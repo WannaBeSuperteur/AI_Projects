@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import ORPOTrainer, ORPOConfig, DataCollatorForCompletionOnlyLM
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
@@ -71,6 +71,7 @@ def run_fine_tuning(df_train, df_valid):
 
     sft_llm = AutoModelForCausalLM.from_pretrained(model_path,
                                                    torch_dtype=torch.float16).cuda()
+    sft_llm = prepare_model_for_kbit_training(sft_llm)
     sft_llm.gradient_checkpointing_enable()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, eos_token='<eos>')
@@ -89,16 +90,17 @@ def run_fine_tuning(df_train, df_valid):
     lora_llm.print_trainable_parameters()
 
     training_args = ORPOConfig(
-        learning_rate=1e-5,             # lower learning rate is recommended for fine tuning
+        learning_rate=1e-5,                # lower learning rate is recommended for fine tuning
         num_train_epochs=4,
-        logging_steps=1,                # logging frequency
+        logging_steps=1,                   # logging frequency
+        optim="adamw_8bit",                # memory-efficient AdamW optimizer
         gradient_checkpointing=True,
         output_dir=output_dir,
-        save_total_limit=3,             # max checkpoint count to save
-        per_device_train_batch_size=1,  # batch size per device during training
-        per_device_eval_batch_size=1,   # batch size per device during validation
-        max_length=1536,                # max length of (prompt + LLM answer)
-        max_prompt_length=512,          # max length of (ONLY prompt)
+        save_total_limit=3,                # max checkpoint count to save
+        per_device_train_batch_size=1,     # batch size per device during training
+        per_device_eval_batch_size=1,      # batch size per device during validation
+        max_length=1536,                   # max length of (prompt + LLM answer)
+        max_prompt_length=512,             # max length of (ONLY prompt)
         remove_unused_columns=False
     )
 
@@ -106,17 +108,15 @@ def run_fine_tuning(df_train, df_valid):
     dataset['train'] = orpo_train_dataset
     dataset['valid'] = orpo_valid_dataset
 
-    response_template = '### Answer:'
-    response_template = tokenizer.encode(f"\n{response_template}", add_special_tokens=False)[2:]
-    collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
+    print(dataset['train'])
+    print(dataset['valid'])
 
     trainer = ORPOTrainer(
         lora_llm,
         train_dataset=dataset['train'],
         eval_dataset=dataset['valid'],
         tokenizer=tokenizer,
-        args=training_args,
-        data_collator=collator
+        args=training_args
     )
 
     trainer.train()
