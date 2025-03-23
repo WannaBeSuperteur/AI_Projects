@@ -438,7 +438,7 @@ FAILED:  No module named 'neural_compressor.conf'
     * ```inputs = tokenizer(prompt, return_tensors="pt").to("cuda", torch.float16)``` 형식
   * ```do_sample=False``` : 속도 향상 없음 + **동일 context 에 대해 다양한 문장 생성 안됨**
 
-## 5-7. ORPO 학습 중 경고 메시지 및 오류 (해결 완료)
+### 5-7. ORPO 학습 중 경고 메시지 및 오류 (해결 완료)
 
 **문제 상황 및 원인 요약**
 
