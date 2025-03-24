@@ -381,7 +381,7 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs):
 
         model.scheduler.step()
 
-        if min_val_loss is None or val_loss < min_val_loss - 0.001:
+        if min_val_loss is None or val_loss < min_val_loss:
             min_val_loss = val_loss
             min_val_loss_epoch = current_epoch
 
