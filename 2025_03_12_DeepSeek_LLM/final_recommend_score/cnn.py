@@ -464,17 +464,18 @@ def predict_score_image(test_loader, cnn_models, report_path):
             # add image info
             for i in range(current_batch_size):
                 data_loader_idx = idx * TEST_BATCH_SIZE + i
-                img_idx = data_loader_idx // 8
+                img_idx = data_loader_idx // (4 * 2)
 
                 img_path = test_loader.test_img_paths[img_idx]
                 rotate_angle = (data_loader_idx % 4) * 90
-                flip = 'vertical' if data_loader_idx % 2 == 1 else 'none'
+                flip = 'vertical' if (data_loader_idx // 4) % 2 == 1 else 'none'
 
                 final_score_dict['img_path'].append(img_path)
                 final_score_dict['rotate_angle'].append(rotate_angle)
                 final_score_dict['flip'].append(flip)
 
-                final_score_dict['true_score'].append(5.0 * float(labels_cpu[i]))
+                rounded_true_score = round(5.0 * float(labels_cpu[i]), 2)
+                final_score_dict['true_score'].append(rounded_true_score)
 
             # add model prediction scores
             model_scores = np.zeros((current_batch_size, K_FOLDS))
@@ -530,7 +531,7 @@ if __name__ == '__main__':
         cv2.imwrite(img_full_path, img)
 
     # load dataset
-    dataset_df = dataset_df.sample(frac=1)  # shuffle image sample order
+    dataset_df = dataset_df.sample(frac=1, random_state=2025)  # shuffle image sample order
     train_loader, test_loader = load_dataset(dataset_df)
 
     # load or train model
