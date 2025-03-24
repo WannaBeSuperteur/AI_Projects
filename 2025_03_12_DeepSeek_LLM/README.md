@@ -20,6 +20,7 @@
   * [5-6. **Fine-Tuning 된 모델 추론 속도 저하 (해결 보류)**](#5-6-fine-tuning-된-모델-추론-속도-저하-해결-보류)
   * [5-7. ORPO 학습 중 경고 메시지 및 오류 (해결 완료)](#5-7-orpo-학습-중-경고-메시지-및-오류-해결-완료)
   * [5-8. **ORPO 학습 시 CUDA Out of memory (해결 실패)**](#5-8-orpo-학습-시-cuda-out-of-memory-해결-실패)
+  * [5-9. CNN 학습이 실질적으로 안 됨 (해결 완료)](#5-9-cnn-학습이-실질적으로-안-됨-해결-완료)
 
 ## 1. 프로젝트 개요
 
@@ -149,6 +150,7 @@ It is important to draw a representation of high readability.
 | Fine-Tuning 된 모델 추론 속도 저하                                                                                                                             | 2025.03.22 | 보통     | 보류        | 환경 제약 & task 특성 (추정)                                      | - Auto-GPTQ 사용 **(해결 안됨)**<br>- 추가 라이브러리 사용 **(실패)**<br>- LLM 관련 설정값 변경 **(해결 안됨)**                                                           |
 | ORPO 학습 중 경고 및 오류<br>- ```Trainer.tokenizer is now deprecated.``` 경고 메시지<br>- ```AttributeError: 'generator' object has no attribute 'generate'``` 오류 | 2025.03.23 | **심각** | 해결 완료     | transformers, trl 라이브러리 호환 안됨 → transformers 라이브러리 다운그레이드 | - trl 라이브러리 업그레이드 **(실패)**                                                                                                                    |
 | ORPO 학습 시 Out of memory                                                                                                                               | 2025.03.23 | **심각** | **해결 실패** | CUDA Out of memory                                        | - ```prepare_model_for_kbit_training``` 을 이용한 양자화 시도 **(해결 안됨)**<br> - 8bit의 메모리 효율적인 AdamW Optimizer 사용 **(해결 안됨)**<br>- Unsloth 설치 **(실패)** |
+| CNN 학습이 실질적으로 안 됨                                                                                                                                     | 2025.03.23 | 보통     | 해결 완료     | 이미지 가장자리 부분에 대한 중요하지 않은 정보가 오히려 학습을 방해 (추정)               | - 활성화 함수 수정 **(해결 안됨)**<br>- 이미지 크기 확대 **(해결 안됨)**<br>- 이미지 색상 변환 (전처리) **(해결 안됨)**                                                           |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -497,3 +499,47 @@ AttributeError: 'generator' object has no attribute 'generate'
 * Unsloth 설치 **(실패)**
   * Unsloth 는 Python 3.9 이상에서만 설치 가능
   * Python 3.8.1 에서는 설치 불가
+
+### 5-9. CNN 학습이 실질적으로 안 됨 (해결 완료)
+
+**문제 상황 및 원인 요약**
+
+* 기본 가독성 점수 계산을 위한 CNN 의 학습이 전혀 이루어지지 않음
+  * valid output 을 출력한 결과, 값이 모두 동일하게 나옴
+* 원인은 **이미지 가장자리 부분의, 거의 모든 이미지에서 공백인 사실상 의미 없는 부분에 대한 정보가, 오히려 학습에 지장** 을 주었기 때문으로 추정
+  * 학습 데이터가 1,000 개 내외로 비교적 부족한 상황에서 이로 인해 학습이 전혀 안 되었음
+
+**해결 시도 방법**
+
+* **문제 해결 부분적 성공 시까지 시도한 부분**
+  * Conv. + Pool Layer 이후 첫번째 Fully-Connected Layer 의 [활성화 함수](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_%ED%99%9C%EC%84%B1%ED%99%94_%ED%95%A8%EC%88%98.md) 를 Tanh 로 수정
+    * 결과 : **해결 안됨**
+  * 이미지 크기를 64 x 64 -> 128 x 128 로 확대
+    * 결과 : **해결 안됨**
+  * 모든 학습 및 테스트 이미지의 밝기 조정 (기존보다 5배 어둡게)
+    * 다이어그램 이미지가 배경색은 흰색, 도형 배경색 역시 밝은 색으로 전체적으로 흰색에 상당히 가까움
+    * 흰색이 아닌 색의 모든 픽셀에 대해, 그 **흰색보다 어두운 정도를 5배** 로 하여 **이미지를 어둡게 조정**
+      * 일종의 [입력 데이터 정규화](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_Normalization.md) 목적
+    * 결과 : **해결 안됨**
+  * 이미지의 실제 학습 범위를 **전체 128 x 128 이 아닌, 가운데 64 x 64 만 학습에 사용**
+    * 가장자리 부분은 대부분이 흰색의 배경색인, 사실상 무의미한 정보이므로 학습 대상에서 제외
+    * 결과 : **문제 해결 부분적 성공 (약 40% 확률로 학습이 잘 이루어짐)** 🎉
+
+* **부분적 해결 성공 이후, 추가적으로 시도한 부분**
+  * Conv. Layer 추가
+    * **미 적용**
+    * 적용 결과, 학습이 잘 이루어질 확률 오히려 감소
+  * 모델이 생성한 다이어그램 데이터 추가 생성
+    * **적용됨**
+    * 기존 200장 + 추가 200장 = 400장
+  * Conv. Layer 의 필터 개수를 줄여서 모델 파라미터 개수 감소
+    * **적용됨**
+    * 학습이 잘 이루어질 확률 약 70% 로 증가 추정
+  * [Weight initialization](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Weight_initialization.md) 개선
+    * **미 적용**
+    * Conv. Layer -> He init, Fully-Connected Layer -> Xavier init
+    * 적용 결과, 학습 실패율 급증 & 약 50%의 확률로 모델의 output 값이 항상 1.0 이 됨
+
+* **추가 아이디어**
+  * Pre-train 된 ResNet 등을 이용하여 [Transfer Learning (전이학습)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Transfer_Learning.md) 을 할까도 생각해 봄
+  * 모델 복잡도 및 필요 이상의 자원 소비가 우려되어, 일단 보류
