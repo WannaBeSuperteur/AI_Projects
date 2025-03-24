@@ -195,6 +195,7 @@ def load_dataset(dataset_df):
 # Last Update Date : 2025.03.24
 # - 학습 진행 과정을 새로운 함수 train_cnn_each_model 로 분리
 # - 모델 정의 함수를 define_cnn_model 로 분리
+# - try-until-success 시스템 적용 (학습 실패 시 성공할 때까지 재학습)
 
 # Arguments:
 # - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader
@@ -284,7 +285,7 @@ def train_cnn(data_loader):
                 model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models'
                 os.makedirs(model_path, exist_ok=True)
 
-                model_save_path = f'{model_path}/model_{fold}'
+                model_save_path = f'{model_path}/model_{fold}.pt'
                 torch.save(best_epoch_model.state_dict(), model_save_path)
                 break
 
