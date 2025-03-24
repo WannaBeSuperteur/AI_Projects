@@ -23,7 +23,7 @@ from global_common.torch_training import run_train, run_validation
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 K_FOLDS = 5
-EARLY_STOPPING_ROUNDS = 5
+EARLY_STOPPING_ROUNDS = 10
 IMG_HEIGHT = 128
 IMG_WIDTH = 128
 
@@ -43,6 +43,11 @@ class BaseScoreCNN(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
+        self.conv1_center = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=3),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.05)
+        )
         self.pool1 = nn.MaxPool2d(2, 2)
 
         self.conv3 = nn.Sequential(
@@ -53,21 +58,21 @@ class BaseScoreCNN(nn.Module):
         self.pool2 = nn.MaxPool2d(2, 2)
 
         self.conv4 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=3),
+            nn.Conv2d(128, 192, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
         self.pool3 = nn.MaxPool2d(2, 2)
 
         self.conv5 = nn.Sequential(
-            nn.Conv2d(256, 512, kernel_size=3),
+            nn.Conv2d(192, 256, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
 
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(512 * 4 * 4, 512),
+            nn.Linear(256 * 4 * 4, 512),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -92,7 +97,7 @@ class BaseScoreCNN(nn.Module):
 
         x = self.conv5(x)  # 4
 
-        x = x.view(-1, 512 * 4 * 4)
+        x = x.view(-1, 256 * 4 * 4)
 
         # Fully Connected
         x = self.fc1(x)
@@ -214,6 +219,7 @@ def train_cnn(data_loader):
         cnn_models.append(cnn_model)
 
     summary(cnn_models[0], input_size=(16, 3, IMG_HEIGHT, IMG_WIDTH))
+    print(cnn_models)
 
     # Split train data using Stratified K-fold (5 folds)
     kfold = KFold(n_splits=K_FOLDS, shuffle=True)
