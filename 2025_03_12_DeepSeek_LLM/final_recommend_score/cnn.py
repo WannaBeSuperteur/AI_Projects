@@ -531,7 +531,7 @@ if __name__ == '__main__':
         cv2.imwrite(img_full_path, img)
 
     # load dataset
-    dataset_df = dataset_df.sample(frac=1, random_state=2025)  # shuffle image sample order
+    dataset_df = dataset_df.sample(frac=1, random_state=20250324)  # shuffle image sample order
     train_loader, test_loader = load_dataset(dataset_df)
 
     # load or train model
