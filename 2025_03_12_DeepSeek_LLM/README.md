@@ -528,17 +528,17 @@ AttributeError: 'generator' object has no attribute 'generate'
 
 * **부분적 해결 성공 이후, 추가적으로 시도한 부분**
   * Conv. Layer 추가
-    * **미 적용**
+    * ❌ **미 적용**
     * 적용 결과, 학습이 잘 이루어질 확률 오히려 감소
   * 모델이 생성한 다이어그램 데이터 추가 생성
-    * **적용됨**
+    * ✅ **적용됨**
     * 기존 200장 + 추가 200장 = 400장
   * Conv. Layer 의 필터 개수를 줄여서 모델 파라미터 개수 감소
-    * **적용됨**
+    * ✅ **적용됨**
     * 학습이 잘 이루어질 확률 약 70% 로 증가 추정
   * [Weight initialization](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Weight_initialization.md) 개선
-    * **미 적용**
-    * Conv. Layer -> He init, Fully-Connected Layer -> Xavier init
+    * ❌ **미 적용**
+    * Conv. Layer -> [He init](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Weight_initialization.md#5-he-initialization), Fully-Connected Layer -> [Xavier init](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Weight_initialization.md#4-xavier-initialization)
     * 적용 결과, 학습 실패율 급증 & 약 50%의 확률로 모델의 output 값이 항상 1.0 이 됨
 
 * **추가 아이디어**
