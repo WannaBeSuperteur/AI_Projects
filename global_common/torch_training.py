@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 import numpy as np  # for test code
 
-is_test = True
+is_test = False
 
 
 # 모델 학습 실시

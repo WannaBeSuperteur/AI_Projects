@@ -191,7 +191,8 @@ def load_dataset(dataset_df):
 
 # 모델 학습 실시 (Stratified K-Fold)
 # Create Date : 2025.03.23
-# Last Update Date : -
+# Last Update Date : 2025.03.24
+# - 개행 수정
 
 # Arguments:
 # - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader
@@ -210,6 +211,7 @@ def train_cnn(data_loader):
 
     # create models
     cnn_models = []
+
     for i in range(K_FOLDS):
         cnn_model = BaseScoreCNN()
         cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.001)
@@ -219,7 +221,6 @@ def train_cnn(data_loader):
         cnn_models.append(cnn_model)
 
     summary(cnn_models[0], input_size=(16, 3, IMG_HEIGHT, IMG_WIDTH))
-    print(cnn_models)
 
     # Split train data using Stratified K-fold (5 folds)
     kfold = KFold(n_splits=K_FOLDS, shuffle=True)
