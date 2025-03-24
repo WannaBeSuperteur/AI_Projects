@@ -13,6 +13,7 @@ import pandas as pd
 import cv2
 import numpy as np
 
+import time
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -192,13 +193,15 @@ def load_dataset(dataset_df):
 # 모델 학습 실시 (Stratified K-Fold)
 # Create Date : 2025.03.23
 # Last Update Date : 2025.03.24
-# - 개행 수정
+# - 학습 진행 과정을 새로운 함수 train_cnn_each_model 로 분리
+# - 모델 정의 함수를 define_cnn_model 로 분리
 
 # Arguments:
 # - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader
 
 # Returns:
 # - cnn_models (list(nn.Module)) : 학습된 CNN Model 의 리스트 (총 K 개의 모델)
+# - log/cnn_train_log.csv 파일에 학습 로그 저장
 
 def train_cnn(data_loader):
 
@@ -213,11 +216,7 @@ def train_cnn(data_loader):
     cnn_models = []
 
     for i in range(K_FOLDS):
-        cnn_model = BaseScoreCNN()
-        cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.001)
-        cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
-                                                                         T_max=10,
-                                                                         eta_min=0)
+        cnn_model = define_cnn_model()
         cnn_models.append(cnn_model)
 
     summary(cnn_models[0], input_size=(16, 3, IMG_HEIGHT, IMG_WIDTH))
@@ -226,54 +225,159 @@ def train_cnn(data_loader):
     kfold = KFold(n_splits=K_FOLDS, shuffle=True)
     kfold_splitted_dataset = kfold.split(data_loader.dataset)
 
-    # loss function
-    loss_func = nn.BCELoss(reduction='sum')
+    # for train log
+    os.makedirs(f'{PROJECT_DIR_PATH}/final_recommend_score/log', exist_ok=True)
+    train_log = {'fold_no': [], 'success': [], 'min_val_loss': [],
+                 'total_epochs': [], 'best_epoch': [],
+                 'elapsed_time (s)': [], 'val_loss_list': []}
 
     # run training and validation
     for fold, (train_idxs, valid_idxs) in enumerate(kfold_splitted_dataset):
         print(f'=== training model {fold + 1} / {K_FOLDS} ===')
 
-        model = cnn_models[fold]
-
-        train_sampler = torch.utils.data.SubsetRandomSampler(train_idxs)
-        valid_sampler = torch.utils.data.SubsetRandomSampler(valid_idxs)
-
-        train_loader = torch.utils.data.DataLoader(data_loader.dataset, batch_size=16, sampler=train_sampler)
-        valid_loader = torch.utils.data.DataLoader(data_loader.dataset, batch_size=4, sampler=valid_sampler)
-
-        current_epoch = 0
-        min_loss_epoch = -1  # Loss-based Early Stopping
-        min_loss = None
-
+        # 학습 성공 (valid BCE loss 최솟값 <= 0.37) 시까지 반복
         while True:
-            train_loss = run_train(model=model,
-                                   train_loader=train_loader,
-                                   device=device,
-                                   loss_func=loss_func)
+            model = cnn_models[fold].to(device)
+            model.device = device
 
-            _, val_loss = run_validation(model=model,
-                                         valid_loader=valid_loader,
-                                         device=device,
-                                         loss_func=loss_func)
+            # train model
+            start_at = time.time()
+            val_loss_list, best_epoch_model = train_cnn_each_model(model, data_loader, train_idxs, valid_idxs)
+            train_time = round(time.time() - start_at, 2)
 
-            print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}, val_loss : {val_loss:.4f}')
+            # check validation loss and success/fail of training
+            min_val_loss = min(val_loss_list)
+            min_val_loss_ = round(min_val_loss, 4)
+            total_epochs = len(val_loss_list)
+            val_loss_list_ = list(map(lambda x: round(x, 4), val_loss_list))
 
-            model.scheduler.step()
+            is_train_successful = (min_val_loss <= 0.37)
 
-            if min_loss is None or val_loss < min_loss - 0.001:
-                min_loss = val_loss
-                min_loss_epoch = current_epoch
+            # test best epoch model correctly returned
+            valid_sampler = torch.utils.data.SubsetRandomSampler(valid_idxs)
+            valid_loader = torch.utils.data.DataLoader(data_loader.dataset, batch_size=4, sampler=valid_sampler)
 
-            if current_epoch - min_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            _, val_loss_check = run_validation(model=best_epoch_model,
+                                               valid_loader=valid_loader,
+                                               device=model.device,
+                                               loss_func=nn.BCELoss(reduction='sum'))
+
+            print(f'best epoch model val_loss : {val_loss_check:.6f}, reported min val_loss : {min_val_loss:.6f}')
+            assert abs(val_loss_check - min_val_loss) < 2e-5, "BEST MODEL VALID LOSS CHECK FAILED"
+
+            # update train log
+            train_log['fold_no'].append(fold)
+            train_log['success'].append(is_train_successful)
+            train_log['min_val_loss'].append(min_val_loss_)
+            train_log['total_epochs'].append(total_epochs)
+            train_log['best_epoch'].append(np.argmin(val_loss_list_))
+            train_log['elapsed_time (s)'].append(train_time)
+            train_log['val_loss_list'].append(val_loss_list_)
+
+            train_log_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/cnn_train_log.csv'
+            pd.DataFrame(train_log).to_csv(train_log_path)
+
+            # train successful -> save model and then finish
+            if is_train_successful:
+                print('train successful!')
+
+                model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models'
+                os.makedirs(model_path, exist_ok=True)
+
+                model_save_path = f'{model_path}/model_{fold}'
+                torch.save(best_epoch_model.state_dict(), model_save_path)
                 break
 
-            current_epoch += 1
-
-        # save model
-        model_save_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models/model_{fold}'
-        torch.save(model.state_dict(), model_save_path)
+            # train failed -> train new model
+            else:
+                print('train failed, retry ...')
+                cnn_models[fold] = define_cnn_model()
 
     return cnn_models
+
+
+# CNN 모델 정의
+# Create Date : 2025.03.24
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - cnn_model (nn.Module) : 정의된 CNN 모델
+
+def define_cnn_model():
+    cnn_model = BaseScoreCNN()
+    cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.001)
+    cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
+                                                                     T_max=10,
+                                                                     eta_min=0)
+
+    return cnn_model
+
+
+# 각 모델 (각각의 Fold 에 대한) 의 학습 실시
+# Create Date : 2025.03.24
+# Last Update Date : -
+
+# Arguments:
+# - model       (nn.Module)  : 학습 대상 CNN 모델
+# - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader
+# - train_idxs  (np.array)   : 학습 데이터로 지정된 인덱스
+# - valid_idxs  (np.array)   : 검증 데이터로 지정된 인덱스
+
+# Returns:
+# - val_loss_list    (list(float)) : valid loss 기록
+# - best_epoch_model (nn.Module)   : 가장 낮은 valid loss 에서의 CNN 모델
+
+def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs):
+    train_sampler = torch.utils.data.SubsetRandomSampler(train_idxs)
+    valid_sampler = torch.utils.data.SubsetRandomSampler(valid_idxs)
+
+    train_loader = torch.utils.data.DataLoader(data_loader.dataset, batch_size=16, sampler=train_sampler)
+    valid_loader = torch.utils.data.DataLoader(data_loader.dataset, batch_size=4, sampler=valid_sampler)
+
+    current_epoch = 0
+    min_val_loss_epoch = -1  # Loss-based Early Stopping
+    min_val_loss = None
+    best_epoch_model = None
+
+    val_loss_list = []
+
+    # loss function
+    loss_func = nn.BCELoss(reduction='sum')
+
+    while True:
+        train_loss = run_train(model=model,
+                               train_loader=train_loader,
+                               device=model.device,
+                               loss_func=loss_func)
+
+        _, val_loss = run_validation(model=model,
+                                     valid_loader=valid_loader,
+                                     device=model.device,
+                                     loss_func=loss_func)
+
+        print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}, val_loss : {val_loss:.4f}')
+
+        val_loss_cpu = float(val_loss.detach().cpu())
+        val_loss_list.append(val_loss_cpu)
+
+        model.scheduler.step()
+
+        if min_val_loss is None or val_loss < min_val_loss - 0.001:
+            min_val_loss = val_loss
+            min_val_loss_epoch = current_epoch
+
+            best_epoch_model = BaseScoreCNN().to(model.device)
+            best_epoch_model.load_state_dict(model.state_dict())
+
+        if current_epoch - min_val_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            break
+
+        current_epoch += 1
+
+    return val_loss_list, best_epoch_model
 
 
 # 모델 불러오기

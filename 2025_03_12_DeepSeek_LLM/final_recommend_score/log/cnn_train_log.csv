@@ -1,0 +1,2 @@
+,fold_no,success,min_val_loss,total_epochs,best_epoch,elapsed_time (s),val_loss_list
+0,0,False,0.5484,3,1,37.16,"[0.5511, 0.5484, 0.5506]"
