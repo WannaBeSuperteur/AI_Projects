@@ -190,7 +190,7 @@ def load_dataset(dataset_df):
     return train_loader, test_loader
 
 
-# 모델 학습 실시 (Stratified K-Fold)
+# 모델 학습 실시 (K-Fold Cross Validation)
 # Create Date : 2025.03.23
 # Last Update Date : 2025.03.24
 # - 학습 진행 과정을 새로운 함수 train_cnn_each_model 로 분리
@@ -222,7 +222,7 @@ def train_cnn(data_loader):
 
     summary(cnn_models[0], input_size=(16, 3, IMG_HEIGHT, IMG_WIDTH))
 
-    # Split train data using Stratified K-fold (5 folds)
+    # Split train data using K-fold (5 folds)
     kfold = KFold(n_splits=K_FOLDS, shuffle=True)
     kfold_splitted_dataset = kfold.split(data_loader.dataset)
 
@@ -382,7 +382,7 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs):
 
 
 # 모델 불러오기
-# Create Date : 2025.03.23
+# Create Date : 2025.03.24
 # Last Update Date : -
 
 # Arguments:
@@ -392,11 +392,25 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs):
 # - cnn_models (list(nn.Module)) : load 된 CNN Model 의 리스트 (총 K 개의 모델)
 
 def load_cnn_model():
-    raise NotImplementedError
+    cnn_models = []
+
+    # check device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'device for loading model : {device}')
+
+    # add CNN models
+    for i in range(K_FOLDS):
+        model = BaseScoreCNN()
+        model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models/model_{i}.pt'
+        model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
+
+        cnn_models.append(model)
+
+    return cnn_models
 
 
 # 학습된 모델을 이용하여 주어진 path 의 이미지에 대해 기본 가독성 점수 예측 (Ensemble 의 아이디어 / K 개 모델의 평균으로)
-# Create Date : 2025.03.23
+# Create Date : 2025.03.24
 # Last Update Date : -
 
 # Arguments:
@@ -412,7 +426,7 @@ def predict_score_path(img_paths, cnn_models):
 
 
 # 학습된 모델을 이용하여 주어진 이미지에 대해 기본 가독성 점수 예측 (Ensemble 의 아이디어 / K 개 모델의 평균으로)
-# Create Date : 2025.03.23
+# Create Date : 2025.03.24
 # Last Update Date : -
 
 # Arguments:
@@ -460,6 +474,7 @@ if __name__ == '__main__':
     try:
         print('loading CNN models ...')
         cnn_models = load_cnn_model()
+        print('loading CNN models successful!')
 
     except Exception as e:
         print(f'CNN model load failed : {e}')
