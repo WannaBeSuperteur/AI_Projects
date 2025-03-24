@@ -64,16 +64,11 @@ class BaseScoreCNN(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
-        self.conv6 = nn.Sequential(
-            nn.Conv2d(512, 512, kernel_size=3),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.05)
-        )
 
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(512 * 10 * 10, 512),
-            nn.Sigmoid(),
+            nn.Linear(512 * 4 * 4, 512),
+            nn.Tanh(),
             nn.Dropout(0.45)
         )
         self.fc_final = nn.Sequential(
@@ -82,22 +77,22 @@ class BaseScoreCNN(nn.Module):
         )
 
     def forward(self, x):
+        x = x[:, :, IMG_HEIGHT // 4 : 3 * IMG_HEIGHT // 4, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
 
         # Conv
-        x = self.conv1(x)  # 126
-        x = self.conv2(x)  # 124
-        x = self.pool1(x)  # 62
+        x = self.conv1(x)  # 62
+        x = self.conv2(x)  # 60
+        x = self.pool1(x)  # 30
 
-        x = self.conv3(x)  # 60
-        x = self.pool2(x)  # 30
+        x = self.conv3(x)  # 28
+        x = self.pool2(x)  # 14
 
-        x = self.conv4(x)  # 28
-        x = self.pool3(x)  # 14
+        x = self.conv4(x)  # 12
+        x = self.pool3(x)  # 6
 
-        x = self.conv5(x)  # 12
-        x = self.conv6(x)  # 10
+        x = self.conv5(x)  # 4
 
-        x = x.view(-1, 512 * 10 * 10)
+        x = x.view(-1, 512 * 4 * 4)
 
         # Fully Connected
         x = self.fc1(x)
@@ -341,6 +336,8 @@ if __name__ == '__main__':
             continue
 
         img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)  # resize with ANTI-ALIAS
+        img = 5.0 * img - 4.0 * 255.0
+        img = np.clip(img, 0.0, 255.0)
         cv2.imwrite(img_full_path, img)
 
     # load dataset
