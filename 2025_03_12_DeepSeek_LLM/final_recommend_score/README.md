@@ -7,6 +7,7 @@
   * [2-1. 기본 가독성 점수 (CNN)](#2-1-기본-가독성-점수-cnn)
   * [2-2. 예상 사용자 평가 점수 (Auto-Encoder)](#2-2-예상-사용자-평가-점수-auto-encoder)
 * [3. 최종 평가](#3-최종-평가)
+* [4. 참고 : Conv Layer 에 Dropout 적용된 Auto-Encoder 학습이 어려운 이유](#4-참고--conv-layer-에-dropout-적용된-auto-encoder-학습이-어려운-이유)
 
 ## 1. 개요
 
@@ -119,3 +120,11 @@ TBU
 * LLM Answer 를 통해 생성된 N 개의 다이어그램 중, **총점이 높은 K 개를 최종 추천하여 반환**
 * 총점 기준
   * 기본 가독성 점수 (50%) + 예상 사용자 평가 점수 (50%)
+
+## 4. 참고 : Conv Layer 에 Dropout 적용된 Auto-Encoder 학습이 어려운 이유
+
+* Conv. Layer 의 Dropout 은 그 자체로 성능 저하 가능
+  * 특히, **첫번째 Conv. Layer 를 Dropout 함으로써 low-level feature 의 추출에 지장** 을 주고, 이는 이후 레이어에서의 복잡한 패턴 학습에 지장을 줄 수 있다.
+  * [참고 : Dropout 실험 결과](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Overfitting_Dropout.md#4-2-%EC%8B%A4%ED%97%98-%EA%B2%B0%EA%B3%BC)
+* CNN 의 각 Layer 의 Filter 를 **일정 확률로 off 시키는 역할**
+  * 이로 인해 각 Filter 에 저장된 이미지의 low-level feature 가 **그 일부분만 다음 레이어로 전달** 되는 효과 발생 
