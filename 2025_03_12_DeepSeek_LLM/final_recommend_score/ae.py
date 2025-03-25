@@ -1,12 +1,16 @@
 import torch
 import torch.nn as nn
+import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+from torchvision.utils import save_image
+
 import pandas as pd
 
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-from common import resize_and_normalize_img
+from common import resize_and_normalize_img, DiagramImageDataset
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
@@ -39,7 +43,23 @@ class UserScoreAE(nn.Module):
 # - train_loader (DataLoader) : Train 데이터셋을 로딩한 PyTorch DataLoader
 
 def load_dataset(dataset_df):
-    raise NotImplementedError
+    transform = transforms.Compose([transforms.ToPILImage(),
+                                    transforms.ToTensor()])
+
+    train_dataset = DiagramImageDataset(dataset_df, transform=transform)
+    train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+
+    print(f'size of train loader : {len(train_loader.dataset)}')
+
+    # test code
+    test_dir_path = f'{PROJECT_DIR_PATH}/final_recommend_score/temp_test_ae'
+
+    for i in range(40):
+        img = train_loader.dataset.__getitem__(i)[0]
+        os.makedirs(test_dir_path, exist_ok=True)
+        save_image(img, f'{test_dir_path}/train_data_{i:02d}.png')
+
+    return train_loader
 
 
 # Auto-Encoder 모델 학습 실시
