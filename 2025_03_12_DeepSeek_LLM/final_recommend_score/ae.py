@@ -382,7 +382,7 @@ def load_ae_encoder():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for loading model : {device}')
 
-    model = UserScoreAE()
+    model = UserScoreAEEncoder()
     model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models/ae_encoder.pt'
     model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
 
