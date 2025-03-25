@@ -1,6 +1,15 @@
-
+import torch
 import torch.nn as nn
+import pandas as pd
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+
+from common import resize_and_normalize_img
+
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 
 EARLY_STOPPING_ROUNDS = 10
 IMG_HEIGHT = 128
@@ -49,7 +58,30 @@ def train_ae(data_loader):
     raise NotImplementedError
 
 
-# Auto-Encoder 모델의 Encoder 를 이용한 이미지 인코딩
+# Auto-Encoder 모델의 Encoder 불러오기
+# Create Date : 2025.03.25
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - ae_encoder (nn.Module) : load 된 Auto-Encoder 모델의 Encoder
+
+def load_ae_encoder():
+
+    # check device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'device for loading model : {device}')
+
+    model = UserScoreAE()
+    model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models/ae_encoder.pt'
+    model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
+
+    return model
+
+
+# 학습된 Auto-Encoder 모델의 Encoder 를 이용한 이미지 인코딩
 # Create Date : 2025.03.25
 # Last Update Date : -
 
@@ -65,6 +97,31 @@ def encode_image(data_loader, ae_encoder):
 
 
 if __name__ == '__main__':
-    pass
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/final_recommend_score/scores.csv')
+    log_dir = f'{PROJECT_DIR_PATH}/final_recommend_score/log'
 
+    # resize images to (128, 128)
+    img_paths = dataset_df['img_path'].tolist()
+    resize_and_normalize_img(img_paths,
+                             train_data_dir_path=TRAIN_DATA_DIR_PATH,
+                             img_width=IMG_WIDTH,
+                             img_height=IMG_HEIGHT)
 
+    # load dataset
+    dataset_df = dataset_df.sample(frac=1, random_state=20250325)  # shuffle image sample order
+    train_loader = load_dataset(dataset_df)
+
+    # load or train model
+    try:
+        print('loading Auto-Encoder models ...')
+        cnn_models = load_ae_encoder()
+        print('loading Auto-Encoder models successful!')
+
+    except Exception as e:
+        print(f'Auto-Encoder model load failed : {e}')
+        cnn_models = train_ae(train_loader)
+
+    # performance evaluation
+    report_path = f'{log_dir}/ae_test_result.csv'
+
+    # TODO implement
