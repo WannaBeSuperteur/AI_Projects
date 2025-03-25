@@ -49,19 +49,23 @@ def run_train(model, train_loader, device, loss_func=nn.CrossEntropyLoss(reducti
 
 # Auto-Encoder 모델 학습 실시
 # Create Date : 2025.03.25
-# Last Update Date : -
+# Last Update Date : 2025.03.25
+# - 특정 epoch / sample (data loader) index 에 대해, (출력, 이미지, latent vector) 를 출력할 수 있도록 수정
 
 # args :
-# - model        (nn.Module)  : 학습할 모델
-# - train_loader (DataLoader) : Training Data Loader
-# - device       (Device)     : CUDA or CPU device
-# - loss_func    (func)       : Loss Function
-# - center_crop  (tuple)      : None 이 아니면 이미지의 가운데 (h, w) 픽셀만을 crop
+# - model           (nn.Module)  : 학습할 모델
+# - train_loader    (DataLoader) : Training Data Loader
+# - device          (Device)     : CUDA or CPU device
+# - loss_func       (func)       : Loss Function
+# - center_crop     (tuple)      : None 이 아니면 이미지의 가운데 (h, w) 픽셀만을 crop
+# - force_test_idxs (list(int))  : test code 처럼 (출력, 이미지, latent vector) 를 출력하는 sample (data loader) index 리스트
 
 # returns :
 # - train_loss (float) : 모델의 Training Loss
 
-def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='sum'), center_crop=None):
+def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='sum'),
+                 center_crop=None, force_test_idxs=None):
+
     model.train()
     total = 0
     train_loss_sum = 0.0
@@ -96,7 +100,7 @@ def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='su
         model.optimizer.step()
 
         # test code
-        if is_test and idx % 20 == 0:
+        if (is_test and idx % 20 == 0) or (force_test_idxs is not None and idx in force_test_idxs):
             latent_vectors = model.encoder(images_).to(torch.float32)
 
             print('\ntrain idx:', idx)

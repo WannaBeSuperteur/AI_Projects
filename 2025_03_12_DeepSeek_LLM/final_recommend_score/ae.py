@@ -336,11 +336,19 @@ def train_ae_each_model(model, data_loader):
     loss_func = nn.MSELoss(reduction='sum')
 
     while True:
+
+        # test code 처럼 (출력, 이미지, latent vector) 를 출력할 sample (data loader) index 지정
+        if current_epoch < 5 or (current_epoch < 100 and current_epoch % 20 == 0) or current_epoch % 50 == 0:
+            force_test_idxs = [0, 1, 2, 3, 4]
+        else:
+            force_test_idxs = None
+
         train_loss = run_train_ae(model=model,
                                   train_loader=data_loader,
                                   device=model.device,
                                   loss_func=loss_func,
-                                  center_crop=(IMG_HEIGHT // 2, IMG_WIDTH // 2))
+                                  center_crop=(IMG_HEIGHT // 2, IMG_WIDTH // 2),
+                                  force_test_idxs=force_test_idxs)
 
         print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}')
         train_loss_list.append(train_loss)

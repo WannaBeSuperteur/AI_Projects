@@ -76,6 +76,10 @@
     * [데이터 불균형](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EB%B6%88%EA%B7%A0%ED%98%95.md) 해결을 위해 추가 생성한 200 개의 Diagram
       * LLM answer token 최대 800 개
 
+**4. 성능 평가 결과**
+
+* TBU
+
 ### 2-2. 예상 사용자 평가 점수 (Auto-Encoder)
 
 **1. 점수 산출 방법**
@@ -105,6 +109,10 @@ TBU
 
 * [CNN 모델 학습 데이터](#2-1-기본-가독성-점수-cnn) 와 동일 (총 1,100 장)
 * 단, 비지도학습이므로 **모든 데이터를 학습 데이터로 사용**
+
+**5. Auto-Encoder 성능 평가 결과**
+
+* TBU
 
 ## 3. 최종 평가
 
