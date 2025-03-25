@@ -6,12 +6,17 @@ from torchinfo import summary
 from torchvision.utils import save_image
 
 import pandas as pd
+import numpy as np
 
+import time
 import os
 import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
+from global_common.torch_training import run_train_ae
 from common import resize_and_normalize_img, DiagramImageDataset
+
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
@@ -61,11 +66,6 @@ class UserScoreAE(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout2d(0.15)
         )
-        self.encoder_conv5 = nn.Sequential(
-            nn.Conv2d(256, 256, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.15)
-        )
         self.encoder_flatten = nn.Flatten()
         self.encoder_fc1 = nn.Sequential(
             nn.Linear(256 * 4 * 4, 512),
@@ -82,7 +82,6 @@ class UserScoreAE(nn.Module):
             self.encoder_conv2,
             self.encoder_conv3,
             self.encoder_conv4,
-            self.encoder_conv5,
             self.encoder_flatten,
             self.encoder_fc1,
             self.encoder_fc2
@@ -101,26 +100,21 @@ class UserScoreAE(nn.Module):
         )
         self.decoder_reshape = Reshape(-1, 256, 4, 4)
         self.decoder_deconv1 = nn.Sequential(
-            nn.ConvTranspose2d(256, 256, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.15)
-        )
-        self.decoder_deconv2 = nn.Sequential(
             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU(),
             nn.Dropout2d(0.15)
         )
-        self.decoder_deconv3 = nn.Sequential(
+        self.decoder_deconv2 = nn.Sequential(
             nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU(),
             nn.Dropout2d(0.15)
         )
-        self.decoder_deconv4 = nn.Sequential(
+        self.decoder_deconv3 = nn.Sequential(
             nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU(),
             nn.Dropout2d(0.15)
         )
-        self.decoder_deconv5 = nn.Sequential(
+        self.decoder_deconv4 = nn.Sequential(
             nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU(),
             nn.Dropout2d(0.15)
@@ -132,11 +126,11 @@ class UserScoreAE(nn.Module):
             self.decoder_deconv1,
             self.decoder_deconv2,
             self.decoder_deconv3,
-            self.decoder_deconv4,
-            self.decoder_deconv5
+            self.decoder_deconv4
         )
 
     def forward(self, x):
+        x = x[:, :, IMG_HEIGHT // 4: 3 * IMG_HEIGHT // 4, IMG_WIDTH // 4: 3 * IMG_WIDTH // 4]
         x = self.encoder(x)
         x = self.decoder(x)
         return x
@@ -178,7 +172,7 @@ def load_dataset(dataset_df):
 # Last Update Date : -
 
 # Arguments:
-# - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader
+# - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader (Train ONLY)
 
 # Returns:
 # - ae_encoder (nn.Module) : Encoder Model
@@ -197,7 +191,36 @@ def train_ae(data_loader):
     auto_encoder = define_ae_model()
     summary(auto_encoder, input_size=(TRAIN_BATCH_SIZE, 3, IMG_HEIGHT, IMG_WIDTH))
 
-    raise NotImplementedError
+    # for train log
+    os.makedirs(f'{PROJECT_DIR_PATH}/final_recommend_score/log', exist_ok=True)
+    train_log = {'min_train_loss': [], 'total_epochs': [], 'best_epoch': [], 'elapsed_time (s)': [],
+                 'train_loss_list': []}
+
+    # train
+    auto_encoder.device = device
+
+    start_at = time.time()
+    train_loss_list, best_epoch_model = train_ae_each_model(auto_encoder, data_loader)
+    train_time = round(time.time() - start_at, 2)
+
+    train_log['min_train_loss'].append(round(min(train_loss_list), 4))
+    train_log['totel_epochs'].append(len(train_loss_list))
+    train_log['best_epoch'].append(np.argmin(train_loss_list))
+    train_log['elapsed_time (s)'].append(train_time)
+    train_log['train_loss_list'].append(train_loss_list)
+
+    # save and return model
+    ae_encoder = best_epoch_model.encoder
+    ae_decoder = best_epoch_model.decoder
+
+    model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models'
+    os.makedirs(model_path, exist_ok=True)
+
+    torch.save(best_epoch_model.state_dict(), f'{model_path}/ae_model.pt')
+    torch.save(ae_encoder.state_dict(), f'{model_path}/ae_encoder.pt')
+    torch.save(ae_decoder.state_dict(), f'{model_path}/ae_decoder.pt')
+
+    return ae_encoder, ae_decoder
 
 
 # Auto-Encoder 모델 정의
@@ -218,6 +241,56 @@ def define_ae_model():
                                                                     eta_min=0)
 
     return ae_model
+
+
+# 각 Auto-Encoder 모델의 학습 실시
+# Create Date : 2025.03.25
+# Last Update Date : -
+
+# Arguments:
+# - model       (nn.Module)  : 학습 대상 CNN 모델
+# - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader (Train ONLY)
+
+# Returns:
+# - train_loss_list  (list(float)) : train loss 기록
+# - best_epoch_model (nn.Module)   : 가장 낮은 train loss 에서의 Auto-Encoder 모델
+
+def train_ae_each_model(model, data_loader):
+    current_epoch = 0
+    min_train_loss_epoch = -1  # Loss-based Early Stopping
+    min_train_loss = None
+    best_epoch_model = None
+
+    train_loss_list = []
+
+    # loss function
+    loss_func = nn.MSELoss(reduction='sum')
+
+    while True:
+        train_loss = run_train_ae(model=model,
+                                  train_loader=data_loader,
+                                  device=model.device,
+                                  loss_func=loss_func,
+                                  center_crop=(IMG_HEIGHT // 2, IMG_WIDTH // 2))
+
+        print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}')
+        train_loss_list.append(train_loss)
+
+        model.scheduler.step()
+
+        if min_train_loss is None or train_loss < min_train_loss:
+            min_train_loss = train_loss
+            min_train_loss_epoch = current_epoch
+
+            best_epoch_model = UserScoreAE().to(model.device)
+            best_epoch_model.load_state_dict(model.state_dict())
+
+        if current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            break
+
+        current_epoch += 1
+
+    return train_loss_list, best_epoch_model
 
 
 # Auto-Encoder 모델의 Encoder 불러오기

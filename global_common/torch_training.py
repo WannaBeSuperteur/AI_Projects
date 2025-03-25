@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 import numpy as np  # for test code
 
-is_test = False
+is_test = True
 
 
 # 모델 학습 실시
@@ -42,6 +42,70 @@ def run_train(model, train_loader, device, loss_func=nn.CrossEntropyLoss(reducti
 
         train_loss_sum += loss.item()
         total += labels.size(0)
+
+    train_loss = train_loss_sum / total
+    return train_loss
+
+
+# Auto-Encoder 모델 학습 실시
+# Create Date : 2025.03.25
+# Last Update Date : -
+
+# args :
+# - model        (nn.Module)  : 학습할 모델
+# - train_loader (DataLoader) : Training Data Loader
+# - device       (Device)     : CUDA or CPU device
+# - loss_func    (func)       : Loss Function
+# - center_crop  (tuple)      : None 이 아니면 이미지의 가운데 (h, w) 픽셀만을 crop
+
+# returns :
+# - train_loss (float) : 모델의 Training Loss
+
+def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='sum'), center_crop=None):
+    model.train()
+    total = 0
+    train_loss_sum = 0.0
+
+    for idx, (images, _) in enumerate(train_loader):
+        images = images.to(device)
+
+        # train 실시
+        model.optimizer.zero_grad()
+        decoder_outputs = model(images).to(torch.float32)
+
+        # loss 계산 (center_crop 여부에 따라)
+        if center_crop is None:
+            images_ = images
+
+        else:
+            image_height = images.shape[2]
+            image_width = images.shape[3]
+            h = center_crop[0]
+            w = center_crop[1]
+
+            top = image_height // 2 - h // 2
+            bottom = image_height // 2 + h // 2
+            left = image_width // 2 - w // 2
+            right = image_width // 2 + w // 2
+
+            images_ = images[:, :, top:bottom, left:right]
+
+        loss = loss_func(decoder_outputs, images_)
+
+        loss.backward()
+        model.optimizer.step()
+
+        # test code
+        if is_test and idx % 20 == 0:
+            latent_vectors = model.encoder(images_).to(torch.float32)
+
+            print('\ntrain idx:', idx)
+            print('output:', np.array(decoder_outputs.detach().cpu()).flatten()[:5])
+            print('latent:\n', np.array(latent_vectors.detach().cpu())[:3, :5])
+            print('image:', np.array(images_.detach().cpu()).flatten()[:5])
+
+        train_loss_sum += loss.item()
+        total += images.size(0)
 
     train_loss = train_loss_sum / total
     return train_loss
