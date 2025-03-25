@@ -24,7 +24,7 @@ np.set_printoptions(suppress=True)
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 
-EARLY_STOPPING_ROUNDS = 10
+EARLY_STOPPING_ROUNDS = 1
 IMG_HEIGHT = 128
 IMG_WIDTH = 128
 LATENT_VECTOR_DIM = 32
@@ -237,32 +237,52 @@ def train_ae(data_loader):
 
     # for train log
     os.makedirs(f'{PROJECT_DIR_PATH}/final_recommend_score/log', exist_ok=True)
-    train_log = {'min_train_loss': [], 'total_epochs': [], 'best_epoch': [], 'elapsed_time (s)': [],
+    train_log = {'success': [], 'min_train_loss': [], 'total_epochs': [], 'best_epoch': [], 'elapsed_time (s)': [],
                  'train_loss_list': []}
 
-    # train
     auto_encoder.device = device
 
-    start_at = time.time()
-    train_loss_list, best_epoch_model = train_ae_each_model(auto_encoder, data_loader)
-    train_time = round(time.time() - start_at, 2)
+    # try train until success (threshold : min train loss < 1000)
+    while True:
+        auto_encoder = auto_encoder.to(device)
 
-    train_log['min_train_loss'].append(round(min(train_loss_list), 4))
-    train_log['totel_epochs'].append(len(train_loss_list))
-    train_log['best_epoch'].append(np.argmin(train_loss_list))
-    train_log['elapsed_time (s)'].append(train_time)
-    train_log['train_loss_list'].append(train_loss_list)
+        # run training
+        start_at = time.time()
+        train_loss_list, best_epoch_model = train_ae_each_model(auto_encoder, data_loader)
+        train_time = round(time.time() - start_at, 2)
 
-    # save and return model
-    ae_encoder = best_epoch_model.encoder
-    ae_decoder = best_epoch_model.decoder
+        # check train successful & create train log
+        min_train_loss = min(train_loss_list)
+        is_train_successful = (min_train_loss < 1000)
+        train_loss_list_ = list(map(lambda x: round(x, 4), train_loss_list))
 
-    model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models'
-    os.makedirs(model_path, exist_ok=True)
+        train_log['success'].append(is_train_successful)
+        train_log['min_train_loss'].append(round(min_train_loss, 4))
+        train_log['total_epochs'].append(len(train_loss_list))
+        train_log['best_epoch'].append(np.argmin(train_loss_list))
+        train_log['elapsed_time (s)'].append(train_time)
+        train_log['train_loss_list'].append(train_loss_list_)
 
-    torch.save(best_epoch_model.state_dict(), f'{model_path}/ae_model.pt')
-    torch.save(ae_encoder.state_dict(), f'{model_path}/ae_encoder.pt')
-    torch.save(ae_decoder.state_dict(), f'{model_path}/ae_decoder.pt')
+        train_log_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/ae_train_log.csv'
+        pd.DataFrame(train_log).to_csv(train_log_path)
+
+        # save and return model if successful
+        if is_train_successful:
+            ae_encoder = best_epoch_model.encoder
+            ae_decoder = best_epoch_model.decoder
+
+            model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models'
+            os.makedirs(model_path, exist_ok=True)
+
+            torch.save(best_epoch_model.state_dict(), f'{model_path}/ae_model.pt')
+            torch.save(ae_encoder.state_dict(), f'{model_path}/ae_encoder.pt')
+            torch.save(ae_decoder.state_dict(), f'{model_path}/ae_decoder.pt')
+            break
+
+        # retry if train failed
+        else:
+            auto_encoder = define_ae_model()
+            auto_encoder.device = device
 
     return ae_encoder, ae_decoder
 
@@ -292,7 +312,7 @@ def define_ae_model():
 # Last Update Date : -
 
 # Arguments:
-# - model       (nn.Module)  : 학습 대상 CNN 모델
+# - model       (nn.Module)  : 학습 대상 Auto-Encoder 모델
 # - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader (Train ONLY)
 
 # Returns:
