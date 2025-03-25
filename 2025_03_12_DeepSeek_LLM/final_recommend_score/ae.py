@@ -115,13 +115,11 @@ class UserScoreAEEncoder(nn.Module):
 
         self.encoder_fc1 = nn.Sequential(
             nn.Linear(256 * 4 * 4, 512),
-            nn.Tanh(),
-            nn.Dropout(0.25)
+            nn.Sigmoid()
         )
         self.encoder_fc2 = nn.Sequential(
             nn.Linear(512, LATENT_VECTOR_DIM),
-            nn.Tanh(),
-            nn.Dropout(0.25)
+            nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -142,13 +140,11 @@ class UserScoreAEDecoder(nn.Module):
         # decoder
         self.decoder_fc1 = nn.Sequential(
             nn.Linear(LATENT_VECTOR_DIM, 512),
-            nn.Tanh(),
-            nn.Dropout(0.25)
+            nn.Sigmoid()
         )
         self.decoder_fc2 = nn.Sequential(
             nn.Linear(512, 256 * 4 * 4),
-            nn.Tanh(),
-            nn.Dropout(0.25)
+            nn.Sigmoid()
         )
 
         self.decoder_reshape = Reshape(-1, 256, 4, 4)
