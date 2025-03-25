@@ -24,7 +24,7 @@ np.set_printoptions(suppress=True)
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 
-EARLY_STOPPING_ROUNDS = 1
+EARLY_STOPPING_ROUNDS = 10
 IMG_HEIGHT = 128
 IMG_WIDTH = 128
 LATENT_VECTOR_DIM = 32
