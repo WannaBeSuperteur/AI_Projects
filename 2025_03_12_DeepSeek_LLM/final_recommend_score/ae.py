@@ -24,7 +24,7 @@ TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 EARLY_STOPPING_ROUNDS = 10
 IMG_HEIGHT = 128
 IMG_WIDTH = 128
-HIDDEN_DIM = 32
+LATENT_VECTOR_DIM = 32
 
 TRAIN_BATCH_SIZE = 16
 TEST_BATCH_SIZE = 4
@@ -40,10 +40,10 @@ class Reshape(nn.Module):
         return x.view(self.shape)
 
 
-# Auto-Encoder
-class UserScoreAE(nn.Module):
+# Auto-Encoder Conv. Layers for Encoder
+class UserScoreAEEncoderConvs(nn.Module):
     def __init__(self):
-        super(UserScoreAE, self).__init__()
+        super(UserScoreAEEncoderConvs, self).__init__()
 
         # encoder
         self.encoder_conv1 = nn.Sequential(
@@ -62,39 +62,22 @@ class UserScoreAE(nn.Module):
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
             nn.LeakyReLU()
         )
-        self.encoder_flatten = nn.Flatten()
-        self.encoder_fc1 = nn.Sequential(
-            nn.Linear(256 * 4 * 4, 512),
-            nn.Tanh(),
-            nn.Dropout(0.25)
-        )
-        self.encoder_fc2 = nn.Sequential(
-            nn.Linear(512, HIDDEN_DIM),
-            nn.Tanh(),
-            nn.Dropout(0.25)
-        )
-        self.encoder = nn.Sequential(
-            self.encoder_conv1,
-            self.encoder_conv2,
-            self.encoder_conv3,
-            self.encoder_conv4,
-            self.encoder_flatten,
-            self.encoder_fc1,
-            self.encoder_fc2
-        )
 
-        # decoder
-        self.decoder_fc1 = nn.Sequential(
-            nn.Linear(HIDDEN_DIM, 512),
-            nn.Tanh(),
-            nn.Dropout(0.25)
-        )
-        self.decoder_fc2 = nn.Sequential(
-            nn.Linear(512, 256 * 4 * 4),
-            nn.Tanh(),
-            nn.Dropout(0.25)
-        )
-        self.decoder_reshape = Reshape(-1, 256, 4, 4)
+    def forward(self, x):
+        x = self.encoder_conv1(x)
+        x = self.encoder_conv2(x)
+        x = self.encoder_conv3(x)
+        x = self.encoder_conv4(x)
+
+        return x
+
+
+# Auto-Encoder DeConv. Layers for Decoder
+class UserScoreAEDecoderDeConvs(nn.Module):
+    def __init__(self):
+        super(UserScoreAEDecoderDeConvs, self).__init__()
+
+        # encoder
         self.decoder_deconv1 = nn.Sequential(
             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU()
@@ -111,20 +94,90 @@ class UserScoreAE(nn.Module):
             nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU()
         )
-        self.decoder = nn.Sequential(
-            self.decoder_fc1,
-            self.decoder_fc2,
-            self.decoder_reshape,
-            self.decoder_deconv1,
-            self.decoder_deconv2,
-            self.decoder_deconv3,
-            self.decoder_deconv4
+
+    def forward(self, x):
+        x = self.decoder_deconv1(x)
+        x = self.decoder_deconv2(x)
+        x = self.decoder_deconv3(x)
+        x = self.decoder_deconv4(x)
+
+        return x
+
+
+# Encoder of Auto-Encoder
+class UserScoreAEEncoder(nn.Module):
+    def __init__(self):
+        super(UserScoreAEEncoder, self).__init__()
+
+        # encoder
+        self.encoder_convs = UserScoreAEEncoderConvs()
+        self.encoder_flatten = nn.Flatten()
+
+        self.encoder_fc1 = nn.Sequential(
+            nn.Linear(256 * 4 * 4, 512),
+            nn.Tanh(),
+            nn.Dropout(0.25)
         )
+        self.encoder_fc2 = nn.Sequential(
+            nn.Linear(512, LATENT_VECTOR_DIM),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+
+    def forward(self, x):
+        x = self.encoder_convs(x)
+        x = self.encoder_flatten(x)
+
+        x = self.encoder_fc1(x)
+        x = self.encoder_fc2(x)
+
+        return x
+
+
+# Decoder of Auto-Encoder
+class UserScoreAEDecoder(nn.Module):
+    def __init__(self):
+        super(UserScoreAEDecoder, self).__init__()
+
+        # decoder
+        self.decoder_fc1 = nn.Sequential(
+            nn.Linear(LATENT_VECTOR_DIM, 512),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+        self.decoder_fc2 = nn.Sequential(
+            nn.Linear(512, 256 * 4 * 4),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+
+        self.decoder_reshape = Reshape(-1, 256, 4, 4)
+        self.decoder_deconvs = UserScoreAEDecoderDeConvs()
+
+    def forward(self, x):
+        x = self.decoder_fc1(x)
+        x = self.decoder_fc2(x)
+
+        x = self.decoder_reshape(x)
+        x = self.decoder_deconvs(x)
+
+        return x
+
+
+# Auto-Encoder
+class UserScoreAE(nn.Module):
+    def __init__(self):
+        super(UserScoreAE, self).__init__()
+
+        # encoder
+        self.encoder = UserScoreAEEncoder()
+        self.decoder = UserScoreAEDecoder()
 
     def forward(self, x):
         x = x[:, :, IMG_HEIGHT // 4: 3 * IMG_HEIGHT // 4, IMG_WIDTH // 4: 3 * IMG_WIDTH // 4]
         x = self.encoder(x)
         x = self.decoder(x)
+
         return x
 
 
