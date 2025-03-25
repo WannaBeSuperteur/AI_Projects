@@ -244,7 +244,7 @@ def train_ae(data_loader):
 
     auto_encoder.device = device
 
-    # try train until success (threshold : min train loss < 1000)
+    # try train until success (threshold : min train loss < 600)
     while True:
         auto_encoder = auto_encoder.to(device)
 
@@ -255,7 +255,7 @@ def train_ae(data_loader):
 
         # check train successful & create train log
         min_train_loss = min(train_loss_list)
-        is_train_successful = (min_train_loss < 1000)
+        is_train_successful = (min_train_loss < 600)
         train_loss_list_ = list(map(lambda x: round(x, 4), train_loss_list))
 
         train_log['success'].append(is_train_successful)
@@ -338,8 +338,10 @@ def train_ae_each_model(model, data_loader):
     while True:
 
         # test code 처럼 (출력, 이미지, latent vector) 를 출력할 sample (data loader) index 지정
-        if current_epoch < 5 or (current_epoch < 100 and current_epoch % 20 == 0) or current_epoch % 50 == 0:
+        if current_epoch < 5:
             force_test_idxs = [0, 1, 2, 3, 4]
+        elif (current_epoch < 100 and current_epoch % 20 == 0) or current_epoch % 50 == 0:
+            force_test_idxs = [0, 1, 2]
         else:
             force_test_idxs = None
 
