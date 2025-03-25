@@ -47,18 +47,14 @@ class UserScoreAEEncoderConvs(nn.Module):
 
         # encoder
         self.encoder_conv1 = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
             nn.LeakyReLU()
         )
         self.encoder_conv2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
-            nn.LeakyReLU()
-        )
-        self.encoder_conv3 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
             nn.LeakyReLU()
         )
-        self.encoder_conv4 = nn.Sequential(
+        self.encoder_conv3 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
             nn.LeakyReLU()
         )
@@ -67,7 +63,6 @@ class UserScoreAEEncoderConvs(nn.Module):
         x = self.encoder_conv1(x)
         x = self.encoder_conv2(x)
         x = self.encoder_conv3(x)
-        x = self.encoder_conv4(x)
 
         return x
 
@@ -77,7 +72,7 @@ class UserScoreAEDecoderDeConvs(nn.Module):
     def __init__(self):
         super(UserScoreAEDecoderDeConvs, self).__init__()
 
-        # encoder
+        # decoder
         self.decoder_deconv1 = nn.Sequential(
             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU()
@@ -87,11 +82,7 @@ class UserScoreAEDecoderDeConvs(nn.Module):
             nn.LeakyReLU()
         )
         self.decoder_deconv3 = nn.Sequential(
-            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
-            nn.LeakyReLU()
-        )
-        self.decoder_deconv4 = nn.Sequential(
-            nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU()
         )
 
@@ -99,7 +90,6 @@ class UserScoreAEDecoderDeConvs(nn.Module):
         x = self.decoder_deconv1(x)
         x = self.decoder_deconv2(x)
         x = self.decoder_deconv3(x)
-        x = self.decoder_deconv4(x)
 
         return x
 
@@ -114,7 +104,7 @@ class UserScoreAEEncoder(nn.Module):
         self.encoder_flatten = nn.Flatten()
 
         self.encoder_fc1 = nn.Sequential(
-            nn.Linear(256 * 4 * 4, 512),
+            nn.Linear(256 * 8 * 8, 512),
             nn.Sigmoid()
         )
         self.encoder_fc2 = nn.Sequential(
@@ -143,11 +133,11 @@ class UserScoreAEDecoder(nn.Module):
             nn.Sigmoid()
         )
         self.decoder_fc2 = nn.Sequential(
-            nn.Linear(512, 256 * 4 * 4),
+            nn.Linear(512, 256 * 8 * 8),
             nn.Sigmoid()
         )
 
-        self.decoder_reshape = Reshape(-1, 256, 4, 4)
+        self.decoder_reshape = Reshape(-1, 256, 8, 8)
         self.decoder_deconvs = UserScoreAEDecoderDeConvs()
 
     def forward(self, x):
