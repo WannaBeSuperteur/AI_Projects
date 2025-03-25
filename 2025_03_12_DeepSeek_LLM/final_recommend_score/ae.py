@@ -289,7 +289,8 @@ def train_ae(data_loader):
 
 # Auto-Encoder 모델 정의
 # Create Date : 2025.03.25
-# Last Update Date : -
+# Last Update Date : 2025.03.25
+# - learning rate scheduling 에 warm-up 적용
 
 # Arguments:
 # - 없음
@@ -300,9 +301,11 @@ def train_ae(data_loader):
 def define_ae_model():
     ae_model = UserScoreAE()
     ae_model.optimizer = torch.optim.AdamW(ae_model.parameters(), lr=0.001)
-    ae_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=ae_model.optimizer,
-                                                                    T_max=10,
-                                                                    eta_min=0)
+
+    # 5 epoch 까지는 warm_up, 이후 매 epoch 마다 1.5% 씩 learning rate 감소
+    scheduler_lambda = lambda epoch: 0.2 * (epoch + 1) if epoch < 5 else 0.985 ** (epoch - 4)
+    ae_model.scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=ae_model.optimizer,
+                                                           lr_lambda=scheduler_lambda)
 
     return ae_model
 
