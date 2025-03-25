@@ -101,7 +101,7 @@ def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='su
 
             print('\ntrain idx:', idx)
             print('output:', np.array(decoder_outputs.detach().cpu()).flatten()[:5])
-            print('latent:\n', np.array(latent_vectors.detach().cpu())[:3, :5])
+            print('latent:\n', np.array(latent_vectors.detach().cpu())[:5, :5])
             print('image:', np.array(images_.detach().cpu()).flatten()[:5])
 
         train_loss_sum += loss.item()

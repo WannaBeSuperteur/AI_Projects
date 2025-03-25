@@ -18,6 +18,9 @@ from global_common.torch_training import run_train_ae
 from common import resize_and_normalize_img, DiagramImageDataset
 
 
+torch.set_printoptions(sci_mode=False)
+np.set_printoptions(suppress=True)
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 
@@ -47,15 +50,15 @@ class UserScoreAEEncoderConvs(nn.Module):
 
         # encoder
         self.encoder_conv1 = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
             nn.LeakyReLU()
         )
         self.encoder_conv2 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
             nn.LeakyReLU()
         )
         self.encoder_conv3 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
             nn.LeakyReLU()
         )
 
@@ -74,15 +77,15 @@ class UserScoreAEDecoderDeConvs(nn.Module):
 
         # decoder
         self.decoder_deconv1 = nn.Sequential(
-            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
-            nn.LeakyReLU()
-        )
-        self.decoder_deconv2 = nn.Sequential(
             nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU()
         )
+        self.decoder_deconv2 = nn.Sequential(
+            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.LeakyReLU()
+        )
         self.decoder_deconv3 = nn.Sequential(
-            nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
             nn.LeakyReLU()
         )
 
@@ -104,7 +107,7 @@ class UserScoreAEEncoder(nn.Module):
         self.encoder_flatten = nn.Flatten()
 
         self.encoder_fc1 = nn.Sequential(
-            nn.Linear(256 * 8 * 8, 512),
+            nn.Linear(128 * 8 * 8 + 512, 512),
             nn.Sigmoid()
         )
         self.encoder_fc2 = nn.Sequential(
@@ -112,10 +115,20 @@ class UserScoreAEEncoder(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, x):
-        x = self.encoder_convs(x)
-        x = self.encoder_flatten(x)
+        # additional fully-connected layer for flatten stream
+        self.encoder_fc_flatten_stream = nn.Sequential(
+            nn.Linear(3 * IMG_HEIGHT // 2 * IMG_WIDTH // 2, 512),
+            nn.Sigmoid()
+        )
 
+    def forward(self, x):
+        x_conv_stream = self.encoder_convs(x)
+        x_conv_stream = self.encoder_flatten(x_conv_stream)
+
+        x_flatten_stream = self.encoder_flatten(x)
+        x_flatten_stream = self.encoder_fc_flatten_stream(x_flatten_stream)
+
+        x = torch.cat([x_conv_stream, x_flatten_stream], dim=1)
         x = self.encoder_fc1(x)
         x = self.encoder_fc2(x)
 
@@ -133,11 +146,11 @@ class UserScoreAEDecoder(nn.Module):
             nn.Sigmoid()
         )
         self.decoder_fc2 = nn.Sequential(
-            nn.Linear(512, 256 * 8 * 8),
+            nn.Linear(512, 128 * 8 * 8),
             nn.Sigmoid()
         )
 
-        self.decoder_reshape = Reshape(-1, 256, 8, 8)
+        self.decoder_reshape = Reshape(-1, 128, 8, 8)
         self.decoder_deconvs = UserScoreAEDecoderDeConvs()
 
     def forward(self, x):
