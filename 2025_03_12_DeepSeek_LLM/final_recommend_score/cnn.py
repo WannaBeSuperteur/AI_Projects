@@ -51,11 +51,6 @@ class BaseScoreCNN(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
-        self.conv1_center = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=3),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.05)
-        )
         self.pool1 = nn.MaxPool2d(2, 2)
 
         self.conv3 = nn.Sequential(
@@ -164,7 +159,7 @@ class DiagramImageDataset(Dataset):
 
 # Returns:
 # - train_loader (DataLoader) : Train 데이터셋을 로딩한 PyTorch DataLoader
-# - train_loader (DataLoader) : Test 데이터셋을 로딩한 PyTorch DataLoader
+# - test_loader  (DataLoader) : Test 데이터셋을 로딩한 PyTorch DataLoader
 
 def load_dataset(dataset_df):
     transform = transforms.Compose([transforms.ToPILImage(),
