@@ -24,7 +24,9 @@ np.set_printoptions(suppress=True)
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 
+MAX_EPOCHS = 1000
 EARLY_STOPPING_ROUNDS = 10
+
 IMG_HEIGHT = 128
 IMG_WIDTH = 128
 LATENT_VECTOR_DIM = 32
@@ -356,6 +358,10 @@ def train_ae_each_model(model, data_loader):
             break
 
         current_epoch += 1
+
+        # stop training if too long
+        if current_epoch >= MAX_EPOCHS:
+            break
 
     return train_loss_list, best_epoch_model
 
