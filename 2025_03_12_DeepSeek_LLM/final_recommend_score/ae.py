@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+from torchinfo import summary
 from torchvision.utils import save_image
 
 import pandas as pd
@@ -18,17 +19,127 @@ TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 EARLY_STOPPING_ROUNDS = 10
 IMG_HEIGHT = 128
 IMG_WIDTH = 128
+HIDDEN_DIM = 32
 
 TRAIN_BATCH_SIZE = 16
 TEST_BATCH_SIZE = 4
 
 
+# Custom Reshape Layer from https://discuss.pytorch.org/t/what-is-reshape-layer-in-pytorch/1110/8
+class Reshape(nn.Module):
+    def __init__(self, *args):
+        super(Reshape, self).__init__()
+        self.shape = args
+
+    def forward(self, x):
+        return x.view(self.shape)
+
+
+# Auto-Encoder
 class UserScoreAE(nn.Module):
     def __init__(self):
         super(UserScoreAE, self).__init__()
 
+        # encoder
+        self.encoder_conv1 = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.encoder_conv2 = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.encoder_conv3 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.encoder_conv4 = nn.Sequential(
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.encoder_conv5 = nn.Sequential(
+            nn.Conv2d(256, 256, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.encoder_flatten = nn.Flatten()
+        self.encoder_fc1 = nn.Sequential(
+            nn.Linear(256 * 4 * 4, 512),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+        self.encoder_fc2 = nn.Sequential(
+            nn.Linear(512, HIDDEN_DIM),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+        self.encoder = nn.Sequential(
+            self.encoder_conv1,
+            self.encoder_conv2,
+            self.encoder_conv3,
+            self.encoder_conv4,
+            self.encoder_conv5,
+            self.encoder_flatten,
+            self.encoder_fc1,
+            self.encoder_fc2
+        )
+
+        # decoder
+        self.decoder_fc1 = nn.Sequential(
+            nn.Linear(HIDDEN_DIM, 512),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+        self.decoder_fc2 = nn.Sequential(
+            nn.Linear(512, 256 * 4 * 4),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+        self.decoder_reshape = Reshape(-1, 256, 4, 4)
+        self.decoder_deconv1 = nn.Sequential(
+            nn.ConvTranspose2d(256, 256, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.decoder_deconv2 = nn.Sequential(
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.decoder_deconv3 = nn.Sequential(
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.decoder_deconv4 = nn.Sequential(
+            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.decoder_deconv5 = nn.Sequential(
+            nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1, padding_mode='zeros'),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.15)
+        )
+        self.decoder = nn.Sequential(
+            self.decoder_fc1,
+            self.decoder_fc2,
+            self.decoder_reshape,
+            self.decoder_deconv1,
+            self.decoder_deconv2,
+            self.decoder_deconv3,
+            self.decoder_deconv4,
+            self.decoder_deconv5
+        )
+
     def forward(self, x):
-        return 0  # temp
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
 
 
 # 데이터셋 로딩
@@ -75,7 +186,38 @@ def load_dataset(dataset_df):
 # - log/ae_train_log.csv 파일에 학습 로그 저장
 
 def train_ae(data_loader):
+
+    # check device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'device for training : {device}')
+
+    if 'cuda' in str(device):
+        print(f'cuda is available with device {torch.cuda.get_device_name()}')
+
+    auto_encoder = define_ae_model()
+    summary(auto_encoder, input_size=(TRAIN_BATCH_SIZE, 3, IMG_HEIGHT, IMG_WIDTH))
+
     raise NotImplementedError
+
+
+# Auto-Encoder 모델 정의
+# Create Date : 2025.03.25
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - ae_model (nn.Module) : 정의된 Auto-Encoder 모델
+
+def define_ae_model():
+    ae_model = UserScoreAE()
+    ae_model.optimizer = torch.optim.AdamW(ae_model.parameters(), lr=0.001)
+    ae_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=ae_model.optimizer,
+                                                                    T_max=10,
+                                                                    eta_min=0)
+
+    return ae_model
 
 
 # Auto-Encoder 모델의 Encoder 불러오기
@@ -134,12 +276,12 @@ if __name__ == '__main__':
     # load or train model
     try:
         print('loading Auto-Encoder models ...')
-        cnn_models = load_ae_encoder()
+        ae_encoder = load_ae_encoder()
         print('loading Auto-Encoder models successful!')
 
     except Exception as e:
         print(f'Auto-Encoder model load failed : {e}')
-        cnn_models = train_ae(train_loader)
+        ae_encoder, _ = train_ae(train_loader)
 
     # performance evaluation
     report_path = f'{log_dir}/ae_test_result.csv'
