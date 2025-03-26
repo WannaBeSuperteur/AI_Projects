@@ -12,6 +12,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TEST_DIAGRAM_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/diagrams_for_test'
 KNN_TRAIN_DATASET_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/knn_user_score'
 
+K = 3  # number of neighbors
+
 
 # diagrams_for_test/test_diagram_{i}.png 의 테스트 대상 다이어그램 로딩
 # Create Date : 2025.03.26
@@ -169,9 +171,33 @@ def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagr
 # Returns:
 # - final_score_df (Pandas DataFrame) : 각 테스트 다이어그램에 대한 최종 점수 (예상 사용자 평가 점수) 계산 결과
 #                                       - columns = ['img_path', 'final_score']
+# - final_score_df 를 log/knn_final_scores.csv 로 저장
 
 def compute_final_score(distance_df):
-    raise NotImplementedError
+    test_img_paths = distance_df.columns[2:]
+    final_score_dict = {'img_path': test_img_paths, 'final_score': []}
+    scores = distance_df['score']
+
+    for test_img_path in test_img_paths:
+        distances = distance_df[test_img_path]
+        score_and_distance = pd.DataFrame({'score': scores, 'distance': distances})
+        score_and_distance.sort_values(by='distance', inplace=True)
+        score_and_distance = score_and_distance[:K]
+
+        score_and_distance['weight'] = score_and_distance['distance'].apply(lambda x: 1 / max(x, 0.1) ** 2)
+
+        sum_scores = (score_and_distance['score'] * score_and_distance['weight']).sum()
+        sum_weights = score_and_distance['weight'].sum()
+        final_score = sum_scores / sum_weights
+
+        final_score_dict['final_score'].append(final_score)
+
+    final_score_df = pd.DataFrame(final_score_dict)
+
+    knn_final_scores_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/knn_final_scores.csv'
+    final_score_df.to_csv(knn_final_scores_csv_path, index=False)
+
+    return final_score_df
 
 
 if __name__ == '__main__':
@@ -183,7 +209,7 @@ if __name__ == '__main__':
 
     # 거리 및 예상 사용자 평가 점수 계산
     distance_df = compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagram_paths_dict)
-    final_score = compute_final_score(distance_df)
+    final_score_df = compute_final_score(distance_df)
 
     print('FINAL SCORE :')
-    print(final_score)
+    print(final_score_df)
