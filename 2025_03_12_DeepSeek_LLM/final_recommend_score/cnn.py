@@ -146,7 +146,7 @@ def load_dataset(dataset_df):
     # test code
     tvt_labels = ['train', 'test']
     loaders = [train_loader, test_loader]
-    test_dir_path = f'{PROJECT_DIR_PATH}/final_recommend_score/temp_test'
+    test_dir_path = f'{PROJECT_DIR_PATH}/final_recommend_score/temp_test_cnn'
 
     for tvt_label, loader in zip(tvt_labels, loaders):
         for i in range(40):
@@ -253,7 +253,7 @@ def train_cnn(data_loader):
                 model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models'
                 os.makedirs(model_path, exist_ok=True)
 
-                model_save_path = f'{model_path}/model_{fold}.pt'
+                model_save_path = f'{model_path}/cnn_model_{fold}.pt'
                 torch.save(best_epoch_model.state_dict(), model_save_path)
                 break
 
@@ -369,7 +369,7 @@ def load_cnn_model():
     # add CNN models
     for i in range(K_FOLDS):
         model = BaseScoreCNN()
-        model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models/model_{i}.pt'
+        model_path = f'{PROJECT_DIR_PATH}/final_recommend_score/models/cnn_model_{i}.pt'
         model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
 
         cnn_models.append(model)

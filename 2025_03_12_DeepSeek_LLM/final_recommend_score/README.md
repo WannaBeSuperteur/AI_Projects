@@ -47,7 +47,7 @@
 * 학습 코드
   * ```cnn.py```
 * 모델 파일 코드
-  * ```models/model_{k}.pt```, ```k``` = {0, 1, 2, 3, 4} 
+  * ```models/cnn_model_{k}.pt```, ```k``` = {0, 1, 2, 3, 4} 
 * 모델 학습 시 [K-fold Validation](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%B0%A9%EB%B2%95%EB%A1%A0_Cross_Validation.md#3-k-fold-cross-validation) 이용
   * 이미지 데이터 수 자체가 900 개로 부족
   * 품질이 비교적 떨어지는 데이터가 900 개 중 약 200개로 [데이터 불균형](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EB%B6%88%EA%B7%A0%ED%98%95.md) 이 있음 
