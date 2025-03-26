@@ -1,7 +1,13 @@
-from knn import load_test_diagrams, load_user_score_data, compute_distance, compute_final_score
-from ae import load_ae_encoder
-from cnn import load_cnn_model
-from common import IMG_HEIGHT, IMG_WIDTH
+try:
+    from knn import load_test_diagrams, load_user_score_data, compute_distance, compute_final_score
+    from ae import load_ae_encoder
+    from cnn import load_cnn_model
+    from common import IMG_HEIGHT, IMG_WIDTH
+except:
+    from final_recommend_score.knn import load_test_diagrams, load_user_score_data, compute_distance, compute_final_score
+    from final_recommend_score.ae import load_ae_encoder
+    from final_recommend_score.cnn import load_cnn_model
+    from final_recommend_score.common import IMG_HEIGHT, IMG_WIDTH
 
 import numpy as np
 import pandas as pd

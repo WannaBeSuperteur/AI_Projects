@@ -1,10 +1,20 @@
 import argparse
 import os
+import shutil
+
 import torch
 
 from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
 from fine_tuning.sft_fine_tuning import load_sft_llm
 from draw_diagram.draw_diagram import generate_diagram_from_lines
+
+from final_recommend_score.knn import load_test_diagrams
+from final_recommend_score.final_recommend_score import (load_models,
+                                                         compute_cnn_score,
+                                                         compute_ae_encoder_score,
+                                                         compute_final_recommend_score)
+
+PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(__file__))
 
 
 # SFT 로 Fine-Tuning 된 LLM 을 실행
@@ -48,7 +58,7 @@ def run_llm(llm, tokenizer, prompt, max_answer_tokens, llm_answer_count):
 # - llm_answers (list(str)) : 해당 LLM 의 답변 리스트
 
 # Returns:
-# - 모델의 답변을 이용하여, user_diagrams/diagram_{k}.png 다이어그램 파일 생성
+# - 모델의 답변을 이용하여, user_diagrams/test_diagram_{k}.png 다이어그램 파일 생성
 # - 추가적으로, user_diagrams/llm_answer_{k}.txt 에 LLM 의 답변을 각각 저장
 
 def create_diagrams(llm_answers):
@@ -57,9 +67,9 @@ def create_diagrams(llm_answers):
         try:
             llm_answer_lines = llm_answer.split('\n')
 
-            diagram_dir = 'user_diagrams/generated'
+            diagram_dir = f'{PROJECT_DIR_PATH}/user_diagrams/generated'
             os.makedirs(diagram_dir, exist_ok=True)
-            diagram_save_path = f'{diagram_dir}/diagram_{idx:06d}.png'
+            diagram_save_path = f'{diagram_dir}/test_diagram_{idx:06d}.png'
 
             generate_diagram_from_lines(llm_answer_lines, diagram_save_path)
 
@@ -106,7 +116,41 @@ def read_prompt():
 # - user_diagrams/generated 의 다이어그램 중 최종 점수 상위 R 개를 user_diagrams/recommended 로 복사 및 콘솔에 print
 
 def recommend_diagrams(recommend_count):
-    raise NotImplementedError
+    generated_diagram_path = f'{PROJECT_DIR_PATH}/user_diagrams/generated'
+    recommended_diagram_path = f'{PROJECT_DIR_PATH}/user_diagrams/recommended'
+
+    cnn_models, ae_encoder = load_models()
+    test_diagrams, test_diagram_paths = load_test_diagrams(test_diagram_dir=generated_diagram_path)
+
+    cnn_score_df = compute_cnn_score(cnn_models, test_diagrams, test_diagram_paths)
+    ae_score_df = compute_ae_encoder_score(ae_encoder, test_diagrams, test_diagram_paths)
+
+    final_recommend_score_df = compute_final_recommend_score(cnn_score_df, ae_score_df, save_df=False)
+
+    print('\nFINAL RECOMMEND SCORE :')
+    print(final_recommend_score_df)
+
+    # recommend and copy top R diagrams
+    final_recommend_score_df.sort_values(by='final_score', inplace=True, ascending=False)
+    final_recommend_score_top_df = final_recommend_score_df[:recommend_count]
+
+    print(f'\nFINAL RECOMMEND SCORE (TOP {recommend_count}) :')
+    print(final_recommend_score_top_df)
+
+    print('\nI recommend generated diagrams below, and I will copy them to user_diagrams/recommended ! 😊\n')
+    os.makedirs(recommended_diagram_path, exist_ok=True)
+
+    for idx, recommended_diagram_info in final_recommend_score_top_df.iterrows():
+        diagram_img_path = recommended_diagram_info['img_path']
+        diagram_final_score = recommended_diagram_info['final_score']
+
+        print(f'{idx}. {diagram_img_path} (final score : {round(diagram_final_score, 4)} / 10)')
+
+        diagram_img_name = diagram_img_path.split('/')[-1]
+        generated_img_path = f'{generated_diagram_path}/{diagram_img_name}'
+        dest_path = f'{recommended_diagram_path}/{diagram_img_name}'
+
+        shutil.copy(generated_img_path, dest_path)
 
 
 if __name__ == '__main__':

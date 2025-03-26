@@ -19,7 +19,15 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from global_common.torch_training import run_train, run_validation
-from common import resize_and_normalize_img, DiagramImageDataset, IMG_HEIGHT, IMG_WIDTH, diagram_transform
+
+try:
+    from common import resize_and_normalize_img, DiagramImageDataset, IMG_HEIGHT, IMG_WIDTH, diagram_transform
+except:
+    from final_recommend_score.common import (resize_and_normalize_img,
+                                              DiagramImageDataset,
+                                              IMG_HEIGHT,
+                                              IMG_WIDTH,
+                                              diagram_transform)
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))

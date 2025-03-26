@@ -1,0 +1,12 @@
+
+[0, 500, 100, 'round rectangle', 664, 60, 'solid arrow', (232, 224, 240), (96, 64, 128), [1]]
+[1, 500, 200, 'round rectangle', 750, 60, 'solid arrow', (232, 224, 240), (96, 64, 128), [2]]
+[2, 500, 300, 'round rectangle', 750, 60, 'solid arrow', (232, 224, 240), (96, 64, 128), [3]]
+[3, 500, 400, 'round rectangle', 664, 60, 'solid arrow', (232, 224, 240), (96, 64, 128), [4]]
+[4, 500, 500, 'round rectangle', 375, 60, 'solid arrow', (240, 232, 224), (64, 128, 96), []]
+[5, 500, 600, 'round rectangle', 375, 60, 'solid arrow', (240, 232, 224), (64, 128, 96), [2]]
+[6, 750, 60, 'round rectangle', 664, 60, 'solid arrow', (216, 208, 192), (32, 32, 32), [1]]
+[7, 999, 60, 'round rectangle', 664, 60, 'solid arrow', (216, 208, 192), (32, 32, 32), [1]]
+[8, 750, 160, 'round rectangle', 664, 60, 'solid arrow', (216, 208, 192), (32, 32, 32), [1]]
+[9, 999, 160, 'round rectangle', 664, 60, 'solid arrow', (216, 208, 192), (32, 32, 32), [1]]
+[10, 750, 260, 'round rectangle', 664, 60

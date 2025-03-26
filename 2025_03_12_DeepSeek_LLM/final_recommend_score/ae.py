@@ -16,7 +16,15 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from global_common.torch_training import run_train_ae
-from common import resize_and_normalize_img, DiagramImageDataset, diagram_transform
+
+try:
+    from common import resize_and_normalize_img, DiagramImageDataset, diagram_transform, IMG_HEIGHT, IMG_WIDTH
+except:
+    from final_recommend_score.common import (resize_and_normalize_img,
+                                              DiagramImageDataset,
+                                              diagram_transform,
+                                              IMG_HEIGHT,
+                                              IMG_WIDTH)
 
 
 torch.set_printoptions(sci_mode=False)
@@ -27,9 +35,6 @@ TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 
 MAX_EPOCHS = 1000
 EARLY_STOPPING_ROUNDS = 10
-
-IMG_HEIGHT = 128
-IMG_WIDTH = 128
 LATENT_VECTOR_DIM = 32
 
 TRAIN_BATCH_SIZE = 16

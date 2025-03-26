@@ -5,8 +5,13 @@ import pandas as pd
 import torch
 import torchvision.transforms as transforms
 
-from ae import load_ae_encoder
-from common import resize_and_darken_image, IMG_HEIGHT, IMG_WIDTH
+try:
+    from ae import load_ae_encoder
+    from common import resize_and_darken_image, IMG_HEIGHT, IMG_WIDTH
+except:
+    from final_recommend_score.ae import load_ae_encoder
+    from final_recommend_score.common import resize_and_darken_image, IMG_HEIGHT, IMG_WIDTH
+
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TEST_DIAGRAM_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/diagrams_for_test'
