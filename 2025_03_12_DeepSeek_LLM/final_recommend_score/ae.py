@@ -468,8 +468,8 @@ if __name__ == '__main__':
     img_paths = dataset_df['img_path'].tolist()
     resize_and_normalize_img(img_paths,
                              train_data_dir_path=TRAIN_DATA_DIR_PATH,
-                             img_width=IMG_WIDTH,
-                             img_height=IMG_HEIGHT)
+                             dest_width=IMG_WIDTH,
+                             dest_height=IMG_HEIGHT)
 
     # load dataset
     dataset_df = dataset_df.sample(frac=1, random_state=20250325)  # shuffle image sample order

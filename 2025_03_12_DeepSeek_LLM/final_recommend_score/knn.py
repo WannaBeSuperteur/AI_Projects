@@ -1,20 +1,14 @@
 import os
 
-import cv2
-import numpy as np
 import torch
 import torchvision.transforms as transforms
 
-from torchvision.io import read_image
-
 from ae import load_ae_encoder
+from common import resize_and_darken_image, IMG_HEIGHT, IMG_WIDTH
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TEST_DIAGRAM_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/diagrams_for_test'
 KNN_TRAIN_DATASET_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/knn_user_score'
-
-IMG_HEIGHT = 128
-IMG_WIDTH = 128
 
 
 # diagrams_for_test/test_diagram_{i}.png 의 테스트 대상 다이어그램 로딩
@@ -41,11 +35,7 @@ def load_test_diagrams(test_diagram_dir=TEST_DIAGRAM_PATH):
         img_full_path = f'{test_diagram_dir}/{diagram_img_name}'
         test_diagram_paths.append(img_full_path)
 
-        img = cv2.imread(img_full_path, cv2.IMREAD_COLOR)
-        img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)  # resize with ANTI-ALIAS
-        img = 5.0 * img - 4.0 * 255.0
-        img = np.clip(img, 0.0, 255.0)
-
+        img = resize_and_darken_image(img_full_path, dest_width=IMG_WIDTH, dest_height=IMG_HEIGHT)
         img_tensor = transforms.ToTensor()(img) / 255.0
         test_diagrams[idx] = img_tensor.reshape((3, IMG_HEIGHT, IMG_WIDTH))
 
