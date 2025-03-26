@@ -1,8 +1,19 @@
 import os
+
+import cv2
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+
+from torchvision.io import read_image
+
 from ae import load_ae_encoder
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TEST_DIAGRAM_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/diagrams_for_test'
+
+IMG_HEIGHT = 128
+IMG_WIDTH = 128
 
 
 # diagrams_for_test/test_diagram_{i}.png 의 테스트 대상 다이어그램 로딩
@@ -16,8 +27,25 @@ TEST_DIAGRAM_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/diagrams_for_test
 # - test_diagrams (PyTorch Tensor) : 테스트 대상 다이어그램을 128 x 128 + 어둡게 변환 후 한번에 로딩한 PyTorch Tensor
 #                                    shape : (N, 3, 128, 128)
 
-def load_test_diagrams(diagrams_for_test=TEST_DIAGRAM_PATH):
-    raise NotImplementedError
+def load_test_diagrams(test_diagram_path=TEST_DIAGRAM_PATH):
+    diagram_img_names = os.listdir(test_diagram_path)
+    diagram_img_names = list(filter(lambda x: x.startswith('test_diagram') and x.endswith('.png'), diagram_img_names))
+    N = len(diagram_img_names)
+
+    test_diagrams = torch.zeros((N, 3, IMG_HEIGHT, IMG_WIDTH))
+
+    for idx, diagram_img_name in enumerate(diagram_img_names):
+        img_full_path = f'{test_diagram_path}/{diagram_img_name}'
+
+        img = cv2.imread(img_full_path, cv2.IMREAD_COLOR)
+        img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)  # resize with ANTI-ALIAS
+        img = 5.0 * img - 4.0 * 255.0
+        img = np.clip(img, 0.0, 255.0)
+
+        img_tensor = transforms.ToTensor()(img) / 255.0
+        test_diagrams[idx] = img_tensor.reshape((3, IMG_HEIGHT, IMG_WIDTH))
+
+    return test_diagrams
 
 
 # knn_user_score/{0,1,2,3,4,5} 안에 있는, 사용자에 의해 점수가 매겨진 다이어그램 로딩
