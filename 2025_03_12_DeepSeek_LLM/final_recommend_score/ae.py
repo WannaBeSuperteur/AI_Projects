@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchinfo import summary
+from torchvision.io import read_image
 from torchvision.utils import save_image
 
 import pandas as pd
@@ -400,18 +401,63 @@ def load_ae_encoder():
 
 
 # 학습된 Auto-Encoder 모델의 Encoder 를 이용한 이미지 인코딩
-# Create Date : 2025.03.25
+# Create Date : 2025.03.26
 # Last Update Date : -
 
 # Arguments:
-# - data_loader (DataLoader) : 인코딩할 입력 데이터셋을 로딩한 PyTorch DataLoader
-# - ae_encoder  (nn.Module)  : Encoder Model
+# - ae_encoder  (nn.Module) : Encoder Model
+# - image_paths (list(str)) : latent vector 를 출력할 이미지 경로 리스트
+# - report_path (str)       : latent vector 출력 결과 및 그 거리에 대한 csv 파일을 저장할 경로
 
 # Returns:
-# - encoded_vector (np.array) : Encoder 에 의해 인코딩된 벡터
+# - {report_path}/ae_test_result_latent_vectors.csv 에 latent vector 출력 결과 저장
+# - {report_path}/ae_test_result_latent_vector_distance.csv 에 latent vector 간의 거리 정보 저장
 
-def encode_image(data_loader, ae_encoder):
-    raise NotImplementedError
+def test_ae_encoder(ae_encoder, image_paths, report_path):
+
+    # latent vector 출력 결과
+    img_cnt = len(image_paths)
+    latent_vector_dict = {'img_path': image_paths, 'latent_vector': []}
+    latent_vector_distance = np.zeros((img_cnt, img_cnt))
+
+    transform = transforms.Compose([transforms.ToPILImage(),
+                                    transforms.ToTensor()])
+
+    for img_path in image_paths:
+        img_full_path = f'{TRAIN_DATA_DIR_PATH}/{img_path}'
+        img_tensor = read_image(img_full_path)
+        img_tensor = transform(img_tensor)
+
+        img_tensor = img_tensor.reshape((1, 3, IMG_HEIGHT, IMG_WIDTH))
+        img_tensor = img_tensor[:, :, IMG_HEIGHT // 4 : 3 * IMG_HEIGHT // 4, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
+
+        latent_vector = np.array(ae_encoder(img_tensor)[0].detach().cpu())
+        latent_vector_dict['latent_vector'].append(latent_vector)
+
+    pd.DataFrame(latent_vector_dict).to_csv(f'{report_path}/ae_test_result_latent_vectors.csv', index=False)
+
+    # latent vector 간의 거리 정보
+    latent_vectors = latent_vector_dict['latent_vector']
+
+    for i in range(img_cnt):
+        for j in range(img_cnt):
+            vec_0 = latent_vectors[i]
+            vec_1 = latent_vectors[j]
+            latent_vector_distance[i][j] = np.sum(np.square(vec_0 - vec_1))
+
+    latent_vector_dist_df = pd.DataFrame(latent_vector_distance)
+
+    latent_vector_dist_df['img_path'] = latent_vector_dict['img_path']
+    latent_vector_dist_df['latent_vector'] = latent_vector_dict['latent_vector']
+    latent_vector_dist_df['latent_vector'] = latent_vector_dist_df['latent_vector'].apply(lambda x: np.round(x, 4))
+
+    img_idx_columns = list(latent_vector_dist_df.columns[:img_cnt])
+    for img_idx_column in img_idx_columns:
+        latent_vector_dist_df[img_idx_column] = latent_vector_dist_df[img_idx_column].apply(lambda x: np.round(x, 4))
+
+    latent_vector_dist_df = latent_vector_dist_df[['img_path', 'latent_vector'] + img_idx_columns]
+
+    latent_vector_dist_df.to_csv(f'{report_path}/ae_test_result_latent_vector_distance.csv', index=False)
 
 
 if __name__ == '__main__':
@@ -440,6 +486,7 @@ if __name__ == '__main__':
         ae_encoder, _ = train_ae(train_loader)
 
     # performance evaluation
-    report_path = f'{log_dir}/ae_test_result.csv'
+    test_img_df = pd.read_csv(f'{PROJECT_DIR_PATH}/final_recommend_score/ae_test_data_list.csv')
+    test_img_paths = test_img_df['img_path']
 
-    # TODO implement
+    test_ae_encoder(ae_encoder, image_paths=test_img_paths, report_path=log_dir)
