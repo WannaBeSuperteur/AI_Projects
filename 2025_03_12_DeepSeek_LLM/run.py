@@ -2,10 +2,10 @@ import argparse
 import os
 import torch
 
+from common_values import PROMPT_PREFIX, PROMPT_SUFFIX
 from fine_tuning.sft_fine_tuning import load_sft_llm
 from draw_diagram.draw_diagram import generate_diagram_from_lines
 
-PROJECT_DIR_PATH = os.path.dirname(__file__)
 
 # SFT 로 Fine-Tuning 된 LLM 을 실행
 # Create Date : 2025.03.26
@@ -49,6 +49,7 @@ def run_llm(llm, tokenizer, prompt, max_answer_tokens, llm_answer_count):
 
 # Returns:
 # - 모델의 답변을 이용하여, user_diagrams/diagram_{k}.png 다이어그램 파일 생성
+# - 추가적으로, user_diagrams/llm_answer_{k}.txt 에 LLM 의 답변을 각각 저장
 
 def create_diagrams(llm_answers):
 
@@ -56,11 +57,18 @@ def create_diagrams(llm_answers):
         try:
             llm_answer_lines = llm_answer.split('\n')
 
-            diagram_dir = f'{PROJECT_DIR_PATH}/user_diagrams/generated'
+            diagram_dir = 'user_diagrams/generated'
             os.makedirs(diagram_dir, exist_ok=True)
             diagram_save_path = f'{diagram_dir}/diagram_{idx:06d}.png'
 
             generate_diagram_from_lines(llm_answer_lines, diagram_save_path)
+
+            # save llm answer
+            llm_answer_save_path = f'{diagram_dir}/llm_answer_{idx:06d}.txt'
+
+            f = open(llm_answer_save_path, 'w')
+            f.write(llm_answer)
+            f.close()
 
         except Exception as e:
             print(f'SFT diagram generation failed: {e}')
@@ -77,7 +85,14 @@ def create_diagrams(llm_answers):
 # - prompt (str) : LLM 으로 입력되는 User Prompt (from user_prompt.txt)
 
 def read_prompt():
-    raise NotImplementedError
+    user_prompt_path = 'user_prompt.txt'
+
+    f = open(user_prompt_path, 'r')
+    lines = f.readlines()
+    f.close()
+
+    prompt = ''.join(lines)
+    return prompt
 
 
 # 최종 점수 (= 기본 가독성 점수 + 예상 사용자 평가 점수) 상위 R 개의 다이어그램을 추천 및 user_diagrams/recommended 로 복사
@@ -105,9 +120,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    max_answer_tokens = args.length
-    llm_answer_count = args.count
-    recommend_count = args.recommend
+    max_answer_tokens = int(args.length)
+    llm_answer_count = int(args.count)
+    recommend_count = int(args.recommend)
 
     assert recommend_count <= llm_answer_count, 'MUST BE: recommended diagram count <= llm answer count = diagram count'
 
@@ -121,7 +136,8 @@ if __name__ == '__main__':
     print('loading LLM successful!')
 
     # read prompt
-    prompt = read_prompt()
+    prompt = PROMPT_PREFIX + read_prompt() + PROMPT_SUFFIX
+    print(f'User Prompt:\n{prompt}')
 
     # generate diagrams
     llm_answers = run_llm(llm, tokenizer, prompt, max_answer_tokens, llm_answer_count)
