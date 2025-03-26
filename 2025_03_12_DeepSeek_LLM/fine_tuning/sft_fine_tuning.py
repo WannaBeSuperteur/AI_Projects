@@ -8,7 +8,12 @@ from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from sklearn.model_selection import train_test_split
-from common import compute_output_score, add_text_column_for_llm
+
+try:
+    from common import compute_output_score, add_text_column_for_llm
+except:
+    from fine_tuning.common import compute_output_score, add_text_column_for_llm
+
 from draw_diagram.draw_diagram import generate_diagram_from_lines
 from peft import LoraConfig, get_peft_model
 

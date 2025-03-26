@@ -1,0 +1,1 @@
+DL model with 4 input layer nodes, 6, 10 and 6 nodes in 3 hidden layers, and 1 output element
