@@ -13,7 +13,7 @@ def load_ae_model():
     raise NotImplementedError
 
 
-# knn_user_score/test_diagram_{i}.png 의 테스트 대상 다이어그램 로딩
+# diagrams_for_test/test_diagram_{i}.png 의 테스트 대상 다이어그램 로딩
 # Create Date : 2025.03.26
 # Last Update Date : -
 
