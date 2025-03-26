@@ -1,16 +1,8 @@
+import os
+from ae import load_ae_encoder
 
-# Auto-Encoder 모델 로딩
-# Create Date : 2025.03.26
-# Last Update Date : -
-
-# Arguments:
-# - 없음
-
-# Returns:
-# - ae_encoder (nn.Module) : Auto-Encoder 의 Encoder
-
-def load_ae_model():
-    raise NotImplementedError
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+TEST_DIAGRAM_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/diagrams_for_test'
 
 
 # diagrams_for_test/test_diagram_{i}.png 의 테스트 대상 다이어그램 로딩
@@ -18,13 +10,13 @@ def load_ae_model():
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# - test_diagram_path (str) : test diagram 이 있는 디렉토리 경로 (기본적으로 diagrams_for_test 를 가리킴)
 
 # Returns:
 # - test_diagrams (PyTorch Tensor) : 테스트 대상 다이어그램을 128 x 128 + 어둡게 변환 후 한번에 로딩한 PyTorch Tensor
 #                                    shape : (N, 3, 128, 128)
 
-def load_test_diagrams():
+def load_test_diagrams(diagrams_for_test=TEST_DIAGRAM_PATH):
     raise NotImplementedError
 
 
@@ -83,7 +75,7 @@ def compute_final_score(distance_df):
 if __name__ == '__main__':
 
     # 모델 및 다이어그램 정보 로딩
-    ae_encoder = load_ae_model()
+    ae_encoder = load_ae_encoder()
     test_diagrams = load_test_diagrams()
     scored_diagram_paths = load_user_score_data()
 
