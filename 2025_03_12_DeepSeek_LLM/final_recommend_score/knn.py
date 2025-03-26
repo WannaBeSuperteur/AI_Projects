@@ -96,10 +96,10 @@ def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagr
     scores = [0, 1, 2, 3, 4, 5]
 
     # diagram path & score dict
-    path_and_score_dict = {'path': [], 'score': []}
+    path_and_score_dict = {'img_path': [], 'score': []}
     for score in scores:
         for path in scored_diagram_paths_dict[score]:
-            path_and_score_dict['path'].append(path)
+            path_and_score_dict['img_path'].append(path)
             path_and_score_dict['score'].append(score)
 
     # load scored diagrams as PyTorch tensor
@@ -107,7 +107,7 @@ def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagr
     T = len(test_diagram_paths)
 
     scored_diagrams = torch.zeros((S, 3, IMG_HEIGHT, IMG_WIDTH))
-    scored_diagram_paths = path_and_score_dict['path']
+    scored_diagram_paths = path_and_score_dict['img_path']
 
     for idx, scored_diagram_path in enumerate(scored_diagram_paths):
         img = resize_and_darken_image(scored_diagram_path, dest_width=IMG_WIDTH, dest_height=IMG_HEIGHT)
@@ -149,7 +149,7 @@ def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagr
     distance_arr_df.columns = list(map(lambda x: x.split(f'{PROJECT_DIR_PATH}/')[1], test_diagram_paths))
 
     distance_df = pd.concat([distance_df, distance_arr_df], axis=1)
-    distance_df['path'] = distance_df['path'].apply(lambda x: x.split('knn_user_score/')[1])
+    distance_df['img_path'] = distance_df['img_path'].apply(lambda x: x.split('knn_user_score/')[1])
 
     knn_distance_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/knn_distances.csv'
     distance_df.to_csv(knn_distance_csv_path, index=False)
