@@ -16,7 +16,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from global_common.torch_training import run_train_ae
-from common import resize_and_normalize_img, DiagramImageDataset
+from common import resize_and_normalize_img, DiagramImageDataset, diagram_transform
 
 
 torch.set_printoptions(sci_mode=False)
@@ -195,10 +195,7 @@ class UserScoreAE(nn.Module):
 # - train_loader (DataLoader) : Train 데이터셋을 로딩한 PyTorch DataLoader
 
 def load_dataset(dataset_df):
-    transform = transforms.Compose([transforms.ToPILImage(),
-                                    transforms.ToTensor()])
-
-    train_dataset = DiagramImageDataset(dataset_df, transform=transform)
+    train_dataset = DiagramImageDataset(dataset_df, transform=diagram_transform)
     train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
 
     print(f'size of train loader : {len(train_loader.dataset)}')
@@ -402,7 +399,8 @@ def load_ae_encoder():
 
 # 학습된 Auto-Encoder 모델의 Encoder 를 이용한 이미지 인코딩
 # Create Date : 2025.03.26
-# Last Update Date : -
+# Last Update Date : 2025.03.26
+# - transform 을 common 의 diagram_transform 으로 수정
 
 # Arguments:
 # - ae_encoder  (nn.Module) : Encoder Model
@@ -420,13 +418,10 @@ def test_ae_encoder(ae_encoder, image_paths, report_path):
     latent_vector_dict = {'img_path': image_paths, 'latent_vector': []}
     latent_vector_distance = np.zeros((img_cnt, img_cnt))
 
-    transform = transforms.Compose([transforms.ToPILImage(),
-                                    transforms.ToTensor()])
-
     for img_path in image_paths:
         img_full_path = f'{TRAIN_DATA_DIR_PATH}/{img_path}'
         img_tensor = read_image(img_full_path)
-        img_tensor = transform(img_tensor)
+        img_tensor = diagram_transform(img_tensor)
 
         img_tensor = img_tensor.reshape((1, 3, IMG_HEIGHT, IMG_WIDTH))
         img_tensor = img_tensor[:, :, IMG_HEIGHT // 4 : 3 * IMG_HEIGHT // 4, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]

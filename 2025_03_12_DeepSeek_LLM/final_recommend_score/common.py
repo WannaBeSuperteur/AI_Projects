@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from torchvision.io import read_image
 from torchvision.transforms import v2
@@ -12,6 +13,9 @@ TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 
 IMG_HEIGHT = 128  # img height for train model
 IMG_WIDTH = 128   # img width for train model
+
+diagram_transform = transforms.Compose([transforms.ToPILImage(),
+                                        transforms.ToTensor()])
 
 
 class DiagramImageDataset(Dataset):

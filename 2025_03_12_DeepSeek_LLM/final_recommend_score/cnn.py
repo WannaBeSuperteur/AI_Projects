@@ -19,7 +19,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from global_common.torch_training import run_train, run_validation
-from common import resize_and_normalize_img, DiagramImageDataset, IMG_HEIGHT, IMG_WIDTH
+from common import resize_and_normalize_img, DiagramImageDataset, IMG_HEIGHT, IMG_WIDTH, diagram_transform
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -107,9 +107,9 @@ class BaseScoreCNN(nn.Module):
 
 # 데이터셋 로딩
 # Create Date : 2025.03.23
-# Last Update Date : 2025.03.24
-# - TRAIN_BATCH_SIZE, TEST_BATCH_SIZE 의 pre-defined value 이용
-# - test data loader 에 test image path 의 list 를 별도 추가
+# Last Update Date : 2025.03.26
+# - 테스트 출력 디렉토리 이름에 '_cnn' 추가
+# - transform 을 common 의 diagram_transform 으로 수정
 
 # Arguments:
 # - dataset_df (Pandas DataFrame) : 학습 데이터 정보가 저장된 Pandas DataFrame
@@ -120,10 +120,7 @@ class BaseScoreCNN(nn.Module):
 # - test_loader  (DataLoader) : Test 데이터셋을 로딩한 PyTorch DataLoader
 
 def load_dataset(dataset_df):
-    transform = transforms.Compose([transforms.ToPILImage(),
-                                    transforms.ToTensor()])
-
-    diagram_image_dataset = DiagramImageDataset(dataset_df, transform=transform)
+    diagram_image_dataset = DiagramImageDataset(dataset_df, transform=diagram_transform)
 
     dataset_size = len(diagram_image_dataset)
     train_size = int(0.8 * dataset_size)
@@ -159,9 +156,8 @@ def load_dataset(dataset_df):
 
 # 모델 학습 실시 (K-Fold Cross Validation)
 # Create Date : 2025.03.23
-# Last Update Date : 2025.03.24
-# - try-until-success 시스템 적용 (학습 실패 시 성공할 때까지 재학습)
-# - TRAIN_BATCH_SIZE, VALID_BATCH_SIZE 의 pre-defined value 이용
+# Last Update Date : 2025.03.26
+# - 모델 이름 앞에 'cnn_' 추가
 
 # Arguments:
 # - data_loader (DataLoader) : 데이터셋을 로딩한 PyTorch DataLoader
@@ -351,10 +347,10 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs):
 
 # 모델 불러오기
 # Create Date : 2025.03.24
-# Last Update Date : -
+# Last Update Date : 2025.03.26
 
 # Arguments:
-# - 없음
+# - 모델 이름 앞에 '_cnn' 추가
 
 # Returns:
 # - cnn_models (list(nn.Module)) : load 된 CNN Model 의 리스트 (총 K 개의 모델)
