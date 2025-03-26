@@ -11,6 +11,7 @@ from ae import load_ae_encoder
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TEST_DIAGRAM_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/diagrams_for_test'
+KNN_TRAIN_DATASET_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/knn_user_score'
 
 IMG_HEIGHT = 128
 IMG_WIDTH = 128
@@ -21,21 +22,24 @@ IMG_WIDTH = 128
 # Last Update Date : -
 
 # Arguments:
-# - test_diagram_path (str) : test diagram 이 있는 디렉토리 경로 (기본적으로 diagrams_for_test 를 가리킴)
+# - test_diagram_dir (str) : test diagram 이 있는 디렉토리 경로 (기본적으로 diagrams_for_test 를 가리킴)
 
 # Returns:
-# - test_diagrams (PyTorch Tensor) : 테스트 대상 다이어그램을 128 x 128 + 어둡게 변환 후 한번에 로딩한 PyTorch Tensor
-#                                    shape : (N, 3, 128, 128)
+# - test_diagrams      (PyTorch Tensor) : 테스트 대상 다이어그램을 128 x 128 + 어둡게 변환 후 한번에 로딩한 PyTorch Tensor
+#                                         shape : (N, 3, 128, 128)
+# - test_diagram_paths (list(str))      : test diagram 의 경로 리스트
 
-def load_test_diagrams(test_diagram_path=TEST_DIAGRAM_PATH):
-    diagram_img_names = os.listdir(test_diagram_path)
+def load_test_diagrams(test_diagram_dir=TEST_DIAGRAM_PATH):
+    diagram_img_names = os.listdir(test_diagram_dir)
     diagram_img_names = list(filter(lambda x: x.startswith('test_diagram') and x.endswith('.png'), diagram_img_names))
     N = len(diagram_img_names)
 
     test_diagrams = torch.zeros((N, 3, IMG_HEIGHT, IMG_WIDTH))
+    test_diagram_paths = []
 
     for idx, diagram_img_name in enumerate(diagram_img_names):
-        img_full_path = f'{test_diagram_path}/{diagram_img_name}'
+        img_full_path = f'{test_diagram_dir}/{diagram_img_name}'
+        test_diagram_paths.append(img_full_path)
 
         img = cv2.imread(img_full_path, cv2.IMREAD_COLOR)
         img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)  # resize with ANTI-ALIAS
@@ -45,7 +49,7 @@ def load_test_diagrams(test_diagram_path=TEST_DIAGRAM_PATH):
         img_tensor = transforms.ToTensor()(img) / 255.0
         test_diagrams[idx] = img_tensor.reshape((3, IMG_HEIGHT, IMG_WIDTH))
 
-    return test_diagrams
+    return test_diagrams, test_diagram_paths
 
 
 # knn_user_score/{0,1,2,3,4,5} 안에 있는, 사용자에 의해 점수가 매겨진 다이어그램 로딩
@@ -60,7 +64,19 @@ def load_test_diagrams(test_diagram_path=TEST_DIAGRAM_PATH):
 #                                 {0: list(str), 1: list(str), 2: list(str), 3: list(str), 4: list(str), 5: list(str)}
 
 def load_user_score_data():
-    raise NotImplementedError
+    scored_diagram_paths = {}
+
+    for score in [0, 1, 2, 3, 4, 5]:
+        diagram_dir = f'{KNN_TRAIN_DATASET_PATH}/{score}'
+
+        if os.path.exists(diagram_dir):
+            scored_diagram_paths[score] = list(os.listdir(diagram_dir))
+            scored_diagram_paths[score] = list(filter(lambda x: x.endswith('png'), scored_diagram_paths[score]))
+
+        else:
+            scored_diagram_paths[score] = []
+
+    return scored_diagram_paths
 
 
 # 각 테스트 대상 다이어그램의 latent vector 와 사용자 평가가 이루어진 각 다이어그램의 latent vector 간의 거리 계산
@@ -104,7 +120,7 @@ if __name__ == '__main__':
 
     # 모델 및 다이어그램 정보 로딩
     ae_encoder = load_ae_encoder()
-    test_diagrams = load_test_diagrams()
+    test_diagrams, test_diagram_paths = load_test_diagrams()
     scored_diagram_paths = load_user_score_data()
 
     # 거리 및 예상 사용자 평가 점수 계산
