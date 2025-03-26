@@ -138,6 +138,9 @@
 * LLM Answer 를 통해 생성된 N 개의 다이어그램 중, **총점이 높은 K 개를 최종 추천하여 반환**
 * 총점 기준
   * 기본 가독성 점수 (50%) + 예상 사용자 평가 점수 (50%)
+* 코드
+  * ```final_recommend_score.py```
+  * ```diagrams_for_test``` 디렉토리에 있는 다이어그램 이미지에 대해 최종 점수 산출 및 그 결과를 ```log/final_recommend_result.csv``` 로 저장
 
 ## 4. 참고 : Conv Layer 에 Dropout 적용된 Auto-Encoder 학습이 어려운 이유
 
