@@ -57,10 +57,12 @@ def compute_cnn_score(cnn_models, test_diagrams, test_diagram_paths):
             cnn_score = 5.0 * cnn_output
             scores.append(cnn_score)
 
-        mean_score = np.mean(scores)
-        final_cnn_score_dict['final_score'].append(mean_score)
+        mean_cnn_score = np.mean(scores)
+        final_cnn_score_dict['final_score'].append(mean_cnn_score)
 
     final_cnn_score_df = pd.DataFrame(final_cnn_score_dict)
+    final_cnn_score_df['img_path'] = final_cnn_score_df['img_path'].apply(lambda x: x.split(f'{PROJECT_DIR_PATH}/')[1])
+
     return final_cnn_score_df
 
 
@@ -101,14 +103,27 @@ def compute_ae_encoder_score(ae_encoder, test_diagrams, test_diagram_paths):
 
 # Returns:
 # - final_recommend_score_df (Pandas DataFrame) : 각 테스트 다이어그램에 대한 "최종 점수" = 기본 가독성 + 예상 사용자 평가 계산 결과
-#                                                 - columns = ['img_path', 'final_score']
+#                                                 column: ['img_path', 'cnn_read_score', 'ae_user_score', 'final_score']
 # - save_df = True 이면 final_recommend_score_df 를 log/final_recommend_result.csv 로 저장
 
 def compute_final_recommend_score(cnn_score_df, ae_score_df, save_df=True):
-    print(cnn_score_df)
-    print(ae_score_df)
 
-    raise NotImplementedError
+    final_recommend_score_dict = {
+        'img_path': cnn_score_df['img_path'],
+        'cnn_read_score': cnn_score_df['final_score'],
+        'ae_user_score': ae_score_df['final_score']
+    }
+    final_recommend_score_df = pd.DataFrame(final_recommend_score_dict)
+
+    final_recommend_score_df['final_score'] = final_recommend_score_df.apply(
+        lambda x: x['cnn_read_score'] + x['ae_user_score'],
+        axis=1)
+
+    if save_df:
+        final_recommend_scores_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/final_recommend_result.csv'
+        final_recommend_score_df.to_csv(final_recommend_scores_csv_path, index=False)
+
+    return final_recommend_score_df
 
 
 if __name__ == '__main__':
