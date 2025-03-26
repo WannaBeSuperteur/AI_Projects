@@ -78,7 +78,8 @@ def load_user_score_data():
 
 # 각 테스트 대상 다이어그램의 latent vector 와 사용자 평가가 이루어진 각 다이어그램의 latent vector 간의 거리 계산
 # Create Date : 2025.03.26
-# Last Update Date : -
+# Last Update Date : 2025.03.26
+# - distance_df 를 log/knn_distances.csv 로 저장할지 여부를 인수로 추가
 
 # Arguments:
 # - ae_encoder                (nn.Module)      : Auto-Encoder 의 Encoder
@@ -87,14 +88,15 @@ def load_user_score_data():
 # - test_diagram_paths        (list(str))      : test diagram 의 경로 리스트
 # - scored_diagram_paths_dict (dict)           : 각 점수별 다이어그램 파일 경로의 목록 (총 이미지 S 개)
 #                                                {0: list(str), 1: list(str), 2: list(str), ..., 5: list(str)}
+# - save_df                   (bool)           : distance_df 를 log/knn_distances.csv 로 저장할지 여부
 
 # Returns:
 # - distance_df (Pandas DataFrame) : latent vector 간의 거리 계산 결과
 #                                    - row 는 사용자 평가가 이루어진 각 다이어그램을 나타냄
 #                                    - column 은 이미지 경로 (1개) + 점수 (1개) + 각 테스트 다이어그램 (T개) = 총 2 + T 개
-# - distance_df 를 log/knn_distances.csv 로 저장
+# - save_df = True 이면 distance_df 를 log/knn_distances.csv 로 저장
 
-def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagram_paths_dict):
+def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagram_paths_dict, save_df=True):
     scores = [0, 1, 2, 3, 4, 5]
 
     # diagram path & score dict
@@ -153,27 +155,30 @@ def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagr
     distance_df = pd.concat([distance_df, distance_arr_df], axis=1)
     distance_df['img_path'] = distance_df['img_path'].apply(lambda x: x.split('knn_user_score/')[1])
 
-    knn_distance_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/knn_distances.csv'
-    distance_df.to_csv(knn_distance_csv_path, index=False)
+    if save_df:
+        knn_distance_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/knn_distances.csv'
+        distance_df.to_csv(knn_distance_csv_path, index=False)
 
     return distance_df
 
 
 # 각 다이어그램의 latent vector 간의 거리 정보를 이용하여 각 테스트 다이어그램의 최종 점수 산출
 # Create Date : 2025.03.26
-# Last Update Date : -
+# Last Update Date : 2025.03.26
+# - final_score_df 를 log/knn_final_scores.csv 로 저장할지 여부를 인수로 추가
 
 # Arguments:
 # - distance_df (Pandas DataFrame) : latent vector 간의 거리 계산 결과
 #                                    - row 는 사용자 평가가 이루어진 각 다이어그램을 나타냄
 #                                    - column 은 이미지 경로 (1개) + 점수 (1개) + 각 테스트 다이어그램 (T개) = 총 2 + T 개
+# - save_df     (bool)             : final_score_df 를 log/knn_final_scores.csv 로 저장할지 여부
 
 # Returns:
 # - final_score_df (Pandas DataFrame) : 각 테스트 다이어그램에 대한 최종 점수 (예상 사용자 평가 점수) 계산 결과
 #                                       - columns = ['img_path', 'final_score']
-# - final_score_df 를 log/knn_final_scores.csv 로 저장
+# - save_df = True 이면 final_score_df 를 log/knn_final_scores.csv 로 저장
 
-def compute_final_score(distance_df):
+def compute_final_score(distance_df, save_df=True):
     test_img_paths = distance_df.columns[2:]
     final_score_dict = {'img_path': test_img_paths, 'final_score': []}
     scores = distance_df['score']
@@ -194,8 +199,9 @@ def compute_final_score(distance_df):
 
     final_score_df = pd.DataFrame(final_score_dict)
 
-    knn_final_scores_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/knn_final_scores.csv'
-    final_score_df.to_csv(knn_final_scores_csv_path, index=False)
+    if save_df:
+        knn_final_scores_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/knn_final_scores.csv'
+        final_score_df.to_csv(knn_final_scores_csv_path, index=False)
 
     return final_score_df
 
