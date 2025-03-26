@@ -142,13 +142,14 @@ def compute_distance(ae_encoder, test_diagrams, test_diagram_paths, scored_diagr
             distance = np.sum(np.square(latent_vector_scored - latent_vector_test))
             distance_arr[s][t] = distance
 
-    # return distance DataFrame
+    # create and return distance DataFrame
     distance_df = pd.DataFrame(path_and_score_dict)
     distance_arr = np.round(distance_arr, 4)
     distance_arr_df = pd.DataFrame(distance_arr)
-    distance_arr_df.columns = test_diagram_paths
+    distance_arr_df.columns = list(map(lambda x: x.split(f'{PROJECT_DIR_PATH}/')[1], test_diagram_paths))
 
     distance_df = pd.concat([distance_df, distance_arr_df], axis=1)
+    distance_df['path'] = distance_df['path'].apply(lambda x: x.split('knn_user_score/')[1])
 
     knn_distance_csv_path = f'{PROJECT_DIR_PATH}/final_recommend_score/log/knn_distances.csv'
     distance_df.to_csv(knn_distance_csv_path, index=False)
