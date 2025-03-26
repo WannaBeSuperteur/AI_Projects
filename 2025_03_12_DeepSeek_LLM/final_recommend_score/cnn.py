@@ -19,15 +19,13 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from global_common.torch_training import run_train, run_validation
-from common import resize_and_normalize_img, DiagramImageDataset
+from common import resize_and_normalize_img, DiagramImageDataset, IMG_HEIGHT, IMG_WIDTH
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/final_recommend_score/training_data'
 K_FOLDS = 5
 EARLY_STOPPING_ROUNDS = 10
-IMG_HEIGHT = 128
-IMG_WIDTH = 128
 
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
@@ -470,8 +468,8 @@ if __name__ == '__main__':
     img_paths = dataset_df['img_path'].tolist()
     resize_and_normalize_img(img_paths,
                              train_data_dir_path=TRAIN_DATA_DIR_PATH,
-                             img_width=IMG_WIDTH,
-                             img_height=IMG_HEIGHT)
+                             dest_width=IMG_WIDTH,
+                             dest_height=IMG_HEIGHT)
 
     # load dataset
     dataset_df = dataset_df.sample(frac=1, random_state=20250324)  # shuffle image sample order
