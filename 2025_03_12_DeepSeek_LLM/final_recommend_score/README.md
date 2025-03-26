@@ -2,10 +2,12 @@
 ## 목차
 
 * [1. 개요](#1-개요)
+  * [1-1. 파일 및 코드 설명](#1-1-파일-및-코드-설명) 
 * [2. 점수 산출 알고리즘](#2-점수-산출-알고리즘)
   * [2-1. 기본 가독성 점수 (CNN)](#2-1-기본-가독성-점수-cnn)
   * [2-2. 예상 사용자 평가 점수 (Auto-Encoder)](#2-2-예상-사용자-평가-점수-auto-encoder)
 * [3. 최종 평가](#3-최종-평가)
+* [4. 참고 : Conv Layer 에 Dropout 적용된 Auto-Encoder 학습이 어려운 이유](#4-참고--conv-layer-에-dropout-적용된-auto-encoder-학습이-어려운-이유)
 
 ## 1. 개요
 
@@ -44,9 +46,11 @@
 
 * 학습 코드
   * ```cnn.py```
+* 모델 파일 코드
+  * ```models/model_{k}.pt```, ```k``` = {0, 1, 2, 3, 4} 
 * 모델 학습 시 [K-fold Validation](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%B0%A9%EB%B2%95%EB%A1%A0_Cross_Validation.md#3-k-fold-cross-validation) 이용
-  * 이미지 데이터 수 자체가 900개로 부족
-  * 품질이 비교적 떨어지는 데이터가 900개 중 약 200개로 [데이터 불균형](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EB%B6%88%EA%B7%A0%ED%98%95.md) 이 있음 
+  * 이미지 데이터 수 자체가 900 개로 부족
+  * 품질이 비교적 떨어지는 데이터가 900 개 중 약 200개로 [데이터 불균형](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EB%B6%88%EA%B7%A0%ED%98%95.md) 이 있음 
 * Loss Function 은 [Binary Cross-Entropy](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-4-binary-cross-entropy-loss) 이용
   * 0 ~ 5 의 점수를 CNN 에 입력시킬 때는 5 로 나누어서 0 ~ 1 로 변환
   * [본 문제에서 MSE, MAE 등 Regression 용 Loss 를 적용하는 것은 논리적으로 부적절하다.](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_Function_Misuse.md#1-1-probability-prediction-0--1-%EB%B2%94%EC%9C%84-%EB%8B%A8%EC%9D%BC-output-%EC%97%90%EC%84%9C-mse-loss-%EB%93%B1%EC%9D%B4-%EB%B6%80%EC%A0%81%EC%A0%88%ED%95%9C-%EC%9D%B4%EC%9C%A0)
@@ -54,20 +58,28 @@
   * [Ensemble](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_Ensemble.md) 방법 중 [Soft Voting](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_Ensemble.md#2-1-voting) 의 아이디어 
   * 최종 예측값은 K-fold Validation 으로 생성된 K 개의 모델의 예측값의 평균
 
-**2. 모델 구조**
+**2. CNN 모델 구조**
 
 * TBU
 
 **3. 학습 데이터**
 
 * 학습 데이터 정보
-  * 총 900 개의 Diagram 및 그 평가 점수 (0~5)
+  * 총 1,100 개의 Diagram 및 그 평가 점수 (0~5)
   * 90도/180도/270도 회전 및 상하 flip [Augmentation](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_Image_Augmentation.md) 적용하여, 원본의 8 배 분량으로 이미지 데이터셋 증대
   * ```scores.csv```
 * 학습 데이터 상세
   * ```training_data/base``` : [SFT Fine-tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) 을 위해 생성한 700 개의 Diagram
-  * ```training_data/sft_generated_orpo_dataset``` : [ORPO Fine-tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_DPO_ORPO.md#3-orpo-odds-ratio-preference-optimization) 을 위해 생성한 200 개의 Diagram
-    * ORPO 를 위한 rejected LLM answer 는 SFT Fine-tuning 된 LLM 을 이용하여 생성
+  * ```training_data/sft_generated_orpo_dataset``` : SFT Fine-Tuning 된 모델의 answer 에 의해 생성된 400 개의 Diagram
+    * [ORPO Fine-tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_DPO_ORPO.md#3-orpo-odds-ratio-preference-optimization) 을 위해 생성한 200 개의 Diagram
+      * ORPO 를 위한 rejected LLM answer 는 SFT Fine-tuning 된 LLM 을 이용하여 생성
+      * LLM answer token 최대 1,280 개
+    * [데이터 불균형](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EB%B6%88%EA%B7%A0%ED%98%95.md) 해결을 위해 추가 생성한 200 개의 Diagram
+      * LLM answer token 최대 800 개
+
+**4. 성능 평가 결과**
+
+* TBU
 
 ### 2-2. 예상 사용자 평가 점수 (Auto-Encoder)
 
@@ -79,22 +91,40 @@
 
 ![image](../../images/250312_16.PNG)
 
-**2. Auto-Encoder 모델 구조**
+**2. Auto-Encoder 모델 기본 사항**
+
+* 학습 코드
+  * ```ae.py```
+* 모델 파일 코드
+  * ```models/ae_model.pt``` (전체 모델)
+  * ```models/ae_encoder.pt``` (Encoder 모델)
+  * ```models/ae_decoder.pt``` (Decoder 모델)
+* Loss Function
+  * [MSE (Mean-Squared Error)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-1-mean-squared-error-mse) 를 이용
+
+**3. Auto-Encoder 모델 구조**
 
 TBU
 
-**3. Auto-Encoder 학습 데이터**
+**4. Auto-Encoder 학습 데이터**
 
-* Auto-Encoder 학습 데이터 정보
-  * 총 700 개의 Diagram 및 그 평가 점수 (0~5)
-    * 위 **2-1.** 의 데이터 중 SFT Fine-tuning 을 위해 생성한 것만을 이용
-  * 90도/180도/270도 회전 [Augmentation](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_Image_Augmentation.md) 적용하여 원본의 4배 분량으로 이미지 데이터셋 증대
-  * ```scores.csv``` 를 읽어서, ```img_path``` column 값을 이용하여 별도 추출
-* Auto-Encoder 학습 데이터 상세
-  * ```training_data/base``` : SFT Fine-tuning 을 위해 생성한 700 개의 Diagram 
+* [CNN 모델 학습 데이터](#2-1-기본-가독성-점수-cnn) 와 동일 (총 1,100 장)
+* 단, 비지도학습이므로 **모든 데이터를 학습 데이터로 사용**
+
+**5. Auto-Encoder 성능 평가 결과**
+
+* TBU
 
 ## 3. 최종 평가
 
 * LLM Answer 를 통해 생성된 N 개의 다이어그램 중, **총점이 높은 K 개를 최종 추천하여 반환**
 * 총점 기준
   * 기본 가독성 점수 (50%) + 예상 사용자 평가 점수 (50%)
+
+## 4. 참고 : Conv Layer 에 Dropout 적용된 Auto-Encoder 학습이 어려운 이유
+
+* Conv. Layer 의 Dropout 은 그 자체로 성능 저하 가능
+  * 특히, **첫번째 Conv. Layer 를 Dropout 함으로써 low-level feature 의 추출에 지장** 을 주고, 이는 이후 레이어에서의 복잡한 패턴 학습에 지장을 줄 수 있다.
+  * [참고 : Dropout 실험 결과](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Overfitting_Dropout.md#4-2-%EC%8B%A4%ED%97%98-%EA%B2%B0%EA%B3%BC)
+* CNN 의 각 Layer 의 Filter 를 **일정 확률로 off 시키는 역할**
+  * 이로 인해 각 Filter 에 저장된 이미지의 low-level feature 가 **그 일부분만 다음 레이어로 전달** 되는 효과 발생 

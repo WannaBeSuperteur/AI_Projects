@@ -21,6 +21,7 @@
   * [5-7. ORPO 학습 중 경고 메시지 및 오류 (해결 완료)](#5-7-orpo-학습-중-경고-메시지-및-오류-해결-완료)
   * [5-8. **ORPO 학습 시 CUDA Out of memory (해결 실패)**](#5-8-orpo-학습-시-cuda-out-of-memory-해결-실패)
   * [5-9. CNN 학습이 실질적으로 안 됨 (해결 완료)](#5-9-cnn-학습이-실질적으로-안-됨-해결-완료)
+  * [5-10. Auto-Encoder 학습이 실질적으로 안 됨 (해결 완료)](#5-10-auto-encoder-학습이-실질적으로-안-됨-해결-완료)
 
 ## 1. 프로젝트 개요
 
@@ -141,17 +142,18 @@ It is important to draw a representation of high readability.
 
 **이슈 요약**
 
-| 이슈                                                                                                                                                    | 날짜         | 심각성    | 상태        | 원인 (및 해결 방법)                                              | 시도했으나 실패한 해결 방법                                                                                                                               |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------|-----------|-----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| ```flash_attn``` 사용 불가                                                                                                                                | 2025.03.14 | 낮음     | 보류        | ```nvcc -V``` 기준의 CUDA 버전 이슈                              | - Windows 환경 변수 편집 **(실패)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(해결 안됨)**                                      |
-| LLM 출력이 매번 동일함                                                                                                                                        | 2025.03.15 | 보통     | 해결 완료     | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락                   | - ```torch.manual_seed()``` 설정 **(실패)**                                                                                                       |
-| 다이어그램 이미지가 overwrite 됨                                                                                                                                | 2025.03.18 | 보통     | 해결 완료     | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**                          | - 일정 시간 간격으로 다이어그램 생성 **(실패)**<br>- ```canvas.copy()``` 이용 **(실패)**<br>- garbage collection 이용 **(실패)**                                       |
-| ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류)                                                                                                       | 2025.03.20 | **심각** | 해결 완료     | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임             | - batch size 설정                                                                                                                               |
-| SFT 중 CUDA error: unknown error                                                                                                                       | 2025.03.20 | **심각** | 해결 완료     | 큰 batch size 에 따른 Out-of-memory                           | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**                                                 |           |
-| Fine-Tuning 된 모델 추론 속도 저하                                                                                                                             | 2025.03.22 | 보통     | 보류        | 환경 제약 & task 특성 (추정)                                      | - Auto-GPTQ 사용 **(해결 안됨)**<br>- 추가 라이브러리 사용 **(실패)**<br>- LLM 관련 설정값 변경 **(해결 안됨)**                                                           |
-| ORPO 학습 중 경고 및 오류<br>- ```Trainer.tokenizer is now deprecated.``` 경고 메시지<br>- ```AttributeError: 'generator' object has no attribute 'generate'``` 오류 | 2025.03.23 | **심각** | 해결 완료     | transformers, trl 라이브러리 호환 안됨 → transformers 라이브러리 다운그레이드 | - trl 라이브러리 업그레이드 **(실패)**                                                                                                                    |
-| ORPO 학습 시 Out of memory                                                                                                                               | 2025.03.23 | **심각** | **해결 실패** | CUDA Out of memory                                        | - ```prepare_model_for_kbit_training``` 을 이용한 양자화 시도 **(해결 안됨)**<br> - 8bit의 메모리 효율적인 AdamW Optimizer 사용 **(해결 안됨)**<br>- Unsloth 설치 **(실패)** |
-| CNN 학습이 실질적으로 안 됨                                                                                                                                     | 2025.03.23 | 보통     | 해결 완료     | 이미지 가장자리 부분에 대한 중요하지 않은 정보가 오히려 학습을 방해 (추정)               | - 활성화 함수 수정 **(해결 안됨)**<br>- 이미지 크기 확대 **(해결 안됨)**<br>- 이미지 색상 변환 (전처리) **(해결 안됨)**                                                           |
+| 이슈 분류        | 이슈                                                                                                                                                    | 날짜         | 심각성    | 상태        | 원인 (및 해결 방법)                                              | 시도했으나 실패한 해결 방법                                                                                                                                                                                                                                                           |
+|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------|-----------|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| LLM          | ```flash_attn``` 사용 불가                                                                                                                                | 2025.03.14 | 낮음     | 보류        | ```nvcc -V``` 기준의 CUDA 버전 이슈                              | - Windows 환경 변수 편집 **(해결 안됨)**<br>- flash_attn 라이브러리의 이전 버전 설치 **(실패)**<br>- Visual C++ 14.0 설치 **(실패)**                                                                                                                                                                  |
+| LLM          | LLM 출력이 매번 동일함                                                                                                                                        | 2025.03.15 | 보통     | 해결 완료     | ```llm.generate()``` 함수의 랜덤 생성 인수 설정 누락                   | - ```torch.manual_seed()``` 설정 **(해결 안됨)**                                                                                                                                                                                                                                |
+| 구현           | 다이어그램 이미지가 overwrite 됨                                                                                                                                | 2025.03.18 | 보통     | 해결 완료     | 텍스트 파싱 및 도형 그리기 알고리즘의 **구현상 이슈**                          | - 일정 시간 간격으로 다이어그램 생성 **(해결 안됨)**<br>- ```canvas.copy()``` 이용 **(해결 안됨)**<br>- garbage collection 이용 **(해결 안됨)**                                                                                                                                                          |
+| LLM - SFT    | ```CUBLAS_STATUS_NOT_SUPPORTED``` (SFT 학습 중 오류)                                                                                                       | 2025.03.20 | **심각** | 해결 완료     | pre-trained LLM 을 가져올 때 자료형이 ```bfloat16``` 임             | - batch size 설정                                                                                                                                                                                                                                                           |
+| LLM - SFT    | SFT 중 CUDA error: unknown error                                                                                                                       | 2025.03.20 | **심각** | 해결 완료     | 큰 batch size 에 따른 Out-of-memory                           | - ```CUDA_LAUNCH_BLOCKING=1``` 설정 **(해결 안됨)**<br> - ```TORCH_USE_CUDA_DSA=1``` 설정 **(해결 안됨)**                                                                                                                                                                             |           |
+| LLM          | Fine-Tuning 된 모델 추론 속도 저하                                                                                                                             | 2025.03.22 | 보통     | 보류        | 환경 제약 & task 특성 (추정)                                      | - Auto-GPTQ 사용 **(해결 안됨)**<br>- 추가 라이브러리 사용 **(실패)**<br>- LLM 관련 설정값 변경 **(해결 안됨)**                                                                                                                                                                                       |
+| LLM - ORPO   | ORPO 학습 중 경고 및 오류<br>- ```Trainer.tokenizer is now deprecated.``` 경고 메시지<br>- ```AttributeError: 'generator' object has no attribute 'generate'``` 오류 | 2025.03.23 | **심각** | 해결 완료     | transformers, trl 라이브러리 호환 안됨 → transformers 라이브러리 다운그레이드 | - trl 라이브러리 업그레이드 **(실패)**                                                                                                                                                                                                                                                |
+| LLM - ORPO   | ORPO 학습 시 Out of memory                                                                                                                               | 2025.03.23 | **심각** | **해결 실패** | CUDA Out of memory                                        | - ```prepare_model_for_kbit_training``` 을 이용한 양자화 시도 **(해결 안됨)**<br> - 8bit의 메모리 효율적인 AdamW Optimizer 사용 **(해결 안됨)**<br>- Unsloth 설치 **(실패)**                                                                                                                             |
+| CNN          | CNN 학습이 실질적으로 안 됨                                                                                                                                     | 2025.03.23 | 보통     | 해결 완료     | 이미지 가장자리 부분에 대한 중요하지 않은 정보가 오히려 학습을 방해 (추정)               | - 활성화 함수 수정 **(해결 안됨)**<br>- 이미지 크기 확대 **(해결 안됨)**<br>- 이미지 색상 변환 (전처리) **(해결 안됨)**                                                                                                                                                                                       |
+| Auto-Encoder | Auto-Encoder 학습이 실질적으로 안 됨                                                                                                                            | 2025.03.25 | 보통     | 해결 완료     | 데이터셋 특성으로 추정하나, 명확하지 않음                                   | - Fully-Connected Layer 의 [Dropout](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Overfitting_Dropout.md#3-dropout) 제거 **(해결 안됨)**<br>- Conv, DeConv 레이어 4개 → 3개 **(해결 안됨)** |
 
 ### 5-1. ```flash_attn``` 실행 불가 (해결 보류)
 
@@ -544,3 +546,34 @@ AttributeError: 'generator' object has no attribute 'generate'
 * **추가 아이디어**
   * Pre-train 된 ResNet 등을 이용하여 [Transfer Learning (전이학습)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Transfer_Learning.md) 을 할까도 생각해 봄
   * 모델 복잡도 및 필요 이상의 자원 소비가 우려되어, 일단 보류
+
+### 5-10. Auto-Encoder 학습이 실질적으로 안 됨 (해결 완료)
+
+**문제 상황 요약**
+
+* 예상 사용자 평가 점수 계산을 위한 CNN 의 학습이 전혀 이루어지지 않음
+  * latent vector 를 출력한 결과, 값이 모두 동일하게 나옴
+
+**해결 시도 방법**
+
+* **문제 해결 부분적 성공 시까지 시도한 부분**
+  * Fully-Connected Layer 의 [Dropout](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Overfitting_Dropout.md#3-dropout) 제거
+    * 기본 아이디어 : [Conv Layer 에 Dropout 을 적용하면 Auto-Encoder 학습이 어려워질 수 있는데](final_recommend_score/README.md#4-참고--conv-layer-에-dropout-적용된-auto-encoder-학습이-어려운-이유), Fully-Connected 도 마찬가지일 수 있다 
+    * 결과 : **해결 안됨**
+  * Encoder 의 Conv. Layer 와 Decoder 의 DeConv. Layer 를 4 → 3 개로 조정
+    * 결과 : **해결 안됨**
+  * Encoder 입력 ~ Latent Vector 사이에, **기존 Conv. Layer 를 거치는 흐름 외에 Dense Layer 1개를 거치는 흐름을 추가**
+    * Encoder 의 Conv. Layer 가 끝나고 Fully-Connected Layer 가 시작되는 시점에서, **이 2개의 흐름에 의해 생성된 feature 를 concatenate**
+    * 결과
+      * **문제 해결 부분적 성공 (약 40% 확률로 학습이 잘 이루어짐)** 🎉
+      * **Minimum Train Loss = 약 1.7K** (학습 안될 때) **→ 632.68**
+
+* **부분적 해결 성공 이후, 추가적으로 시도한 부분**
+  * Learning Rate Scheduler 조정 (warm-up 추가)
+    * ✅ **적용됨**
+    * before : warm-up 없는 [Cosine-Annealing LR Scheduler](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Learning_Rate_Scheduler.md#2-6-cosine-annealing-scheduler)
+    * after : 5 epoch 의 warm-up + 이후에 learning rate 가 매 epoch 마다 1.0% or 1.5% 씩 지수적으로 감소
+    * 결과 (133 epoch 동안 학습 시 기준)
+      * **학습 성공률 향상 (약 40% → 약 80% 추정)** 🎉
+      * L.R. **1.0%** 씩 감소 시 : **Minimum Train Loss = 632.68 → 433.28 (🔻 31.5 %)** 🎉
+      * L.R. **1.5%** 씩 감소 시 : **Minimum Train Loss = 632.68 → 425.79 (🔻 32.7 %)** 🎉

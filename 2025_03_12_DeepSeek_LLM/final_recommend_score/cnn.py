@@ -2,9 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
-from torch.utils.data import DataLoader, Dataset, Subset
-from torchvision.io import read_image
-from torchvision.transforms import v2
+from torch.utils.data import DataLoader, Subset
 from torchvision.utils import save_image
 from torchinfo import summary
 
@@ -12,7 +10,6 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 import pandas as pd
-import cv2
 import numpy as np
 
 import math
@@ -22,6 +19,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 from global_common.torch_training import run_train, run_validation
+from common import resize_and_normalize_img, DiagramImageDataset
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -48,11 +46,6 @@ class BaseScoreCNN(nn.Module):
         )
         self.conv2 = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.05)
-        )
-        self.conv1_center = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
@@ -114,44 +107,6 @@ class BaseScoreCNN(nn.Module):
         return x
 
 
-class DiagramImageDataset(Dataset):
-    def __init__(self, dataset_df, transform):
-        self.img_paths = dataset_df['img_path'].tolist()
-        self.scores = dataset_df['score'].tolist()
-        self.transform = transform
-
-    def __len__(self):
-        return 8 * len(self.img_paths)
-
-    def __getitem__(self, idx):
-        true_idx = idx // (4 * 2)
-        rotate_angle = idx % 4        # 0 (원본), 1 (반시계 90도), 2 (180도), 3 (시계 90도) 회전
-        flip_option = (idx // 4) % 2  # 0 (no flip), 1 (vertical flip)
-
-        img_path = f'{TRAIN_DATA_DIR_PATH}/{self.img_paths[true_idx]}'
-        image = read_image(img_path)
-
-        # resize and normalize
-        image = self.transform(image)
-        score = self.scores[true_idx] / 5.0
-
-        # rotate
-        if rotate_angle == 1:
-            image = v2.functional.rotate(image, 90)
-
-        elif rotate_angle == 2:
-            image = v2.functional.rotate(image, 180)
-
-        elif rotate_angle == 3:
-            image = v2.functional.rotate(image, 270)
-
-        # flip
-        if flip_option == 1:
-            image = v2.functional.vertical_flip(image)
-
-        return image, score
-
-
 # 데이터셋 로딩
 # Create Date : 2025.03.23
 # Last Update Date : 2025.03.24
@@ -164,7 +119,7 @@ class DiagramImageDataset(Dataset):
 
 # Returns:
 # - train_loader (DataLoader) : Train 데이터셋을 로딩한 PyTorch DataLoader
-# - train_loader (DataLoader) : Test 데이터셋을 로딩한 PyTorch DataLoader
+# - test_loader  (DataLoader) : Test 데이터셋을 로딩한 PyTorch DataLoader
 
 def load_dataset(dataset_df):
     transform = transforms.Compose([transforms.ToPILImage(),
@@ -513,22 +468,10 @@ if __name__ == '__main__':
 
     # resize images to (128, 128)
     img_paths = dataset_df['img_path'].tolist()
-
-    for idx, img_path in enumerate(img_paths):
-        if idx % 100 == 0:
-            print(f'resizing diagram image progress : {idx}')
-
-        img_full_path = f'{TRAIN_DATA_DIR_PATH}/{img_path}'
-        img = cv2.imread(img_full_path, cv2.IMREAD_COLOR)
-
-        # already resized
-        if np.shape(img) == (IMG_WIDTH, IMG_HEIGHT, 3):
-            continue
-
-        img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)  # resize with ANTI-ALIAS
-        img = 5.0 * img - 4.0 * 255.0
-        img = np.clip(img, 0.0, 255.0)
-        cv2.imwrite(img_full_path, img)
+    resize_and_normalize_img(img_paths,
+                             train_data_dir_path=TRAIN_DATA_DIR_PATH,
+                             img_width=IMG_WIDTH,
+                             img_height=IMG_HEIGHT)
 
     # load dataset
     dataset_df = dataset_df.sample(frac=1, random_state=20250324)  # shuffle image sample order
