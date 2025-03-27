@@ -212,7 +212,7 @@ HuggingFace 에서 아래와 같이 모델을 다운로드합니다.
 
 ### 2-3. 모델 준비
 
-[다운로드 받은 모델들](#2-2-모델-다운로드) 을 다음과 같은 경로에 각각 배치합니다.
+[다운로드 받은 모델들](#2-2-모델-다운로드) 을 다음과 같은 경로에 각각 배치합니다. **(없는 폴더는 새로 생성합니다.)**
 
 * ```sft_model``` 에 다음과 같이 LLM 관련 파일들을 배치합니다.
 
@@ -266,9 +266,15 @@ HuggingFace 에서 아래와 같이 모델을 다운로드합니다.
   * ```NN model consist of 32 * 32 input, 3 * 3 conv layer, and then conv layer (output is 28 x 28), and then 2 * 2 pooling layer, 3 x 3 convolutional layer, then 2x2 pooling layer, 256, 64 and 16 nodes in each of the 3 hidden layers, and 1 output layer nodes```
   * ```Langchain process that consists of first, outputs pytorch tensor and process it with function, and code file that process numeric values, and outputs database```
 
+또한, 본 디렉토리의 하위 디렉토리인 ```user_diagrams/generated```, ```user_diagrams/recommend``` 디렉토리를 비우는 것이 좋습니다.
+
+* **해당 디렉토리 자체를 삭제하지 말고, 파일들 (png, txt 등) 만 삭제** 합니다.
+* 해당 디렉토리에는 기본적으로 예시 생성 및 추천된 다이어그램 및 LLM 의 답변 내용이 들어가 있습니다.
+* 따라서, 기존 다이어그램 외에 **사용자 실행으로 신규 생성된 다이어그램과 섞이지 않게 하려면** 삭제하는 것이 좋습니다.
+
 ### 2-5. run.py 실행
 
-이제 모든 준비가 끝났습니다. 프로젝트 메인 디렉토리인 ```2025_03_12_DeepSeek_LLM``` 디렉토리에서 ```run.py``` 파일을 실행합니다.
+이제 모든 준비가 끝났습니다. **프로젝트 메인 디렉토리인 ```2025_03_12_DeepSeek_LLM``` 디렉토리에서** ```run.py``` 파일을 실행합니다.
 
 * 실행 방법
   * ```python run.py -length 1280 -count 5 -recommend 3```

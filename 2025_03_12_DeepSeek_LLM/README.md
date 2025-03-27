@@ -108,6 +108,7 @@
 | 기본 가독성 + 예상 사용자 평가 점수 처리 알고리즘 개발             | 03.26 수 (1d)           | [```P001-011-Score```](https://github.com/WannaBeSuperteur/AI_Projects/tree/P001-011-Score/2025_03_12_DeepSeek_LLM)                     | ✅  |
 | 전체 기능 실행 코드 개발 (사용자 실행용)                     | 03.26 수 (1d)           | [```P001-012-ForUser```](https://github.com/WannaBeSuperteur/AI_Projects/tree/P001-012-ForUser/2025_03_12_DeepSeek_LLM)                 | ✅  |
 | 프로젝트 상세 설명 정리 및 링크 추가                        | 03.26 수 - 03.27 목 (2d) |                                                                                                                                         | 💨 |
+| 프로젝트 최종 테스트 (QA)                             | 03.27 목 (1d)           |                                                                                                                                         | ✅  |
 
 ## 4. 프로젝트 상세 설명
 
@@ -130,6 +131,13 @@ At this time, the color is represented in the format of tuple (R, G, B), between
 X position range is 0-1000 and Y position range is 0-600.
 
 It is important to draw a representation of high readability.
+```
+
+위 프롬프트에서 **5개 문단 중 2번째 문단인 다음 부분이 실제 User Prompt** 이고, 나머지는 Prompt Engineering 을 위해 추가된 Prefix / Suffix 이다.
+
+```
+A deep learning model with 2 input nodes, 4 and 6 nodes in each of the 2 hidden layers,
+and 1 node in the output layer in the following format.
 ```
 
 ### 4-2. LLM Fine-Tuning
