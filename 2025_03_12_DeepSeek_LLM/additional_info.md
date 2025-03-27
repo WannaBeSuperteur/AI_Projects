@@ -7,7 +7,7 @@
   * [2-1. Python 환경 설정](#2-1-python-환경-설정) 
   * [2-2. 모델 다운로드](#2-2-모델-다운로드)
   * [2-3. 모델 준비](#2-3-모델-준비)
-  * [2-4. 데이터 준비](#2-4-데이터-준비)
+  * [2-4. 데이터 및 프롬프트 준비](#2-4-데이터-및-프롬프트-준비)
   * [2-5. run.py 실행](#2-5-runpy-실행)
 
 ## 1. 시스템 환경
@@ -244,7 +244,7 @@ HuggingFace 에서 아래와 같이 모델을 다운로드합니다.
      - cnn_model_4.pt
 ```
 
-### 2-4. 데이터 준비
+### 2-4. 데이터 및 프롬프트 준비
 
 다음과 같이 데이터를 준비합니다.
 
@@ -257,6 +257,14 @@ HuggingFace 에서 아래와 같이 모델을 다운로드합니다.
   * 아래 그림에서 **(A)** 와 같은 이미지 배치는 **(B)** 와 같은 점수 배정을 나타냅니다.
 
 ![image](../images/250312_21.PNG)
+
+다음과 같이 사용자 프롬프트를 준비합니다.
+
+* ```user_prompt.txt``` 에 영어로 프롬프트 입력
+* 프롬프트 예시
+  * ```DL model consist of 6 input size, 3, 4 nodes in intermediate layers, and 2 output elements```
+  * ```NN model consist of 32 * 32 input, 3 * 3 conv layer, and then conv layer (output is 28 x 28), and then 2 * 2 pooling layer, 3 x 3 convolutional layer, then 2x2 pooling layer, 256, 64 and 16 nodes in each of the 3 hidden layers, and 1 output layer nodes```
+  * ```Langchain process that consists of first, outputs pytorch tensor and process it with function, and code file that process numeric values, and outputs database```
 
 ### 2-5. run.py 실행
 
