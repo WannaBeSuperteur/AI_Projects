@@ -4,7 +4,7 @@
   * [1-1. 프로젝트 진행 배경](#1-1-프로젝트-진행-배경)
 * [2. 기술 분야 및 사용 기술](#2-기술-분야-및-사용-기술)
   * [2-1. 관련 논문](#2-1-관련-논문)
-  * [2-2. 사용한 Python 라이브러리](#2-2-사용한-python-라이브러리)
+  * [2-2. 사용한 Python 라이브러리 및 시스템 환경](#2-2-사용한-python-라이브러리-및-시스템-환경)
 * [3. 프로젝트 일정](#3-프로젝트-일정)
 * [4. 프로젝트 상세 설명](#4-프로젝트-상세-설명)
   * [4-1. 도식 생성을 위한 LLM 프롬프트](#4-1-도식-생성을-위한-llm-프롬프트)
@@ -22,6 +22,7 @@
   * [5-8. **ORPO 학습 시 CUDA Out of memory (해결 실패)**](#5-8-orpo-학습-시-cuda-out-of-memory-해결-실패)
   * [5-9. CNN 학습이 실질적으로 안 됨 (해결 완료)](#5-9-cnn-학습이-실질적으로-안-됨-해결-완료)
   * [5-10. Auto-Encoder 학습이 실질적으로 안 됨 (해결 완료)](#5-10-auto-encoder-학습이-실질적으로-안-됨-해결-완료)
+* [6. 사용자 가이드](#6-사용자-가이드)
 
 ## 1. 프로젝트 개요
 
@@ -60,12 +61,12 @@
   * Computer Vision
 * 사용 기술
 
-| 사용 기술                                                                                                                                         | 설명                                                                                         |
-|-----------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| [DPO 또는 ORPO](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_DPO_ORPO.md) | 사용자 선호도가 높은 Diagram 을 생성할 확률을 높이기 위한 LLM Fine-tuning 방법                                    |
-| CNN (Conv. NN)                                                                                                                                | 생성된 다이어그램의 기본 가독성 점수 산출                                                                    |
-| Auto-Encoder                                                                                                                                  | 생성된 이미지의 저차원 벡터화를 통해, k-NN 을 통한 사용자 평가 예상 점수 계산 시 **이웃한 이미지와의 거리 계산이 정확해지고, 연산량이 감소하는** 효과 |
-| k-NN                                                                                                                                          | 각 사용자별 생성한 Diagram 에 대한 평가 데이터에 기반한, **해당 사용자에 대한 맞춤형** 사용자 평가 예상 점수 계산 알고리즘               |
+| 사용 기술                                                                                                                                                     | 설명                                                                                         |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) | Diagram 형식에 맞는 프롬프트를 생성하도록 하는 강력한 LLM Fine-tuning 방법                                       |
+| CNN (Conv. NN)                                                                                                                                            | 생성된 다이어그램의 기본 가독성 점수 산출                                                                    |
+| Auto-Encoder                                                                                                                                              | 생성된 이미지의 저차원 벡터화를 통해, k-NN 을 통한 사용자 평가 예상 점수 계산 시 **이웃한 이미지와의 거리 계산이 정확해지고, 연산량이 감소하는** 효과 |
+| k-NN                                                                                                                                                      | 각 사용자별 생성한 Diagram 에 대한 평가 데이터에 기반한, **해당 사용자에 대한 맞춤형** 사용자 평가 예상 점수 계산 알고리즘               |
 
 ### 2-1. 관련 논문
 
@@ -75,13 +76,14 @@
 * [(논문 스터디 자료) DeepSeek LLM Scaling Open-Source Language Models with Longtermism, 2024](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Large%20Language%20Model/%5B2025.03.13%5D%20DeepSeek%20LLM%20Scaling%20Open-Source%20Language%20Models%20with%20Longtermism.md)
 * [(논문 스터디 자료) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning, 2025](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Large%20Language%20Model/%5B2025.03.13%5D%20DeepSeek-R1%20-%20Incentivizing%20Reasoning%20Capability%20in%20LLM%20via%20Reinforcement%20Learning.md)
 
-### 2-2. 사용한 Python 라이브러리
+### 2-2. 사용한 Python 라이브러리 및 시스템 환경
 
-* PyTorch
-* Numpy
-* Pandas
-* Plotly (데이터 분석용)
-* 프로젝트 진행하면서 추가 예정
+* 사용한 대표 Python 라이브러리
+  * PyTorch
+  * Numpy
+  * Pandas
+  * Plotly (데이터 분석용)
+* [시스템 환경 및 사용한 Python 라이브러리 상세 정보](additional_info.md#1-시스템-환경)
 
 ## 3. 프로젝트 일정
 
@@ -616,3 +618,7 @@ AttributeError: 'generator' object has no attribute 'generate'
       * **학습 성공률 향상 (약 40% → 약 80% 추정)** 🎉
       * L.R. **1.0%** 씩 감소 시 : **Minimum Train Loss = 632.68 → 433.28 (🔻 31.5 %)** 🎉
       * L.R. **1.5%** 씩 감소 시 : **Minimum Train Loss = 632.68 → 425.79 (🔻 32.7 %)** 🎉
+
+## 6. 사용자 가이드
+
+* [해당 문서](additional_info.md#2-사용자-가이드) 참고.
