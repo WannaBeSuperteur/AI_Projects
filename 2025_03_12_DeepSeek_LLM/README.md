@@ -23,6 +23,7 @@
   * [5-9. CNN 학습이 실질적으로 안 됨 (해결 완료)](#5-9-cnn-학습이-실질적으로-안-됨-해결-완료)
   * [5-10. Auto-Encoder 학습이 실질적으로 안 됨 (해결 완료)](#5-10-auto-encoder-학습이-실질적으로-안-됨-해결-완료)
 * [6. 사용자 가이드](#6-사용자-가이드)
+* [7. 프로젝트 소감](#7-프로젝트-소감)
 
 ## 1. 프로젝트 개요
 
@@ -39,7 +40,7 @@
 
 ### 1-1. 프로젝트 진행 배경
 
-* [DS/ML/DL 기초 정리](https://github.com/WannaBeSuperteur/AI-study/tree/main/AI%20Basics) 중 모델 설명을 위한 다이어그램을 PowerPoint 등을 이용하여 그리는 데 오랜 시간 필요
+* [DS/ML/DL/LLM 기초 정리](https://github.com/WannaBeSuperteur/AI-study/tree/main/AI%20Basics) 중 모델 설명을 위한 다이어그램을 PowerPoint 등을 이용하여 그리는 데 오랜 시간 필요
   * 기초적인 부분은 AI에게 맡길 수 없을까?
 * ChatGPT 에서 제공하는 DALL-E 등을 이용하여 생성할 시, 아래와 같이 **의도에 전혀 맞지 않고, 부자연스러운 부분이 있는 이미지** 가 생성됨
   * 따라서, 이 문제 해결에 **DALL-E 를 이용하기는 어려움**
@@ -107,7 +108,7 @@
 | k-NN 개발 및 학습                                 | 03.26 수 (1d)           | [```P001-010-kNN```](https://github.com/WannaBeSuperteur/AI_Projects/tree/P001-010-kNN/2025_03_12_DeepSeek_LLM)                         | ✅  |
 | 기본 가독성 + 예상 사용자 평가 점수 처리 알고리즘 개발             | 03.26 수 (1d)           | [```P001-011-Score```](https://github.com/WannaBeSuperteur/AI_Projects/tree/P001-011-Score/2025_03_12_DeepSeek_LLM)                     | ✅  |
 | 전체 기능 실행 코드 개발 (사용자 실행용)                     | 03.26 수 (1d)           | [```P001-012-ForUser```](https://github.com/WannaBeSuperteur/AI_Projects/tree/P001-012-ForUser/2025_03_12_DeepSeek_LLM)                 | ✅  |
-| 프로젝트 상세 설명 정리 및 링크 추가                        | 03.26 수 - 03.27 목 (2d) |                                                                                                                                         | 💨 |
+| 프로젝트 상세 설명 정리 및 링크 추가                        | 03.26 수 - 03.27 목 (2d) |                                                                                                                                         | ✅  |
 | 프로젝트 최종 테스트 (QA)                             | 03.27 목 (1d)           |                                                                                                                                         | ✅  |
 
 ## 4. 프로젝트 상세 설명
@@ -630,3 +631,28 @@ AttributeError: 'generator' object has no attribute 'generate'
 ## 6. 사용자 가이드
 
 * [해당 문서](additional_info.md#2-사용자-가이드) 참고.
+
+## 7. 프로젝트 소감
+
+* 긍정적인 부분
+  * 프로젝트를 진행하면서 LLM Fine-Tuning 의 기초 지식 및 다양한 이슈를 섭렵
+  * 다음과 같이 AI 기술의 가능성 확인
+    * LLM Fine-Tuning 을 다양한 분야에 응용할 수 있는 무한한 가능성
+    * [차원의 저주](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EC%B0%A8%EC%9B%90%EC%9D%98_%EC%A0%80%EC%A3%BC.md) 해결 방법들 ([Auto-Encoder](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Auto%20Encoder.md), [PCA](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_PCA.md), ...) + [k-NN](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_KNN.md) 의 아이디어의 **추천 시스템** 으로서의 가능성
+
+* 아쉬운 부분
+  * LLM Fine-Tuning 의 속도 및 메모리 이슈를 해결하는 **Unsloth** 를 **프로젝트 중반 이후에 알게 되어, 다음 프로젝트부터 사용해야 했던 점** 이 가장 아쉬움
+
+* 다음 프로젝트 다짐
+  * Unsloth 등을 사용할 수 있도록 Python version 을 3.9.0 이상으로 업그레이드한 환경을 미리 준비하자.
+  * [모델 후보 최종 선정](test_llm/README.md) 시, 각 후보 모델에 대해 [SFT], [ORPO] 등 계획했던 Fine-Tuning 방법론이 실행되는지 먼저 파악하고, 이를 모델 선정 기준으로 활용하면 좋을 듯함
+
+* 기타
+  * Diagram Format 텍스트 생성이 ```MAX_TOKENS``` (최대 token 개수) 에 이르기 전에 끝나지 않음
+  * 이는 LLM 학습 데이터의 **목표 LLM output 이 완전히 끝나는 지점** 에서의 직전 token 들이, 보통 **1개의 도형 정보가 끝나는 시점** 의 직전 token 들의 배치와 사실상 같기 때문
+    * 즉, 이 토큰이 나타날 때는 **LLM output 의 끝 시점** 도 있지만, 이보다는 **다음 도형으로 이어지는 시점** 이 더 많으므로,
+    * LLM 이 **최종 토큰이 아닐 확률이 훨씬 높다** 고 판단했기 때문으로 추정
+    * 참고 : [실제 LLM 학습 데이터셋](create_dataset/sft_dataset.csv)
+      * 해당 파일의 ```output_data``` 컬럼이 목표 LLM output
+  * 다음 프로젝트에서는 이를 고려하여 **LLM 이 답변의 끝을 예측할 수 있도록 프롬프트 설계를 하자!**
+
