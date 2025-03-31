@@ -642,7 +642,9 @@ AttributeError: 'generator' object has no attribute 'generate'
 
 * 아쉬운 부분
   * LLM Fine-Tuning 의 속도 및 메모리 이슈를 해결하는 **Unsloth** 를 **프로젝트 중반 이후에 알게 되어, 다음 프로젝트부터 사용해야 했던 점** 이 가장 아쉬움
-  * 이로 인해 **LLM 이 Diagram 을 1개 생성하는 데 몇 분** 이 걸리는 등 사용자 경험이 저하됨
+    * 이로 인해 **LLM 이 Diagram 을 1개 생성하는 데 몇 분** 이 걸리는 등 사용자 경험이 저하됨
+  * LLM 에 의해 생성된 다이어그램이 의도와 맞지 않는 경우가 있음
+    * Prompt 의 의도에 맞는 다이어그램을 완벽히 생성하려면 **프롬프트에 대한 정확한 해석을 통해 Diagram Format Text 를 생성** 해야 하므로, [추론형 모델](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_%EC%B6%94%EB%A1%A0%ED%98%95_%EB%AA%A8%EB%8D%B8.md) 이 필요할 것으로 예상됨
 
 * 다음 프로젝트 다짐
   * Unsloth 등을 사용할 수 있도록 Python version 을 3.9.0 이상으로 업그레이드한 환경을 미리 준비하자.
