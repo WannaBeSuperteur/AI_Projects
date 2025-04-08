@@ -1,0 +1,124 @@
+## 목차
+
+* [1. 프로젝트 개요](#1-프로젝트-개요)
+  * [1-1. 프로젝트 진행 배경](#1-1-프로젝트-진행-배경)
+* [2. 기술 분야 및 사용 기술](#2-기술-분야-및-사용-기술)
+  * [2-1. 관련 논문](#2-1-관련-논문)
+  * [2-2. 사용한 Python 라이브러리 및 시스템 환경](#2-2-사용한-python-라이브러리-및-시스템-환경)
+* [3. 프로젝트 일정](#3-프로젝트-일정)
+* [4. 프로젝트 상세 설명](#4-프로젝트-상세-설명)
+  * [4-1. StyleGAN 을 이용한 이미지 생성](#4-1-stylegan-을-이용한-이미지-생성)
+  * [4-2. 이미지 평가 및 추천](#4-2-이미지-평가-및-추천)
+  * [4-3. LLM Fine-Tuning 을 이용한 사용자 대화 구현](#4-3-llm-fine-tuning-을-이용한-사용자-대화-구현)
+  * [4-4. RAG 을 이용한 메모리 구현](#4-4-rag-을-이용한-메모리-구현) 
+* [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
+* [6. 사용자 가이드](#6-사용자-가이드)
+* [7. 프로젝트 소감](#7-프로젝트-소감)
+
+## 1. 프로젝트 개요
+
+**1. 핵심 아이디어**
+
+* StyleGAN 및 LLM 을 응용한, 사용자와 대화하는 가상 인간 여성 캐릭터 **(이름 : Oh-LoRA (오로라))** 생성
+
+**2. 주요 내용 (이미지 생성 및 추천)**
+
+* Fine-Tuning 된 StyleGAN 을 이용하여 이미지 생성
+  * 이때, 다음과 같은 **핵심 속성** 값을 이용하여 이미지 생성
+  * 핵심 속성 값 (8가지)
+    * 눈을 뜬 정도, 머리 색, 입을 벌린 정도, 성별, 배경색의 밝기, 배경색의 표준편차, 얼굴의 위치, 표정 (웃는 얼굴 등)
+  * **핵심 속성** 값에 해당하는 벡터를 StyleGAN 의 입력 및 latent vector 에 추가
+    * 해당 부분만 학습 가능하게 하고, **나머지 파라미터는 모두 Freeze 처리** 
+
+* N 장의 생성된 이미지마다 **기본 점수 + 예상 사용자 평가 점수** 를 매겨서, 그 합산이 높은 이미지들을 추천
+  * 기본 점수
+    * [CNN (Conv. NN)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_CNN.md) 을 이용하여 산출
+  * 예상 사용자 평가 점수
+    * Auto-Encoder 로 이미지를 저차원 벡터로 압축 후,
+    * 학습 데이터 (= 생성된 이미지에 대한 사용자 평가 데이터) 에 있는 이웃한 저차원 벡터들에 대응되는 이미지들에 대한 **평가 점수의 가중 평균** 으로 산출
+    * 이때 [k-NN (k-Nearest Neighbors)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_KNN.md) 를 이용
+
+**3. 주요 내용 (LLM 을 이용한 대화)**
+
+* LLM 을 Fine-Tuning (LoRA 이용) 하여, **가상 인간 설정에 맞게** 사용자와 대화
+* [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 을 이용하여, 향후에도 기억해야 할 중요한 내용을 메모리에 저장
+  * RAG 에 저장할 중요한 정보도 LLM 을 이용하여 파악
+  * RAG 을 통해 사용자에 대한 경고/차단 시스템도 구현
+
+**4. 이름 Oh-LoRA (오로라) 의 의미**
+
+* 내 인생은 오로라처럼 밝게 빛날 것이라는 자기 확신 (개발자 본인 & 사용자 모두에게)
+* [LLM Fine-Tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning.md) 방법 중 최근 널리 쓰이는 [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md) 에서 유래
+
+### 1-1. 프로젝트 진행 배경
+
+## 2. 기술 분야 및 사용 기술
+
+* 기술 분야
+  * Computer Vision
+  * Image Generation (Generative AI)
+  * LLM (Large Language Model)
+* 사용 기술
+
+| 기술 분야            | 사용 기술                                                                                                                                                     | 설명                                                                                                                                                                                                                                                                              |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Image Generation | StyleGAN                                                                                                                                                  | 가상 인간 이미지 생성                                                                                                                                                                                                                                                                    |
+| Computer Vision  | Segmentation                                                                                                                                              | StyleGAN 으로 생성한 가상 인간 이미지의 **핵심 속성** 값 추출                                                                                                                                                                                                                                       |
+| Computer Vision  | CNN (Conv. NN)                                                                                                                                            | StyleGAN 으로 생성한 이미지의 Regression 기반 평가                                                                                                                                                                                                                                           |
+| Computer Vision  | Auto-Encoder                                                                                                                                              | 생성된 이미지의 저차원 벡터화를 통해, k-NN 을 통한 사용자 평가 예상 점수 계산 시 **이웃한 이미지와의 거리 계산이 정확해지고, 연산량이 감소하는** 효과                                                                                                                                                                                      |
+| LLM              | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) | 가상 인간이 인물 설정에 맞게 사용자와 대화할 수 있게 하는 기술                                                                                                                                                                                                                                            |
+| LLM              | [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md)     | 가상 인간이 사용자와의 대화 내용을 기억하는 메모리 역할                                                                                                                                                                                                                                                 |
+| LLM              | [KTO](https://arxiv.org/pdf/2402.01306) (Optional)                                                                                                        | 가상 인간의 대화 성능 추가 향상 (참고 : [LLM Survey 논문 Study 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Large%20Language%20Model/%5B2025.03.22%5D%20Large%20Language%20Models%20A%20Survey%20(IV%2C%20VII).md#1-1-g-llm-%EC%97%90-%EB%8C%80%ED%95%9C-alignment)) |
+|                  | k-NN                                                                                                                                                      | StyleGAN 으로 생성한 가상 인간 이미지의 평가 데이터 (점수) 에 기반한, **평가 예상 점수 계산** 알고리즘                                                                                                                                                                                                              |
+
+### 2-1. 관련 논문
+
+본 프로젝트에서 사용할 기술에 대한 **탄탄한 기초가 중요하다** 는 판단 아래 작성한, 관련 논문에 관한 스터디 자료이다.
+
+* **StyleGAN** (이미지 생성 기술) 논문
+  * [A Style-Based Generator Architecture for Generative Adversarial Networks (2018.12)](https://arxiv.org/pdf/1812.04948)
+* **KTO** (LLM Fine-Tuning 기술) 논문
+  * [KTO: Model Alignment as Prospect Theoretic Optimization (2024.02)](https://arxiv.org/pdf/2402.01306)
+
+### 2-2. 사용한 Python 라이브러리 및 시스템 환경
+
+## 3. 프로젝트 일정
+
+* 전체 일정 : **2025.04.08 화 - 04.17 목 (10d)**
+* 상태 : ⬜ (TODO), 💨 (ING), ✅ (DONE), ❌ (FAILED)
+
+| 계획 내용                            | 일정                     | branch                         | 상태 |
+|----------------------------------|------------------------|--------------------------------|----|
+| 프로젝트 개요 작성                       | 04.08 화 (1d)           |                                | ✅  |
+| 논문 탐독 (StyleGAN)                 | 04.09 수 (1d)           |                                | ⬜  |
+| 논문 탐독 (KTO)                      | 04.09 수 (1d)           |                                | ⬜  |
+| Python 3.10 으로 업그레이드             | 04.09 수 (1d)           |                                | ⬜  |
+| 기본 StyleGAN 구현                   | 04.10 목 (1d)           | ```P002-001-StyleGAN```        | ⬜  |
+| Segmentation 모델 구현 (핵심 속성 값 추출용) | 04.11 금 (1d)           | ```P002-002-Seg```             | ⬜  |
+| Segmentation 으로 핵심 속성 값 추출       | 04.11 금 (1d)           | ```P002-002-Seg```             | ⬜  |
+| 핵심 속성 값을 처리하도록 StyleGAN 구조 변경    | 04.12 토 (1d)           | ```P002-003-Update-StyleGAN``` | ⬜  |
+| CNN 구현                           | 04.13 일 (1d)           | ```P002-004-CNN```             | ⬜  |
+| Auto-Encoder 구현                  | 04.13 일 (1d)           | ```P002-005-AE```              | ⬜  |
+| k-NN 구현                          | 04.13 일 (1d)           | ```P002-006-kNN```             | ⬜  |
+| 적절한 한국어 LLM 모델 선택                | 04.14 월 (1d)           |                                | ⬜  |
+| SFT + LoRA 를 이용한 Fine-Tuning     | 04.14 월 (1d)           | ```P002-007-SFT-LoRA```        | ⬜  |
+| KTO 를 이용한 추가 Fine-Tuning         | 04.14 월 - 04.15 화 (2d) | ```P002-008-KTO```             | ⬜  |
+| RAG 적용                           | 04.15 화 (1d)           | ```P002-009-RAG```             | ⬜  |
+| 최종 테스트 및 QA                      | 04.16 수 (1d)           |                                | ⬜  |
+| 프로젝트 마무리 및 문서 정리                 | 04.17 목 (1d)           |                                | ⬜  |
+
+## 4. 프로젝트 상세 설명
+
+### 4-1. StyleGAN 을 이용한 이미지 생성
+
+### 4-2. 이미지 평가 및 추천
+
+### 4-3. LLM Fine-Tuning 을 이용한 사용자 대화 구현
+
+### 4-4. RAG 을 이용한 메모리 구현
+
+## 5. 프로젝트 진행 중 이슈 및 해결 방법
+
+## 6. 사용자 가이드
+
+## 7. 프로젝트 소감
