@@ -108,7 +108,7 @@
 
 **3. Fine-Tuning 결과**
 
-* [Cuda OOM 으로 인한 학습 실패](../README.md#5-8-orpo-학습-시-cuda-out-of-memory-해결-실패)
+* [Cuda OOM 으로 인한 학습 실패](../issues_reported.md#8-orpo-학습-시-cuda-out-of-memory-해결-실패)
 * 환경적 제약에 의한 문제로, 본 프로젝트 일정 내에는 극복 불가 판단
 
 ## 4. 코드 실행 순서

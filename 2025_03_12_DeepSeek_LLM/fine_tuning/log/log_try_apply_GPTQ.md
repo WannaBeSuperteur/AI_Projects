@@ -7,18 +7,18 @@
   * [3-1. GPTQ 적용만 했을 때](#3-1-gptq-적용만-했을-때)
   * [3-2. ```python -m bitsandbytes``` 실행 결과](#3-2-python--m-bitsandbytes-실행-결과)
   * [3-3. bitsandbytes 0.41.0 -> 0.45.3 업그레이드 이후](#3-3-bitsandbytes-0410---0453-업그레이드-이후)
-  * [3-4. ```training_args``` (학습 argument) 수정 이후](#3-4-trainingargs-학습-argument-수정-이후)
-  * [3-5. device_map 추가](#3-5-devicemap-추가)
-  * [3-6. hf_device_map 직접 설정 시도 (불가능)](#3-6-hfdevicemap-직접-설정-시도-불가능)
+  * [3-4. ```training_args``` (학습 argument) 수정 이후](#3-4-training_args-학습-argument-수정-이후)
+  * [3-5. device_map 추가](#3-5-device_map-추가)
+  * [3-6. hf_device_map 직접 설정 시도 (불가능)](#3-6-hf_device_map-직접-설정-시도-불가능)
 * [4. DeepSeek 모델의 GPTQ 버전 이용 (추론속도 향상 안됨)](#4-deepseek-모델의-gptq-버전-이용-추론속도-향상-안됨)
   * [4-1. GPTQ 적용만 했을 때](#4-1-gptq-적용만-했을-때)
   * [4-2. optimum 라이브러리 최신 버전 설치 후](#4-2-optimum-라이브러리-최신-버전-설치-후)
   * [4-3. QLoRA 처리](#4-3-qlora-처리)
-  * [4-4. ```device_map='cuda'``` 추가](#4-4-devicemapcuda-추가)
+  * [4-4. ```device_map='cuda'``` 추가](#4-4-device_mapcuda-추가)
 
 ## 1. 개요
 
-* [Fine-Tuning 된 모델의 추론 속도 저하 문제](../../README.md#5-6-fine-tuning-된-모델-추론-속도-저하-해결-보류) 문제를 [GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) Quantization 을 적용하여 해결하려고 했음
+* [Fine-Tuning 된 모델의 추론 속도 저하 문제](../../issues_reported.md#6-fine-tuning-된-모델-추론-속도-저하-해결-보류) 문제를 [GPTQ](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Quantization.md#2-4-gptq-post-training-quantization-for-gpt-models) Quantization 을 적용하여 해결하려고 했음
 * 다음과 같이 3가지 방법으로 시도했으나, 결과적으로 **추론 속도 향상에 실패** 함
 
 | 시도한 해결 방법                          | 결과                                |
