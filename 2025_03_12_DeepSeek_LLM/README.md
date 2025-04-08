@@ -574,6 +574,7 @@ AttributeError: 'generator' object has no attribute 'generate'
   * valid output 을 출력한 결과, 값이 모두 동일하게 나옴
 * 원인은 **이미지 가장자리 부분의, 거의 모든 이미지에서 공백인 사실상 의미 없는 부분에 대한 정보가, 오히려 학습에 지장** 을 주었기 때문으로 추정
   * 학습 데이터가 1,000 개 내외로 비교적 부족한 상황에서 이로 인해 학습이 전혀 안 되었음
+  * [차원의 저주](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EC%B0%A8%EC%9B%90%EC%9D%98_%EC%A0%80%EC%A3%BC.md) 와 관련 있을 것으로 추정
 
 **해결 시도 방법**
 
