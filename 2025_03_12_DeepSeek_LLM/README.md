@@ -87,7 +87,7 @@ DL model with 4 input layer nodes, 6, 10 and 6 nodes in 3 hidden layers, and 1 o
   * Numpy
   * Pandas
   * Plotly (데이터 분석용)
-* [시스템 환경 및 사용한 Python 라이브러리 상세 정보](system_info_and_user_guide#1-시스템-환경)
+* [시스템 환경 및 사용한 Python 라이브러리 상세 정보](system_info_and_user_guide.md#1-시스템-환경)
 
 ## 3. 프로젝트 일정
 
@@ -197,7 +197,7 @@ and 1 node in the output layer in the following format.
 
 ## 6. 사용자 가이드
 
-* [해당 문서](system_info_and_user_guide#2-사용자-가이드) 참고.
+* [해당 문서](system_info_and_user_guide.md#2-사용자-가이드) 참고.
 
 ## 7. 프로젝트 소감
 
