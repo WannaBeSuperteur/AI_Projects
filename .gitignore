@@ -18,6 +18,7 @@
 2025_03_12_DeepSeek_LLM/final_recommend_score/temp_test_ae/*
 2025_03_12_DeepSeek_LLM/final_recommend_score/models
 2025_03_12_DeepSeek_LLM/final_recommend_score/models/*
+2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan/stylegan_generator.pth
 venv
 venv/*
 requirements_v3.10.11.txt

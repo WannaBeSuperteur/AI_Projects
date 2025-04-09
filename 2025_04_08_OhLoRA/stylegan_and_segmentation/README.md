@@ -40,6 +40,16 @@
 
 ### 3-1. Image Generation Model (StyleGAN)
 
+[Implementation & Pre-trained Model Source : GenForce GitHub](https://github.com/genforce/genforce/tree/master) (MIT License)
+
+* Generator
+  * ```stylegan/stylegan_generator.py```
+* Discriminator
+  * ```stylegan/stylegan_discriminator.py```
+* Model
+  * ```stylegan/stylegan_generator.pth``` 
+  * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
+
 ### 3-2. Segmentation Model
 
 ## 4. 코드 실행 방법
