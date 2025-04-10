@@ -12,7 +12,7 @@ import torch.nn as nn
 
 import os
 
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 INFERENCE_RESULT_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/inference_result'
 
 
@@ -116,7 +116,7 @@ def main_quality():
         print(f'CNN model load failed : {e}')
         cnn_models = train_cnn_models(data_loader)
 
-    # performance evaluation
+    # run inference on remaining 8,000 images
     remaining_image_loader = load_remaining_images_dataset()
     report_path = f'{INFERENCE_RESULT_DIR}/quality.csv'
     final_score = predict_score_remaining_images(remaining_image_loader, cnn_models, report_path)

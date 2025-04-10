@@ -1,22 +1,20 @@
 
-import cv2
-import numpy as np
-
 import torchvision.transforms as transforms
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torchvision.io import read_image
-from torchvision.transforms import v2
 
 import os
+import pandas as pd
 
 IMG_HEIGHT = 256
 IMG_WIDTH = 256
 
-diagram_transform = transforms.Compose([transforms.ToPILImage(),
-                                        transforms.ToTensor()])
+base_transform = transforms.Compose([transforms.ToPILImage(),
+                                     transforms.ToTensor()])
 
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results'
+TRAIN_BATCH_SIZE = 16
 
 
 class CNNImageDataset(Dataset):
@@ -54,14 +52,22 @@ class CNNImageDataset(Dataset):
 # Last Update Date : -
 
 # Arguments:
-# - property_name (str) : 핵심 속성 값 이름 ('gender' or 'quality')
+# - 없음
 
 # Returns:
-# - dataset_df (Pandas DataFrame) : 2,000 장의 데이터를 train data 로 하는 데이터셋 생성을 위한 Pandas DataFrame
+# - labeled_df (Pandas DataFrame) : 2,000 장의 데이터를 train data 로 하는 데이터셋 생성을 위한 Pandas DataFrame
 #                                   columns = ['img_path', 'img_no', 'gender', 'quality']
 
-def create_train_dataset_df(property_name):
-    raise NotImplementedError
+def create_train_dataset_df():
+    labeled_data_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/synthesize_results_quality_and_gender.csv'
+    labeled_df = pd.read_csv(labeled_data_path)
+
+    labeled_df['img_no'] = labeled_df['img_name']
+    labeled_df['img_path'] = labeled_df['img_name'].apply(lambda x: f'{TRAIN_DATA_DIR_PATH}/{x:06d}.jpg')
+
+    labeled_df.drop(columns=['img_name'], inplace=True)
+
+    return labeled_df
 
 
 # Original StyleGAN 이 생성한 이미지 중 첫 2,000 장의 데이터셋 로딩
@@ -75,7 +81,11 @@ def create_train_dataset_df(property_name):
 # - data_loader (DataLoader) : 2,000 장의 데이터를 train data 로 하는 DataLoader
 
 def load_dataset(property_name):
-    raise NotImplementedError
+    dataset_df = create_train_dataset_df()
+    dataset = CNNImageDataset(dataset_df, transform=base_transform, property_name=property_name)
+
+    data_loader = DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    return data_loader
 
 
 # Original StyleGAN 이 생성한 이미지 중 나머지 8,000 장 로딩
