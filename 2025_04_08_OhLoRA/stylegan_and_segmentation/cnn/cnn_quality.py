@@ -5,10 +5,88 @@ from cnn.cnn_common import (load_dataset,
                             train_cnn_models,
                             predict_score_remaining_images)
 
+from cnn.cnn_common import IMG_HEIGHT, IMG_WIDTH
+
+import torch
+import torch.nn as nn
+
 import os
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 INFERENCE_RESULT_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/inference_result'
+
+
+class QualityCNN(nn.Module):
+    def __init__(self):
+        super(QualityCNN, self).__init__()
+
+        # Conv Layers
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.05)
+        )
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=3),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.05)
+        )
+        self.pool1 = nn.MaxPool2d(2, 2)
+
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=3),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.05)
+        )
+        self.pool2 = nn.MaxPool2d(2, 2)
+
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(128, 128, kernel_size=3),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.05)
+        )
+        self.pool3 = nn.MaxPool2d(2, 2)
+
+        self.conv5 = nn.Sequential(
+            nn.Conv2d(128, 256, kernel_size=3),
+            nn.LeakyReLU(),
+            nn.Dropout2d(0.05)
+        )
+
+        # Fully Connected Layers
+        self.fc1 = nn.Sequential(
+            nn.Linear(256 * 12 * 4, 512),
+            nn.Tanh(),
+            nn.Dropout(0.45)
+        )
+        self.fc_final = nn.Sequential(
+            nn.Linear(512, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        x = x[:, :, : IMG_HEIGHT // 4, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
+
+        # Conv
+        x = self.conv1(x)  # 126 x 62
+        x = self.conv2(x)  # 124 x 60
+        x = self.pool1(x)  # 62 x 30
+
+        x = self.conv3(x)  # 60 x 28
+        x = self.pool2(x)  # 30 x 14
+
+        x = self.conv4(x)  # 28 x 12
+        x = self.pool3(x)  # 14 x 6
+
+        x = self.conv5(x)  # 12 x 4
+
+        x = x.view(-1, 256 * 12 * 4)
+
+        # Fully Connected
+        x = self.fc1(x)
+        x = self.fc_final(x)
+
+        return x
 
 
 # labeling 이 안 된 8,000 장에 대해 예측된 Quality 속성 값 반환

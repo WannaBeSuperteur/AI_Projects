@@ -1,4 +1,8 @@
 
+IMG_HEIGHT = 256
+IMG_WIDTH = 256
+
+
 # Original StyleGAN 이 생성한 이미지 중 첫 2,000 장 로딩
 # Create Date : 2025.04.10
 # Last Update Date : -
