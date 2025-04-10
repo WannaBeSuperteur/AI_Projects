@@ -114,7 +114,11 @@ def main_quality():
 
     except Exception as e:
         print(f'CNN model load failed : {e}')
-        cnn_models = train_cnn_models(data_loader)
+
+        cnn_models = train_cnn_models(data_loader,
+                                      is_stratified=False,
+                                      property_name='quality',
+                                      cnn_model_class=QualityCNN)
 
     # run inference on remaining 8,000 images
     remaining_image_loader = load_remaining_images_dataset()

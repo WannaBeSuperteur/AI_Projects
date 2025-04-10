@@ -156,3 +156,68 @@ def run_validation(model, valid_loader, device, loss_func=nn.CrossEntropyLoss(re
         val_loss = val_loss_sum / total
 
     return val_accuracy, val_loss
+
+
+# 모델 validation 실시 (TP, TN, FP, FN 및 각종 성능지표 추가 반환)
+# Create Date : 2025.04.10
+# Last Update Date : -
+
+# args :
+# - model        (nn.Module)  : validation 할 모델
+# - valid_loader (DataLoader) : Validation Data Loader
+# - device       (Device)     : CUDA or CPU device
+# - loss_func    (func)       : Loss Function
+# - threshold    (float)      : TP, TN, FP, FN 결정을 위한 threshold
+
+# returns :
+# - val_result (dict) : validation result (Accuracy, Loss, 기타 성능지표)
+
+def run_validation_detail(model, valid_loader, device, loss_func=nn.CrossEntropyLoss(reduction='sum'), threshold=0.5):
+    model.eval()
+    correct, total = 0, 0
+    val_loss_sum = 0
+    tp, tn, fp, fn = 0, 0, 0, 0
+
+    with torch.no_grad():
+        for idx, (images, labels) in enumerate(valid_loader):
+            images, labels = images.to(device), labels.to(device).to(torch.float32)
+            outputs = model(images).to(torch.float32)
+            val_loss_batch = loss_func(outputs, labels.unsqueeze(1))
+            val_loss_sum += val_loss_batch
+
+            _, predicted = torch.max(outputs, 1)
+            total += labels.size(0)
+
+            # compute TP, TN, FP, and FN
+            pred_cpu = list(predicted.detach().cpu())
+            label_cpu = list(labels.detach().cpu())
+
+            for pred, label in zip(pred_cpu, label_cpu):
+                if pred >= threshold and label >= threshold:
+                    tp += 1
+                elif pred < threshold and label < threshold:
+                    tn += 1
+                elif pred >= threshold and label < threshold:
+                    fp += 1
+                else:
+                    fn += 1
+
+            # test code
+            if is_test and idx % 20 == 0:
+                print('valid idx:', idx)
+                print('output:', np.array(outputs.detach().cpu()).flatten())
+                print('label:', np.array(labels.detach().cpu()))
+
+        # Accuracy 계산
+        val_accuracy = (tp + tn) / total
+        val_recall = '' if tp + fn == 0 else tp / (tp + fn)
+        val_precision = '' if tp + fp == 0 else tp / (tp + fp)
+        val_f1_score = '' if tp == 0 else 2 * val_recall * val_precision / (val_recall + val_precision)
+
+        val_loss = val_loss_sum / total
+
+    val_result = {'val_accuracy': val_accuracy, 'val_loss': val_loss,
+                  'tp': tp, 'tn': tn, 'fp': fp, 'fn': fn,
+                  'val_recall': val_recall, 'val_precision': val_precision, 'val_f1_score': val_f1_score}
+
+    return val_result

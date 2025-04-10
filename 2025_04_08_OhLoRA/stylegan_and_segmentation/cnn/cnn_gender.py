@@ -123,7 +123,11 @@ def main_gender():
 
     except Exception as e:
         print(f'CNN model load failed : {e}')
-        cnn_models = train_cnn_models(data_loader)
+
+        cnn_models = train_cnn_models(data_loader,
+                                      is_stratified=False,
+                                      property_name='gender',
+                                      cnn_model_class=GenderCNN)
 
     # run inference on remaining 8,000 images
     remaining_image_loader = load_remaining_images_dataset()
