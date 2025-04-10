@@ -109,7 +109,7 @@ def main_quality():
     # load or train model
     try:
         print('loading CNN models ...')
-        cnn_models = load_cnn_model(property_name='quality')
+        cnn_models = load_cnn_model(property_name='quality', cnn_model_class=QualityCNN)
         print('loading CNN models successful!')
 
     except Exception as e:

@@ -60,7 +60,7 @@
 * Discriminator
   * ```stylegan/stylegan_discriminator.py```
 * Model
-  * ```stylegan/stylegan_model.pth``` (Original GAN, including Generator & Discriminator)
+  * ```stylegan/stylegan_model.pth``` (**Original GAN**, including Generator & Discriminator)
     * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 * [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
 
@@ -98,7 +98,10 @@
 | **전체 이미지 10,000 장**     | ```gender``` ```quality``` | ```cnn/all_image_quality_and_gender.csv```          | X                        |
 
 * CNN model 저장 경로
-  * TBU 
+  * ```gender``` 모델 5개
+    * ```cnn/models/gender_model_{0|1|2|3|4}.pt```
+  * ```quality``` 모델 5개
+    * ```cnn/models/quality_model_{0|1|2|3|4}.pt```
 
 ### 3-3. Segmentation Model
 

@@ -118,7 +118,7 @@ def main_gender():
     # load or train model
     try:
         print('loading CNN models ...')
-        cnn_models = load_cnn_model(property_name='gender')
+        cnn_models = load_cnn_model(property_name='gender', cnn_model_class=GenderCNN)
         print('loading CNN models successful!')
 
     except Exception as e:

@@ -1,4 +1,5 @@
 
+import torch
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from torchvision.io import read_image
@@ -17,6 +18,7 @@ IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/sy
 
 TRAIN_BATCH_SIZE = 16
 INFERENCE_BATCH_SIZE = 4
+K_FOLDS = 5
 
 
 # CNN 으로 학습할 2,000 장에 대한 Dataset
@@ -145,13 +147,23 @@ def load_remaining_images_dataset(property_name):
 # Last Update Date : -
 
 # Arguments:
-# - property_name (str) : 핵심 속성 값 이름 ('gender' or 'quality')
+# - cnn_model_class (nn.Module class) : 학습할 CNN 모델의 Class
+# - device          (device)          : CNN 모델을 mapping 시킬 device (GPU 등)
 
 # Returns:
 # - cnn_model (nn.Module) : 학습할 CNN 모델
 
-def define_cnn_model(property_name):
-    raise NotImplementedError
+def define_cnn_model(cnn_model_class, device):
+    cnn_model = cnn_model_class()
+    cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.001)
+    cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
+                                                                     T_max=10,
+                                                                     eta_min=0)
+
+    cnn_model.to(device)
+    cnn_model.device = device
+
+    return cnn_model
 
 
 # 모델 학습 실시 (K-Fold Cross Validation)
@@ -192,13 +204,28 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs):
 # Last Update Date : -
 
 # Arguments:
-# - property_name (str) : 핵심 속성 값 이름 ('gender' or 'quality')
+# - property_name   (str)             : 핵심 속성 값 이름 ('gender' or 'quality')
+# - cnn_model_class (nn.Module class) : 학습할 CNN 모델의 Class
 
 # Returns:
 # - cnn_models (list(nn.Module)) : load 된 CNN Model 의 리스트 (총 K 개의 모델)
 
-def load_cnn_model(property_name):
-    raise NotImplementedError
+def load_cnn_model(property_name, cnn_model_class):
+    cnn_models = []
+
+    # check device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'device for loading model : {device}')
+
+    # add CNN models
+    for i in range(K_FOLDS):
+        model = cnn_model_class()
+        model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentations/cnn/models/{property_name}_model_{i}.pt'
+        model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
+
+        cnn_models.append(model)
+
+    return cnn_models
 
 
 # 학습된 모델을 이용하여 나머지 8,000 장의 이미지에 대해 핵심 속성 값 예측 (Ensemble 의 아이디어 / K 개 모델의 평균으로)
