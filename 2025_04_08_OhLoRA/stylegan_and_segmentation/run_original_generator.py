@@ -1,4 +1,5 @@
 import stylegan.stylegan_generator as gen
+import stylegan.stylegan_generator_inference as inference
 import torch
 
 import os
@@ -19,3 +20,9 @@ if __name__ == '__main__':
     generator_state_dict = state_dict['generator']
 
     generator_model.load_state_dict(generator_state_dict)
+
+    # run generator
+    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+    generator_model.G_kwargs_val = kwargs_val
+
+    inference.synthesize(generator_model, num=10, z=None)
