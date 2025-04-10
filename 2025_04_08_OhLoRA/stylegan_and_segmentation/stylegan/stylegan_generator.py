@@ -44,8 +44,10 @@ class StyleGANGenerator(nn.Module):
 
     Settings for the mapping network:
 
-    (1) z_space_dim: Dimension of the input latent space, Z. (default: 512 -> modified to 128)
-    (2) w_space_dim: Dimension of the output latent space, W. (default: 512 -> modified to 128)
+    (1) z_space_dim: Dimension of the input latent space, Z.
+        (default: 512 -> change to 128 is not compatible for pre-trained model)
+    (2) w_space_dim: Dimension of the output latent space, W.
+        (default: 512 -> change to 128 is not compatible for pre-trained model)
     (3) label_size: Size of the additional label for conditional generation.
         (default: 0)
     (4）mapping_layers: Number of layers of the mapping network. (default: 8)
@@ -75,8 +77,8 @@ class StyleGANGenerator(nn.Module):
 
     def __init__(self,
                  resolution,
-                 z_space_dim=128,   # 512 in Original code
-                 w_space_dim=128,   # 512 in Original code
+                 z_space_dim=512,   # 512 in Original code (change to 128 is not compatible for pre-trained model)
+                 w_space_dim=512,   # 512 in Original code (change to 128 is not compatible for pre-trained model)
                  label_size=0,
                  mapping_layers=8,
                  mapping_fmaps=512,

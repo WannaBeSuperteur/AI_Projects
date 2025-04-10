@@ -47,10 +47,14 @@
 * Discriminator
   * ```stylegan/stylegan_discriminator.py```
 * Model
-  * ```stylegan/stylegan_generator.pth``` 
-  * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
+  * ```stylegan/stylegan_model.pth``` (Original GAN, including Generator & Discriminator)
+    * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 
 ### 3-2. Segmentation Model
 
 ## 4. 코드 실행 방법
 
+**모든 코드는 ```2025_04_08_OhLoRA``` main directory 에서 실행**
+
+* Original GAN Generator 실행하여 이미지 생성
+  * ```python stylegan_and_segmentation/run_original_generator.py```
