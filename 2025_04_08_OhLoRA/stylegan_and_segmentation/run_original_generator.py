@@ -20,6 +20,7 @@ if __name__ == '__main__':
     generator_state_dict = state_dict['generator']
 
     generator_model.load_state_dict(generator_state_dict)
+    generator_model.to(device)
 
     # run generator
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)

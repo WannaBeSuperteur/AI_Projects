@@ -3,7 +3,7 @@
 import os
 import numpy as np
 import torch
-import torch.distributed as dist
+# import torch.distributed as dist
 
 from stylegan.visualizer import postprocess_image, save_image
 
@@ -50,4 +50,4 @@ def synthesize(generator_model, num, z=None):
         for sub_idx, image in zip(sub_indices, images):
             save_image(os.path.join(temp_dir, f'{sub_idx:06d}.jpg'), image)
 
-    dist.barrier()
+#    dist.barrier()
