@@ -3,12 +3,12 @@ from cnn.cnn_common import (load_dataset,
                             load_remaining_images_dataset,
                             load_cnn_model,
                             train_cnn_models,
-                            predict_score_image)
+                            predict_score_remaining_images)
 
 import os
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-inference_result_dir = f'{PROJECT_DIR_PATH}/cnn/inference_result'
+INFERENCE_RESULT_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/inference_result'
 
 
 # labeling 이 안 된 8,000 장에 대해 예측된 Quality 속성 값 반환
@@ -40,8 +40,8 @@ def main_quality():
 
     # performance evaluation
     remaining_image_loader = load_remaining_images_dataset()
-    report_path = f'{inference_result_dir}/quality.csv'
-    final_score = predict_score_image(remaining_image_loader, cnn_models, report_path)
+    report_path = f'{INFERENCE_RESULT_DIR}/quality.csv'
+    final_score = predict_score_remaining_images(remaining_image_loader, cnn_models, report_path)
 
     print('FINAL PREDICTION SCORE (QUALITY) :\n')
     print(final_score)

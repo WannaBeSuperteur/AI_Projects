@@ -33,5 +33,5 @@ if __name__ == '__main__':
 
     # 최종 취합
     final_collected_data = postprocess_all_data()
-    final_collected_data_path = f'{PROJECT_DIR_PATH}/cnn/all_image_quality_and_gender.csv'
+    final_collected_data_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/all_image_quality_and_gender.csv'
     final_collected_data.to_csv(final_collected_data_path)
