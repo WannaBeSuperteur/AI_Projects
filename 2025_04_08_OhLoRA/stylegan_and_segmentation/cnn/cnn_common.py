@@ -325,6 +325,7 @@ def save_train_log(val_loss_list, val_loss_threshold, best_epoch_model, data_loa
                                              valid_loader=valid_loader,
                                              device=best_epoch_model.device,
                                              loss_func=nn.BCELoss(reduction='sum'))
+
     val_loss_check = val_result_check['val_loss']
 
     print(f'best epoch model val_loss : {val_loss_check:.6f}, reported min val_loss : {min_val_loss:.6f}')
@@ -357,8 +358,8 @@ def save_train_log(val_loss_list, val_loss_threshold, best_epoch_model, data_loa
 
 # Returns:
 # - val_loss_list          (list(float))      : valid loss 기록
-# - performance_each_epoch (Pandas DataFrame) : 각 Epoch 에서의 상세한 성능 로그 (Accuracy, F1 Score 등 / threshold = 0.5 기준)
 # - best_epoch_model       (nn.Module)        : 가장 낮은 valid loss 에서의 CNN 모델
+# - performance_each_epoch (Pandas DataFrame) : 각 Epoch 에서의 상세한 성능 로그 (Accuracy, F1 Score 등 / threshold = 0.5 기준)
 
 def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_class, pos_neg_threshold):
     train_sampler = torch.utils.data.SubsetRandomSampler(train_idxs)
@@ -428,7 +429,7 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_c
         current_epoch += 1
 
     performance_each_epoch = pd.DataFrame(performance_each_epoch_dict)
-    return val_loss_list, performance_each_epoch, best_epoch_model
+    return val_loss_list, best_epoch_model, performance_each_epoch
 
 
 # 학습된 CNN 모델 불러오기

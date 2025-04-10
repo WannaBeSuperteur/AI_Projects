@@ -25,11 +25,11 @@ def postprocess_all_data():
 
 if __name__ == '__main__':
 
-    # Gender 예측값 생성 (CNN 학습 포함)
-    main_gender()
-
     # Quality 예측값 생성 (CNN 학습 포함)
     main_quality()
+
+    # Gender 예측값 생성 (CNN 학습 포함)
+    main_gender()
 
     # 최종 취합
     final_collected_data = postprocess_all_data()
