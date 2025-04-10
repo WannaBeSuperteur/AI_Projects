@@ -2,6 +2,8 @@ import torch.nn as nn
 import torch
 import numpy as np  # for test code
 
+from sklearn import metrics
+
 is_test = False
 
 
@@ -178,6 +180,9 @@ def run_validation_detail(model, valid_loader, device, loss_func=nn.CrossEntropy
     val_loss_sum = 0
     tp, tn, fp, fn = 0, 0, 0, 0
 
+    valid_preds = []
+    valid_labels = []
+
     with torch.no_grad():
         for idx, (images, labels) in enumerate(valid_loader):
             images, labels = images.to(device), labels.to(device).to(torch.float32)
@@ -202,6 +207,9 @@ def run_validation_detail(model, valid_loader, device, loss_func=nn.CrossEntropy
                 else:
                     fn += 1
 
+                valid_preds.append(pred)
+                valid_labels.append(label)
+
             # test code
             if is_test and idx % 20 == 0:
                 print('valid idx:', idx)
@@ -216,8 +224,11 @@ def run_validation_detail(model, valid_loader, device, loss_func=nn.CrossEntropy
 
         val_loss = val_loss_sum / total
 
+    val_auroc = metrics.roc_auc_score(valid_labels, valid_preds)
+
     val_result = {'val_accuracy': val_accuracy, 'val_loss': val_loss,
                   'tp': tp, 'tn': tn, 'fp': fp, 'fn': fn,
-                  'val_recall': val_recall, 'val_precision': val_precision, 'val_f1_score': val_f1_score}
+                  'val_recall': val_recall, 'val_precision': val_precision, 'val_f1_score': val_f1_score,
+                  'val_auroc': val_auroc}
 
     return val_result

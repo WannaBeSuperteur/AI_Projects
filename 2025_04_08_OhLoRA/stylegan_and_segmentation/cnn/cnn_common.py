@@ -379,7 +379,7 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_c
     val_loss_list = []
     performance_each_epoch_dict = {'epoch': [], 'val_loss': [], 'val_accuracy': [],
                                    'tp': [], 'tn': [], 'fp': [], 'fn': [],
-                                   'val_recall': [], 'val_precision': [], 'val_f1_score': []}
+                                   'val_recall': [], 'val_precision': [], 'val_f1_score': [], 'val_auroc': []}
 
     # loss function
     loss_func = nn.BCELoss(reduction='sum')
