@@ -13,10 +13,13 @@ base_transform = transforms.Compose([transforms.ToPILImage(),
                                      transforms.ToTensor()])
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
-TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results'
+IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results'
+
 TRAIN_BATCH_SIZE = 16
+INFERENCE_BATCH_SIZE = 4
 
 
+# CNN 으로 학습할 2,000 장에 대한 Dataset
 class CNNImageDataset(Dataset):
     def __init__(self, dataset_df, transform, property_name):
         self.img_paths = dataset_df['img_path'].tolist()
@@ -31,7 +34,7 @@ class CNNImageDataset(Dataset):
         return len(self.img_paths)
 
     def __getitem__(self, idx, ):
-        img_path = f'{TRAIN_DATA_DIR_PATH}/{self.img_nos[idx]:06d}.jpg'
+        img_path = f'{IMAGE_DATA_DIR_PATH}/{self.img_nos[idx]:06d}.jpg'
         image = read_image(img_path)
 
         # resize and normalize
@@ -45,6 +48,27 @@ class CNNImageDataset(Dataset):
             raise Exception("property_name must be one of ['gender', 'quality'].")
 
         return image, score
+
+
+# 나머지 8,000 장에 대한 Dataset
+class RemainingImageDataset(Dataset):
+    def __init__(self, dataset_df, transform, property_name):
+        self.img_paths = dataset_df['img_path'].tolist()
+        self.img_nos = dataset_df['img_no'].tolist()
+
+        self.transform = transform
+        self.property_name = property_name
+
+    def __len__(self):
+        return len(self.img_paths)
+
+    def __getitem__(self, idx, ):
+        img_path = f'{IMAGE_DATA_DIR_PATH}/{self.img_nos[idx]:06d}.jpg'
+        image = read_image(img_path)
+
+        # resize and normalize
+        image = self.transform(image)
+        return image
 
 
 # Original StyleGAN 이 생성한 이미지 중 첫 2,000 장의 데이터셋 생성을 위한 정보가 있는 Pandas DataFrame 생성
@@ -63,7 +87,7 @@ def create_train_dataset_df():
     labeled_df = pd.read_csv(labeled_data_path)
 
     labeled_df['img_no'] = labeled_df['img_name']
-    labeled_df['img_path'] = labeled_df['img_name'].apply(lambda x: f'{TRAIN_DATA_DIR_PATH}/{x:06d}.jpg')
+    labeled_df['img_path'] = labeled_df['img_name'].apply(lambda x: f'{IMAGE_DATA_DIR_PATH}/{x:06d}.jpg')
 
     labeled_df.drop(columns=['img_name'], inplace=True)
 
@@ -99,7 +123,21 @@ def load_dataset(property_name):
 # - data_loader (DataLoader) : 나머지 8,000 장의 데이터를 test (inference) data 로 하는 DataLoader
 
 def load_remaining_images_dataset(property_name):
-    raise NotImplementedError
+    img_names = os.listdir(IMAGE_DATA_DIR_PATH)
+    img_paths = [f'{IMAGE_DATA_DIR_PATH}/{name}' for name in img_names]
+
+    remaining_dataset_dict = {'img_path': img_paths, 'img_no': img_names}
+    remaining_dataset_df = pd.DataFrame(remaining_dataset_dict)
+
+    remaining_dataset = RemainingImageDataset(remaining_dataset_df,
+                                              transform=base_transform,
+                                              property_name=property_name)
+
+    remaining_data_loader = DataLoader(remaining_dataset,
+                                       batch_size=INFERENCE_BATCH_SIZE,
+                                       shuffle=False)
+
+    return remaining_data_loader
 
 
 # CNN 모델 정의
