@@ -3,7 +3,21 @@ IMG_HEIGHT = 256
 IMG_WIDTH = 256
 
 
-# Original StyleGAN 이 생성한 이미지 중 첫 2,000 장 로딩
+# Original StyleGAN 이 생성한 이미지 중 첫 2,000 장의 데이터셋 생성을 위한 정보가 있는 Pandas DataFrame 생성
+# Create Date : 2025.04.10
+# Last Update Date : -
+
+# Arguments:
+# - property_name (str) : 핵심 속성 값 이름 ('gender' or 'quality')
+
+# Returns:
+# - dataset_df (Pandas DataFrame) : 2,000 장의 데이터를 train data 로 하는 데이터셋 생성을 위한 Pandas DataFrame
+
+def create_train_dataset_df(property_name):
+    raise NotImplementedError
+
+
+# Original StyleGAN 이 생성한 이미지 중 첫 2,000 장의 데이터셋 로딩
 # Create Date : 2025.04.10
 # Last Update Date : -
 
