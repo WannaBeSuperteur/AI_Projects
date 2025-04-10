@@ -1,6 +1,52 @@
 
+import cv2
+import numpy as np
+
+import torchvision.transforms as transforms
+from torch.utils.data import Dataset
+from torchvision.io import read_image
+from torchvision.transforms import v2
+
+import os
+
 IMG_HEIGHT = 256
 IMG_WIDTH = 256
+
+diagram_transform = transforms.Compose([transforms.ToPILImage(),
+                                        transforms.ToTensor()])
+
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+TRAIN_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results'
+
+
+class CNNImageDataset(Dataset):
+    def __init__(self, dataset_df, transform, property_name):
+        self.img_paths = dataset_df['img_path'].tolist()
+        self.img_nos = dataset_df['img_no'].tolist()
+        self.gender_scores = dataset_df['gender'].tolist()
+        self.quality_scores = dataset_df['quality'].tolist()
+
+        self.transform = transform
+        self.property_name = property_name
+
+    def __len__(self):
+        return len(self.img_paths)
+
+    def __getitem__(self, idx, ):
+        img_path = f'{TRAIN_DATA_DIR_PATH}/{self.img_nos[idx]:06d}.jpg'
+        image = read_image(img_path)
+
+        # resize and normalize
+        image = self.transform(image)
+
+        if self.property_name == 'gender':
+            score = self.gender_scores[idx]
+        elif self.property_name == 'quality':
+            score = self.quality_scores[idx]
+        else:
+            raise Exception("property_name must be one of ['gender', 'quality'].")
+
+        return image, score
 
 
 # Original StyleGAN 이 생성한 이미지 중 첫 2,000 장의 데이터셋 생성을 위한 정보가 있는 Pandas DataFrame 생성
@@ -12,6 +58,7 @@ IMG_WIDTH = 256
 
 # Returns:
 # - dataset_df (Pandas DataFrame) : 2,000 장의 데이터를 train data 로 하는 데이터셋 생성을 위한 Pandas DataFrame
+#                                   columns = ['img_path', 'img_no', 'gender', 'quality']
 
 def create_train_dataset_df(property_name):
     raise NotImplementedError
