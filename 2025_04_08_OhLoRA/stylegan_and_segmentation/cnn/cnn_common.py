@@ -233,9 +233,9 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
 
     # threshold for train success check & detailed performance report per epoch
     if property_name == 'gender':
-        val_loss_threshold, pos_neg_threshold = 0.25, 0.50
+        val_loss_threshold, pos_neg_threshold = 0.28, 0.50
     elif property_name == 'quality':
-        val_loss_threshold, pos_neg_threshold = 0.11, 0.90
+        val_loss_threshold, pos_neg_threshold = 0.13, 0.90
     else:
         raise Exception("property_name must be one of ['gender', 'quality'].")
 
