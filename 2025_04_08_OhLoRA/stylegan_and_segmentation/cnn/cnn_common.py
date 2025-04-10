@@ -50,7 +50,7 @@ class CNNImageDataset(Dataset):
     def __len__(self):
         return len(self.img_paths)
 
-    def __getitem__(self, idx, ):
+    def __getitem__(self, idx):
         img_path = f'{IMAGE_DATA_DIR_PATH}/{self.img_nos[idx]:06d}.jpg'
         image = read_image(img_path)
 
@@ -79,7 +79,7 @@ class RemainingImageDataset(Dataset):
     def __len__(self):
         return len(self.img_paths)
 
-    def __getitem__(self, idx, ):
+    def __getitem__(self, idx):
         img_path = f'{IMAGE_DATA_DIR_PATH}/{self.img_nos[idx]:06d}.jpg'
         image = read_image(img_path)
 
@@ -159,7 +159,8 @@ def load_remaining_images_dataset(property_name):
 
 # CNN 모델 정의
 # Create Date : 2025.04.10
-# Last Update Date : -
+# Last Update Date : 2025.04.10
+# -> learning rate 1e-3 (학습 실패) -> 5e-5 (기존의 5% 로 초기값 감소)
 
 # Arguments:
 # - cnn_model_class (nn.Module class) : 학습할 CNN 모델의 Class
@@ -170,7 +171,7 @@ def load_remaining_images_dataset(property_name):
 
 def define_cnn_model(cnn_model_class, device):
     cnn_model = cnn_model_class()
-    cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.001)
+    cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.00005)
     cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
                                                                      T_max=10,
                                                                      eta_min=0)
