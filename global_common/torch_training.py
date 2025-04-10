@@ -189,8 +189,8 @@ def run_validation_detail(model, valid_loader, device, loss_func=nn.CrossEntropy
             total += labels.size(0)
 
             # compute TP, TN, FP, and FN
-            pred_cpu = list(predicted.detach().cpu())
-            label_cpu = list(labels.detach().cpu())
+            pred_cpu = list(np.array(outputs.detach().cpu()).flatten())
+            label_cpu = list(np.array(labels.detach().cpu()).flatten())
 
             for pred, label in zip(pred_cpu, label_cpu):
                 if pred >= threshold and label >= threshold:

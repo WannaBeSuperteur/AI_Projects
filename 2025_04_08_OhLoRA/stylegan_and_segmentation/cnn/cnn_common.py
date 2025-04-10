@@ -232,7 +232,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
     if property_name == 'gender':
         val_loss_threshold, pos_neg_threshold = 0.25, 0.5
     elif property_name == 'quality':
-        val_loss_threshold, pos_neg_threshold = 0.13, 0.9
+        val_loss_threshold, pos_neg_threshold = 0.11, 0.9
     else:
         raise Exception("property_name must be one of ['gender', 'quality'].")
 
@@ -398,8 +398,12 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_c
 
         # add performance log
         performance_each_epoch_dict['epoch'].append(current_epoch)
+
         for metric_name, metric_value in val_result.items():
-            performance_each_epoch_dict[metric_name].append(metric_value)
+            if metric_name == 'val_loss':
+                performance_each_epoch_dict[metric_name].append(float(val_loss.detach().cpu()))
+            else:
+                performance_each_epoch_dict[metric_name].append(metric_value)
 
         print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}, val_loss : {val_loss:.4f}')
 
