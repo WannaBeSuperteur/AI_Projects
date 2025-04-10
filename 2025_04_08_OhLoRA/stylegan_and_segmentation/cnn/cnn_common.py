@@ -228,11 +228,19 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
                  'total_epochs': [], 'best_epoch': [],
                  'elapsed_time (s)': [], 'val_loss_list': []}
 
+    # threshold for train success check & detailed performance report per epoch
+    if property_name == 'gender':
+        val_loss_threshold, pos_neg_threshold = 0.25, 0.5
+    elif property_name == 'quality':
+        val_loss_threshold, pos_neg_threshold = 0.13, 0.9
+    else:
+        raise Exception("property_name must be one of ['gender', 'quality'].")
+
     # run training and validation
     for fold, (train_idxs, valid_idxs) in enumerate(kfold_splitted_dataset):
         print(f'=== training model {fold + 1} / {K_FOLDS} ===')
 
-        # 학습 성공 (valid BCE loss 최솟값 <= 0.37) 시까지 반복
+        # 학습 성공 (valid BCE loss 최솟값 <= threshold) 시까지 반복
         while True:
             model = cnn_models[fold].to(device)
             model.device = device
@@ -243,14 +251,17 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
                                                                                            data_loader,
                                                                                            train_idxs,
                                                                                            valid_idxs,
-                                                                                           cnn_model_class)
+                                                                                           cnn_model_class,
+                                                                                           pos_neg_threshold)
             train_time = round(time.time() - start_at, 2)
 
-            # check train successful
+            # check train successful and save train log
             best_epoch_model.device = device
 
-            is_train_successful = check_train_result(val_loss_list, best_epoch_model, data_loader, valid_idxs,
-                                                     property_name, train_log, fold, train_time)
+            save_train_log(val_loss_list, val_loss_threshold, best_epoch_model, data_loader, valid_idxs,
+                           property_name, train_log, fold, train_time)
+
+            is_train_successful = min(val_loss_list) <= val_loss_threshold
 
             # train successful -> save model and then finish
             if is_train_successful:
@@ -276,34 +287,33 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
     raise NotImplementedError
 
 
-# 학습 로그 저장 및 학습 성공 여부 판정
+# 학습 로그 저장
 # Create Date : 2025.04.10
 # Last Update Date : -
 
 # Arguments:
-# - val_loss_list    (list(float)) : valid loss 기록
-# - best_epoch_model (nn.Module)   : 가장 낮은 valid loss 에서의 CNN 모델
-# - data_loader      (DataLoader)  : 2,000 장의 데이터를 train data 로 하는 DataLoader
-# - valid_idxs       (np.array)    : 검증 데이터로 지정된 인덱스
-# - property_name    (str)         : 핵심 속성 값 이름 ('gender' or 'quality')
-# - train_log        (dict)        : 학습 로그 (keys: ['fold_no', 'success', 'min_val_loss', 'total_epochs',
-#                                                     'best_epoch', 'elapsed_time (s)', val_loss_list']
-# - fold             (int)         : fold 번호
-# - train_time       (float)       : 학습 소요 시간
+# - val_loss_list      (list(float)) : valid loss 기록
+# - val_loss_threshold (float)       : valid loss 의 threshold (해당 값 이하 => 학습 성공으로 간주)
+# - best_epoch_model   (nn.Module)   : 가장 낮은 valid loss 에서의 CNN 모델
+# - data_loader        (DataLoader)  : 2,000 장의 데이터를 train data 로 하는 DataLoader
+# - valid_idxs         (np.array)    : 검증 데이터로 지정된 인덱스
+# - property_name      (str)         : 핵심 속성 값 이름 ('gender' or 'quality')
+# - train_log          (dict)        : 학습 로그 (keys: ['fold_no', 'success', 'min_val_loss', 'total_epochs',
+#                                                       'best_epoch', 'elapsed_time (s)', val_loss_list']
+# - fold               (int)         : fold 번호
+# - train_time         (float)       : 학습 소요 시간
 
 # Returns:
-# - is_train_successful (bool) : 학습 성공 여부 (Valid Loss 가 충분히 작은지)
+# - 없음
 
-def check_train_result(val_loss_list, best_epoch_model, data_loader, valid_idxs, property_name,
-                       train_log, fold, train_time):
+def save_train_log(val_loss_list, val_loss_threshold, best_epoch_model, data_loader, valid_idxs, property_name,
+                   train_log, fold, train_time):
 
     # check validation loss and success/fail of training
     min_val_loss = min(val_loss_list)
     min_val_loss_ = round(min_val_loss, 4)
     total_epochs = len(val_loss_list)
     val_loss_list_ = list(map(lambda x: round(x, 4), val_loss_list))
-
-    is_train_successful = (min_val_loss <= 0.37)
 
     # test best epoch model correctly returned
     valid_sampler = torch.utils.data.SubsetRandomSampler(valid_idxs)
@@ -322,7 +332,7 @@ def check_train_result(val_loss_list, best_epoch_model, data_loader, valid_idxs,
 
     # update train log
     train_log['fold_no'].append(fold)
-    train_log['success'].append(is_train_successful)
+    train_log['success'].append(min_val_loss < val_loss_threshold)
     train_log['min_val_loss'].append(min_val_loss_)
     train_log['total_epochs'].append(total_epochs)
     train_log['best_epoch'].append(np.argmin(val_loss_list_))
@@ -332,26 +342,25 @@ def check_train_result(val_loss_list, best_epoch_model, data_loader, valid_idxs,
     train_log_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/log/train_log_{property_name}.csv'
     pd.DataFrame(train_log).to_csv(train_log_path)
 
-    return is_train_successful
-
 
 # 각 모델 (각각의 Fold 에 대한) 의 학습 실시
 # Create Date : 2025.04.10
 # Last Update Date : -
 
 # Arguments:
-# - model           (nn.Module)       : 학습 대상 CNN 모델
-# - data_loader     (DataLoader)      : 2,000 장의 데이터를 train data 로 하는 DataLoader
-# - train_idxs      (np.array)        : 학습 데이터로 지정된 인덱스
-# - valid_idxs      (np.array)        : 검증 데이터로 지정된 인덱스
-# - cnn_model_class (nn.Module class) : 학습할 CNN 모델의 Class
+# - model             (nn.Module)       : 학습 대상 CNN 모델
+# - data_loader       (DataLoader)      : 2,000 장의 데이터를 train data 로 하는 DataLoader
+# - train_idxs        (np.array)        : 학습 데이터로 지정된 인덱스
+# - valid_idxs        (np.array)        : 검증 데이터로 지정된 인덱스
+# - cnn_model_class   (nn.Module class) : 학습할 CNN 모델의 Class
+# - pos_neg_threshold (float)           : Output Score (0 ~ 1) 에 대해 Positive / Negative 를 구분하기 위한 Threshold
 
 # Returns:
 # - val_loss_list          (list(float))      : valid loss 기록
 # - performance_each_epoch (Pandas DataFrame) : 각 Epoch 에서의 상세한 성능 로그 (Accuracy, F1 Score 등 / threshold = 0.5 기준)
 # - best_epoch_model       (nn.Module)        : 가장 낮은 valid loss 에서의 CNN 모델
 
-def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_class):
+def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_class, pos_neg_threshold):
     train_sampler = torch.utils.data.SubsetRandomSampler(train_idxs)
     valid_sampler = torch.utils.data.SubsetRandomSampler(valid_idxs)
 
@@ -382,7 +391,9 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_c
         val_result = run_validation_detail(model=model,
                                            valid_loader=valid_loader,
                                            device=model.device,
-                                           loss_func=loss_func)
+                                           loss_func=loss_func,
+                                           threshold=pos_neg_threshold)
+
         val_loss = val_result['val_loss']
 
         # add performance log
