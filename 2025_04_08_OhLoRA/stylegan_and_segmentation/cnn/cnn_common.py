@@ -26,7 +26,7 @@ TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 INFERENCE_BATCH_SIZE = 4
 
-EARLY_STOPPING_ROUNDS = 10
+EARLY_STOPPING_ROUNDS = 20
 K_FOLDS = 5
 
 IMG_HEIGHT = 256
@@ -216,11 +216,14 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
 
     # Split train data using K-fold or Stratified K-fold (5 folds)
     if is_stratified:
-        kfold = StratifiedKFold(n_splits=K_FOLDS, shuffle=True)
+        score_labels = [int(score) for _, score in data_loader.dataset]
+
+        stratified_kfold = StratifiedKFold(n_splits=K_FOLDS, shuffle=True)
+        kfold_splitted_dataset = stratified_kfold.split(data_loader.dataset, y=score_labels)
+
     else:
         kfold = KFold(n_splits=K_FOLDS, shuffle=True)
-
-    kfold_splitted_dataset = kfold.split(data_loader.dataset)
+        kfold_splitted_dataset = kfold.split(data_loader.dataset)
 
     # for train log
     os.makedirs(f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/log', exist_ok=True)
@@ -232,7 +235,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
     if property_name == 'gender':
         val_loss_threshold, pos_neg_threshold = 0.25, 0.50
     elif property_name == 'quality':
-        val_loss_threshold, pos_neg_threshold = 0.10, 0.90
+        val_loss_threshold, pos_neg_threshold = 0.11, 0.90
     else:
         raise Exception("property_name must be one of ['gender', 'quality'].")
 
@@ -284,7 +287,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
                 print('train failed, retry ...')
                 cnn_models[fold] = define_cnn_model(cnn_model_class, device)
 
-    raise NotImplementedError
+    return cnn_models
 
 
 # 학습 로그 저장

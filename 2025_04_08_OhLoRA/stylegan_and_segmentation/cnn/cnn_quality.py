@@ -116,7 +116,7 @@ def main_quality():
         print(f'CNN model load failed : {e}')
 
         cnn_models = train_cnn_models(data_loader,
-                                      is_stratified=False,
+                                      is_stratified=True,
                                       property_name='quality',
                                       cnn_model_class=QualityCNN)
 
