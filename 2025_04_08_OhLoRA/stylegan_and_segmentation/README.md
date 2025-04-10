@@ -53,7 +53,18 @@
   * ```stylegan/stylegan_model.pth``` (Original GAN, including Generator & Discriminator)
     * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 
-### 3-2. Segmentation Model
+### 3-2. CNN Model
+
+* Training Data
+  * ```stylegan/synthesize_results_quality_and_gender.csv```
+  * Dataset size
+    * **2,000 rows**
+    * each corresponding to first 2,000 images in ```stylegan/synthesize_results```
+  * columns
+    * **Image Quality** (0: Bad Quality, 1: Good Quality)
+    * **Gender** (0: Man, 1: Woman)
+
+### 3-3. Segmentation Model
 
 ## 4. 코드 실행 방법
 
