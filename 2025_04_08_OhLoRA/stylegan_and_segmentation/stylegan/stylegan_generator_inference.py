@@ -1,5 +1,6 @@
 # Modified implementation from https://github.com/genforce/genforce/blob/master/runners/base_gan_runner.py
 
+import time
 import os
 import numpy as np
 import torch
@@ -37,6 +38,9 @@ def synthesize(generator_model, num, z=None):
     # TODO: Use same z during the entire training process.
 
     indices = list(range(RANK, num, WORLD_SIZE))
+    batch_count = len(indices) // VALID_BATCH_SIZE
+    start_at = time.time()
+
     for batch_idx in range(0, len(indices), VALID_BATCH_SIZE):
         sub_indices = indices[batch_idx:batch_idx + VALID_BATCH_SIZE]
         batch_size = len(sub_indices)
@@ -49,5 +53,12 @@ def synthesize(generator_model, num, z=None):
             images = postprocess_image(images.detach().cpu().numpy())
         for sub_idx, image in zip(sub_indices, images):
             save_image(os.path.join(temp_dir, f'{sub_idx:06d}.jpg'), image)
+
+        elapsed_time = time.time() - start_at
+        img_cnt = batch_idx + VALID_BATCH_SIZE
+        avg_time = elapsed_time / img_cnt
+
+        if batch_idx < 100 or batch_idx % 100 == 0:
+            print(f'image {img_cnt} / {num}, time : {elapsed_time:.4f}, time/image : {avg_time:.4f}')
 
 #    dist.barrier()

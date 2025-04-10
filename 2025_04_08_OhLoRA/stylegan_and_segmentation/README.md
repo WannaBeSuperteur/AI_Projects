@@ -58,3 +58,4 @@
 
 * Original GAN Generator 실행하여 이미지 생성
   * ```python stylegan_and_segmentation/run_original_generator.py```
+  * ```stylegan/synthesize_results``` 에 생성된 이미지 저장됨
