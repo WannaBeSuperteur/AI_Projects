@@ -26,4 +26,4 @@ if __name__ == '__main__':
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
     generator_model.G_kwargs_val = kwargs_val
 
-    inference.synthesize(generator_model, num=100, z=None)
+    inference.synthesize(generator_model, num=10000, z=None)
