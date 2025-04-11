@@ -146,7 +146,7 @@ def load_remaining_images_dataset(property_name):
     img_nos = sorted(os.listdir(IMAGE_DATA_DIR_PATH))[LABELED_IMAGE_COUNT:]
 
     img_nos = [int(img_no[:-4]) for img_no in img_nos]
-    img_paths = [f'{IMAGE_DATA_DIR_PATH}/{img_no}.jpg' for img_no in img_nos]
+    img_paths = [f'{IMAGE_DATA_DIR_PATH}/{img_no:06d}.jpg' for img_no in img_nos]
 
     remaining_dataset_dict = {'img_path': img_paths, 'img_no': img_nos}
     remaining_dataset_df = pd.DataFrame(remaining_dataset_dict)
@@ -524,11 +524,11 @@ def predict_score_remaining_images(property_name, remaining_images_loader, cnn_m
 
                 for i in range(current_batch_size):
                     model_score = float(outputs_cpu[i])
-                    final_score_dict[f'score_model_{model_idx}'].append(model_score)
+                    final_score_dict[f'score_model_{model_idx}'].append(round(model_score, 4))
                     model_scores[i][model_idx] = model_score
 
             for i in range(current_batch_size):
-                final_score_dict[f'property_{property_name}_final_score'].append(np.mean(model_scores[i]))
+                final_score_dict[f'property_{property_name}_final_score'].append(round(np.mean(model_scores[i]), 4))
 
     final_score = pd.DataFrame(final_score_dict)
     final_score.to_csv(report_path, index=False)
