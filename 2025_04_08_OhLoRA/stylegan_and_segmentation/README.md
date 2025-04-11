@@ -102,6 +102,10 @@
 
 **2. Modified Fine-Tuned StyleGAN (like Conditional StyleGAN)**
 
+* Generator
+  * ```stylegan_modified/stylegan_generator.py```
+* Discriminator
+  * ```stylegan_modified/stylegan_discriminator.py```
 * Model Save Path
   * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` (**Generator** of **Modified Fine-Tuned** StyleGAN)
   * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` (**Discriminator** of **Modified Fine-Tuned** StyleGAN)
@@ -162,7 +166,7 @@
 
 ## 4. 코드 실행 방법
 
-**모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행**
+**모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행** (단, 추가 개발 목적이 아닌 경우, 마지막의 **"6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성"** 부분만 실행)
 
 * **1. Original GAN Generator 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_original_generator.py```
