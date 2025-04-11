@@ -3,6 +3,7 @@ import stylegan.stylegan_discriminator as original_dis
 
 import stylegan_modified.stylegan_generator as modified_gen
 import stylegan_modified.stylegan_discriminator as modified_dis
+import stylegan_modified.stylegan_generator_inference as modified_inf
 
 import torch
 import torch.nn as nn
@@ -278,6 +279,24 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
     raise NotImplementedError
 
 
+# StyleGAN Fine-Tuning 이전 inference test 실시
+# Create Date : 2025.04.12
+# Last Update Date : -
+
+# Arguments:
+# - restructured_generator (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
+
+# Returns:
+# - stylegan_modified/inference_test_before_finetuning 에 생성 결과 저장
+
+def run_inference_test_before_finetuning(restructured_generator):
+    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+    restructured_generator.G_kwargs_val = kwargs_val
+
+    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_before_finetuning'
+    modified_inf.synthesize(restructured_generator, num=20, save_dir=img_save_dir, z=None, label=None)
+
+
 # StyleGAN Fine-Tuning 실시 (핵심 속성 값 5개를 latent vector 에 추가)
 # Create Date : 2025.04.12
 # Last Update Date : -
@@ -325,6 +344,9 @@ def run_stylegan_fine_tuning(pretrained_generator, pretrained_discriminator, sty
                              input_size=[(TRAIN_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
                                          (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)],
                              print_frozen=True)
+
+    # fine tuning 이전 inference 테스트
+    run_inference_test_before_finetuning(restructured_generator)
 
     # fine tuning 실시
     fine_tuned_generator, fine_tuned_discriminator = run_fine_tuning(restructured_generator,
