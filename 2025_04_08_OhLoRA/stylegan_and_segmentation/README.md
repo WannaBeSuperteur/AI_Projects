@@ -103,7 +103,8 @@
 **2. Modified Fine-Tuned StyleGAN (like Conditional StyleGAN)**
 
 * Model Save Path
-  * ```stylegan_modified/stylegan_model_fine_tuned.pth``` (**Modified Fine-Tuned GAN**, including Generator & Discriminator)
+  * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` (**Generator** of **Modified Fine-Tuned** StyleGAN)
+  * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` (**Discriminator** of **Modified Fine-Tuned** StyleGAN)
 
 ### 3-2. CNN Model
 
@@ -119,6 +120,10 @@
   * columns
     * **Image Quality** (0: Bad Quality, 1: Good Quality)
     * **Gender** (0: Man, 1: Woman)
+
+* CNN Model Structure
+
+![image](../../images/250408_4.PNG)
 
 * Training Process
   * Loss Function 은 [Binary Cross-Entropy (BCE) Loss](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-4-binary-cross-entropy-loss) 사용 [(MSE Loss 는 논리적으로 부적합)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_Function_Misuse.md#1-1-probability-prediction-0--1-%EB%B2%94%EC%9C%84-%EB%8B%A8%EC%9D%BC-output-%EC%97%90%EC%84%9C-mse-loss-%EB%93%B1%EC%9D%B4-%EB%B6%80%EC%A0%81%EC%A0%88%ED%95%9C-%EC%9D%B4%EC%9C%A0)
@@ -182,7 +187,8 @@
 * **5. StyleGAN Fine-Tuning 실시**
   * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
   * ```python stylegan_and_segmentation/run_stylegan_fine_tuning.py```
-  * ```stylegan_modified/stylegan_model_fine_tuned.pth``` 에 Fine-Tuning 된 모델 저장됨
+  * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Generator 저장됨
+  * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
 
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
