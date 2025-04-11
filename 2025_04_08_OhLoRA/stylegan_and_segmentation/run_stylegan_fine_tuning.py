@@ -245,6 +245,17 @@ def create_restructured_stylegan(generator_state_dict, discriminator_state_dict)
     restructured_generator.to(device)
     restructured_discriminator.to(device)
 
+    # freeze 전 모델 summary 출력
+    save_model_structure_pdf(restructured_generator,
+                             model_name='restructured_generator (BEFORE FREEZING)',
+                             input_size=(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
+                             print_frozen=True)
+
+    save_model_structure_pdf(restructured_discriminator,
+                             model_name='restructured_discriminator (BEFORE FREEZING)',
+                             input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
+                             print_frozen=True)
+
     raise NotImplementedError
 
 
