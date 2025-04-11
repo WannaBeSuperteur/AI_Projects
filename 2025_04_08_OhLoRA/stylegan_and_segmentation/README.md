@@ -7,7 +7,7 @@
 * [3. 사용 모델 설명](#3-사용-모델-설명)
   * [3-1. Image Generation Model (StyleGAN)](#3-1-image-generation-model-stylegan)
   * [3-2. CNN Model](#3-2-cnn-model)
-  * [3-3. Segmentation Model](#3-3-segmentation-model)
+  * [3-3. Segmentation Model (FaceXFormer)](#3-3-segmentation-model-facexformer)
 * [4. 코드 실행 방법](#4-코드-실행-방법)
 
 ## 1. 개요
@@ -32,22 +32,49 @@
 ## 2. 핵심 속성 값
 
 * 필터링에 사용 : **해당 값이 모두 threshold 에 도달하는 이미지만** 따로 필터링하여, 나머지 6개 속성 값을 Pre-trained Segmentation Model 을 이용하여 계산
+* 성별, 이미지 품질을 제외한 나머지 핵심 속성 값들은 아래 표와 같이, **계산된 값을 최종적으로 $N(0, 1^2)$ 로 정규화** 하여 AI 모델에 적용
 
-| 핵심 속성 값 이름                     | 설명                                    | 값 범위    | 필터링에 사용 |
-|--------------------------------|---------------------------------------|---------|---------|
-| 성별 ```gender```                | 0 (남성) ~ 1 (여성) 의 확률 값                | 0 ~ 1   | **O**   |
-| 이미지 품질 ```quality```           | 0 (저품질) ~ 1 (고품질) 의 확률 값              | 0 ~ 1   | **O**   |
-| 눈을 뜬 정도 ```eyes```             | 눈을 크게 뜰수록 값이 큼                        | 0 ~ 1   | X       |
-| 머리 색 ```hair_color```          | 머리 색이 밝을수록 값이 큼                       | 0 ~ 1   | X       |
-| 입을 벌린 정도 ```mouth```           | 입을 벌린 정도가 클수록 값이 큼                    | 0 ~ 1   | X       |
-| 배경색의 밝기 ```background_light``` | 배경색이 밝을수록 값이 큼                        | 0 ~ 1   | X       |
-| 배경색의 표준편차 ```background_std``` | 배경색의 표준편차가 클수록 값이 큼                   | 0 ~ 1   | X       |
-| 고개 돌림 ```face_pose```          | 왼쪽 고개 돌림 (-1), 정면 (0), 오른쪽 고개 돌림 (+1) | -1 ~ +1 | X       |
+| 핵심 속성 값 이름              | 설명                                    | AI 모델에 저장되는 값의 범위 또는 분포<br>(CNN output or StyleGAN latent vector) | 필터링에 사용 |
+|-------------------------|---------------------------------------|-------------------------------------------------------------------|---------|
+| 성별 ```gender```         | 0 (남성) ~ 1 (여성) 의 확률 값                | 0 ~ 1                                                             | **O**   |
+| 이미지 품질 ```quality```    | 0 (저품질) ~ 1 (고품질) 의 확률 값              | 0 ~ 1                                                             | **O**   |
+| 눈을 뜬 정도 ```eyes```      | 눈을 크게 뜰수록 값이 큼                        | $N(0, 1^2)$                                                       | X       |
+| 머리 색 ```hair_color```   | 머리 색이 밝을수록 값이 큼                       | $N(0, 1^2)$                                                       | X       |
+| 머리 길이 ```hair_length``` | 머리 길이가 길수록 값이 큼                       | $N(0, 1^2)$                                                       | X       |
+| 입을 벌린 정도 ```mouth```    | 입을 벌린 정도가 클수록 값이 큼                    | $N(0, 1^2)$                                                       | X       |
+| 고개 돌림 ```face_pose```   | 왼쪽 고개 돌림 (-1), 정면 (0), 오른쪽 고개 돌림 (+1) | $N(0, 1^2)$                                                       | X       |
 
 ### 2-1. 핵심 속성 값 계산 알고리즘
 
-* Segmentation 결과를 바탕으로 다음과 같이 **핵심 속성 값들을 계산**
-  * TBU 
+* Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 5가지 핵심 속성 값들을 계산**
+  * 계산 대상 핵심 속성 값 
+    * 눈을 뜬 정도, 머리 색, 머리 길이, 입을 벌린 정도, 얼굴의 위치 
+  * 점수 계산 완료 후, **모든 이미지에 대해 각 속성 종류별로 그 값들을 위 표에 따라 [Gaussian Normalization](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_Normalization.md#2-2-standarization-z-score-normalization) 적용**
+    * 예를 들어, 모든 이미지에 대한 머리 색의 값이 ```[100, 250, 120, 180, 210]``` 인 경우, 이를 Gaussian Normalization 하여 ```[-1.294, 1.402, -0.935, 0.144, 0.683]``` 으로 정규화
+  * Segmentation 결과는 **224 x 224 로 resize 된 이미지** 임
+
+**1. 눈을 뜬 정도 (eyes)**
+
+* Segmentation 결과에서 왼쪽 눈과 오른쪽 눈에 해당하는 픽셀들을 각각 찾아서,
+* 그 y좌표의 최댓값과 최솟값의 차이를 눈 영역의 높이, 즉 눈을 뜬 정도로 간주
+
+![image](../../images/250408_5.PNG)
+
+**2. 머리 색 (hair_color), 머리 길이 (hair_length)**
+
+* 머리 길이의 경우,
+  * Segmentation 결과에서 **hair 영역이 맨 아래쪽 row (224 번째 row) 까지** 있으면,
+  * 그 아래쪽의 머리 길이를 **맨 아래쪽 row (1 x 224) 의 hair 영역 픽셀 개수** 를 근거로 예측하는 알고리즘 적용
+
+![image](../../images/250408_6.PNG)
+
+**3. 입을 벌린 정도 (mouth), 고개 돌림 (pose)**
+
+* 고개를 돌리면 코에 해당하는 픽셀의 x 좌표 및 y 좌표 분포에도 영향을 미치므로, 그 상관계수를 이용
+  * 코에 해당하는 x 좌표와 y 좌표의 **상관계수가 +** 이면 고개 돌림 방향은 **왼쪽 (Pose Score < 0)**
+  * 코에 해당하는 x 좌표와 y 좌표의 **상관계수가 -** 이면 고개 돌림 방향은 **오른쪽 (Pose Score > 0)**
+
+![image](../../images/250408_7.PNG)
 
 ## 3. 사용 모델 설명
 
@@ -59,9 +86,9 @@
   * ```stylegan/stylegan_generator.py```
 * Discriminator
   * ```stylegan/stylegan_discriminator.py```
-* Model
+* Model Save Path
   * ```stylegan/stylegan_model.pth``` (**Original GAN**, including Generator & Discriminator)
-    * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
+    * original model from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 * [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
 
 ### 3-2. CNN Model
@@ -103,11 +130,20 @@
   * ```quality``` 모델 5개
     * ```cnn/models/quality_model_{0|1|2|3|4}.pt```
 
-### 3-3. Segmentation Model
+### 3-3. Segmentation Model (FaceXFormer)
+
+[Implementation Source : FaceXFormer Official GitHub](https://github.com/Kartik-3004/facexformer/tree/main) (MIT License)
+
+* Main Model Save Path ([Original Source](https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts))
+  * ```segmentation/models/segmentation_model.pt``` (Pre-trained FaceXFormer)
+* Additional Models Save Path ([Original Source](https://github.com/timesler/facenet-pytorch/blob/master/data))  
+  * ```segmentation/models/mtcnn_pnet.pt``` (Pre-trained P-Net for MTCNN)
+  * ```segmentation/models/mtcnn_rnet.pt``` (Pre-trained R-Net for MTCNN)
+  * ```segmentation/models/mtcnn_onet.pt``` (Pre-trained O-Net for MTCNN)
 
 ## 4. 코드 실행 방법
 
-**모든 코드는 ```2025_04_08_OhLoRA``` main directory 에서 실행**
+**모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행**
 
 * Original GAN Generator 실행하여 이미지 생성
   * ```python stylegan_and_segmentation/run_original_generator.py```
@@ -118,3 +154,13 @@
   * 모든 이미지에 대한 핵심 속성 값 데이터 (unlabeled image 의 경우 모델 계산값) 가 저장됨
   * CNN model 이 지정된 경로에 없을 시, CNN 모델 학습
   * ```stylegan/synthesize_results_filtered``` 에 필터링된 이미지 저장됨 **(StyleGAN Fine-Tuning 학습 데이터로 사용)**
+
+* Segmentation 결과 생성
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
+  * ```python stylegan_and_segmentation/run_segmentation.py```
+  * ```segmentation/segmentation_results``` 에 이미지 저장됨
+
+* 성별, 이미지 품질을 제외한 5가지 핵심 속성값 계산 결과 생성
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
+  * ```python stylegan_and_segmentation/compute_property_scores.py```
+  * ```segmentation/property_score_results``` 에 결과 저장됨
