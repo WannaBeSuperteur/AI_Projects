@@ -37,16 +37,20 @@
     * 눈을 뜬 정도, 머리 색, 머리 길이, 입을 벌린 정도, 얼굴의 위치 
   * 점수 계산 완료 후, **모든 이미지에 대해 각 속성 종류별로 그 값들을 위 표의 "값 범위"에 따라 [min-max normalization](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_Normalization.md#2-1-min-max-normalization) 적용**
     * 예를 들어, 모든 이미지에 대한 머리 색의 값이 ```[100, 250, 120, 180, 210]``` 인 경우, 이를 linear transform 하여 ```[0.0, 1.0, 0.133, 0.533, 0.733]``` 으로 정규화
+  * Segmentation 결과는 **224 x 224 로 resize 된 이미지** 임
 
 **1. 눈을 뜬 정도 (eyes)**
+
+* Segmentation 결과에서 왼쪽 눈과 오른쪽 눈에 해당하는 픽셀들을 각각 찾아서,
+* 그 y좌표의 최댓값과 최솟값의 차이를 눈 영역의 높이, 즉 눈을 뜬 정도로 간주
 
 ![image](../../images/250408_5.PNG)
 
 **2. 머리 색 (hair_color), 머리 길이 (hair_length)**
 
 * 머리 길이의 경우,
-  * Segmentation 결과에서 **hair 영역이 맨 아래쪽 row 까지** 있으면,
-  * 그 아래쪽의 머리 길이를 **맨 아래쪽 row 의 hair 영역 픽셀 개수** 를 근거로 예측하는 알고리즘 적용
+  * Segmentation 결과에서 **hair 영역이 맨 아래쪽 row (224 번째 row) 까지** 있으면,
+  * 그 아래쪽의 머리 길이를 **맨 아래쪽 row (1 x 224) 의 hair 영역 픽셀 개수** 를 근거로 예측하는 알고리즘 적용
 
 ![image](../../images/250408_6.PNG)
 
@@ -73,6 +77,8 @@
     * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 
 ### 3-2. Segmentation Model (FaceXFormer)
+
+[Implementation Source : FaceXFormer Official GitHub](https://github.com/Kartik-3004/facexformer/tree/main) (MIT License)
 
 * Main Model Save Path ([Original Source](https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts))
   * ```segmentation/models/segmentation_model.pt``` (Pre-trained FaceXFormer)
