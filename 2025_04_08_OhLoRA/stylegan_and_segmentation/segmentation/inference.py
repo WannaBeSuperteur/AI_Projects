@@ -1,4 +1,4 @@
-# Original implementation from https://github.com/Kartik-3004/facexformer/blob/main/inference.py
+# Modified implementation from https://github.com/Kartik-3004/facexformer/blob/main/inference.py
 
 # Original MTCNN implementation from https://github.com/timesler/facenet-pytorch/blob/master/models/mtcnn.py
 # - copied MTCNN code instead of pip install & import, because of NumPy and PyTorch version issue
@@ -167,6 +167,7 @@ def test(args):
     for k in labels.keys():
         labels[k] = labels[k].unsqueeze(0).to(device=device)
     tasks = tasks.to(device=device)
+    img_idx = args['img_idx']
 
     landmark_output, headpose_output, attribute_output, visibility_output, age_output, gender_output, race_output, seg_output = model(
         images, labels, tasks)
@@ -174,10 +175,8 @@ def test(args):
         preds = seg_output.softmax(dim=1)
         mask = torch.argmax(preds, dim=1)
         pred_mask = mask[0].detach().cpu().numpy()
-        save_path = os.path.join(args['results_path'], "parsing.png")
-        cv2.imwrite(f"{save_path}", pred_mask)
         mask, face, color_mask = visualize_mask(unnormalize(images[0].detach().cpu()), pred_mask)
-        save_path = os.path.join(args['results_path'], "parsing_visualization.png")
+        save_path = os.path.join(args['results_path'], f"parsing_visualization_{img_idx:06d}.png")
         cv2.imwrite(f"{save_path}", mask[:, :, ::-1])
     if tasks[0] == 1:
         image = unnormalize(images[0].detach().cpu())
@@ -235,5 +234,5 @@ def test(args):
     image = unnormalize(images[0].detach().cpu())
     image = image.permute(1, 2, 0).numpy()
     image = (image * 255).astype(np.uint8)
-    save_path = os.path.join(args['results_path'], "face.png")
+    save_path = os.path.join(args['results_path'], f"face_{img_idx:06d}.png")
     cv2.imwrite(f"{save_path}", image[:, :, ::-1])

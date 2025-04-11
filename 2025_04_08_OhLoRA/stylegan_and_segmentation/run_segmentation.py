@@ -22,6 +22,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 def run_segmentation_with_model(img_paths, model_path):
     result_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/segmentation_results'
+    os.makedirs(result_path, exist_ok=True)
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -33,11 +34,14 @@ def run_segmentation_with_model(img_paths, model_path):
         if idx < 10 or idx % 25 == 0:
             print(f'inferencing image {idx} ...')
 
+        img_idx = int(img_path.split('/')[-1][:-4])  # image index from ORIGINAL DATASET with 10K generated images
+
         test_args = {'model_path': model_path,
                      'image_path': img_path,
                      'results_path': result_path,
                      'task': 'parsing',
-                     'gpu_num': gpu_num}
+                     'gpu_num': gpu_num,
+                     'img_idx': img_idx}
 
         test(test_args)
 

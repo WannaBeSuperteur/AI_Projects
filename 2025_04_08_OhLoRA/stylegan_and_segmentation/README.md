@@ -66,3 +66,8 @@
 * Original GAN Generator 실행하여 이미지 생성
   * ```python stylegan_and_segmentation/run_original_generator.py```
   * ```stylegan/synthesize_results``` 에 생성된 이미지 저장됨
+
+* Segmentation 결과 및 **성별, 이미지 품질을 제외한 6가지 핵심 속성값 계산 결과** 생성
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
+  * ```python stylegan_and_segmentation/run_segmentation.py```
+  * ```segmentation/segmentation_results``` 에 이미지 저장됨
