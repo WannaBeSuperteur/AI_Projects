@@ -1,5 +1,5 @@
 # Original implementation from https://github.com/Kartik-3004/facexformer/blob/main/inference.py
-# Original Pre-trained FaceXFormer model from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts
+# Original Pre-trained FaceXFormer model from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts/model.pt
 
 
 import numpy as np
@@ -10,6 +10,19 @@ import torchvision.models as models
 from typing import Any, Optional, Tuple, Type
 from torchvision.models import swin_b
 from segmentation.transformer import TwoWayTransformer, LayerNorm2d
+
+
+# to solve below error when loading swin_b model :
+# - code line
+#   - swin_v2 = swin_b(weights='IMAGENET1K_V1')
+
+"""
+urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed:
+unable to get local issuer certificate (_ssl.c:1007)>
+"""
+
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 class MLP(nn.Module):

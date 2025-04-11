@@ -1,3 +1,5 @@
+# Original Pre-trained FaceXFormer model from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts/model.pt
+
 from segmentation.inference import test
 
 import torch
