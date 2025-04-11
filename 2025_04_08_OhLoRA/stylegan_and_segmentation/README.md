@@ -26,6 +26,7 @@
 | 성별 ```gender```                | 0 (남성) ~ 1 (여성) 의 확률 값            | 0 ~ 1   |
 | 눈을 뜬 정도 ```eyes```             | 눈을 크게 뜰수록 값이 큼                    | 0 ~ 1   |
 | 머리 색 ```hair_color```          | 머리 색이 밝을수록 값이 큼                   | 0 ~ 1   |
+| 머리 길이 ```hair_length```        | 머리 길이가 길수록 값이 큼                   | 0 ~ 1   |
 | 입을 벌린 정도 ```mouth```           | 입을 벌린 정도가 클수록 값이 큼                | 0 ~ 1   |
 | 배경색의 밝기 ```background_light``` | 배경색이 밝을수록 값이 큼                    | 0 ~ 1   |
 | 배경색의 표준편차 ```background_std``` | 배경색의 표준편차가 클수록 값이 큼               | 0 ~ 1   |
@@ -33,7 +34,7 @@
 
 ### 2-1. 핵심 속성 값 계산 알고리즘
 
-* Segmentation 결과를 바탕으로 다음과 같이 **핵심 속성 값들을 계산**
+* Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 7가지 핵심 속성 값들을 계산**
   * TBU 
 
 ## 3. 사용 모델 설명
@@ -61,13 +62,18 @@
 
 ## 4. 코드 실행 방법
 
-**모든 코드는 ```2025_04_08_OhLoRA``` main directory 에서 실행**
+**모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행**
 
 * Original GAN Generator 실행하여 이미지 생성
   * ```python stylegan_and_segmentation/run_original_generator.py```
   * ```stylegan/synthesize_results``` 에 생성된 이미지 저장됨
 
-* Segmentation 결과 및 **성별, 이미지 품질을 제외한 6가지 핵심 속성값 계산 결과** 생성
+* Segmentation 결과 생성
   * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
   * ```python stylegan_and_segmentation/run_segmentation.py```
   * ```segmentation/segmentation_results``` 에 이미지 저장됨
+
+* 성별, 이미지 품질을 제외한 7가지 핵심 속성값 계산 결과 생성
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
+  * ```python stylegan_and_segmentation/compute_property_scores.py```
+  * ```segmentation/property_score_results``` 에 결과 저장됨
