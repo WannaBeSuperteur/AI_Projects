@@ -5,7 +5,7 @@
   * [2-1. 핵심 속성 값 계산 알고리즘](#2-1-핵심-속성-값-계산-알고리즘)
 * [3. 사용 모델 설명](#3-사용-모델-설명)
   * [3-1. Image Generation Model (StyleGAN)](#3-1-image-generation-model-stylegan)
-  * [3-2. Segmentation Model](#3-2-segmentation-model)
+  * [3-2. Segmentation Model (FaceXFormer)](#3-2-segmentation-model-facexformer)
 * [4. 코드 실행 방법](#4-코드-실행-방법)
 
 ## 1. 개요
@@ -46,11 +46,18 @@
   * ```stylegan/stylegan_generator.py```
 * Discriminator
   * ```stylegan/stylegan_discriminator.py```
-* Model
+* Model Save Path
   * ```stylegan/stylegan_model.pth``` (Original GAN, including Generator & Discriminator)
     * from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 
-### 3-2. Segmentation Model
+### 3-2. Segmentation Model (FaceXFormer)
+
+* Main Model Save Path ([Original Source](https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts))
+  * ```segmentation/models/segmentation_model.pt``` (Pre-trained FaceXFormer)
+* Additional Models Save Path ([Original Source](https://github.com/timesler/facenet-pytorch/blob/master/data))  
+  * ```segmentation/models/mtcnn_pnet.pt``` (Pre-trained P-Net for MTCNN)
+  * ```segmentation/models/mtcnn_rnet.pt``` (Pre-trained R-Net for MTCNN)
+  * ```segmentation/models/mtcnn_onet.pt``` (Pre-trained O-Net for MTCNN)
 
 ## 4. 코드 실행 방법
 

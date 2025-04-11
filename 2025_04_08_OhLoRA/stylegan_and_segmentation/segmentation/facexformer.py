@@ -1,5 +1,5 @@
 # Original implementation from https://github.com/Kartik-3004/facexformer/blob/main/inference.py
-# Original Pre-trained FaceXFormer model from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts/model.pt
+# Original Pre-trained FaceXFormer from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts > model.pt
 
 
 import numpy as np

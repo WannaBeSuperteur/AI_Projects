@@ -1,6 +1,15 @@
 # Original MTCNN implementation from https://github.com/timesler/facenet-pytorch/blob/master/models/mtcnn.py
 # - copied MTCNN code instead of pip install & import, because of NumPy and PyTorch version issue
 
+# P-Net Original Source :
+# - https://github.com/timesler/facenet-pytorch/blob/master/data/pnet.pt
+
+# R-Net Original Source :
+# - https://github.com/timesler/facenet-pytorch/blob/master/data/rnet.pt
+
+# O-Net Original Source :
+# - https://github.com/timesler/facenet-pytorch/blob/master/data/onet.pt
+
 
 import torch
 from torch import nn
@@ -8,6 +17,9 @@ import numpy as np
 import os
 
 from segmentation.mtcnn_detect_face import detect_face, extract_face
+
+
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
 class PNet(nn.Module):
@@ -34,8 +46,8 @@ class PNet(nn.Module):
         self.training = False
 
         if pretrained:
-            state_dict_path = os.path.join(os.path.dirname(__file__), '../data/pnet.pt')
-            state_dict = torch.load(state_dict_path)
+            pnet_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/mtcnn_pnet.pt'
+            state_dict = torch.load(pnet_path)
             self.load_state_dict(state_dict)
 
     def forward(self, x):
@@ -79,8 +91,8 @@ class RNet(nn.Module):
         self.training = False
 
         if pretrained:
-            state_dict_path = os.path.join(os.path.dirname(__file__), '../data/rnet.pt')
-            state_dict = torch.load(state_dict_path)
+            rnet_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/mtcnn_rnet.pt'
+            state_dict = torch.load(rnet_path)
             self.load_state_dict(state_dict)
 
     def forward(self, x):
@@ -132,8 +144,8 @@ class ONet(nn.Module):
         self.training = False
 
         if pretrained:
-            state_dict_path = os.path.join(os.path.dirname(__file__), '../data/onet.pt')
-            state_dict = torch.load(state_dict_path)
+            onet_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/mtcnn_onet.pt'
+            state_dict = torch.load(onet_path)
             self.load_state_dict(state_dict)
 
     def forward(self, x):

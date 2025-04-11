@@ -1,4 +1,5 @@
-# Original Pre-trained FaceXFormer model from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts/model.pt
+# Original Pre-trained FaceXFormer from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts > model.pt
+
 
 from segmentation.inference import test
 
@@ -9,7 +10,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # Model 을 이용하여 Face Segmentation 실시
 # Create Date : 2025.04.10
-# Last Update Date : -
+# Last Update Date : 2025.04.11
+# - inferencing image count 추가
 
 # Arguments:
 # - img_paths  (list(str)) : Face Segmentation 을 실시할 이미지의 경로 목록
@@ -27,10 +29,13 @@ def run_segmentation_with_model(img_paths, model_path):
 
     gpu_num = '0' if 'cuda' in str(device) else 'cpu'
 
-    for img_path in img_paths:
+    for idx, img_path in enumerate(img_paths):
+        if idx < 10 or idx % 25 == 0:
+            print(f'inferencing image {idx} ...')
+
         test_args = {'model_path': model_path,
                      'image_path': img_path,
-                     'result_path': result_path,
+                     'results_path': result_path,
                      'task': 'parsing',
                      'gpu_num': gpu_num}
 
@@ -40,10 +45,10 @@ def run_segmentation_with_model(img_paths, model_path):
 if __name__ == '__main__':
 
     # model path
-    model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/segmentation_model.pt'
+    model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/segmentation_model.pt'
 
     # get image path
-    img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results'
+    img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results_filtered'
     img_names = os.listdir(img_dir)
     img_paths = [f'{img_dir}/{img_name}' for img_name in img_names]
 
