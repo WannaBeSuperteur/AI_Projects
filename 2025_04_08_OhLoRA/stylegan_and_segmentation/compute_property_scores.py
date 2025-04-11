@@ -252,15 +252,13 @@ def compute_all_image_scores(all_img_nos):
 def normalize_all_scores(all_scores):
     scores = pd.DataFrame(all_scores)
 
-    property_to_apply_minmax = ['eyes_score', 'hair_color_score', 'hair_length_score', 'mouth_score']  # 0 ~ 1
-    property_to_apply_m1_to_p1 = ['pose_score']  # -1 ~ +1
+    properties = ['eyes_score', 'hair_color_score', 'hair_length_score', 'mouth_score', 'pose_score']
 
-    for p in property_to_apply_minmax:
-        scores[p] = (scores[p] - scores[p].min()) / (scores[p].max() - scores[p].min())
-        scores[p] = scores[p].apply(lambda x: round(x, 4))
+    for p in properties:
+        property_mean = scores[p].mean()
+        property_std = scores[p].std()
+        scores[p] = (scores[p] - property_mean) / property_std
 
-    for p in property_to_apply_m1_to_p1:
-        scores[p] = 2.0 * (scores[p] - scores[p].min()) / (scores[p].max() - scores[p].min()) - 1.0
         scores[p] = scores[p].apply(lambda x: round(x, 4))
 
     return scores
