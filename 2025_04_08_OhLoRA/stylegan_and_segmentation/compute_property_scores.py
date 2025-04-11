@@ -166,10 +166,21 @@ def compute_mouth_score(parsing_result):
 # - parsing_result (np.array) : Parsing Result (224 x 224)
 
 # Returns:
-# - pose_score (float) : 고개 돌림 Score
+# - pose_score (float) : 고개 돌림 Score (왼쪽: -1 ~ 정면: 0 ~ 오른쪽: +1)
 
 def compute_pose_score(parsing_result):
-    raise NotImplementedError
+    nose_xs = []
+    nose_ys = []
+
+    for y in range(PARSED_MAP_SIZE):
+        for x in range(PARSED_MAP_SIZE):
+            if parsing_result[y][x] == 6:
+                nose_xs.append(x)
+                nose_ys.append(y)
+
+    corr = np.corrcoef(nose_xs, nose_ys)[0][1]
+    pose_score = (-1.0) * corr
+    return pose_score
 
 
 # 생성된 이미지 중 필터링된 모든 이미지를 읽어서 그 이미지의 모든 Score 를 산출
