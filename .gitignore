@@ -21,6 +21,10 @@
 2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan/stylegan_model.pth
 2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan/synthesize_results
 2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan/synthesize_results/*
+2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan/synthesize_results_filtered
+2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan/synthesize_results_filtered/*
+2025_04_08_OhLoRA/stylegan_and_segmentation/cnn/models
+2025_04_08_OhLoRA/stylegan_and_segmentation/cnn/models/*
 2025_04_08_OhLoRA/stylegan_and_segmentation/segmentation/segmentation_model.pt
 venv
 venv/*
