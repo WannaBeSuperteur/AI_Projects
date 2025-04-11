@@ -78,9 +78,18 @@
 
 ## 3. 사용 모델 설명
 
+| 모델                      | 모델 분류                          | 사용 목적                                  |
+|-------------------------|--------------------------------|----------------------------------------|
+| **Original** StyleGAN   | Image Generation Model         | StyleGAN 의 Fine-Tuning 에 사용할 후보 이미지 생성 |
+| CNN                     |                                | StyleGAN Fine-Tuning 후보 이미지의 필터링       |
+| FaceXFormer             | Pre-trained Segmentation Model | 필터링된 후보 이미지의 핵심 속성 값 추출                |
+| **Fine-Tuned** StyleGAN | Image Generation Model         | **Oh-LoRA (오로라) 이미지 생성용 최종 모델**        |
+
 ### 3-1. Image Generation Model (StyleGAN)
 
 [Implementation & Pre-trained Model Source : GenForce GitHub](https://github.com/genforce/genforce/tree/master) (MIT License)
+
+**1. Original Model**
 
 * Generator
   * ```stylegan/stylegan_generator.py```
@@ -90,6 +99,11 @@
   * ```stylegan/stylegan_model.pth``` (**Original GAN**, including Generator & Discriminator)
     * original model from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 * [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
+
+**2. Modified Fine-Tuned StyleGAN (like Conditional StyleGAN)**
+
+* Model Save Path
+  * ```stylegan_modified/stylegan_model_fine_tuned.pth``` (**Modified Fine-Tuned GAN**, including Generator & Discriminator)
 
 ### 3-2. CNN Model
 
@@ -145,22 +159,31 @@
 
 **모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행**
 
-* Original GAN Generator 실행하여 이미지 생성
+* **1. Original GAN Generator 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_original_generator.py```
   * ```stylegan/synthesize_results``` 에 생성된 이미지 저장됨
 
-* CNN 실행
+* **2. CNN 실행**
   * ```python stylegan_and_segmentation/run_cnn.py```
   * 모든 이미지에 대한 핵심 속성 값 데이터 (unlabeled image 의 경우 모델 계산값) 가 저장됨
   * CNN model 이 지정된 경로에 없을 시, CNN 모델 학습
   * ```stylegan/synthesize_results_filtered``` 에 필터링된 이미지 저장됨 **(StyleGAN Fine-Tuning 학습 데이터로 사용)**
 
-* Segmentation 결과 생성
+* **3. Segmentation 결과 생성**
   * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
   * ```python stylegan_and_segmentation/run_segmentation.py```
   * ```segmentation/segmentation_results``` 에 이미지 저장됨
 
-* 성별, 이미지 품질을 제외한 5가지 핵심 속성값 계산 결과 생성
+* **4. 성별, 이미지 품질을 제외한 5가지 핵심 속성값 계산 결과 생성**
   * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
   * ```python stylegan_and_segmentation/compute_property_scores.py```
   * ```segmentation/property_score_results``` 에 결과 저장됨
+
+* **5. StyleGAN Fine-Tuning 실시**
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
+  * ```python stylegan_and_segmentation/run_stylegan_fine_tuning.py```
+  * ```stylegan_modified/stylegan_model_fine_tuned.pth``` 에 Fine-Tuning 된 모델 저장됨
+
+* **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
+  * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
+  * ```stylegan_modified/synthesize_results``` 에 생성된 이미지 저장됨
