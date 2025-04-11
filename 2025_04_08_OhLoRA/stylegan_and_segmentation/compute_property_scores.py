@@ -1,4 +1,6 @@
+import pandas as pd
 import os
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
@@ -130,11 +132,41 @@ def compute_all_image_scores(all_img_nos):
     raise NotImplementedError
 
 
+# 모든 이미지의 모든 핵심 속성 값 Score 를 정규화
+# Create Date : 2025.04.11
+# Last Update Date : -
+
+# Arguments:
+# - all_scores (Pandas DataFrame) : 모든 이미지에 대한 모든 Score 의 계산 결과
+#                                   columns = ['img_no', 'img_path', 'eyes_score', ..., 'pose_score']
+#                                   img_path 는 stylegan_and_segmentation/stylegan/synthesize_results_filtered 기준
+
+# Returns:
+# - all_scores (Pandas DataFrame) : 모든 이미지에 대한 모든 Score 의 계산 결과 (정규화된)
+
+def normalize_all_scores(all_scores):
+    scores = pd.DataFrame(all_scores)
+
+    property_to_apply_minmax = ['eyes_score', 'hair_color_score', 'hair_length_score', 'mouth_score',
+                                'background_light_score', 'background_std_score']
+    property_to_apply_m1_to_p1 = ['pose_score']
+
+    for p in property_to_apply_minmax:
+        scores[p] = (scores[p] - scores[p].min()) / (scores[p].max() - scores[p].min())
+
+    for p in property_to_apply_m1_to_p1:
+        scores[p] = 2.0 * (scores[p] - scores[p].min()) / (scores[p].max() - scores[p].min()) - 1.0
+
+    return scores
+
+
 if __name__ == '__main__':
     img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results_filtered'
     img_names = os.listdir(img_dir)
     img_nos = [int(img_name[:-4]) for img_name in img_names]
 
     all_scores = compute_all_image_scores(img_nos)
+    all_scores = normalize_all_scores(all_scores)
+
     all_scores_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/property_score_results/all_scores.csv'
     all_scores.to_csv(all_scores_path)
