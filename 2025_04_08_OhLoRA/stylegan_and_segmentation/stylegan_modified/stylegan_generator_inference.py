@@ -15,7 +15,7 @@ WORLD_SIZE = 1
 VALID_BATCH_SIZE = 4
 
 
-def synthesize(generator_model, num, z=None):
+def synthesize(generator_model, num, z=None, label=None):
     """Synthesizes images.
 
     Args:
@@ -23,6 +23,7 @@ def synthesize(generator_model, num, z=None):
         num: Number of images to synthesize.
         z: Latent codes used for generation. If not specified, this function
             will sample latent codes randomly. (default: None)
+        label: additional label for conditional generation. (default: None)
     """
 
     temp_dir = f'{PROJECT_DIR_PATH}/stylegan/synthesize_results'
@@ -33,6 +34,10 @@ def synthesize(generator_model, num, z=None):
         assert z.ndim == 2 and z.shape[1] == generator_model.z_space_dim
         num = min(num, z.shape[0])
         z = torch.from_numpy(z).type(torch.FloatTensor)
+    if label is not None:
+        assert isinstance(label, np.ndarray)
+        assert label.ndim == 2 and label.shape[1] == generator_model.label_size
+        label = torch.from_numpy(label).type(torch.FloatTensor)
     if not num:
         return
     # TODO: Use same z during the entire training process.
@@ -44,12 +49,19 @@ def synthesize(generator_model, num, z=None):
     for batch_idx in range(0, len(indices), VALID_BATCH_SIZE):
         sub_indices = indices[batch_idx:batch_idx + VALID_BATCH_SIZE]
         batch_size = len(sub_indices)
+
         if z is None:
             code = torch.randn(batch_size, generator_model.z_space_dim).cuda()
         else:
             code = z[sub_indices].cuda()
+
+        if label is None:
+            property_vector = torch.randn(batch_size, generator_model.label_size).cuda()
+        else:
+            property_vector = label[sub_indices].cuda()
+
         with torch.no_grad():
-            images = generator_model(code, **generator_model.G_kwargs_val)['image']
+            images = generator_model(code, property_vector, **generator_model.G_kwargs_val)['image']
             images = postprocess_image(images.detach().cpu().numpy())
         for sub_idx, image in zip(sub_indices, images):
             save_image(os.path.join(temp_dir, f'{sub_idx:06d}.jpg'), image)

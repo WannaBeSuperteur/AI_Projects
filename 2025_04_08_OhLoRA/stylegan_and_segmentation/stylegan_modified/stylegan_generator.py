@@ -77,9 +77,9 @@ class StyleGANGenerator(nn.Module):
 
     def __init__(self,
                  resolution,
-                 z_space_dim=512,   # 512 in Original code (change to 128 is not compatible for pre-trained model)
-                 w_space_dim=512,   # 512 in Original code (change to 128 is not compatible for pre-trained model)
-                 label_size=0,
+                 z_space_dim=512,       # 512 in Original code
+                 w_space_dim=512,       # 512 in Original code
+                 label_size=5,          # (eyes, hair_color, hair_length, mouth, pose) property score
                  mapping_layers=8,
                  mapping_fmaps=512,
                  mapping_lr_mul=0.01,
@@ -185,7 +185,7 @@ class StyleGANGenerator(nn.Module):
 
     def forward(self,
                 z,
-                label=None,
+                label,                 # (eyes, hair_color, hair_length, mouth, pose) property score
                 lod=None,
                 w_moving_decay=0.995,
                 style_mixing_prob=0.9,
@@ -229,7 +229,7 @@ class MappingModule(nn.Module):
                  input_space_dim=512,
                  hidden_space_dim=512,
                  final_space_dim=512,
-                 label_size=0,
+                 label_size=5,         # (eyes, hair_color, hair_length, mouth, pose) property score
                  num_layers=8,
                  normalize_input=True,
                  use_wscale=True,
@@ -266,26 +266,23 @@ class MappingModule(nn.Module):
                 torch.randn(label_size, input_space_dim))
             self.pth_to_tf_var_mapping[f'label_weight'] = f'LabelConcat/weight'
 
-    def forward(self, z, label=None):
+    def forward(self, z, label):
         if z.ndim != 2 or z.shape[1] != self.input_space_dim:
             raise ValueError(f'Input latent code should be with shape '
                              f'[batch_size, input_dim], where '
                              f'`input_dim` equals to {self.input_space_dim}!\n'
                              f'But `{z.shape}` is received!')
-        if self.label_size:
-            if label is None:
-                raise ValueError(f'Model requires an additional label '
-                                 f'(with size {self.label_size}) as input, '
-                                 f'but no label is received!')
-            if label.ndim != 2 or label.shape != (z.shape[0], self.label_size):
-                raise ValueError(f'Input label should be with shape '
-                                 f'[batch_size, label_size], where '
-                                 f'`batch_size` equals to that of '
-                                 f'latent codes ({z.shape[0]}) and '
-                                 f'`label_size` equals to {self.label_size}!\n'
-                                 f'But `{label.shape}` is received!')
-            embedding = torch.matmul(label, self.label_weight)
-            z = torch.cat((z, embedding), dim=1)
+
+        if label.ndim != 2 or label.shape != (z.shape[0], self.label_size):
+            raise ValueError(f'Input label should be with shape '
+                             f'[batch_size, label_size], where '
+                             f'`batch_size` equals to that of '
+                             f'latent codes ({z.shape[0]}) and '
+                             f'`label_size` equals to {self.label_size}!\n'
+                             f'But `{label.shape}` is received!')
+
+        embedding = torch.matmul(label, self.label_weight)
+        z = torch.cat((z, embedding), dim=1)
 
         z = self.norm(z)
         w = z

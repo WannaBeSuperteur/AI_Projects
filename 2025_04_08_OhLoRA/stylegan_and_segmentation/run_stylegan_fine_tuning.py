@@ -119,15 +119,17 @@ def print_summary(model, model_name, input_size, print_layer_details=False, prin
 
 # 기존 Pre-train 된 StyleGAN 모델의 구조를 PDF 로 내보내기
 # Create Date : 2025.04.11
-# Last Update Date : -
+# Last Update Date : 2025.04.12
+# - layer detail 출력 여부 옵션 (print_layer_details) 추가
 
 # Arguments:
-# - model        (nn.Module) : 기존 Pre-train 된 StyleGAN 모델의 Generator 또는 Discriminator
-# - model_name   (str)       : 모델을 나타내는 이름
-# - input_size   (tuple)     : 모델에 입력될 데이터의 입력 크기
-# - print_frozen (bool)      : 각 레이어가 freeze 되었는지의 상태 출력 여부
+# - model               (nn.Module) : 기존 Pre-train 된 StyleGAN 모델의 Generator 또는 Discriminator
+# - model_name          (str)       : 모델을 나타내는 이름
+# - input_size          (tuple)     : 모델에 입력될 데이터의 입력 크기
+# - print_layer_details (bool)      : 각 레이어 별 detailed info 출력 여부
+# - print_frozen        (bool)      : 각 레이어가 freeze 되었는지의 상태 출력 여부
 
-def save_model_structure_pdf(model, model_name, input_size, print_frozen=False):
+def save_model_structure_pdf(model, model_name, input_size, print_layer_details=False, print_frozen=False):
     model_graph = draw_graph(model, input_size=input_size, depth=5)
     visual_graph = model_graph.visual_graph
 
@@ -136,7 +138,7 @@ def save_model_structure_pdf(model, model_name, input_size, print_frozen=False):
     visual_graph.render(format='pdf', outfile=dest_name)
 
     # Model Summary 출력
-    print_summary(model, model_name, input_size, print_layer_details=True, print_frozen=print_frozen)
+    print_summary(model, model_name, input_size, print_layer_details=print_layer_details, print_frozen=print_frozen)
 
 
 # 기존 Pre-train 된 StyleGAN 모델 로딩
@@ -147,10 +149,10 @@ def save_model_structure_pdf(model, model_name, input_size, print_frozen=False):
 # - 없음
 
 # Returns:
-# - pretrained_generator     (nn.Module) : 기존 Pre-train 된 StyleGAN 모델의 Generator
-# - pretrained_discriminator (nn.Module) : 기존 Pre-train 된 StyleGAN 모델의 Discriminator
-# - generator_state_dict     (dict)      : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
-# - discriminator_state_dict (dict)      : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
+# - pretrained_generator     (nn.Module)   : 기존 Pre-train 된 StyleGAN 모델의 Generator
+# - pretrained_discriminator (nn.Module)   : 기존 Pre-train 된 StyleGAN 모델의 Discriminator
+# - generator_state_dict     (OrderedDict) : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
+# - discriminator_state_dict (OrderedDict) : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
 
 def load_existing_stylegan():
     pretrained_generator = original_gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)
@@ -186,8 +188,6 @@ def freeze_generator_layers(restructured_generator):
         if name.split('.')[0] != 'mapping':
             param.requires_grad = False
 
-    raise NotImplementedError
-
 
 # StyleGAN Fine-Tuning 을 위한 Discriminator Layer Freezing
 # Create Date : 2025.04.12
@@ -203,16 +203,14 @@ def freeze_discriminator_layers(restructured_discriminator):
         if name.split('.')[0] not in ['layer12', 'layer13', 'layer14']:
             param.requires_grad = False
 
-    raise NotImplementedError
-
 
 # 새로운 구조의 Generator 및 Discriminator 모델 생성 (with Pre-trained weights)
 # Create Date : 2025.04.12
 # Last Update Date : -
 
 # Arguments:
-# - generator_state_dict     (dict) : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
-# - discriminator_state_dict (dict) : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
+# - generator_state_dict     (OrderedDict) : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
+# - discriminator_state_dict (OrderedDict) : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
 
 # Returns:
 # - restructured_generator     (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
@@ -238,8 +236,12 @@ def create_restructured_stylegan(generator_state_dict, discriminator_state_dict)
         eta_min=0)
 
     # load state dict
-    restructured_generator.load_state_dict(generator_state_dict)
-    restructured_discriminator.load_state_dict(discriminator_state_dict)
+    del generator_state_dict['mapping.dense0.weight']  # size mismatch because of added property vector
+    restructured_generator.load_state_dict(generator_state_dict, strict=False)
+
+    del discriminator_state_dict['layer14.weight']  # size mismatch because of added property vector
+    del discriminator_state_dict['layer14.bias']    # size mismatch because of added property vector
+    restructured_discriminator.load_state_dict(discriminator_state_dict, strict=False)
 
     # map to device
     restructured_generator.to(device)
@@ -248,15 +250,15 @@ def create_restructured_stylegan(generator_state_dict, discriminator_state_dict)
     # freeze 전 모델 summary 출력
     save_model_structure_pdf(restructured_generator,
                              model_name='restructured_generator (BEFORE FREEZING)',
-                             input_size=(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
-                             print_frozen=True)
+                             input_size=[(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
+                                         (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)])
 
     save_model_structure_pdf(restructured_discriminator,
                              model_name='restructured_discriminator (BEFORE FREEZING)',
-                             input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
-                             print_frozen=True)
+                             input_size=[(TRAIN_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
+                                         (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)])
 
-    raise NotImplementedError
+    return restructured_generator, restructured_discriminator
 
 
 # 모델 Fine Tuning 실시
@@ -281,11 +283,11 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
 # Last Update Date : -
 
 # Arguments:
-# - pretrained_generator     (nn.Module)  : 기존 Pre-train 된 StyleGAN 모델의 Generator
-# - pretrained_discriminator (nn.Module)  : 기존 Pre-train 된 StyleGAN 모델의 Discriminator
-# - stylegan_ft_loader       (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
-# - generator_state_dict     (dict)       : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
-# - discriminator_state_dict (dict)       : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
+# - pretrained_generator     (nn.Module)   : 기존 Pre-train 된 StyleGAN 모델의 Generator
+# - pretrained_discriminator (nn.Module)   : 기존 Pre-train 된 StyleGAN 모델의 Discriminator
+# - stylegan_ft_loader       (DataLoader)  : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+# - generator_state_dict     (OrderedDict) : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
+# - discriminator_state_dict (OrderedDict) : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
 
 # Returns:
 # - stylegan_modified/stylegan_gen_fine_tuned.pth 에 Fine-Tuning 된 StyleGAN 의 Generator 모델 저장
@@ -314,12 +316,14 @@ def run_stylegan_fine_tuning(pretrained_generator, pretrained_discriminator, sty
     # freeze 후 모델 summary 출력
     save_model_structure_pdf(restructured_generator,
                              model_name='restructured_generator (AFTER FREEZING)',
-                             input_size=(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
+                             input_size=[(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
+                                         (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)],
                              print_frozen=True)
 
     save_model_structure_pdf(restructured_discriminator,
                              model_name='restructured_discriminator (AFTER FREEZING)',
-                             input_size=(TRAIN_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
+                             input_size=[(TRAIN_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
+                                         (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)],
                              print_frozen=True)
 
     # fine tuning 실시
