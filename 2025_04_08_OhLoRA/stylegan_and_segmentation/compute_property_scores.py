@@ -274,5 +274,8 @@ if __name__ == '__main__':
     all_scores = compute_all_image_scores(img_nos)
     all_scores = normalize_all_scores(all_scores)
 
-    all_scores_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/property_score_results/all_scores.csv'
+    all_scores_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/property_score_results'
+    os.makedirs(all_scores_dir_path, exist_ok=True)
+
+    all_scores_path = f'{all_scores_dir_path}/all_scores.csv'
     all_scores.to_csv(all_scores_path)
