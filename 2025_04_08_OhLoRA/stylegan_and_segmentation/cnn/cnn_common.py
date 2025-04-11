@@ -22,6 +22,7 @@ IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/sy
 sys.path.append(TOP_DIR_PATH)
 from global_common.torch_training import run_train, run_validation_detail
 
+LABELED_IMAGE_COUNT = 2000
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 INFERENCE_BATCH_SIZE = 4
@@ -131,7 +132,9 @@ def load_dataset(property_name):
 
 # Original StyleGAN 이 생성한 이미지 중 나머지 8,000 장 로딩
 # Create Date : 2025.04.10
-# Last Update Date : -
+# Last Update Date : 2025.04.11
+# - img_names -> img_nos 를 이미지 이름 전체가 아닌 이미지 번호만으로 지정
+# - 처음 2,000 장을 제외한 나머지 이미지만을 로딩하도록 수정
 
 # Arguments:
 # - property_name (str) : 핵심 속성 값 이름 ('gender' or 'quality')
@@ -140,10 +143,12 @@ def load_dataset(property_name):
 # - data_loader (DataLoader) : 나머지 8,000 장의 데이터를 test (inference) data 로 하는 DataLoader
 
 def load_remaining_images_dataset(property_name):
-    img_names = os.listdir(IMAGE_DATA_DIR_PATH)
-    img_paths = [f'{IMAGE_DATA_DIR_PATH}/{name}' for name in img_names]
+    img_nos = sorted(os.listdir(IMAGE_DATA_DIR_PATH))[LABELED_IMAGE_COUNT:]
 
-    remaining_dataset_dict = {'img_path': img_paths, 'img_no': img_names}
+    img_nos = [int(img_no[:-4]) for img_no in img_nos]
+    img_paths = [f'{IMAGE_DATA_DIR_PATH}/{img_no}.jpg' for img_no in img_nos]
+
+    remaining_dataset_dict = {'img_path': img_paths, 'img_no': img_nos}
     remaining_dataset_df = pd.DataFrame(remaining_dataset_dict)
 
     remaining_dataset = RemainingImageDataset(remaining_dataset_df,
@@ -437,7 +442,8 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_c
 
 # 학습된 CNN 모델 불러오기
 # Create Date : 2025.04.10
-# Last Update Date : -
+# Last Update Date : 2025.04.11
+# - fix typo
 
 # Arguments:
 # - property_name   (str)             : 핵심 속성 값 이름 ('gender' or 'quality')
@@ -456,7 +462,7 @@ def load_cnn_model(property_name, cnn_model_class):
     # add CNN models
     for i in range(K_FOLDS):
         model = cnn_model_class()
-        model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentations/cnn/models/{property_name}_model_{i}.pt'
+        model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/models/{property_name}_model_{i}.pt'
         model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
 
         model.to(device)
@@ -468,7 +474,7 @@ def load_cnn_model(property_name, cnn_model_class):
 
 
 # 학습된 모델을 이용하여 나머지 8,000 장의 이미지에 대해 핵심 속성 값 예측 (Ensemble 의 아이디어 / K 개 모델의 평균으로)
-# Create Date : 2025.04.10
+# Create Date : 2025.04.11
 # Last Update Date : -
 
 # Arguments:
@@ -483,4 +489,48 @@ def load_cnn_model(property_name, cnn_model_class):
 #                                               'score_model_0', 'score_model_1', ...]
 
 def predict_score_remaining_images(property_name, remaining_images_loader, cnn_models, report_path):
-    raise NotImplementedError
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'device for testing model : {device}')
+
+    final_score_dict = {'img_no': [], 'img_path': [], f'property_{property_name}_final_score': []}
+
+    for i in range(K_FOLDS):
+        final_score_dict[f'score_model_{i}'] = []
+        cnn_models[i] = cnn_models[i].to(device)
+
+    # predict score
+    for idx, images in enumerate(remaining_images_loader):
+        if idx % 100 == 0:
+            print(f'batch {idx} of test dataset')
+
+        with torch.no_grad():
+            images = images.to(device)
+            current_batch_size = images.size(0)
+
+            # add image info
+            for i in range(current_batch_size):
+                img_idx = idx * INFERENCE_BATCH_SIZE + i
+
+                img_no = remaining_images_loader.dataset.img_nos[img_idx]
+                img_path = remaining_images_loader.dataset.img_paths[img_idx]
+                final_score_dict['img_no'].append(img_no)
+                final_score_dict['img_path'].append(img_path)
+
+            # add model prediction scores
+            model_scores = np.zeros((current_batch_size, K_FOLDS))
+
+            for model_idx, model in enumerate(cnn_models):
+                outputs_cpu = model(images).to(torch.float32).detach().cpu()
+
+                for i in range(current_batch_size):
+                    model_score = float(outputs_cpu[i])
+                    final_score_dict[f'score_model_{model_idx}'].append(model_score)
+                    model_scores[i][model_idx] = model_score
+
+            for i in range(current_batch_size):
+                final_score_dict[f'property_{property_name}_final_score'].append(np.mean(model_scores[i]))
+
+    final_score = pd.DataFrame(final_score_dict)
+    final_score.to_csv(report_path, index=False)
+
+    return final_score

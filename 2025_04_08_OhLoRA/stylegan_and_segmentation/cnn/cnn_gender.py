@@ -100,7 +100,9 @@ class GenderCNN(nn.Module):
 
 # labeling 이 안 된 8,000 장에 대해 예측된 Gender 속성 값 반환
 # Create Date : 2025.04.10
-# Last Update Date : -
+# Last Update Date : 2025.04.11
+# - property_name 인수 누락 해결
+# - report_path 의 디렉토리를 생성하는 메커니즘 누락 해결
 
 # Arguments:
 # - 없음
@@ -130,9 +132,14 @@ def main_gender():
                                       cnn_model_class=GenderCNN)
 
     # run inference on remaining 8,000 images
-    remaining_image_loader = load_remaining_images_dataset()
+    remaining_image_loader = load_remaining_images_dataset(property_name='gender')
     report_path = f'{INFERENCE_RESULT_DIR}/gender.csv'
-    final_score = predict_score_remaining_images(remaining_image_loader, cnn_models, report_path)
+    os.makedirs(INFERENCE_RESULT_DIR, exist_ok=True)
+
+    final_score = predict_score_remaining_images(property_name='gender',
+                                                 remaining_images_loader=remaining_image_loader,
+                                                 cnn_models=cnn_models,
+                                                 report_path=report_path)
 
     print('FINAL PREDICTION SCORE (GENDER) :\n')
     print(final_score)
