@@ -34,8 +34,8 @@ def read_parsing_result(parsing_result_path):
 # - eyes_score (float) : 눈을 뜬 정도 Score
 
 def compute_eyes_score(parsing_result):
-    left_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 5 * PARSED_MAP_SIZE // 8, : 5 * PARSED_MAP_SIZE // 8]
-    right_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 5 * PARSED_MAP_SIZE // 8, 3 * PARSED_MAP_SIZE // 8 :]
+    left_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 3 * PARSED_MAP_SIZE // 4, : 3 * PARSED_MAP_SIZE // 4]
+    right_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 3 * PARSED_MAP_SIZE // 4, PARSED_MAP_SIZE // 4 :]
 
     left_eye_min_y, left_eye_max_y = None, None
     right_eye_min_y, right_eye_max_y = None, None
@@ -133,7 +133,29 @@ def compute_hair_length_score(parsing_result):
 # - mouth_score (float) : 입을 벌린 정도 Score
 
 def compute_mouth_score(parsing_result):
-    raise NotImplementedError
+    lips_min_y, lips_max_y = None, None
+    mouth_min_y, mouth_max_y = None, None
+
+    for y in range(PARSED_MAP_SIZE):
+        if 7 in parsing_result[y] or 9 in parsing_result[y]:
+            if lips_min_y is None:
+                lips_min_y = y
+                lips_max_y = y
+            else:
+                lips_max_y = max(lips_max_y, y)
+
+        if 8 in parsing_result[y]:
+            if mouth_min_y is None:
+                mouth_min_y = y
+                mouth_max_y = y
+            else:
+                mouth_max_y = max(mouth_max_y, y)
+
+    lips_height = 0 if lips_min_y is None else lips_max_y - lips_min_y
+    mouth_height = 0 if mouth_min_y is None else mouth_max_y - mouth_min_y
+
+    mouth_score = lips_height + mouth_height
+    return mouth_score
 
 
 # 고개 돌림 (pose) Score 계산
