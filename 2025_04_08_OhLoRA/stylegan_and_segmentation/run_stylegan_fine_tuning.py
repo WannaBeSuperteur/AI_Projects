@@ -1,24 +1,97 @@
 import stylegan.stylegan_generator as original_gen
 import stylegan.stylegan_discriminator as original_dis
 
-import modified_stylegan.stylegan_generator as modified_gen
-import modified_stylegan.stylegan_discriminator as modified_dis
+import stylegan_modified.stylegan_generator as modified_gen
+import stylegan_modified.stylegan_discriminator as modified_dis
 
 import torch
 import torch.nn as nn
 from torchinfo import summary
 from torchview import draw_graph
 
+import torchvision.transforms as transforms
+from torch.utils.data import Dataset, DataLoader
+from torchvision.io import read_image
+
+import pandas as pd
+
 import os
+
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/model_structure_pdf'
+PROPERTY_SCORE_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/property_score_results'
+
 os.makedirs(MODEL_STRUCTURE_PDF_DIR_PATH, exist_ok=True)
+
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 5           # eyes, hair_color, hair_length, mouth, pose
 
 TRAIN_BATCH_SIZE = 16
+
+stylegan_transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+
+
+# Image Dataset with Property Scores
+class PropertyScoreImageDataset(Dataset):
+    def __init__(self, dataset_df, transform):
+        self.img_paths = dataset_df['img_path'].tolist()
+        self.transform = transform
+
+        self.eyes_scores = dataset_df['eyes_score'].tolist()
+        self.hair_color_scores = dataset_df['hair_color_score'].tolist()
+        self.hair_length_scores = dataset_df['hair_length_score'].tolist()
+        self.mouth_scores = dataset_df['mouth_score'].tolist()
+        self.pose_scores = dataset_df['pose_score'].tolist()
+
+    def __len__(self):
+        return len(self.img_paths)
+
+    def __getitem__(self, idx):
+        img_path = self.img_paths[idx]
+        image = read_image(img_path)
+
+        eyes_score = self.eyes_scores[idx]
+        hair_color_score = self.hair_color_scores[idx]
+        hair_length_score = self.hair_length_scores[idx]
+        mouth_score = self.mouth_scores[idx]
+        pose_score = self.pose_scores[idx]
+
+        property_scores = {'eyes': eyes_score,
+                           'hair_color': hair_color_score,
+                           'hair_length': hair_length_score,
+                           'mouth': mouth_score,
+                           'pose': pose_score}
+
+        # normalize
+        image = self.transform(image)
+
+        return image, property_scores
+
+
+# StyleGAN Fine-Tuning 용 데이터셋의 Data Loader 로딩
+# Create Date : 2025.04.12
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - stylegan_ft_loader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+
+def get_stylegan_fine_tuning_dataloader():
+    property_score_csv_path = f'{PROPERTY_SCORE_DIR_PATH}/all_scores.csv'
+    property_score_df = pd.read_csv(property_score_csv_path)
+
+    stylegan_ft_dataset = PropertyScoreImageDataset(dataset_df=property_score_df, transform=stylegan_transform)
+    stylegan_ft_loader = DataLoader(stylegan_ft_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    return stylegan_ft_loader
 
 
 # Model Summary (모델 구조) 출력
@@ -180,32 +253,34 @@ def create_restructured_stylegan(generator_state_dict, discriminator_state_dict)
 # Last Update Date : -
 
 # Arguments:
-# - restructured_generator     (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
-# - restructured_discriminator (nn.Module) : StyleGAN 모델의 새로운 구조의 Discriminator
+# - restructured_generator     (nn.Module)  : StyleGAN 모델의 새로운 구조의 Generator
+# - restructured_discriminator (nn.Module)  : StyleGAN 모델의 새로운 구조의 Discriminator
+# - stylegan_ft_loader         (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
 
 # Returns:
 # - fine_tuned_generator     (nn.Module) : Fine-Tuning 된 StyleGAN 모델의 Generator
 # - fine_tuned_discriminator (nn.Module) : Fine-Tuning 된 StyleGAN 모델의 Discriminator
 
-def run_fine_tuning(restructured_generator, restructured_discriminator):
+def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan_ft_loader):
     raise NotImplementedError
 
 
 # StyleGAN Fine-Tuning 실시 (핵심 속성 값 5개를 latent vector 에 추가)
-# Create Date : 2025.04.11
+# Create Date : 2025.04.12
 # Last Update Date : -
 
 # Arguments:
-# - pretrained_generator     (nn.Module) : 기존 Pre-train 된 StyleGAN 모델의 Generator
-# - pretrained_discriminator (nn.Module) : 기존 Pre-train 된 StyleGAN 모델의 Discriminator
-# - generator_state_dict     (dict)      : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
-# - discriminator_state_dict (dict)      : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
+# - pretrained_generator     (nn.Module)  : 기존 Pre-train 된 StyleGAN 모델의 Generator
+# - pretrained_discriminator (nn.Module)  : 기존 Pre-train 된 StyleGAN 모델의 Discriminator
+# - stylegan_ft_loader       (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+# - generator_state_dict     (dict)       : 기존 Pre-train 된 StyleGAN 모델의 Generator 의 state_dict
+# - discriminator_state_dict (dict)       : 기존 Pre-train 된 StyleGAN 모델의 Discriminator 의 state_dict
 
 # Returns:
 # - stylegan_modified/stylegan_gen_fine_tuned.pth 에 Fine-Tuning 된 StyleGAN 의 Generator 모델 저장
 # - stylegan_modified/stylegan_dis_fine_tuned.pth 에 Fine-Tuning 된 StyleGAN 의 Discriminator 모델 저장
 
-def run_stylegan_fine_tuning(pretrained_generator, pretrained_discriminator,
+def run_stylegan_fine_tuning(pretrained_generator, pretrained_discriminator, stylegan_ft_loader,
                              generator_state_dict, discriminator_state_dict):
 
     # 모델 구조를 PDF 로 저장
@@ -237,7 +312,9 @@ def run_stylegan_fine_tuning(pretrained_generator, pretrained_discriminator,
                              print_frozen=True)
 
     # fine tuning 실시
-    fine_tuned_generator, fine_tuned_discriminator = run_fine_tuning(restructured_generator, restructured_discriminator)
+    fine_tuned_generator, fine_tuned_discriminator = run_fine_tuning(restructured_generator,
+                                                                     restructured_discriminator,
+                                                                     stylegan_ft_loader)
 
     fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
     os.makedirs(fine_tuned_model_path, exist_ok=True)
@@ -255,6 +332,9 @@ if __name__ == '__main__':
     # load Pre-trained StyleGAN
     pretrained_gen, pretrained_dis, gen_state_dict, dis_state_dict = load_existing_stylegan()
 
+    # load DataLoader
+    stylegan_ft_loader = get_stylegan_fine_tuning_dataloader()
+
     # Fine Tuning
-    run_stylegan_fine_tuning(pretrained_gen, pretrained_dis, gen_state_dict, dis_state_dict)
+    run_stylegan_fine_tuning(pretrained_gen, pretrained_dis, stylegan_ft_loader, gen_state_dict, dis_state_dict)
 
