@@ -2,8 +2,10 @@ import pandas as pd
 import os
 import cv2
 import numpy as np
+import time
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+PARSED_MAP_SIZE = 224
 
 
 # Segmentation 결과에서 Parsing Result 읽기
@@ -32,21 +34,57 @@ def read_parsing_result(parsing_result_path):
 # - eyes_score (float) : 눈을 뜬 정도 Score
 
 def compute_eyes_score(parsing_result):
-    raise NotImplementedError
+    left_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 5 * PARSED_MAP_SIZE // 8, : 5 * PARSED_MAP_SIZE // 8]
+    right_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 5 * PARSED_MAP_SIZE // 8, 3 * PARSED_MAP_SIZE // 8 :]
+
+    left_eye_min_y, left_eye_max_y = None, None
+    right_eye_min_y, right_eye_max_y = None, None
+
+    for y in range(3 * PARSED_MAP_SIZE // 8):
+        if 4 in left_eye_area[y]:
+            if left_eye_min_y is None:
+                left_eye_min_y = y
+                left_eye_max_y = y
+            else:
+                left_eye_max_y = max(left_eye_max_y, y)
+
+        if 5 in right_eye_area[y]:
+            if right_eye_min_y is None:
+                right_eye_min_y = y
+                right_eye_max_y = y
+            else:
+                right_eye_max_y = max(right_eye_max_y, y)
+
+    left_eye_height = 0 if left_eye_min_y is None else left_eye_max_y - left_eye_min_y
+    right_eye_height = 0 if right_eye_min_y is None else right_eye_max_y - right_eye_min_y
+
+    return (left_eye_height + right_eye_height) / 2.0
 
 
-# 머리 색 (hair_color) Score 계산
+# 머리 색 (hair_color) 의 밝기 Score 계산
 # Create Date : 2025.04.11
 # Last Update Date : -
 
 # Arguments:
 # - parsing_result (np.array) : Parsing Result (224 x 224)
+# - image          (np.array) : 원본 이미지 (224 x 224)
 
 # Returns:
 # - hair_color_score (float) : 머리 색 Score
 
-def compute_hair_color_score(parsing_result):
-    raise NotImplementedError
+def compute_hair_color_score(parsing_result, image):
+    hair_color_info = []
+
+    for y in range(PARSED_MAP_SIZE):
+        for x in range(PARSED_MAP_SIZE):
+            if parsing_result[y][x] == 10:
+                hair_color_info.append(image[y][x])
+
+    hair_color_info = np.array(hair_color_info)
+
+    hair_color_rgb_mean = np.mean(hair_color_info, axis=1)
+    hair_color_score = np.median(hair_color_rgb_mean)
+    return hair_color_score
 
 
 # 머리 길이 (hair_length) Score 계산
@@ -60,7 +98,28 @@ def compute_hair_color_score(parsing_result):
 # - hair_length_score (float) : 머리 길이 Score
 
 def compute_hair_length_score(parsing_result):
-    raise NotImplementedError
+    hair_min_y, hair_max_y = None, None
+
+    for y in range(PARSED_MAP_SIZE):
+        if 10 in parsing_result[y]:
+            if hair_min_y is None:
+                hair_min_y = y
+                hair_max_y = y
+            else:
+                hair_max_y = max(hair_max_y, y)
+
+    if hair_max_y == PARSED_MAP_SIZE - 1:
+        left_half = parsing_result[PARSED_MAP_SIZE - 1][: PARSED_MAP_SIZE // 2]
+        right_half = parsing_result[PARSED_MAP_SIZE - 1][PARSED_MAP_SIZE // 2 :]
+
+        left_hair_point_count = np.count_nonzero(left_half == 10)
+        right_hair_point_count = np.count_nonzero(right_half == 10)
+
+        additional_estimated_hair_length = (left_hair_point_count + right_hair_point_count) / 2.0
+        return hair_max_y + additional_estimated_hair_length
+
+    else:
+        return hair_max_y
 
 
 # 입을 벌린 정도 (mouth) Score 계산
@@ -118,16 +177,18 @@ def compute_all_image_scores(all_img_nos):
                        'mouth_score': [],
                        'pose_score': []}
 
-    for idx, parsing_result_path in enumerate(parsing_result_paths):
+    for idx, (img_path, parsing_result_path) in enumerate(zip(img_paths, parsing_result_paths)):
         if idx < 10 or idx % 100 == 0:
             print(f'scoring image {idx + 1} / {len(parsing_result_paths)} ...')
 
         # read parsing result
         parsing_result = read_parsing_result(parsing_result_path)
+        image = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_COLOR)
+        image = cv2.resize(image, dsize=(PARSED_MAP_SIZE, PARSED_MAP_SIZE), interpolation=cv2.INTER_LINEAR)
 
         # compute property scores
         eyes_score = compute_eyes_score(parsing_result)
-        hair_color_score = compute_hair_color_score(parsing_result)
+        hair_color_score = compute_hair_color_score(parsing_result, image)
         hair_length_score = compute_hair_length_score(parsing_result)
         mouth_score = compute_mouth_score(parsing_result)
         pose_score = compute_pose_score(parsing_result)
