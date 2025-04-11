@@ -74,34 +74,6 @@ def compute_mouth_score(parsing_result):
     raise NotImplementedError
 
 
-# 배경색의 밝기 (background_light) Score 계산
-# Create Date : 2025.04.11
-# Last Update Date : -
-
-# Arguments:
-# - parsing_result (np.array) : Parsing Result (224 x 224)
-
-# Returns:
-# - background_light (float) : 배경색의 밝기 Score
-
-def compute_background_light_score(parsing_result):
-    raise NotImplementedError
-
-
-# 배경색의 표준편차 (background_std) Score 계산
-# Create Date : 2025.04.11
-# Last Update Date : -
-
-# Arguments:
-# - parsing_result (np.array) : Parsing Result (224 x 224)
-
-# Returns:
-# - background_std (float) : 배경색의 밝기 Score
-
-def compute_background_std_score(parsing_result):
-    raise NotImplementedError
-
-
 # 고개 돌림 (pose) Score 계산
 # Create Date : 2025.04.11
 # Last Update Date : -
@@ -147,8 +119,7 @@ def compute_all_image_scores(all_img_nos):
 def normalize_all_scores(all_scores):
     scores = pd.DataFrame(all_scores)
 
-    property_to_apply_minmax = ['eyes_score', 'hair_color_score', 'hair_length_score', 'mouth_score',
-                                'background_light_score', 'background_std_score']
+    property_to_apply_minmax = ['eyes_score', 'hair_color_score', 'hair_length_score', 'mouth_score']
     property_to_apply_m1_to_p1 = ['pose_score']
 
     for p in property_to_apply_minmax:

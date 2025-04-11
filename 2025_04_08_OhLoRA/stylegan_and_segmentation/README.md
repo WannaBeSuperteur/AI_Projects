@@ -28,13 +28,11 @@
 | 머리 색 ```hair_color```          | 머리 색이 밝을수록 값이 큼                   | 0 ~ 1   |
 | 머리 길이 ```hair_length```        | 머리 길이가 길수록 값이 큼                   | 0 ~ 1   |
 | 입을 벌린 정도 ```mouth```           | 입을 벌린 정도가 클수록 값이 큼                | 0 ~ 1   |
-| 배경색의 밝기 ```background_light``` | 배경색이 밝을수록 값이 큼                    | 0 ~ 1   |
-| 배경색의 표준편차 ```background_std``` | 배경색의 표준편차가 클수록 값이 큼               | 0 ~ 1   |
 | 얼굴의 위치 ```face_pose```         | 왼쪽 쳐다봄 (-1), 정면 (0), 오른쪽 쳐다봄 (+1) | -1 ~ +1 |
 
 ### 2-1. 핵심 속성 값 계산 알고리즘
 
-* Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 7가지 핵심 속성 값들을 계산**
+* Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 5가지 핵심 속성 값들을 계산**
   * TBU 
 
 ## 3. 사용 모델 설명
@@ -73,7 +71,7 @@
   * ```python stylegan_and_segmentation/run_segmentation.py```
   * ```segmentation/segmentation_results``` 에 이미지 저장됨
 
-* 성별, 이미지 품질을 제외한 7가지 핵심 속성값 계산 결과 생성
+* 성별, 이미지 품질을 제외한 5가지 핵심 속성값 계산 결과 생성
   * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
   * ```python stylegan_and_segmentation/compute_property_scores.py```
   * ```segmentation/property_score_results``` 에 결과 저장됨
