@@ -29,7 +29,7 @@ os.makedirs(MODEL_STRUCTURE_PDF_DIR_PATH, exist_ok=True)
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
-PROPERTY_DIMS_Z = 5           # eyes, hair_color, hair_length, mouth, pose
+PROPERTY_DIMS_Z = 7           # eyes, hair_color, hair_length, mouth, pose, background_mean, background_std
 
 TRAIN_BATCH_SIZE = 16
 
@@ -51,6 +51,8 @@ class PropertyScoreImageDataset(Dataset):
         self.hair_length_scores = dataset_df['hair_length_score'].tolist()
         self.mouth_scores = dataset_df['mouth_score'].tolist()
         self.pose_scores = dataset_df['pose_score'].tolist()
+        self.background_mean_scores = dataset_df['background_mean_score'].tolist()
+        self.background_std_scores = dataset_df['background_std_score'].tolist()
 
     def __len__(self):
         return len(self.img_paths)
@@ -64,12 +66,16 @@ class PropertyScoreImageDataset(Dataset):
         hair_length_score = self.hair_length_scores[idx]
         mouth_score = self.mouth_scores[idx]
         pose_score = self.pose_scores[idx]
+        background_mean_score = self.background_mean_scores[idx]
+        background_std_score = self.background_std_scores[idx]
 
         property_scores = {'eyes': eyes_score,
                            'hair_color': hair_color_score,
                            'hair_length': hair_length_score,
                            'mouth': mouth_score,
-                           'pose': pose_score}
+                           'pose': pose_score,
+                           'background_mean': background_mean_score,
+                           'background_std': background_std_score}
 
         # normalize
         image = self.transform(image)
@@ -281,7 +287,7 @@ def run_inference_test_before_finetuning(restructured_generator):
     modified_inf.synthesize(restructured_generator, num=20, save_dir=img_save_dir, z=None, label=None)
 
 
-# StyleGAN Fine-Tuning 실시 (핵심 속성 값 5개를 latent vector 에 추가)
+# StyleGAN Fine-Tuning 실시 (핵심 속성 값 7개를 latent vector 에 추가)
 # Create Date : 2025.04.12
 # Last Update Date : -
 
