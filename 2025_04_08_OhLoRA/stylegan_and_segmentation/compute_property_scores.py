@@ -183,16 +183,58 @@ def compute_pose_score(parsing_result):
     return pose_score
 
 
+# 배경색 평균 및 표준편차 계산
+# Create Date : 2025.04.12
+# Last Update Date : -
+
+# Arguments:
+# - parsing_result (np.array) : Parsing Result (224 x 224)
+# - image          (np.array) : 원본 이미지 (224 x 224)
+
+# Returns:
+# - background_mean (float) : 배경색 평균값
+# - background_std  (float) : 배경색 표준편차
+
+def compute_background_mean_and_std(parsing_result, image):
+    background_color_info = []
+
+    for y in range(PARSED_MAP_SIZE // 2):
+        for x in range(PARSED_MAP_SIZE):
+            if parsing_result[y][x] == 0:
+                background_color_info.append(image[y][x])
+
+    if len(background_color_info) == 0:
+        return 192.0, 0.0
+
+    if len(background_color_info) == 1:
+        return np.mean(background_color_info[0]), 0.0
+
+    background_color_info = np.array(background_color_info)
+    back_color_rgb_mean = np.mean(background_color_info, axis=1)
+
+    back_pixels = len(back_color_rgb_mean)
+    back_color_rgb_mean = np.sort(back_color_rgb_mean)[int(0.05 * back_pixels):int(0.95 * back_pixels)]
+
+    if len(back_color_rgb_mean) == 1:
+        return back_color_rgb_mean[0], 0.0
+
+    background_mean = np.mean(back_color_rgb_mean)
+    background_std = np.std(back_color_rgb_mean)
+
+    return background_mean, background_std
+
+
 # 생성된 이미지 중 필터링된 모든 이미지를 읽어서 그 이미지의 모든 Score 를 산출
 # Create Date : 2025.04.11
-# Last Update Date : -
+# Last Update Date : 2025.04.12
+# - 배경색 평균 및 표준편차 추가
 
 # Arguments:
 # - all_img_nos (list(int)) : Parsing Result (224 x 224) 에 대응되는 원본 이미지들의 번호 (No.) 의 리스트
 
 # Returns:
 # - all_scores (Pandas DataFrame) : 모든 이미지에 대한 모든 Score 의 계산 결과
-#                                   columns = ['img_no', 'img_path', 'eyes_score', ..., 'pose_score']
+#                                   columns = ['img_no', 'img_path', 'eyes_score', ..., 'background_std_score']
 #                                   img_path 는 stylegan_and_segmentation/stylegan/synthesize_results_filtered 기준
 
 def compute_all_image_scores(all_img_nos):
@@ -208,7 +250,9 @@ def compute_all_image_scores(all_img_nos):
                        'hair_color_score': [],
                        'hair_length_score': [],
                        'mouth_score': [],
-                       'pose_score': []}
+                       'pose_score': [],
+                       'background_mean_score': [],
+                       'background_std_score': []}
 
     for idx, (img_path, parsing_result_path) in enumerate(zip(img_paths, parsing_result_paths)):
         if idx < 10 or idx % 100 == 0:
@@ -225,6 +269,7 @@ def compute_all_image_scores(all_img_nos):
         hair_length_score = compute_hair_length_score(parsing_result)
         mouth_score = compute_mouth_score(parsing_result)
         pose_score = compute_pose_score(parsing_result)
+        background_mean, background_std = compute_background_mean_and_std(parsing_result, image)
 
         # append to all_scores result
         all_scores_dict['eyes_score'].append(eyes_score)
@@ -232,6 +277,8 @@ def compute_all_image_scores(all_img_nos):
         all_scores_dict['hair_length_score'].append(hair_length_score)
         all_scores_dict['mouth_score'].append(mouth_score)
         all_scores_dict['pose_score'].append(pose_score)
+        all_scores_dict['background_mean_score'].append(background_mean)
+        all_scores_dict['background_std_score'].append(background_std)
 
     all_scores = pd.DataFrame(all_scores_dict)
     return all_scores
@@ -239,11 +286,12 @@ def compute_all_image_scores(all_img_nos):
 
 # 모든 이미지의 모든 핵심 속성 값 Score 를 정규화
 # Create Date : 2025.04.11
-# Last Update Date : -
+# Last Update Date : 2025.04.12
+# - 배경색 평균 및 표준편차 추가 반영
 
 # Arguments:
 # - all_scores (Pandas DataFrame) : 모든 이미지에 대한 모든 Score 의 계산 결과
-#                                   columns = ['img_no', 'img_path', 'eyes_score', ..., 'pose_score']
+#                                   columns = ['img_no', 'img_path', 'eyes_score', ..., 'background_std_score']
 #                                   img_path 는 stylegan_and_segmentation/stylegan/synthesize_results_filtered 기준
 
 # Returns:
@@ -252,7 +300,8 @@ def compute_all_image_scores(all_img_nos):
 def normalize_all_scores(all_scores):
     scores = pd.DataFrame(all_scores)
 
-    properties = ['eyes_score', 'hair_color_score', 'hair_length_score', 'mouth_score', 'pose_score']
+    properties = ['eyes_score', 'hair_color_score', 'hair_length_score', 'mouth_score', 'pose_score',
+                  'background_mean_score', 'background_std_score']
 
     for p in properties:
         property_mean = scores[p].mean()
