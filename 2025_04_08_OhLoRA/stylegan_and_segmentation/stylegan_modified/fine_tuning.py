@@ -1,14 +1,18 @@
 # Modified Loss implementation from https://github.com/genforce/genforce/blob/master/runners/losses/logistic_gan_loss.py
 # Modified Train Process implementation from https://github.com/genforce/genforce/blob/master/runners/stylegan_runner.py
-# Additional Ref: https://github.com/genforce/genforce/blob/master/configs/stylegan_demo.py
+#                                            https://github.com/genforce/genforce/blob/master/runners/base_gan_runner.py
+#                                            https://github.com/genforce/genforce/blob/master/runners/base_runner.py
+# Train Argument Settings from https://github.com/genforce/genforce/blob/master/configs/stylegan_demo.py
 
 
 import torch
 import torch.nn.functional as F
+from copy import deepcopy
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 5           # eyes, hair_color, hair_length, mouth, pose
-TRAIN_BATCH_SIZE = 16
+TRAIN_BATCH_SIZE = 8
+TOTAL_EPOCHS = 500
 
 
 def compute_grad_penalty(images, scores):
@@ -66,10 +70,26 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     return g_loss
 
 
+# generator     -> params =  44 layers, named_params =  44 layers, layers_to_train = ['mapping']
+# discriminator -> params = 101 layers, named_params = 101 layers, layers_to_train = ['layer12', 'layer13', 'layer14']
 def set_model_requires_grad(model, model_name, requires_grad):
     """Sets the `requires_grad` configuration for a particular model."""
-    for param in model.parameters():
-        param.requires_grad = requires_grad
+
+    assert model_name in ['generator', 'discriminator']
+
+    for name, param in model.named_parameters():
+
+        if requires_grad:  # requires_grad == True
+            if model_name == 'generator':
+                if name.split('.')[0] == 'mapping':
+                    param.requires_grad = True
+
+            elif model_name == 'discriminator':
+                if name.split('.')[0] in ['layer12', 'layer13', 'layer14']:
+                    param.requires_grad = True
+
+        else:
+            param.requires_grad = False
 
 
 def moving_average_model(model, avg_model, beta=0.999):
@@ -119,6 +139,47 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     g_loss.backward()
     generator.optimizer.step()
 
+    d_loss_float = float(d_loss.detach().cpu())
+    g_loss_float = float(g_loss.detach().cpu())
+
+    return d_loss_float, g_loss_float
+
+
+def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args, dis_train_args,
+          r1_gamma, r2_gamma, g_smooth_img):
+
+    """Training function."""
+    print('Start training.')
+
+    current_epoch = 0
+
+    while current_epoch < TOTAL_EPOCHS:
+        current_epoch += 1
+        d_loss_float, g_loss_float = None, None
+
+        for idx, raw_data in enumerate(stylegan_ft_loader):
+            if current_epoch == 0 and idx < 10 or idx % 100 == 0:
+                print(f'current idx : {idx}')
+
+            concatenated_labels = torch.concat([raw_data['label']['eyes'],
+                                                raw_data['label']['hair_color'],
+                                                raw_data['label']['hair_length'],
+                                                raw_data['label']['mouth'],
+                                                raw_data['label']['pose']])
+            concatenated_labels = torch.reshape(concatenated_labels, (PROPERTY_DIMS_Z, -1))
+            concatenated_labels = torch.transpose(concatenated_labels, 0, 1)
+            concatenated_labels = concatenated_labels.to(torch.float32)
+
+            data = {
+                'image': raw_data['image'].cuda(),
+                'label': concatenated_labels.cuda()
+            }
+
+            d_loss_float, g_loss_float = train_step(generator, generator_smooth, discriminator, data,
+                                                    gen_train_args, dis_train_args, r1_gamma, r2_gamma, g_smooth_img)
+
+        print(f'epoch {current_epoch}, d_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}')
+
 
 # 모델 Fine Tuning 실시
 # Create Date : 2025.04.12
@@ -142,5 +203,13 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
     r1_gamma = 10.0
     r2_gamma = 0.0
     g_smooth_img = 10000
+
+    # copy Re-constructed Generator Model
+    restructured_generator_smooth = deepcopy(restructured_generator)
+
+    # run Fine-Tuning
+    train(restructured_generator, restructured_generator_smooth, restructured_discriminator,
+          stylegan_ft_loader, gen_train_args, dis_train_args,
+          r1_gamma, r2_gamma, g_smooth_img)
 
     raise NotImplementedError
