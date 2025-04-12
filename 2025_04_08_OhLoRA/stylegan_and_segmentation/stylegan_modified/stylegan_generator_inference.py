@@ -15,7 +15,7 @@ WORLD_SIZE = 1
 VALID_BATCH_SIZE = 4
 
 
-def synthesize(generator_model, num, save_dir, z=None, label=None):
+def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_start_idx=0, verbose=True):
     """Synthesizes images.
 
     Args:
@@ -25,6 +25,8 @@ def synthesize(generator_model, num, save_dir, z=None, label=None):
         z: Latent codes used for generation. If not specified, this function
             will sample latent codes randomly. (default: None)
         label: additional label for conditional generation. (default: None)
+        img_name_start_idx: start index number for image name.
+        verbose: whether to print info
     """
 
     os.makedirs(save_dir, exist_ok=True)
@@ -64,13 +66,13 @@ def synthesize(generator_model, num, save_dir, z=None, label=None):
             images = generator_model(code, property_vector, **generator_model.G_kwargs_val)['image']
             images = postprocess_image(images.detach().cpu().numpy())
         for sub_idx, image in zip(sub_indices, images):
-            save_image(os.path.join(save_dir, f'{sub_idx:06d}.jpg'), image)
+            save_image(os.path.join(save_dir, f'{sub_idx+img_name_start_idx:06d}.jpg'), image)
 
         elapsed_time = time.time() - start_at
         img_cnt = batch_idx + VALID_BATCH_SIZE
         avg_time = elapsed_time / img_cnt
 
-        if batch_idx < 100 or batch_idx % 100 == 0:
+        if verbose and (batch_idx < 100 or batch_idx % 100 == 0):
             print(f'image {img_cnt} / {num}, time : {elapsed_time:.4f}, time/image : {avg_time:.4f}')
 
 #    dist.barrier()

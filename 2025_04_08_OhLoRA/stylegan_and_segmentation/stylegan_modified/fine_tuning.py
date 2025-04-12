@@ -5,14 +5,22 @@
 # Train Argument Settings from https://github.com/genforce/genforce/blob/master/configs/stylegan_demo.py
 
 
+import os
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+
 import torch
 import torch.nn.functional as F
 from copy import deepcopy
+import numpy as np
+
+import stylegan_modified.stylegan_generator_inference as modified_inf
+
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 5           # eyes, hair_color, hair_length, mouth, pose
 TRAIN_BATCH_SIZE = 16
 TOTAL_EPOCHS = 500
+IMGS_PER_TEST_PROPERTY_SET = 5
 
 
 def compute_grad_penalty(images, scores):
@@ -176,6 +184,7 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
 
             if idx % 10 == 0 or (current_epoch == 0 and idx < 10):
                 print(f'epoch={current_epoch}, idx={idx}, d_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}')
+                run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
 
         current_epoch += 1
 
@@ -195,6 +204,50 @@ def check_model_trainable_status(check_id, generator, discriminator):
 
     for name, param in discriminator.named_parameters():
         print(f'({check_id}) discriminator layer name = {name}, trainable = {param.requires_grad}')
+
+
+# StyleGAN Fine-Tuning 중 inference test 실시
+# Create Date : 2025.04.12
+# Last Update Date : -
+
+# Arguments:
+# - restructured_generator (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
+# - current_epoch          (int)       : Fine-Tuning 중 현재 epoch 번호
+# - batch_idx              (int)       : Fine-Tuning 중 현재 epoch 에서의 batch index 번호
+
+# Returns:
+# - stylegan_modified/inference_test_during_finetuning 에 생성 결과 저장
+
+def run_inference_test_during_finetuning(restructured_generator, current_epoch, batch_idx):
+    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+    restructured_generator.G_kwargs_val = kwargs_val
+
+    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning'
+    img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
+
+    # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose'
+    current_idx = 0
+
+    labels = [[ 1.5,  1.5,  1.2,  2.0, -1.0],
+              [-1.5,  1.5,  1.2,  2.0, -1.0],
+              [-1.5, -1.5,  1.2,  2.0, -1.0],
+              [-1.5, -1.5, -1.8,  2.0, -1.0],
+              [-1.5, -1.5, -1.8, -1.0, -1.0],
+              [-1.5, -1.5, -1.8, -1.0,  2.0]]
+
+    for label in labels:
+        label_ = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
+        label_ = label_.reshape((IMGS_PER_TEST_PROPERTY_SET, PROPERTY_DIMS_Z))
+
+        modified_inf.synthesize(restructured_generator,
+                                num=IMGS_PER_TEST_PROPERTY_SET,
+                                save_dir=img_save_dir,
+                                z=None,
+                                label=label_,
+                                img_name_start_idx=current_idx,
+                                verbose=False)
+
+        current_idx += IMGS_PER_TEST_PROPERTY_SET
 
 
 # 모델 Fine Tuning 실시
