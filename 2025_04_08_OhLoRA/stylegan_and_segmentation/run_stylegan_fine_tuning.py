@@ -36,7 +36,7 @@ TRAIN_BATCH_SIZE = 16
 stylegan_transform = transforms.Compose([
     transforms.ToPILImage(),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
 ])
 
 
@@ -225,13 +225,13 @@ def create_restructured_stylegan(generator_state_dict, discriminator_state_dict)
     restructured_discriminator = modified_dis.StyleGANDiscriminator(resolution=IMAGE_RESOLUTION)
 
     # set optimizer and scheduler
-    restructured_generator.optimizer = torch.optim.AdamW(restructured_generator.parameters(), lr=0.00005)
+    restructured_generator.optimizer = torch.optim.AdamW(restructured_generator.parameters(), lr=0.0001)
     restructured_generator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer=restructured_generator.optimizer,
         T_max=10,
         eta_min=0)
 
-    restructured_discriminator.optimizer = torch.optim.AdamW(restructured_discriminator.parameters(), lr=0.00005)
+    restructured_discriminator.optimizer = torch.optim.AdamW(restructured_discriminator.parameters(), lr=0.0001)
     restructured_discriminator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer=restructured_discriminator.optimizer,
         T_max=10,

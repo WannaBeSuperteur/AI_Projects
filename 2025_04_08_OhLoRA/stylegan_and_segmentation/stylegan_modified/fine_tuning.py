@@ -35,7 +35,7 @@ def compute_grad_penalty(images, scores):
     return penalty
 
 
-def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma):
+def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma, save_image):
     """Computes loss for discriminator."""
 
     reals = data['image']
@@ -47,7 +47,8 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     # TODO: Use random labels.
     fakes = generator(latents, label=labels, **gen_train_args)['image']
 
-    save_real_fake_imgs(reals, fakes)
+    if save_image:
+        save_real_fake_imgs(reals, fakes)
 
     real_scores = discriminator(reals, label=labels, **dis_train_args)
     fake_scores = discriminator(fakes, label=labels, **dis_train_args)
@@ -62,9 +63,12 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     if r2_gamma:
         fake_grad_penalty = compute_grad_penalty(fakes, fake_scores)
 
+    real_scores_mean = np.mean(real_scores.detach().cpu().numpy().flatten())
+    fake_scores_mean = np.mean(fake_scores.detach().cpu().numpy().flatten())
+
     return (d_loss +
             real_grad_penalty * (r1_gamma * 0.5) +
-            fake_grad_penalty * (r2_gamma * 0.5))
+            fake_grad_penalty * (r2_gamma * 0.5)), real_scores_mean, fake_scores_mean
 
 
 def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args):  # pylint: disable=no-self-use
@@ -127,14 +131,17 @@ def moving_average_model(model, avg_model, beta=0.999):
 
 
 def train_step(generator, generator_smooth, discriminator, data, gen_train_args, dis_train_args,
-               r1_gamma, r2_gamma, g_smooth_img):
+               r1_gamma, r2_gamma, g_smooth_img, save_image):
 
     # Update discriminator.
     set_model_requires_grad(discriminator, 'discriminator', True)
     set_model_requires_grad(generator, 'generator', False)
 #    check_model_trainable_status(0, generator, discriminator)
 
-    d_loss = compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma)
+    d_loss, real_scores_mean, fake_scores_mean = compute_d_loss(generator, discriminator, data,
+                                                                gen_train_args, dis_train_args,
+                                                                r1_gamma, r2_gamma, save_image)
+
     discriminator.optimizer.zero_grad()
     d_loss.backward()
     discriminator.optimizer.step()
@@ -164,7 +171,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
         if g_loss_float < 2.0 * d_loss_float:
             break
 
-    return d_loss_float, g_loss_float, g_train_count
+    return d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean
 
 
 def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args, dis_train_args,
@@ -191,13 +198,17 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
                 'label': concatenated_labels.cuda()
             }
 
-            d_loss_float, g_loss_float, g_train_count = train_step(generator, generator_smooth, discriminator, data,
-                                                                   gen_train_args, dis_train_args,
-                                                                   r1_gamma, r2_gamma, g_smooth_img)
+            print_result_and_save_image = (idx % 10 == 0 or (current_epoch == 0 and idx < 10))
 
-            if idx % 10 == 0 or (current_epoch == 0 and idx < 10):
+            d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean =(
+                train_step(generator, generator_smooth, discriminator, data,
+                           gen_train_args, dis_train_args, r1_gamma, r2_gamma, g_smooth_img,
+                           save_image=print_result_and_save_image))
+
+            if print_result_and_save_image:
                 print(f'epoch={current_epoch}, idx={idx}, '
-                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}')
+                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}, '
+                      f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}')
 
                 run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
 
