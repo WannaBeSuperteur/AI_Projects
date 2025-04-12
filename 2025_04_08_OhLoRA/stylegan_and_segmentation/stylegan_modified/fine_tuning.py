@@ -38,7 +38,7 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     """Computes loss for discriminator."""
 
     reals = data['image']
-    labels = data['label']
+    labels = None
     reals.requires_grad = True
 
     latents = torch.randn(reals.shape[0], ORIGINAL_HIDDEN_DIMS_Z).cuda()
@@ -68,7 +68,7 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     # TODO: Use random labels.
 
     batch_size = data['image'].shape[0]
-    labels = data['label']
+    labels = None
 
     latents = torch.randn(batch_size, ORIGINAL_HIDDEN_DIMS_Z).cuda()
     fakes = generator(latents, label=labels, **gen_train_args)['image']
@@ -144,15 +144,24 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     set_model_requires_grad(generator, 'generator', True)
 #    check_model_trainable_status(1, generator, discriminator)
 
-    g_loss = compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args)
-    generator.optimizer.zero_grad()
-    g_loss.backward()
-    generator.optimizer.step()
+    g_train_count = 0
+    d_loss_float = None
+    g_loss_float = None
 
-    d_loss_float = float(d_loss.detach().cpu())
-    g_loss_float = float(g_loss.detach().cpu())
+    while g_train_count < 4:
+        g_loss = compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args)
+        generator.optimizer.zero_grad()
+        g_loss.backward()
+        generator.optimizer.step()
 
-    return d_loss_float, g_loss_float
+        d_loss_float = float(d_loss.detach().cpu())
+        g_loss_float = float(g_loss.detach().cpu())
+        g_train_count += 1
+
+        if g_loss_float < 2.0 * d_loss_float:
+            break
+
+    return d_loss_float, g_loss_float, g_train_count
 
 
 def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args, dis_train_args,
@@ -165,25 +174,28 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
 
     while current_epoch < TOTAL_EPOCHS:
         for idx, raw_data in enumerate(stylegan_ft_loader):
-            concatenated_labels = torch.concat([raw_data['label']['eyes'],
-                                                raw_data['label']['hair_color'],
-                                                raw_data['label']['hair_length'],
-                                                raw_data['label']['mouth'],
-                                                raw_data['label']['pose']])
-            concatenated_labels = torch.reshape(concatenated_labels, (PROPERTY_DIMS_Z, -1))
-            concatenated_labels = torch.transpose(concatenated_labels, 0, 1)
-            concatenated_labels = concatenated_labels.to(torch.float32)
+            concatenated_property = torch.concat([raw_data['property_score']['eyes'],
+                                                  raw_data['property_score']['hair_color'],
+                                                  raw_data['property_score']['hair_length'],
+                                                  raw_data['property_score']['mouth'],
+                                                  raw_data['property_score']['pose']])
+            concatenated_property = torch.reshape(concatenated_property, (PROPERTY_DIMS_Z, -1))
+            concatenated_property = torch.transpose(concatenated_property, 0, 1)
+            concatenated_property = concatenated_property.to(torch.float32)
 
             data = {
                 'image': raw_data['image'].cuda(),
-                'label': concatenated_labels.cuda()
+                'property_score': concatenated_property.cuda()
             }
 
-            d_loss_float, g_loss_float = train_step(generator, generator_smooth, discriminator, data,
-                                                    gen_train_args, dis_train_args, r1_gamma, r2_gamma, g_smooth_img)
+            d_loss_float, g_loss_float, g_train_count = train_step(generator, generator_smooth, discriminator, data,
+                                                                   gen_train_args, dis_train_args,
+                                                                   r1_gamma, r2_gamma, g_smooth_img)
 
             if idx % 10 == 0 or (current_epoch == 0 and idx < 10):
-                print(f'epoch={current_epoch}, idx={idx}, d_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}')
+                print(f'epoch={current_epoch}, idx={idx}, '
+                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}')
+
                 run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
 
         current_epoch += 1
@@ -243,7 +255,7 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
                                 num=IMGS_PER_TEST_PROPERTY_SET,
                                 save_dir=img_save_dir,
                                 z=None,
-                                label=label_,
+                                label=None,
                                 img_name_start_idx=current_idx,
                                 verbose=False)
 

@@ -60,7 +60,7 @@ class StyleGANDiscriminator(nn.Module):
     def __init__(self,
                  resolution,
                  image_channels=3,
-                 label_size=5,        # (eyes, hair_color, hair_length, mouth, pose) property score
+                 label_size=0,
                  fused_scale='auto',
                  use_wscale=True,
                  minibatch_std_group_size=4,
@@ -182,7 +182,7 @@ class StyleGANDiscriminator(nn.Module):
         """Gets number of feature maps according to current resolution."""
         return min(self.fmaps_base // res, self.fmaps_max)
 
-    def forward(self, image, label, lod=None, **_unused_kwargs):
+    def forward(self, image, label=None, lod=None, **_unused_kwargs):
         expected_shape = (self.image_channels, self.resolution, self.resolution)
         if image.ndim != 4 or image.shape[1:] != expected_shape:
             raise ValueError(f'The input tensor should be with shape '
@@ -197,14 +197,19 @@ class StyleGANDiscriminator(nn.Module):
                              f'{self.final_res_log2 - self.init_res_log2}, '
                              f'but `{lod}` is received!')
 
-        batch_size = image.shape[0]
-        if label.ndim != 2 or label.shape != (batch_size, self.label_size):
-            raise ValueError(f'Input label should be with shape '
-                             f'[batch_size, label_size], where '
-                             f'`batch_size` equals to that of '
-                             f'images ({image.shape[0]}) and '
-                             f'`label_size` equals to {self.label_size}!\n'
-                             f'But `{label.shape}` is received!')
+        if self.label_size:
+            if label is None:
+                raise ValueError(f'Model requires an additional label '
+                                 f'(with size {self.label_size}) as input, '
+                                 f'but no label is received!')
+            batch_size = image.shape[0]
+            if label.ndim != 2 or label.shape != (batch_size, self.label_size):
+                raise ValueError(f'Input label should be with shape '
+                                 f'[batch_size, label_size], where '
+                                 f'`batch_size` equals to that of '
+                                 f'images ({image.shape[0]}) and '
+                                 f'`label_size` equals to {self.label_size}!\n'
+                                 f'But `{label.shape}` is received!')
 
         for res_log2 in range(self.final_res_log2, self.init_res_log2 - 1, -1):
             block_idx = current_lod = self.final_res_log2 - res_log2
