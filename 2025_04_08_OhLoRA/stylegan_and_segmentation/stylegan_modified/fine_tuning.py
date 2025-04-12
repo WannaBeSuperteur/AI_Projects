@@ -13,6 +13,7 @@ import torch
 import torch.nn.functional as F
 from copy import deepcopy
 import numpy as np
+import pandas as pd
 
 import stylegan_modified.stylegan_generator_inference as modified_inf
 
@@ -180,7 +181,14 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
     """Training function."""
     print('Start training.')
 
+    train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'g_train_count': [],
+                      'real_scores_mean': [], 'fake_scores_mean': []}
+
     current_epoch = 0
+
+    gen_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned.pth'
+    dis_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_dis_fine_tuned.pth'
+    train_log_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/train_log.csv'
 
     while current_epoch < TOTAL_EPOCHS:
         for idx, raw_data in enumerate(stylegan_ft_loader):
@@ -211,6 +219,21 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
                       f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}')
 
                 run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
+
+            # save train log
+            train_log_dict['epoch'].append(current_epoch)
+            train_log_dict['idx'].append(idx)
+            train_log_dict['d_loss'].append(round(d_loss_float, 4))
+            train_log_dict['g_loss'].append(round(g_loss_float, 4))
+            train_log_dict['g_train_count'].append(g_train_count)
+            train_log_dict['real_scores_mean'].append(real_scores_mean)
+            train_log_dict['fake_scores_mean'].append(fake_scores_mean)
+
+            pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
+
+        # save model for EVERY EPOCH
+        torch.save(generator.state_dict(), gen_save_path)
+        torch.save(discriminator.state_dict(), dis_save_path)
 
         current_epoch += 1
 
@@ -339,5 +362,3 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
     train(restructured_generator, restructured_generator_smooth, restructured_discriminator,
           stylegan_ft_loader, gen_train_args, dis_train_args,
           r1_gamma, r2_gamma, g_smooth_img)
-
-    raise NotImplementedError
