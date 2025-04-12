@@ -8,6 +8,7 @@
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
+import cv2
 import torch
 import torch.nn.functional as F
 from copy import deepcopy
@@ -45,6 +46,9 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     latents.requires_grad = True
     # TODO: Use random labels.
     fakes = generator(latents, label=labels, **gen_train_args)['image']
+
+    save_real_fake_imgs(reals, fakes)
+
     real_scores = discriminator(reals, label=labels, **dis_train_args)
     fake_scores = discriminator(fakes, label=labels, **dis_train_args)
 
@@ -134,6 +138,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     discriminator.optimizer.zero_grad()
     d_loss.backward()
     discriminator.optimizer.step()
+    d_loss_float = float(d_loss.detach().cpu())
 
     # Life-long update for generator.
     beta = 0.5 ** (TRAIN_BATCH_SIZE / g_smooth_img)
@@ -145,7 +150,6 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
 #    check_model_trainable_status(1, generator, discriminator)
 
     g_train_count = 0
-    d_loss_float = None
     g_loss_float = None
 
     while g_train_count < 4:
@@ -154,7 +158,6 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
         g_loss.backward()
         generator.optimizer.step()
 
-        d_loss_float = float(d_loss.detach().cpu())
         g_loss_float = float(g_loss.detach().cpu())
         g_train_count += 1
 
@@ -262,6 +265,39 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
         current_idx += IMGS_PER_TEST_PROPERTY_SET
 
 
+# StyleGAN Fine Tuning 에서 Discriminator 테스트용으로 real, fake 이미지 저장
+# Create Date : 2025.04.12
+# Last Update Date : -
+
+# Arguments:
+# - reals (Tensor) : Real Images
+# - fakes (Tensor) : Fake Images
+
+def save_real_fake_imgs(reals, fakes):
+    image_lists = [reals, fakes]
+    real_fake_label = ['real', 'fake']
+    image_save_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_real_fake'
+    os.makedirs(image_save_dir_path, exist_ok=True)
+
+    max_val, min_val = 1.0, -1.0
+
+    for image_list, real_fake in zip(image_lists, real_fake_label):
+        for idx, image in enumerate(image_list):
+            img_ = np.array(image.detach().cpu())
+            img_ = np.transpose(img_, (1, 2, 0))
+            img_ = cv2.cvtColor(img_, cv2.COLOR_BGR2RGB)
+            img_ = (img_ - min_val) * 255 / (max_val - min_val)
+
+            result, overlay_image_arr = cv2.imencode(ext='.png',
+                                                     img=img_,
+                                                     params=[cv2.IMWRITE_PNG_COMPRESSION, 0])
+
+            if result:
+                image_save_path = f'{image_save_dir_path}/{real_fake}_{idx:06d}.png'
+                with open(image_save_path, mode='w+b') as f:
+                    overlay_image_arr.tofile(f)
+
+
 # 모델 Fine Tuning 실시
 # Create Date : 2025.04.12
 # Last Update Date : -
@@ -283,7 +319,7 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
 
     r1_gamma = 10.0
     r2_gamma = 0.0
-    g_smooth_img = 10000
+    g_smooth_img = 1000
 
     # copy Re-constructed Generator Model
     restructured_generator_smooth = deepcopy(restructured_generator)
