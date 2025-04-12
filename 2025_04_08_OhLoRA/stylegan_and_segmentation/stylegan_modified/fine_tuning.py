@@ -226,8 +226,8 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
             train_log_dict['d_loss'].append(round(d_loss_float, 4))
             train_log_dict['g_loss'].append(round(g_loss_float, 4))
             train_log_dict['g_train_count'].append(g_train_count)
-            train_log_dict['real_scores_mean'].append(real_scores_mean)
-            train_log_dict['fake_scores_mean'].append(fake_scores_mean)
+            train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
+            train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
 
             pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
 
