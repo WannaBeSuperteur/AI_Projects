@@ -6,6 +6,7 @@
 
 
 import os
+import time
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 import cv2
@@ -156,10 +157,6 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     discriminator.optimizer.step()
     d_loss_float = float(d_loss.detach().cpu())
 
-    # Life-long update for generator.
-    beta = 0.5 ** (TRAIN_BATCH_SIZE / g_smooth_img)
-    moving_average_model(model=generator, avg_model=generator_smooth, beta=beta)
-
     # Update generator.
     set_model_requires_grad(discriminator, 'discriminator', False)
     set_model_requires_grad(generator, 'generator', True)
@@ -229,17 +226,17 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
 
                 run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
 
-            # save train log
-            train_log_dict['epoch'].append(current_epoch)
-            train_log_dict['idx'].append(idx)
-            train_log_dict['d_loss'].append(round(d_loss_float, 4))
-            train_log_dict['g_loss'].append(round(g_loss_float, 4))
-            train_log_dict['g_train_count'].append(g_train_count)
-            train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
-            train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
-            train_log_dict['real_fake_auroc'].append(round(real_fake_auroc, 4))
+                # save train log
+                train_log_dict['epoch'].append(current_epoch)
+                train_log_dict['idx'].append(idx)
+                train_log_dict['d_loss'].append(round(d_loss_float, 4))
+                train_log_dict['g_loss'].append(round(g_loss_float, 4))
+                train_log_dict['g_train_count'].append(g_train_count)
+                train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
+                train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
+                train_log_dict['real_fake_auroc'].append(round(real_fake_auroc, 4))
 
-            pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
+                pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
 
         # save model for EVERY EPOCH
         torch.save(generator.state_dict(), gen_save_path)
