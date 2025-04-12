@@ -69,7 +69,6 @@
 | Computer Vision  | Auto-Encoder                                                                                                                                              | 생성된 이미지의 저차원 벡터화를 통해, k-NN 을 통한 사용자 평가 예상 점수 계산 시 **이웃한 이미지와의 거리 계산이 정확해지고, 연산량이 감소하는** 효과                                                                                                                                                                                      |
 | LLM              | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) | 가상 인간이 인물 설정에 맞게 사용자와 대화할 수 있게 하는 기술                                                                                                                                                                                                                                            |
 | LLM              | [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md)     | 가상 인간이 사용자와의 대화 내용을 기억하는 메모리 역할                                                                                                                                                                                                                                                 |
-| LLM              | [KTO](https://arxiv.org/pdf/2402.01306) (Optional)                                                                                                        | 가상 인간의 대화 성능 추가 향상 (참고 : [LLM Survey 논문 Study 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Large%20Language%20Model/%5B2025.03.22%5D%20Large%20Language%20Models%20A%20Survey%20(IV%2C%20VII).md#1-1-g-llm-%EC%97%90-%EB%8C%80%ED%95%9C-alignment)) |
 |                  | k-NN                                                                                                                                                      | StyleGAN 으로 생성한 가상 인간 이미지의 평가 데이터 (점수) 에 기반한, **평가 예상 점수 계산** 알고리즘                                                                                                                                                                                                              |
 
 ### 2-1. 관련 논문
@@ -78,7 +77,7 @@
 
 * **StyleGAN** (이미지 생성 기술) 논문
   * [A Style-Based Generator Architecture for Generative Adversarial Networks (2018.12)](https://arxiv.org/pdf/1812.04948)
-* **KTO** (LLM Fine-Tuning 기술) 논문
+* **KTO** (LLM Fine-Tuning 기술) 논문 **(본 프로젝트에서는 미 적용)**
   * [KTO: Model Alignment as Prospect Theoretic Optimization (2024.02)](https://arxiv.org/pdf/2402.01306)
 
 ### 2-2. 사용한 Python 라이브러리 및 시스템 환경
@@ -99,31 +98,32 @@
 
 **이미지 생성 (StyleGAN)**
 
-| 계획 내용                                              | 일정                     | branch                         | 상태 |
-|----------------------------------------------------|------------------------|--------------------------------|----|
-| 논문 탐독 (StyleGAN)                                   | 04.09 수 (1d)           |                                | ✅  |
-| 기본 StyleGAN 구현                                     | 04.09 수 - 04.10 목 (2d) | ```P002-001-StyleGAN```        | ✅  |
-| 이미지 품질 판단 (CNN 구현 포함)                              | 04.10 목 - 04.11 금 (2d) | ```P002-002-CNN```             | ✅  |
-| 성별 속성 값 추출 (CNN 구현 포함)                             | 04.10 목 - 04.11 금 (2d) | ```P002-002-CNN```             | ✅  |
-| Segmentation 모델 구현 (핵심 속성 값 추출용)                   | 04.10 목 - 04.11 금 (2d) | ```P002-003-Seg```             | ✅  |
-| Segmentation 으로 핵심 속성 값 추출                         | 04.11 금 (1d)           | ```P002-003-Seg```             | ✅  |
-| 핵심 속성 값을 처리하도록 StyleGAN 구조 변경 (Fine-Tuning 포함, 1차) | 04.11 금 - 04.12 토 (2d) | ```P002-004-Update-StyleGAN``` | ✅  |
-| **(추가)** 핵심 속성 값 추가 (배경 색 밝기, 배경 색 표준편차)           | 04.12 토 (1d)           | ```P002-005-Property```        | ✅  |
-| 추가된 핵심 속성 값으로 StyleGAN 학습 (Fine-Tuning, 2차)        | 04.12 토 - 04.13 일 (2d) | ```P002-006-Update-StyleGAN``` | 💨 |
-| Auto-Encoder 구현                                    | 04.13 일 (1d)           | ```P002-007-AE```              | ⬜  |
-| k-NN 구현                                            | 04.13 일 (1d)           | ```P002-008-kNN```             | ⬜  |
+| 계획 내용                                                | 일정                     | branch                         | 상태 |
+|------------------------------------------------------|------------------------|--------------------------------|----|
+| 논문 탐독 (StyleGAN)                                     | 04.09 수 (1d)           |                                | ✅  |
+| 기본 StyleGAN 구현                                       | 04.09 수 - 04.10 목 (2d) | ```P002-001-StyleGAN```        | ✅  |
+| 이미지 품질 판단 (CNN 구현 포함)                                | 04.10 목 - 04.11 금 (2d) | ```P002-002-CNN```             | ✅  |
+| 성별 속성 값 추출 (CNN 구현 포함)                               | 04.10 목 - 04.11 금 (2d) | ```P002-002-CNN```             | ✅  |
+| Segmentation 모델 구현 (핵심 속성 값 추출용)                     | 04.10 목 - 04.11 금 (2d) | ```P002-003-Seg```             | ✅  |
+| Segmentation 으로 핵심 속성 값 추출                           | 04.11 금 (1d)           | ```P002-003-Seg```             | ✅  |
+| 핵심 속성 값을 처리하도록 StyleGAN 구조 변경 (Fine-Tuning 포함, 1차)   | 04.11 금 - 04.12 토 (2d) | ```P002-004-Update-StyleGAN``` | ✅  |
+| **(추가)** 핵심 속성 값 추가 (배경 색 밝기, 배경 색 표준편차)             | 04.12 토 (1d)           | ```P002-005-Property```        | ✅  |
+| **(추가)** 추가된 핵심 속성 값으로 StyleGAN 학습 (Fine-Tuning, 2차) | 04.12 토 - 04.13 일 (2d) | ```P002-006-Update-StyleGAN``` | 💨 |
+| **(추가)** StyleGAN Generator 추가 학습 (CNN idea)         | 04.13 일 (1d)           | ```P002-007-Train-Gen```       | ⬜  |
+| **(추가)** StyleGAN Generator 추가 학습 (VAE decoder idea) | 04.13 일 (1d)           | ```P002-007-Train-Gen```       | ⬜  |
+| Auto-Encoder 구현                                      | 04.14 월 (1d)           | ```P002-008-AE```              | ⬜  |
+| k-NN 구현                                              | 04.14 월 (1d)           | ```P002-009-kNN```             | ⬜  |
 
 **거대 언어 모델 (LLM)**
 
-| 계획 내용                                              | 일정                     | branch                         | 상태 |
-|----------------------------------------------------|------------------------|--------------------------------|----|
-| 논문 탐독 (KTO)                                        | 04.09 수 (1d)           |                                | ✅  |
-| Unsloth 실행 시도                                      | 04.14 월 (1d)           |                                | ⬜  |
-| 적절한 한국어 LLM 모델 선택                                  | 04.14 월 (1d)           |                                | ⬜  |
-| SFT 학습 데이터셋 제작                                     | 04.14 월 (1d)           | ```P002-009-SFT-Dataset```     | ⬜  |
-| SFT + LoRA 를 이용한 Fine-Tuning                       | 04.14 월 - 04.15 화 (2d) | ```P002-010-SFT-LoRA```        | ⬜  |
-| KTO 를 이용한 추가 Fine-Tuning                           | 04.15 화 (1d)           | ```P002-011-KTO```             | ⬜  |
-| RAG 적용                                             | 04.15 화 - 04.16 수 (2d) | ```P002-012-RAG```             | ⬜  |
+| 계획 내용                                              | 일정                     | branch                     | 상태 |
+|----------------------------------------------------|------------------------|----------------------------|----|
+| 논문 탐독 (KTO)                                        | 04.09 수 (1d)           |                            | ✅  |
+| Unsloth 실행 시도                                      | 04.14 월 (1d)           |                            | ⬜  |
+| 적절한 한국어 LLM 모델 선택                                  | 04.14 월 (1d)           |                            | ⬜  |
+| SFT 학습 데이터셋 제작                                     | 04.14 월 (1d)           | ```P002-010-SFT-Dataset``` | ⬜  |
+| SFT + LoRA 를 이용한 Fine-Tuning                       | 04.14 월 - 04.15 화 (2d) | ```P002-011-SFT-LoRA```    | ⬜  |
+| RAG 적용                                             | 04.15 화 - 04.16 수 (2d) | ```P002-012-RAG```         | ⬜  |
 
 ## 4. 프로젝트 상세 설명
 
