@@ -14,6 +14,7 @@ import torch.nn.functional as F
 from copy import deepcopy
 import numpy as np
 import pandas as pd
+from sklearn.metrics import roc_auc_score
 
 import stylegan_modified.stylegan_generator_inference as modified_inf
 
@@ -64,12 +65,19 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     if r2_gamma:
         fake_grad_penalty = compute_grad_penalty(fakes, fake_scores)
 
-    real_scores_mean = np.mean(real_scores.detach().cpu().numpy().flatten())
-    fake_scores_mean = np.mean(fake_scores.detach().cpu().numpy().flatten())
+    real_scores_np = real_scores.detach().cpu().numpy()
+    fake_scores_np = fake_scores.detach().cpu().numpy()
+
+    real_scores_mean = np.mean(real_scores_np.flatten())
+    fake_scores_mean = np.mean(fake_scores_np.flatten())
+
+    all_scores = np.concatenate([real_scores_np, fake_scores_np])
+    all_labels = np.concatenate([np.ones(len(real_scores_np)), np.zeros(len(fake_scores_np))])
+    real_fake_auroc = roc_auc_score(all_labels, all_scores)
 
     return (d_loss +
             real_grad_penalty * (r1_gamma * 0.5) +
-            fake_grad_penalty * (r2_gamma * 0.5)), real_scores_mean, fake_scores_mean
+            fake_grad_penalty * (r2_gamma * 0.5)), real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
 def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args):  # pylint: disable=no-self-use
@@ -139,9 +147,9 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     set_model_requires_grad(generator, 'generator', False)
 #    check_model_trainable_status(0, generator, discriminator)
 
-    d_loss, real_scores_mean, fake_scores_mean = compute_d_loss(generator, discriminator, data,
-                                                                gen_train_args, dis_train_args,
-                                                                r1_gamma, r2_gamma, save_image)
+    d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
+                                                                                 gen_train_args, dis_train_args,
+                                                                                 r1_gamma, r2_gamma, save_image)
 
     discriminator.optimizer.zero_grad()
     d_loss.backward()
@@ -172,7 +180,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
         if g_loss_float < 2.0 * d_loss_float:
             break
 
-    return d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean
+    return d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
 def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args, dis_train_args,
@@ -182,7 +190,7 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
     print('Start training.')
 
     train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'g_train_count': [],
-                      'real_scores_mean': [], 'fake_scores_mean': []}
+                      'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': []}
 
     current_epoch = 0
 
@@ -208,7 +216,7 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
 
             print_result_and_save_image = (idx % 10 == 0 or (current_epoch == 0 and idx < 10))
 
-            d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean =(
+            d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
                 train_step(generator, generator_smooth, discriminator, data,
                            gen_train_args, dis_train_args, r1_gamma, r2_gamma, g_smooth_img,
                            save_image=print_result_and_save_image))
@@ -216,7 +224,8 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
             if print_result_and_save_image:
                 print(f'epoch={current_epoch}, idx={idx}, '
                       f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}, '
-                      f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}')
+                      f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
+                      f'real_fake_auroc={real_fake_auroc:.4f}')
 
                 run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
 
@@ -228,6 +237,7 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
             train_log_dict['g_train_count'].append(g_train_count)
             train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
             train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
+            train_log_dict['real_fake_auroc'].append(round(real_fake_auroc, 4))
 
             pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
 
