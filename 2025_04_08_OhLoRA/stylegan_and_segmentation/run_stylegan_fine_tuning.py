@@ -4,6 +4,7 @@ import stylegan.stylegan_discriminator as original_dis
 import stylegan_modified.stylegan_generator as modified_gen
 import stylegan_modified.stylegan_discriminator as modified_dis
 import stylegan_modified.stylegan_generator_inference as modified_inf
+from stylegan_modified.fine_tuning import run_fine_tuning
 
 import torch
 import torch.nn as nn
@@ -73,7 +74,7 @@ class PropertyScoreImageDataset(Dataset):
         # normalize
         image = self.transform(image)
 
-        return image, property_scores
+        return {'image': image, 'label': property_scores}
 
 
 # StyleGAN Fine-Tuning 용 데이터셋의 Data Loader 로딩
@@ -260,23 +261,6 @@ def create_restructured_stylegan(generator_state_dict, discriminator_state_dict)
                                          (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)])
 
     return restructured_generator, restructured_discriminator
-
-
-# 모델 Fine Tuning 실시
-# Create Date : 2025.04.11
-# Last Update Date : -
-
-# Arguments:
-# - restructured_generator     (nn.Module)  : StyleGAN 모델의 새로운 구조의 Generator
-# - restructured_discriminator (nn.Module)  : StyleGAN 모델의 새로운 구조의 Discriminator
-# - stylegan_ft_loader         (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
-
-# Returns:
-# - fine_tuned_generator     (nn.Module) : Fine-Tuning 된 StyleGAN 모델의 Generator
-# - fine_tuned_discriminator (nn.Module) : Fine-Tuning 된 StyleGAN 모델의 Discriminator
-
-def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan_ft_loader):
-    raise NotImplementedError
 
 
 # StyleGAN Fine-Tuning 이전 inference test 실시
