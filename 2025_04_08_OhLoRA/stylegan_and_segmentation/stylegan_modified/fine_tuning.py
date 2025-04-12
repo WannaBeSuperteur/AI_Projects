@@ -23,7 +23,7 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 5           # eyes, hair_color, hair_length, mouth, pose
 TRAIN_BATCH_SIZE = 16
 TOTAL_EPOCHS = 500
-IMGS_PER_TEST_PROPERTY_SET = 5
+IMGS_PER_TEST_PROPERTY_SET = 10
 
 
 def compute_grad_penalty(images, scores):
@@ -287,6 +287,8 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
     # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose'
     current_idx = 0
 
+    z = np.random.normal(0, 1, size=(IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z))
+
     labels = [[ 1.5,  1.5,  1.2, -1.0, -1.0],
               [-1.5,  1.5,  1.2, -1.0, -1.0],
               [-1.5, -1.5,  1.2, -1.0, -1.0],
@@ -301,7 +303,7 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
         modified_inf.synthesize(restructured_generator,
                                 num=IMGS_PER_TEST_PROPERTY_SET,
                                 save_dir=img_save_dir,
-                                z=None,
+                                z=z,
                                 label=label_,
                                 img_name_start_idx=current_idx,
                                 verbose=False)
