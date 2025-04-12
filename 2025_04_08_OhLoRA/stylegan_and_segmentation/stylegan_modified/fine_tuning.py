@@ -38,7 +38,7 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     """Computes loss for discriminator."""
 
     reals = data['image']
-    labels = None
+    labels = data['label']
     reals.requires_grad = True
 
     latents = torch.randn(reals.shape[0], ORIGINAL_HIDDEN_DIMS_Z).cuda()
@@ -68,7 +68,7 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     # TODO: Use random labels.
 
     batch_size = data['image'].shape[0]
-    labels = None
+    labels = data['label']
 
     latents = torch.randn(batch_size, ORIGINAL_HIDDEN_DIMS_Z).cuda()
     fakes = generator(latents, label=labels, **gen_train_args)['image']
@@ -78,8 +78,8 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     return g_loss
 
 
-# generator     -> params =  44 layers, named_params =  44 layers, layers_to_train = ['mapping']
-# discriminator -> params = 101 layers, named_params = 101 layers, layers_to_train = ['layer12', 'layer13', 'layer14']
+# generator     -> layers_to_train = ['mapping']
+# discriminator -> layers_to_train = ['layer12', 'layer13', 'layer14']
 def set_model_requires_grad(model, model_name, requires_grad):
     """Sets the `requires_grad` configuration for a particular model."""
 
@@ -174,18 +174,18 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
 
     while current_epoch < TOTAL_EPOCHS:
         for idx, raw_data in enumerate(stylegan_ft_loader):
-            concatenated_property = torch.concat([raw_data['property_score']['eyes'],
-                                                  raw_data['property_score']['hair_color'],
-                                                  raw_data['property_score']['hair_length'],
-                                                  raw_data['property_score']['mouth'],
-                                                  raw_data['property_score']['pose']])
-            concatenated_property = torch.reshape(concatenated_property, (PROPERTY_DIMS_Z, -1))
-            concatenated_property = torch.transpose(concatenated_property, 0, 1)
-            concatenated_property = concatenated_property.to(torch.float32)
+            concatenated_labels = torch.concat([raw_data['label']['eyes'],
+                                                raw_data['label']['hair_color'],
+                                                raw_data['label']['hair_length'],
+                                                raw_data['label']['mouth'],
+                                                raw_data['label']['pose']])
+            concatenated_labels = torch.reshape(concatenated_labels, (PROPERTY_DIMS_Z, -1))
+            concatenated_labels = torch.transpose(concatenated_labels, 0, 1)
+            concatenated_labels = concatenated_labels.to(torch.float32)
 
             data = {
                 'image': raw_data['image'].cuda(),
-                'property_score': concatenated_property.cuda()
+                'label': concatenated_labels.cuda()
             }
 
             d_loss_float, g_loss_float, g_train_count = train_step(generator, generator_smooth, discriminator, data,
@@ -255,7 +255,7 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
                                 num=IMGS_PER_TEST_PROPERTY_SET,
                                 save_dir=img_save_dir,
                                 z=None,
-                                label=None,
+                                label=label_,
                                 img_name_start_idx=current_idx,
                                 verbose=False)
 

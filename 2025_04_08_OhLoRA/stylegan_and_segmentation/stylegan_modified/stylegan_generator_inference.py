@@ -58,16 +58,13 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
             code = z[sub_indices].cuda()
 
         if label is None:
-            with torch.no_grad():
-                images = generator_model(code, **generator_model.G_kwargs_val)['image']
-                images = postprocess_image(images.detach().cpu().numpy())
-
+            property_vector = torch.randn(batch_size, generator_model.label_size).cuda()
         else:
             property_vector = label[sub_indices].cuda()
 
-            with torch.no_grad():
-                images = generator_model(code, property_vector, **generator_model.G_kwargs_val)['image']
-                images = postprocess_image(images.detach().cpu().numpy())
+        with torch.no_grad():
+            images = generator_model(code, property_vector, **generator_model.G_kwargs_val)['image']
+            images = postprocess_image(images.detach().cpu().numpy())
 
         for sub_idx, image in zip(sub_indices, images):
             save_image(os.path.join(save_dir, f'{sub_idx+img_name_start_idx:06d}.jpg'), image)

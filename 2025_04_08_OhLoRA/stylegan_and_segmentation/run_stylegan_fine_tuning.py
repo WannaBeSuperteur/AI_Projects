@@ -74,7 +74,7 @@ class PropertyScoreImageDataset(Dataset):
         # normalize
         image = self.transform(image)
 
-        return {'image': image, 'property_score': property_scores}
+        return {'image': image, 'label': property_scores}
 
 
 # StyleGAN Fine-Tuning 용 데이터셋의 Data Loader 로딩
@@ -225,13 +225,13 @@ def create_restructured_stylegan(generator_state_dict, discriminator_state_dict)
     restructured_discriminator = modified_dis.StyleGANDiscriminator(resolution=IMAGE_RESOLUTION)
 
     # set optimizer and scheduler
-    restructured_generator.optimizer = torch.optim.AdamW(restructured_generator.parameters(), lr=0.0001)
+    restructured_generator.optimizer = torch.optim.AdamW(restructured_generator.parameters(), lr=0.00005)
     restructured_generator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer=restructured_generator.optimizer,
         T_max=10,
         eta_min=0)
 
-    restructured_discriminator.optimizer = torch.optim.AdamW(restructured_discriminator.parameters(), lr=0.0001)
+    restructured_discriminator.optimizer = torch.optim.AdamW(restructured_discriminator.parameters(), lr=0.00005)
     restructured_discriminator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer=restructured_discriminator.optimizer,
         T_max=10,
