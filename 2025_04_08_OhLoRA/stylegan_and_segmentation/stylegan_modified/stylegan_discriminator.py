@@ -32,6 +32,8 @@ _AUTO_FUSED_SCALE_MIN_RES = 128
 # Default gain factor for weight scaling.
 _WSCALE_GAIN = np.sqrt(2.0)
 
+TRAIN_BATCH_SIZE = 16
+
 
 class StyleGANDiscriminator(nn.Module):
     """Defines the discriminator network in StyleGAN.
@@ -63,7 +65,7 @@ class StyleGANDiscriminator(nn.Module):
                  label_size=0,
                  fused_scale='auto',
                  use_wscale=True,
-                 minibatch_std_group_size=4,
+                 minibatch_std_group_size=TRAIN_BATCH_SIZE,
                  minibatch_std_channels=1,
                  fmaps_base=16 << 10,
                  fmaps_max=512):
