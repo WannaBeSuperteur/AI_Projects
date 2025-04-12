@@ -11,7 +11,7 @@ from copy import deepcopy
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 5           # eyes, hair_color, hair_length, mouth, pose
-TRAIN_BATCH_SIZE = 8
+TRAIN_BATCH_SIZE = 16
 TOTAL_EPOCHS = 500
 
 
@@ -120,6 +120,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     # Update discriminator.
     set_model_requires_grad(discriminator, 'discriminator', True)
     set_model_requires_grad(generator, 'generator', False)
+#    check_model_trainable_status(0, generator, discriminator)
 
     d_loss = compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma)
     discriminator.optimizer.zero_grad()
@@ -133,6 +134,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     # Update generator.
     set_model_requires_grad(discriminator, 'discriminator', False)
     set_model_requires_grad(generator, 'generator', True)
+#    check_model_trainable_status(1, generator, discriminator)
 
     g_loss = compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args)
     generator.optimizer.zero_grad()
@@ -154,13 +156,7 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
     current_epoch = 0
 
     while current_epoch < TOTAL_EPOCHS:
-        current_epoch += 1
-        d_loss_float, g_loss_float = None, None
-
         for idx, raw_data in enumerate(stylegan_ft_loader):
-            if current_epoch == 0 and idx < 10 or idx % 100 == 0:
-                print(f'current idx : {idx}')
-
             concatenated_labels = torch.concat([raw_data['label']['eyes'],
                                                 raw_data['label']['hair_color'],
                                                 raw_data['label']['hair_length'],
@@ -178,7 +174,27 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
             d_loss_float, g_loss_float = train_step(generator, generator_smooth, discriminator, data,
                                                     gen_train_args, dis_train_args, r1_gamma, r2_gamma, g_smooth_img)
 
-        print(f'epoch {current_epoch}, d_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}')
+            if idx % 10 == 0 or (current_epoch == 0 and idx < 10):
+                print(f'epoch={current_epoch}, idx={idx}, d_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}')
+
+        current_epoch += 1
+
+
+# 모델의 각 레이어의 trainable / fronzen 상태 확인
+# Create Date : 2025.04.12
+# Last Update Date : -
+
+# Arguments:
+# - check_id      (int)       : 여러 번 check 할 때, 각 check 하는 시점을 구분하기 위한 ID
+# - generator     (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
+# - discriminator (nn.Module) : StyleGAN 모델의 새로운 구조의 Discriminator
+
+def check_model_trainable_status(check_id, generator, discriminator):
+    for name, param in generator.named_parameters():
+        print(f'({check_id}) generator layer name = {name}, trainable = {param.requires_grad}')
+
+    for name, param in discriminator.named_parameters():
+        print(f'({check_id}) discriminator layer name = {name}, trainable = {param.requires_grad}')
 
 
 # 모델 Fine Tuning 실시
