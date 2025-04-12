@@ -229,6 +229,7 @@ class MappingModule(nn.Module):
                  input_space_dim=512,
                  hidden_space_dim=512,
                  final_space_dim=512,
+                 label_convert_dim=32,
                  label_size=5,  # (eyes, hair_color, hair_length, mouth, pose) property score
                  num_layers=8,
                  normalize_input=True,
@@ -255,7 +256,7 @@ class MappingModule(nn.Module):
             out_channels = (final_space_dim if i == (num_layers - 1) else
                             hidden_space_dim)
             self.add_module(f'dense{i}',
-                            DenseBlock(in_channels=in_channels,
+                            DenseBlock(in_channels=input_space_dim + label_convert_dim if i == 0 else in_channels,
                                        out_channels=out_channels,
                                        use_wscale=self.use_wscale,
                                        lr_mul=self.lr_mul))
@@ -263,7 +264,7 @@ class MappingModule(nn.Module):
             self.pth_to_tf_var_mapping[f'dense{i}.bias'] = f'Dense{i}/bias'
         if label_size:
             self.label_weight = nn.Parameter(
-                torch.randn(label_size, input_space_dim))
+                torch.randn(label_size, label_convert_dim))
             self.pth_to_tf_var_mapping[f'label_weight'] = f'LabelConcat/weight'
 
     def forward(self, z, label):
