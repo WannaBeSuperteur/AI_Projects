@@ -229,7 +229,7 @@ class MappingModule(nn.Module):
                  input_space_dim=512,
                  hidden_space_dim=512,
                  final_space_dim=512,
-                 label_convert_dim=32,
+                 label_convert_dim=16,
                  label_size=5,  # (eyes, hair_color, hair_length, mouth, pose) property score
                  num_layers=8,
                  normalize_input=True,

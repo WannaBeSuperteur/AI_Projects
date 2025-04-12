@@ -289,12 +289,12 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
 
     z = np.random.normal(0, 1, size=(IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z))
 
-    labels = [[ 1.5,  1.5,  1.2, -1.0, -1.0],
-              [-1.5,  1.5,  1.2, -1.0, -1.0],
-              [-1.5, -1.5,  1.2, -1.0, -1.0],
-              [-1.5, -1.5, -1.8, -1.0, -1.0],
-              [-1.5, -1.5, -1.8,  2.0, -1.0],
-              [-1.5, -1.5, -1.8,  2.0,  2.0]]
+    labels = [[ 2.0,  2.0,  2.0, -1.6, -1.6],
+              [-2.0,  2.0,  2.0, -1.6, -1.6],
+              [-2.0, -2.0,  2.0, -1.6, -1.6],
+              [-2.0, -2.0, -2.0, -1.6, -1.6],
+              [-2.0, -2.0, -2.0,  2.6, -1.6],
+              [-2.0, -2.0, -2.0,  2.6,  2.8]]
 
     for label in labels:
         label_ = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
@@ -365,7 +365,7 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
 
     r1_gamma = 10.0
     r2_gamma = 0.0
-    g_smooth_img = 1000
+    g_smooth_img = 100
 
     # copy Re-constructed Generator Model
     restructured_generator_smooth = deepcopy(restructured_generator)
