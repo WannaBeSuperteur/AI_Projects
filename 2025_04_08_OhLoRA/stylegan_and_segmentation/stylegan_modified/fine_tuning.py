@@ -228,12 +228,12 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
     # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose'
     current_idx = 0
 
-    labels = [[ 1.5,  1.5,  1.2,  2.0, -1.0],
-              [-1.5,  1.5,  1.2,  2.0, -1.0],
-              [-1.5, -1.5,  1.2,  2.0, -1.0],
-              [-1.5, -1.5, -1.8,  2.0, -1.0],
+    labels = [[ 1.5,  1.5,  1.2, -1.0, -1.0],
+              [-1.5,  1.5,  1.2, -1.0, -1.0],
+              [-1.5, -1.5,  1.2, -1.0, -1.0],
               [-1.5, -1.5, -1.8, -1.0, -1.0],
-              [-1.5, -1.5, -1.8, -1.0,  2.0]]
+              [-1.5, -1.5, -1.8,  2.0, -1.0],
+              [-1.5, -1.5, -1.8,  2.0,  2.0]]
 
     for label in labels:
         label_ = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
