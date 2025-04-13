@@ -505,8 +505,98 @@ class PropertyScoreCNN(nn.Module):
         return x_final
 
 
+# CNN 모델 정의
+# Create Date : 2025.04.13
+# Last Update Date : -
 
-# StyleGAN-FineTune-v2 모델 Fine Tuning 실시
+# Arguments:
+# - device (device) : CNN 모델을 mapping 시킬 device (GPU 등)
+
+# Returns:
+# - cnn_model (nn.Module) : 학습할 CNN 모델
+
+def define_cnn_model(device):
+    cnn_model = PropertyScoreCNN()
+    cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.00005)
+    cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
+                                                                     T_max=10,
+                                                                     eta_min=0)
+
+    cnn_model.to(device)
+    cnn_model.device = device
+
+    return cnn_model
+
+
+# CNN 모델 학습
+# Create Date : 2025.04.13
+# Last Update Date : -
+
+# Arguments:
+# - device                 (device)     : CNN 모델을 mapping 시킬 device (GPU 등)
+# - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+
+# Returns:
+# - cnn_model (nn.Module) : 학습된 CNN 모델
+
+def train_cnn_model(device, fine_tuning_dataloader):
+    cnn_model = define_cnn_model(device)
+
+    raise NotImplementedError
+
+
+# CNN 모델의 Train Step
+# Create Date : 2025.04.13
+# Last Update Date : -
+
+# Arguments:
+# - cnn_model              (nn.Module)  : 학습 중인 CNN 모델
+# - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+
+def train_cnn_train_step(cnn_model, fine_tuning_dataloader):
+    raise NotImplementedError
+
+
+# CNN 모델의 Valid Step
+# Create Date : 2025.04.13
+# Last Update Date : -
+
+# Arguments:
+# - cnn_model              (nn.Module)  : 학습 중인 CNN 모델
+# - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+
+# Returns:
+# - valid_log (dict) : CNN 모델의 Validation Log
+#                      {'epoch': int, 'valid_loss': float, 'eyes_score_loss': float, 'mouth_score_loss': float,
+#                       'pose_score_loss': float, 'hair_color_score_loss': float, 'hair_length_score_loss': float,
+#                       'back_mean_score_loss': float, 'back_std_score_loss': float}
+
+def train_cnn_valid_step(cnn_model, fine_tuning_dataloader):
+    raise NotImplementedError
+
+
+# 학습된 CNN 모델 불러오기
+# Create Date : 2025.04.13
+# Last Update Date : -
+
+# Arguments:
+# - cnn_model_path (str)    : CNN 모델 저장 경로
+# - device         (device) : CNN 모델을 mapping 시킬 device (GPU 등)
+
+# Returns:
+# - cnn_model (nn.Module) : 학습된 CNN 모델
+
+def load_cnn_model(cnn_model_path, device):
+    cnn_model = PropertyScoreCNN()
+    cnn_model.load_state_dict(torch.load(cnn_model_path, map_location=device, weights_only=True))
+
+    cnn_model.to(device)
+    cnn_model.device = device
+
+    return cnn_model
+
+
+# StyleGAN-FineTune-v2 모델 Fine-Tuning 실시
 # Create Date : 2025.04.13
 # Last Update Date : -
 
@@ -518,5 +608,22 @@ class PropertyScoreCNN(nn.Module):
 # - fine_tuned_generator     (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Generator
 # - fine_tuned_generator_cnn (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Discriminator
 
-def run_fine_tuning(restructured_generator, fine_tuning_dataloader):
+def run_fine_tuning(generator, fine_tuning_dataloader):
+    cnn_model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2.pth'
+
+    # check device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'device for training StyleGAN-FineTune-v2 : {device}')
+
+    # load CNN model
+    try:
+        cnn_model = load_cnn_model(cnn_model_path, device)
+
+    except Exception as e:
+        print(f'cnn model load failed : {e}')
+
+        # train CNN model
+        cnn_model = train_cnn_model(device, fine_tuning_dataloader)
+        torch.save(cnn_model.state_dict(), cnn_model_path)
+
     raise NotImplementedError
