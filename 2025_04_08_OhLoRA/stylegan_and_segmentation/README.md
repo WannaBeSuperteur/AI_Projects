@@ -245,9 +245,17 @@
 
 * **5. StyleGAN Fine-Tuning 실시**
   * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지 4,703 장** 대상 
-  * ```python stylegan_and_segmentation/run_stylegan_fine_tuning.py```
-  * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Generator 저장됨
-  * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
+  * **StyleGAN-FineTune-v1** 
+    * ```python stylegan_and_segmentation/run_stylegan_fine_tuning.py```
+    * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Generator 저장됨
+    * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
+    * 위 2개의 모델은 이름을 ```... fine_tuned.pth``` 에서 ```... fine_tuned_v1.pth``` 로 각각 변경하여 사용
+  * **StyleGAN-FineTune-v2 (CNN 기반)** 
+    * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v2.py```
+    * ```stylegan_modified/stylegan_gen_fine_tuned_v2.pth``` 에 Fine-Tuning 된 Generator 저장됨
+  * **StyleGAN-FineTune-v3 (Conditional VAE 기반)** 
+    * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v3.py```
+    * ```stylegan_modified/stylegan_gen_fine_tuned_v3.pth``` 에 Fine-Tuning 된 Generator 저장됨
 
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
