@@ -2,10 +2,15 @@ import torch
 import torch.nn as nn
 import os
 import pandas as pd
-from torch.utils.data import random_split, DataLoader
+import numpy as np
 
+from torch.utils.data import random_split, DataLoader
 from stylegan_modified.fine_tuning import concatenate_property_scores
 from torchinfo import summary
+
+torch.set_printoptions(linewidth=160, sci_mode=False)
+np.set_printoptions(suppress=True)
+
 
 IMG_HEIGHT = 256
 IMG_WIDTH = 256
@@ -64,10 +69,7 @@ class EyesScoreCNN(nn.Module):
             nn.Tanh(),
             nn.Dropout(0.45)
         )
-        self.fc_final = nn.Sequential(
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-        )
+        self.fc_final = nn.Linear(256, 1)
 
     def forward(self, x):
         # Conv
@@ -141,10 +143,7 @@ class MouthScoreCNN(nn.Module):
             nn.Tanh(),
             nn.Dropout(0.45)
         )
-        self.fc_final = nn.Sequential(
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-        )
+        self.fc_final = nn.Linear(256, 1)
 
     def forward(self, x):
         # Conv
@@ -208,10 +207,7 @@ class PoseScoreCNN(nn.Module):
             nn.Tanh(),
             nn.Dropout(0.45)
         )
-        self.fc_final = nn.Sequential(
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-        )
+        self.fc_final = nn.Linear(256, 1)
 
     def forward(self, x):
         # Conv
@@ -286,10 +282,7 @@ class HairColorScoreCNN(nn.Module):
             nn.Tanh(),
             nn.Dropout(0.45)
         )
-        self.fc_final = nn.Sequential(
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-        )
+        self.fc_final = nn.Linear(256, 1)
 
     def forward(self, x):
         # Conv
@@ -369,10 +362,7 @@ class HairLengthScoreCNN(nn.Module):
             nn.Tanh(),
             nn.Dropout(0.45)
         )
-        self.fc_final = nn.Sequential(
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-        )
+        self.fc_final = nn.Linear(256, 1)
 
     def forward(self, x):
         # Conv
@@ -451,10 +441,7 @@ class BackgroundMeanStdScoreCNN(nn.Module):
             nn.Tanh(),
             nn.Dropout(0.45)
         )
-        self.fc_final = nn.Sequential(
-            nn.Linear(256, 2),
-            nn.Sigmoid()
-        )
+        self.fc_final = nn.Linear(256, 2)
 
     def forward(self, x):
         # Conv
