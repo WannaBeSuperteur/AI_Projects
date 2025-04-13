@@ -25,7 +25,7 @@
 
 * Fine-Tuning 된 StyleGAN 을 이용하여 이미지 생성
   * 이때, 다음과 같은 **핵심 속성** 값을 이용하여 이미지 생성
-  * 핵심 속성 값 (7가지)
+  * 핵심 속성 값 (9가지)
     * 성별, 이미지 품질, 눈을 뜬 정도, 머리 색, 머리 길이, 입을 벌린 정도, 고개 돌림, 배경색 평균, 배경색 표준편차
     * 성별, 이미지 품질이 **모두 조건을 충족시키는 이미지만 따로 필터링** 하여, 필터링된 이미지에 대해서만 나머지 7가지 속성 값 적용
     * 성별, 이미지 품질을 제외한 값은 **Pre-trained Segmentation Model 을 이용하여 라벨링**
@@ -108,9 +108,9 @@
 | Segmentation 으로 핵심 속성 값 추출                           | 04.11 금 (1d)           | ```P002-003-Seg```             | ✅  |
 | 핵심 속성 값을 처리하도록 StyleGAN 구조 변경 (Fine-Tuning 포함, 1차)   | 04.11 금 - 04.12 토 (2d) | ```P002-004-Update-StyleGAN``` | ✅  |
 | **(추가)** 핵심 속성 값 추가 (배경 색 밝기, 배경 색 표준편차)             | 04.12 토 (1d)           | ```P002-005-Property```        | ✅  |
-| **(추가)** 추가된 핵심 속성 값으로 StyleGAN 학습 (Fine-Tuning, 2차) | 04.12 토 - 04.13 일 (2d) | ```P002-006-Update-StyleGAN``` | 💨 |
-| **(추가)** StyleGAN Generator 추가 학습 (CNN idea)         | 04.13 일 (1d)           | ```P002-007-Train-Gen```       | ⬜  |
-| **(추가)** StyleGAN Generator 추가 학습 (VAE decoder idea) | 04.13 일 (1d)           | ```P002-007-Train-Gen```       | ⬜  |
+| **(추가)** 추가된 핵심 속성 값으로 StyleGAN 학습 (Fine-Tuning, 2차) | 04.12 토 - 04.13 일 (2d) | ```P002-006-Update-StyleGAN``` | ✅  |
+| **(추가)** StyleGAN Generator 추가 학습 (CNN idea)         | 04.13 일 (1d)           | ```P002-007-Train-Gen```       | 💨 |
+| **(추가)** StyleGAN Generator 추가 학습 (VAE decoder idea) | 04.13 일 (1d)           | ```P002-007-Train-Gen```       | 💨 |
 | Auto-Encoder 구현                                      | 04.14 월 (1d)           | ```P002-008-AE```              | ⬜  |
 | k-NN 구현                                              | 04.14 월 (1d)           | ```P002-009-kNN```             | ⬜  |
 
