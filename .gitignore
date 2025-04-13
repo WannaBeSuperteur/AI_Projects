@@ -36,6 +36,8 @@
 2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan_modified/*.pth
 2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan_modified/inference_test_v*
 2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan_modified/inference_test_v*/*
+2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan_modified/tensor_visualize_test_cnn
+2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan_modified/tensor_visualize_test_cnn/*
 2025_04_08_OhLoRA/stylegan_and_segmentation/model_structure_pdf/*.gv
 venv
 venv/*

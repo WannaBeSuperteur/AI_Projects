@@ -4,6 +4,13 @@ import os
 import pandas as pd
 import numpy as np
 
+import sys
+
+global_path = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))))
+sys.path.append(global_path)
+
+from global_common.visualize_tensor import save_tensor_png
+
 from torch.utils.data import random_split, DataLoader
 from stylegan_modified.fine_tuning import concatenate_property_scores
 from torchinfo import summary
@@ -21,6 +28,8 @@ EARLY_STOPPING_ROUNDS = 10
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 INFERENCE_RESULT_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/inference_result'
+CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/tensor_visualize_test_cnn'
+os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 cnn_loss_func = nn.MSELoss(reduction='mean')
 
@@ -481,13 +490,25 @@ class PropertyScoreCNN(nn.Module):
         self.hair_length_score_cnn = HairLengthScoreCNN()
         self.background_score_cnn = BackgroundMeanStdScoreCNN()
 
-    def forward(self, x):
+    def forward(self, x, tensor_visualize_test=True):
         x_eyes = x[:, :, IMG_HEIGHT // 4 : IMG_HEIGHT // 2, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
         x_mouth = x[:, :, IMG_HEIGHT // 2 : 7 * IMG_HEIGHT // 8, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
         x_nose = x[:, :, 3 * IMG_HEIGHT // 8 : 5 * IMG_HEIGHT // 8, 3 * IMG_WIDTH // 8 : 5 * IMG_WIDTH // 8]
         x_entire = x
         x_bottom_half = x[:, :, IMG_HEIGHT // 2 :, :]
         x_upper_half = x[:, :, : IMG_HEIGHT // 2, :]
+
+        # Tensor Visualize Test
+        if tensor_visualize_test:
+            current_batch_size = x.size(0)
+
+            for i in range(current_batch_size):
+                save_tensor_png(x_eyes[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/eyes_{i:03d}.png')
+                save_tensor_png(x_mouth[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/mouth_{i:03d}.png')
+                save_tensor_png(x_nose[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/nose_{i:03d}.png')
+                save_tensor_png(x_entire[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/entire_{i:03d}.png')
+                save_tensor_png(x_bottom_half[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/b_half_{i:03d}.png')
+                save_tensor_png(x_upper_half[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/u_half_{i:03d}.png')
 
         # Compute Each Score
         x_eyes = self.eyes_score_cnn(x_eyes)
@@ -644,6 +665,10 @@ def train_cnn_train_step(cnn_model, cnn_train_dataloader):
         train_loss_sum += train_loss_current_batch * labels.size(0)
         total += labels.size(0)
 
+#        if idx % 5 == 0:
+#            print('train outputs:\n', outputs[:4])
+#            print('train labels:\n', labels[:4])
+
     train_loss = train_loss_sum / total
     return train_loss
 
@@ -705,6 +730,10 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
             valid_log['hair_length_score_loss'] += hair_length_score_loss * labels.size(0)
             valid_log['back_mean_score_loss'] += back_mean_score_loss * labels.size(0)
             valid_log['back_std_score_loss'] += back_std_score_loss * labels.size(0)
+
+#            if idx % 5 == 0:
+#                print('train outputs:\n', outputs)
+#                print('train labels:\n', labels)
 
         # Final Loss 계산
         val_loss = val_loss_sum / total
