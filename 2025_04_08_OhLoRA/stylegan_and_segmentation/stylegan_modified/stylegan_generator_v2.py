@@ -66,15 +66,9 @@ class EyesScoreCNN(nn.Module):
         )
         self.pool3 = nn.MaxPool2d(2, 2)
 
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=3),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.05)
-        )
-
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(128 * 12 * 4, 256),
+            nn.Linear(128 * 14 * 4, 256),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -82,19 +76,17 @@ class EyesScoreCNN(nn.Module):
 
     def forward(self, x):
         # Conv
-        x = self.conv1(x)  # 126 x 62
-        x = self.conv2(x)  # 124 x 60
-        x = self.pool1(x)  # 62 x 30
+        x = self.conv1(x)  # 126 x 46
+        x = self.conv2(x)  # 124 x 44
+        x = self.pool1(x)  # 62 x 22
 
-        x = self.conv3(x)  # 60 x 28
-        x = self.pool2(x)  # 30 x 14
+        x = self.conv3(x)  # 60 x 20
+        x = self.pool2(x)  # 30 x 10
 
-        x = self.conv4(x)  # 28 x 12
-        x = self.pool3(x)  # 14 x 6
+        x = self.conv4(x)  # 28 x 8
+        x = self.pool3(x)  # 14 x 4
 
-        x = self.conv5(x)  # 12 x 4
-
-        x = x.view(-1, 128 * 12 * 4)
+        x = x.view(-1, 128 * 14 * 4)
 
         # Fully Connected
         x = self.fc1(x)
@@ -135,20 +127,9 @@ class MouthScoreCNN(nn.Module):
         )
         self.pool3 = nn.MaxPool2d(2, 2)
 
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=3),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.05)
-        )
-        self.conv6 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=3),
-            nn.LeakyReLU(),
-            nn.Dropout2d(0.05)
-        )
-
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(128 * 10 * 6, 256),
+            nn.Linear(128 * 6 * 4, 256),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -156,20 +137,17 @@ class MouthScoreCNN(nn.Module):
 
     def forward(self, x):
         # Conv
-        x = self.conv1(x)  # 126 x 94
-        x = self.conv2(x)  # 124 x 92
-        x = self.pool1(x)  # 62 x 46
+        x = self.conv1(x)  # 62 x 46
+        x = self.conv2(x)  # 60 x 44
+        x = self.pool1(x)  # 30 x 22
 
-        x = self.conv3(x)  # 60 x 44
-        x = self.pool2(x)  # 30 x 22
+        x = self.conv3(x)  # 28 x 20
+        x = self.pool2(x)  # 14 x 10
 
-        x = self.conv4(x)  # 28 x 20
-        x = self.pool3(x)  # 14 x 10
+        x = self.conv4(x)  # 12 x 8
+        x = self.pool3(x)  # 6 x 4
 
-        x = self.conv5(x)  # 12 x 8
-        x = self.conv6(x)  # 10 x 6
-
-        x = x.view(-1, 128 * 10 * 6)
+        x = x.view(-1, 128 * 6 * 4)
 
         # Fully Connected
         x = self.fc1(x)
@@ -208,11 +186,10 @@ class PoseScoreCNN(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
-        self.pool3 = nn.MaxPool2d(2, 2)
 
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(128 * 6 * 6, 256),
+            nn.Linear(128 * 8 * 8, 256),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -220,17 +197,16 @@ class PoseScoreCNN(nn.Module):
 
     def forward(self, x):
         # Conv
-        x = self.conv1(x)  # 62 x 62
-        x = self.conv2(x)  # 60 x 60
-        x = self.pool1(x)  # 30 x 30
+        x = self.conv1(x)  # 46 x 46
+        x = self.conv2(x)  # 44 x 44
+        x = self.pool1(x)  # 22 x 22
 
-        x = self.conv3(x)  # 28 x 28
-        x = self.pool2(x)  # 14 x 14
+        x = self.conv3(x)  # 20 x 20
+        x = self.pool2(x)  # 10 x 10
 
-        x = self.conv4(x)  # 12 x 12
-        x = self.pool3(x)  # 6 x 6
+        x = self.conv4(x)  # 8 x 8
 
-        x = x.view(-1, 128 * 6 * 6)
+        x = x.view(-1, 128 * 8 * 8)
 
         # Fully Connected
         x = self.fc1(x)
@@ -490,10 +466,10 @@ class PropertyScoreCNN(nn.Module):
         self.hair_length_score_cnn = HairLengthScoreCNN()
         self.background_score_cnn = BackgroundMeanStdScoreCNN()
 
-    def forward(self, x, tensor_visualize_test=True):
-        x_eyes = x[:, :, IMG_HEIGHT // 4 : IMG_HEIGHT // 2, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
-        x_mouth = x[:, :, IMG_HEIGHT // 2 : 7 * IMG_HEIGHT // 8, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
-        x_nose = x[:, :, 3 * IMG_HEIGHT // 8 : 5 * IMG_HEIGHT // 8, 3 * IMG_WIDTH // 8 : 5 * IMG_WIDTH // 8]
+    def forward(self, x, tensor_visualize_test=False):
+        x_eyes = x[:, :, 3 * IMG_HEIGHT // 8 : 9 * IMG_HEIGHT // 16, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
+        x_mouth = x[:, :, 5 * IMG_HEIGHT // 8 : 13 * IMG_HEIGHT // 16, 3 * IMG_WIDTH // 8 : 5 * IMG_WIDTH // 8]
+        x_nose = x[:, :, 15 * IMG_HEIGHT // 32 : 21 * IMG_HEIGHT // 32, 13 * IMG_WIDTH // 32 : 19 * IMG_WIDTH // 32]
         x_entire = x
         x_bottom_half = x[:, :, IMG_HEIGHT // 2 :, :]
         x_upper_half = x[:, :, : IMG_HEIGHT // 2, :]
@@ -784,7 +760,7 @@ def load_cnn_model(cnn_model_path, device):
 # - fine_tuned_generator_cnn (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Discriminator
 
 def run_fine_tuning(generator, fine_tuning_dataloader):
-    cnn_model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2.pth'
+    cnn_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth'
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -792,7 +768,7 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
 
     # load CNN model
     try:
-        cnn_model = load_cnn_model(cnn_model_path, device)
+        cnn_model = load_cnn_model(cnn_save_path, device)
 
     except Exception as e:
         print(f'cnn model load failed : {e}')
