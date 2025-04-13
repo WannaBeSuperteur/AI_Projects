@@ -21,7 +21,7 @@ import stylegan_modified.stylegan_generator_inference as modified_inf
 
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
-PROPERTY_DIMS_Z = 5           # eyes, hair_color, hair_length, mouth, pose
+PROPERTY_DIMS_Z = 7           # eyes, hair_color, hair_length, mouth, pose, background_mean, background_std
 TRAIN_BATCH_SIZE = 16
 TOTAL_EPOCHS = 500
 IMGS_PER_TEST_PROPERTY_SET = 10
@@ -201,7 +201,9 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
                                                 raw_data['label']['hair_color'],
                                                 raw_data['label']['hair_length'],
                                                 raw_data['label']['mouth'],
-                                                raw_data['label']['pose']])
+                                                raw_data['label']['pose'],
+                                                raw_data['label']['background_mean'],
+                                                raw_data['label']['background_std']])
             concatenated_labels = torch.reshape(concatenated_labels, (PROPERTY_DIMS_Z, -1))
             concatenated_labels = torch.transpose(concatenated_labels, 0, 1)
             concatenated_labels = concatenated_labels.to(torch.float32)
@@ -264,7 +266,8 @@ def check_model_trainable_status(check_id, generator, discriminator):
 
 # StyleGAN Fine-Tuning 중 inference test 실시
 # Create Date : 2025.04.12
-# Last Update Date : -
+# Last Update Date : 2025.04.12
+# - background_mean, background_std 속성 추가 반영
 
 # Arguments:
 # - restructured_generator (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
@@ -281,17 +284,18 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
     img_save_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning'
     img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
 
-    # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose'
+    # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean', 'background_std'
     current_idx = 0
 
     z = np.random.normal(0, 1, size=(IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z))
 
-    labels = [[ 2.0,  2.0,  2.0, -1.6, -1.6],
-              [-2.0,  2.0,  2.0, -1.6, -1.6],
-              [-2.0, -2.0,  2.0, -1.6, -1.6],
-              [-2.0, -2.0, -2.0, -1.6, -1.6],
-              [-2.0, -2.0, -2.0,  2.6, -1.6],
-              [-2.0, -2.0, -2.0,  2.6,  2.8]]
+    labels = [[ 1.5,  1.5,  1.1, -1.1, -1.2,  1.2, -1.0],
+              [-1.5,  1.5,  1.1, -1.1, -1.2,  1.2, -1.0],
+              [-1.5, -1.5,  1.1, -1.1, -1.2,  1.2, -1.0],
+              [-1.5, -1.5, -2.0, -1.1, -1.2,  1.2, -1.0],
+              [-1.5, -1.5, -2.0,  1.8, -1.2,  1.2, -1.0],
+              [-1.5, -1.5, -2.0,  1.8,  2.0,  1.2, -1.0],
+              [-1.5, -1.5, -2.0,  1.8,  2.0, -1.6, -1.0]]
 
     for label in labels:
         label_ = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])

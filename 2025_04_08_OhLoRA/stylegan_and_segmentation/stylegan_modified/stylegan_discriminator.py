@@ -62,7 +62,7 @@ class StyleGANDiscriminator(nn.Module):
     def __init__(self,
                  resolution,
                  image_channels=3,
-                 label_size=5,  # (eyes, hair_color, hair_length, mouth, pose) property score
+                 label_size=7,  # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property score
                  fused_scale='auto',
                  use_wscale=True,
                  minibatch_std_group_size=TRAIN_BATCH_SIZE,
