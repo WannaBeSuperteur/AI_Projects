@@ -20,6 +20,8 @@ MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/mo
 
 TENSOR_VISUALIZE_TEST_BATCH_SIZE = 30
 TRAIN_BATCH_SIZE = 16
+EARLY_STOPPING_ROUNDS = 10
+STEP_GROUP_SIZE = 50
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -151,6 +153,63 @@ def freeze_stylegan_finetune_v2_layers(stylegan_finetune_v2, cnn_model, check_ag
 #                                      (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
 
 def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
+    stylegan_finetune_v2.train()
+
+    current_step_group = 0
+    smallest_loss = None
+    smallest_loss_step_group = 0
+    stylegan_finetune_v2_at_best_step_group = None
+
+    while True:
+        step_group_loss = 0.0
+
+        for _ in range(STEP_GROUP_SIZE):
+            z = torch.randn((TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z))
+            z = z.to(stylegan_finetune_v2.device)
+
+            property_label = torch.randn((TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z))
+            property_label = property_label.to(stylegan_finetune_v2.device)
+
+            # train 실시
+            stylegan_finetune_v2.optimizer.zero_grad()
+            property_output = stylegan_finetune_v2(z=z, property_label=property_label).to(torch.float32)
+
+            loss = nn.MSELoss()(property_output[:, :6], property_label[:, :6])  # Background Std score 를 제외한 Loss
+            loss.backward()
+            stylegan_finetune_v2.optimizer.step()
+
+            loss_float = float(loss.detach().cpu().numpy())
+            step_group_loss += loss_float
+
+        step_group_loss /= STEP_GROUP_SIZE
+        print(f'step group {current_step_group} (best:{smallest_loss_step_group}), current loss:{step_group_loss:.4f}')
+
+        if smallest_loss is None or step_group_loss < smallest_loss:
+            smallest_loss = step_group_loss
+            smallest_loss_step_group = current_step_group
+
+            stylegan_finetune_v2_at_best_step_group = StyleGANFineTuneV2().to(stylegan_finetune_v2.device)
+            stylegan_finetune_v2_at_best_step_group.load_state_dict(stylegan_finetune_v2.state_dict())
+
+        stylegan_finetune_v2.scheduler.step()
+
+        if current_step_group - smallest_loss_step_group >= EARLY_STOPPING_ROUNDS:
+            break
+
+        current_step_group += 1
+
+    fine_tuned_generator = stylegan_finetune_v2_at_best_step_group
+    return fine_tuned_generator
+
+
+# StyleGAN-FineTune-v2 모델 학습 중 출력 결과물 테스트
+# Create Date : 2025.04.14
+# Last Update Date : -
+
+# Arguments:
+# - stylegan_finetune_v2 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
+
+def test_create_output_images(stylegan_finetune_v2):
     raise NotImplementedError
 
 
