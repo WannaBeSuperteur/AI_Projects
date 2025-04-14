@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torchview import draw_graph
 import pandas as pd
+import numpy as np
 
 from stylegan_modified.stylegan_generator import StyleGANGenerator
 from stylegan_modified.stylegan_generator_v2_cnn import PropertyScoreCNN
@@ -19,6 +20,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/model_structure_pdf'
 
 TENSOR_VISUALIZE_TEST_BATCH_SIZE = 30
+IMGS_PER_TEST_PROPERTY_SET = 10
+
 TRAIN_BATCH_SIZE = 16
 EARLY_STOPPING_ROUNDS = 10
 STEP_GROUP_SIZE = 50
@@ -160,6 +163,8 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
     smallest_loss_step_group = 0
     stylegan_finetune_v2_at_best_step_group = None
 
+    print('Fine-Tuning StyleGAN-FineTune-v2 start.')
+
     while True:
         step_group_loss = 0.0
 
@@ -196,9 +201,10 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
         if current_step_group - smallest_loss_step_group >= EARLY_STOPPING_ROUNDS:
             break
 
+        test_create_output_images(stylegan_finetune_v2, current_step_group)
         current_step_group += 1
 
-    fine_tuned_generator = stylegan_finetune_v2_at_best_step_group
+    fine_tuned_generator = stylegan_finetune_v2_at_best_step_group.stylegan_generator
     return fine_tuned_generator
 
 
@@ -208,9 +214,37 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
 
 # Arguments:
 # - stylegan_finetune_v2 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
+# - current_step_group   (int)       : 현재 step group 의 번호
 
-def test_create_output_images(stylegan_finetune_v2):
-    raise NotImplementedError
+def test_create_output_images(stylegan_finetune_v2, current_step_group):
+    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning_v2'
+    img_save_dir = f'{img_save_dir}/step_group_{current_step_group:04d}'
+    os.makedirs(img_save_dir, exist_ok=True)
+
+    # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
+    z = torch.randn((IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32).cuda()
+
+    labels = [[ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
+              [-1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
+              [-1.2, -1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
+              [-1.2, -1.2, -1.2, -1.2, -1.2,  1.2, 0.0],
+              [-1.2, -1.2, -1.2,  1.2, -1.2,  1.2, 0.0],
+              [-1.2, -1.2, -1.2,  1.2,  1.2,  1.2, 0.0],
+              [-1.2, -1.2, -1.2,  1.2,  1.2, -1.2, 0.0]]
+
+    for label_idx, label in enumerate(labels):
+        label_np = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
+        label_np = label_np.reshape((IMGS_PER_TEST_PROPERTY_SET, PROPERTY_DIMS_Z))
+        label_torch = torch.tensor(label_np).to(torch.float32).cuda()
+
+        generated_images = stylegan_finetune_v2.stylegan_generator(z=z, label=label_torch)
+        image_count = generated_images['image'].size(0)
+
+        for img_idx in range(image_count):
+            img_no = label_idx * IMGS_PER_TEST_PROPERTY_SET + img_idx
+
+            save_tensor_png(generated_images['image'][img_idx],
+                            image_save_path=f'{img_save_dir}/test_img_{img_no}.png')
 
 
 # StyleGAN-FineTune-v2 모델 학습
