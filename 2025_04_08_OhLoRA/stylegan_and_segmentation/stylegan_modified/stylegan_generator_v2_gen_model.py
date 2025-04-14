@@ -4,7 +4,7 @@ from torchview import draw_graph
 import pandas as pd
 import numpy as np
 
-from stylegan_modified.stylegan_generator import StyleGANGenerator
+from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
 from stylegan_modified.stylegan_generator_v2_cnn import PropertyScoreCNN
 
 import os
@@ -24,7 +24,7 @@ IMGS_PER_TEST_PROPERTY_SET = 10
 
 TRAIN_BATCH_SIZE = 16
 EARLY_STOPPING_ROUNDS = 10
-STEP_GROUP_SIZE = 50
+STEP_GROUP_SIZE = 5
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -38,14 +38,14 @@ class StyleGANFineTuneV2(nn.Module):
     def __init__(self):
         super(StyleGANFineTuneV2, self).__init__()
 
-        self.stylegan_generator = StyleGANGenerator(resolution=IMAGE_RESOLUTION)
+        self.stylegan_generator = StyleGANGeneratorForV2(resolution=IMAGE_RESOLUTION)
         self.property_score_cnn = PropertyScoreCNN()
 
         kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
         self.stylegan_generator.G_kwargs_val = kwargs_val
 
     def forward(self, z, property_label, tensor_visualize_test=False):
-        generated_image = self.stylegan_generator(z, property_label)
+        generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
         property_score = self.property_score_cnn(generated_image['image'])
 
         if tensor_visualize_test:
@@ -225,6 +225,7 @@ def test_create_output_images(stylegan_finetune_v2, current_step_group):
     z = torch.randn((IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32).cuda()
 
     labels = [[ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
+              [ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2, -1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2, -1.2, -1.2, -1.2, -1.2,  1.2, 0.0],
