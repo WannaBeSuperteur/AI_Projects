@@ -110,6 +110,35 @@ def define_stylegan_finetune_v2(device, generator, cnn_model):
     return stylegan_finetune_v2
 
 
+# 정의된 StyleGAN-FineTune-v2 모델의 Layer 를 Freeze 처리 (CNN은 모두, Generator 는 Dense Layer 제외 모두)
+# Create Date : 2025.04.14
+# Last Update Date : -
+
+# Arguments:
+# - stylegan_finetune_v2 (nn.Module) : 학습할 StyleGAN-FineTune-v2 모델
+# - cnn_model            (nn.Module) : StyleGAN-FineTune-v2 Fine-Tuning 에 사용할 학습된 CNN 모델
+# - check_again          (bool)      : freeze 여부 재 확인 테스트용
+
+def freeze_stylegan_finetune_v2_layers(stylegan_finetune_v2, cnn_model, check_again=False):
+
+    # StyleGAN-FineTune-v2 freeze 범위 : Z -> W mapping 을 제외한 모든 레이어
+    for name, param in stylegan_finetune_v2.named_parameters():
+        if name.split('.')[1] != 'mapping':
+            param.requires_grad = False
+
+    # CNN Model freeze 범위 : 전체
+    for name, param in cnn_model.named_parameters():
+        param.requires_grad = False
+
+    # 제대로 freeze 되었는지 확인
+    if check_again:
+        for idx, param in enumerate(stylegan_finetune_v2.parameters()):
+            print(f'StyleGAN-FineTune-v2 layer {idx} : {param.requires_grad}')
+
+        for idx, param in enumerate(cnn_model.parameters()):
+            print(f'CNN Model layer {idx} : {param.requires_grad}')
+
+
 # 정의된 StyleGAN-FineTune-v2 모델을 학습
 # Create Date : 2025.04.14
 # Last Update Date : -
@@ -139,7 +168,12 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
 #                                      (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
 
 def train_stylegan_finetune_v2(device, generator, cnn_model):
+
+    # define StyleGAN-FineTune-v2 model
     stylegan_finetune_v2 = define_stylegan_finetune_v2(device, generator, cnn_model)
+    freeze_stylegan_finetune_v2_layers(stylegan_finetune_v2, cnn_model)
+
+    # run Fine-Tuning
     fine_tuned_generator = run_training_stylegan_finetune_v2(stylegan_finetune_v2)
 
     return fine_tuned_generator
