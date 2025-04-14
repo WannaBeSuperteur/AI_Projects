@@ -3,7 +3,8 @@
 * [1. 개요](#1-개요)
   * [1-1. 품질 판단이 필요한 이유](#1-1-품질-판단이-필요한-이유) 
 * [2. 핵심 속성 값](#2-핵심-속성-값)
-  * [2-1. 핵심 속성 값 계산 알고리즘](#2-1-핵심-속성-값-계산-알고리즘)
+  * [2-1. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v1)](#2-1-핵심-속성-값-계산-알고리즘-stylegan-finetune-v1)
+  * [2-2. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v2,v3)](#2-2-핵심-속성-값-계산-알고리즘-stylegan-finetune-v2-v3) 
 * [3. 사용 모델 설명](#3-사용-모델-설명)
   * [3-1. Image Generation Model (StyleGAN)](#3-1-image-generation-model-stylegan)
   * [3-2. CNN Model](#3-2-cnn-model)
@@ -47,7 +48,7 @@
 | 배경색 평균 ```background_mean```  | 이미지 배경 부분 픽셀의 색의 평균값이 클수록 값이 큼        | $N(0, 1^2)$                                                       | X       |
 | 배경색 표준편차 ```background_std``` | 이미지 배경 부분 픽셀의 색의 표준편차가 클수록 값이 큼       | $N(0, 1^2)$                                                       | X       |
 
-### 2-1. 핵심 속성 값 계산 알고리즘
+### 2-1. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v1)
 
 * Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 7가지 핵심 속성 값들을 계산**
   * 계산 대상 핵심 속성 값 
@@ -55,6 +56,8 @@
   * 점수 계산 완료 후, **모든 이미지에 대해 각 속성 종류별로 그 값들을 위 표에 따라 [Gaussian Normalization](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_Normalization.md#2-2-standarization-z-score-normalization) 적용**
     * 예를 들어, 모든 이미지에 대한 머리 색의 값이 ```[100, 250, 120, 180, 210]``` 인 경우, 이를 Gaussian Normalization 하여 ```[-1.294, 1.402, -0.935, 0.144, 0.683]``` 으로 정규화
   * Segmentation 결과는 **224 x 224 로 resize 된 이미지** 임
+* 적용 범위
+  * **StyleGAN-FineTune-v1**
 
 **1. 눈을 뜬 정도 (eyes)**
 
@@ -82,9 +85,27 @@
 **4. 배경색 평균 (background_mean), 배경색 표준편차 (background_std)**
 
 * 이미지 위쪽 절반의 픽셀 중 배경에 해당하는 픽셀 값의 R,G,B 평균값에 대해,
-* 그 평균 및 표준편차를 각각 의미
+* 그 값들 중 **상위 5% 및 하위 5%를 제외한 90% (잘못된 Segmentation 에 Robust 하도록)** 의 평균 및 표준편차를 각각 의미
 
 ![image](../../images/250408_8.PNG)
+
+### 2-2. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v2, v3)
+
+* Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 7가지 핵심 속성 값들을 계산**
+  * StyleGAN-FineTune-v1 에 적용된 핵심 속성 값과 동일한 종류, 동일한 Segmentation Result 를 이용
+  * 배경색 평균, 배경색 표준편차를 제외한 나머지 5가지 핵심 속성 값 계산 알고리즘 개선
+  * 🚨 핵심 속성 값 계산 시 **Segmentation 결과에서 Face Detect 처리된 224 x 224 이미지** 가 아닌, **원본 256 x 256 이미지를 224 x 224 로 resize 한 이미지를 이용** 하는 버그 수정
+* 적용 범위
+  * **StyleGAN-FineTune-v2**
+  * **StyleGAN-FineTune-v3**
+
+**1. 눈을 뜬 정도 (eyes), 고개 돌림 (pose)**
+
+**2. 머리 색 (hair_color)**
+
+**3. 머리 길이 (hair_length)**
+
+**4. 입을 벌린 정도 (mouth)**
 
 ## 3. 사용 모델 설명
 
@@ -99,6 +120,18 @@
 
 [Implementation & Pre-trained Model Source : GenForce GitHub](https://github.com/genforce/genforce/tree/master) (MIT License)
 
+| 모델                   | 설명                                                                                               | 핵심 속성값             | 여성 이미지 생성                        | 핵심 속성값 오류 없음 | 핵심 속성값 의미 반영 생성 |
+|----------------------|--------------------------------------------------------------------------------------------------|--------------------|----------------------------------|--------------|-----------------|
+| Original StyleGAN    | [GenForce GitHub](https://github.com/genforce/genforce/tree/master) 에서 다운받은 Pre-trained StyleGAN |                    | ❌ (**여성 55.6%** = 1,112 / 2,000) | ❌            | ❌               |
+| StyleGAN-FineTune-v1 | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | for FineTune-v1    | ✅ (**여성 93.7%** = 281 / 300)     | ❌            | ❌               |
+| StyleGAN-FineTune-v2 | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | for FineTune-v2,v3 |                                  |              |                 |
+| StyleGAN-FineTune-v3 | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | for FineTune-v2,v3 |                                  |              |                 |
+
+* 핵심 속성값 오류
+  * 핵심 속성 값 (성별, 이미지 품질 제외 7가지) 이 달라지면 **동일한 인물의 특징이 달라지는 것이 아닌, 아예 다른 인물이 생성되는** 것
+* 핵심 속성값 의미 반영 생성
+  * 핵심 속성값의 의미 (눈을 뜬 정도, 입을 벌린 정도, 머리 색, 머리 길이, 배경 정보 등) 를 반영하여 인물 이미지가 생성되는지의 여부
+
 **1. Original Model**
 
 * Generator
@@ -110,15 +143,48 @@
     * original model from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 * [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
 
-**2. Modified Fine-Tuned StyleGAN (like Conditional StyleGAN)**
+**2. Modified Fine-Tuned StyleGAN (v1)**
 
+![image](../../images/250408_10.PNG)
+
+* How to run Fine-Tuning
+  * **핵심 속성 값 (Property) 에 해당하는 size 7 의 Tensor** 를 Generator 의 입력 부분 및 Discriminator 의 Final Dense Layer 부분에 추가
+  * Generator 와 Discriminator 의 **Conv. Layer 를 Freeze 시키고, Dense Layer 들만 추가 학습**
+  * Generator Loss 가 Discriminator Loss 의 2배 이상이면, Discriminator 를 한번 학습할 때 **Generator 를 최대 4번까지 연속 학습** 하는 메커니즘 적용 
 * Generator
   * ```stylegan_modified/stylegan_generator.py```
 * Discriminator
   * ```stylegan_modified/stylegan_discriminator.py```
 * Model Save Path
-  * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` (**Generator** of **Modified Fine-Tuned** StyleGAN)
-  * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` (**Discriminator** of **Modified Fine-Tuned** StyleGAN)
+  * ```stylegan_modified/stylegan_gen_fine_tuned_v1.pth``` (**Generator** of **Modified Fine-Tuned** StyleGAN)
+  * ```stylegan_modified/stylegan_dis_fine_tuned_v1.pth``` (**Discriminator** of **Modified Fine-Tuned** StyleGAN)
+
+**3. Additional Fine-Tuned StyleGAN Generator (v2, CNN idea)**
+
+![image](../../images/250408_11.PNG)
+
+* How to run Fine-Tuning
+  * 이미지로부터 Property Score 를 예측하는 Conv. NN (위 그림의 녹색 점선으로 표시한 부분) 을 먼저 학습
+    * CNN 의 학습 데이터는 Original StyleGAN 으로 생성한 10,000 장 이미지 중 필터링된 여성 이미지 4,703 장 
+  * 해당 CNN 을 Freeze 시킨 후, Fine-Tuned Generator (v1) 을 포함한 전체 신경망을 학습
+* Generator
+  * ```stylegan_modified/stylegan_generator_v2.py```
+* Model Save Path
+  * ```stylegan_modified/stylegan_gen_fine_tuned_v2.pth``` (Generator Model)
+  * ```stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth``` (**CNN** for Generator Model)
+
+**4. Additional Fine-Tuned StyleGAN Generator (v3, Conditional VAE idea)**
+
+![image](../../images/250408_12.PNG)
+
+* How to run Fine-Tuning
+  * Fine-Tuned Generator (v1) 을 **Conditional [VAE](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md)** 의 Decoder 로 사용하여, Conditional VAE 를 학습
+  * 필요에 따라 Conv. NN (Fine-Tuned Generator v2 에서 사용한) 을 Freeze 시켜서 사용할 수 있음
+* Generator
+  * ```stylegan_modified/stylegan_generator_v3.py```
+* Model Save Path
+  * ```stylegan_modified/stylegan_gen_fine_tuned_v3.pth``` (Generator Model)
+  * ```stylegan_modified/stylegan_gen_fine_tuned_v3_encoder.pth``` (**Encoder of Conditional VAE** for Generator Model)
 
 ### 3-2. CNN Model
 
@@ -189,20 +255,32 @@
   * ```stylegan/synthesize_results_filtered``` 에 필터링된 이미지 저장됨 **(StyleGAN Fine-Tuning 학습 데이터로 사용)**
 
 * **3. Segmentation 결과 생성**
-  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지 4,703 장** 대상 
   * ```python stylegan_and_segmentation/run_segmentation.py```
   * ```segmentation/segmentation_results``` 에 이미지 저장됨
 
 * **4. 성별, 이미지 품질을 제외한 7가지 핵심 속성값 계산 결과 생성**
-  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
-  * ```python stylegan_and_segmentation/compute_property_scores.py```
-  * ```segmentation/property_score_results``` 에 결과 저장됨
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지 4,703 장** 대상
+  * for **StyleGAN-FineTune-v1**
+    * ```python stylegan_and_segmentation/compute_property_scores.py```
+    * ```segmentation/property_score_results/all_scores.csv``` 에 결과 저장됨
+  * for **StyleGAN-FineTune-v2,v3**
+    * ```python stylegan_and_segmentation/compute_property_scores_v2.py```
+    * ```segmentation/property_score_results/all_scores_v2.csv``` 에 결과 저장됨
 
 * **5. StyleGAN Fine-Tuning 실시**
-  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지** 대상 
-  * ```python stylegan_and_segmentation/run_stylegan_fine_tuning.py```
-  * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Generator 저장됨
-  * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지 4,703 장** 대상 
+  * **StyleGAN-FineTune-v1** 
+    * ```python stylegan_and_segmentation/run_stylegan_fine_tuning.py```
+    * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Generator 저장됨
+    * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
+    * 위 2개의 모델은 이름을 ```... fine_tuned.pth``` 에서 ```... fine_tuned_v1.pth``` 로 각각 변경하여 사용
+  * **StyleGAN-FineTune-v2 (CNN 기반)** 
+    * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v2.py```
+    * ```stylegan_modified/stylegan_gen_fine_tuned_v2.pth``` 에 Fine-Tuning 된 Generator 저장됨
+  * **StyleGAN-FineTune-v3 (Conditional VAE 기반)** 
+    * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v3.py```
+    * ```stylegan_modified/stylegan_gen_fine_tuned_v3.pth``` 에 Fine-Tuning 된 Generator 저장됨
 
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
