@@ -473,12 +473,18 @@ class PropertyScoreCNN(nn.Module):
         self.background_score_cnn = BackgroundMeanStdScoreCNN()
 
     def forward(self, x, tensor_visualize_test=False):
-        x_eyes = x[:, :, 3 * IMG_HEIGHT // 8 : 9 * IMG_HEIGHT // 16, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
-        x_mouth = x[:, :, 5 * IMG_HEIGHT // 8 : 13 * IMG_HEIGHT // 16, 3 * IMG_WIDTH // 8 : 5 * IMG_WIDTH // 8]
-        x_pose = x[:, :, 7 * IMG_HEIGHT // 16 : 5 * IMG_HEIGHT // 8, 11 * IMG_WIDTH // 32 : 21 * IMG_WIDTH // 32]
-        x_entire = x
-        x_bottom_half = x[:, :, IMG_HEIGHT // 2 :, :]
-        x_upper_half = x[:, :, : IMG_HEIGHT // 2, :]
+        x_eyes        = x[:, :,                                         # for eyes score
+                          3 * IMG_HEIGHT // 8 : 9 * IMG_HEIGHT // 16,
+                          IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
+        x_entire      = x                                               # for hair color score
+        x_bottom_half = x[:, :, IMG_HEIGHT // 2:, :]                    # for hair length score
+        x_mouth       = x[:, :,                                         # for mouth score
+                          5 * IMG_HEIGHT // 8 : 13 * IMG_HEIGHT // 16,
+                          3 * IMG_WIDTH // 8 : 5 * IMG_WIDTH // 8]
+        x_pose        = x[:, :,                                         # for pose score
+                          7 * IMG_HEIGHT // 16 : 5 * IMG_HEIGHT // 8,
+                          11 * IMG_WIDTH // 32 : 21 * IMG_WIDTH // 32]
+        x_upper_half  = x[:, :, : IMG_HEIGHT // 2, :]                   # for background mean, std score
 
         # Tensor Visualize Test
         if tensor_visualize_test:
@@ -486,22 +492,24 @@ class PropertyScoreCNN(nn.Module):
 
             for i in range(current_batch_size):
                 save_tensor_png(x_eyes[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/eyes_{i:03d}.png')
-                save_tensor_png(x_mouth[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/mouth_{i:03d}.png')
-                save_tensor_png(x_pose[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/pose_{i:03d}.png')
                 save_tensor_png(x_entire[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/entire_{i:03d}.png')
                 save_tensor_png(x_bottom_half[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/b_half_{i:03d}.png')
+                save_tensor_png(x_mouth[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/mouth_{i:03d}.png')
+                save_tensor_png(x_pose[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/pose_{i:03d}.png')
                 save_tensor_png(x_upper_half[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/u_half_{i:03d}.png')
 
         # Compute Each Score
         x_eyes = self.eyes_score_cnn(x_eyes)
-        x_mouth = self.mouth_score_cnn(x_mouth)
-        x_pose = self.pose_score_cnn(x_pose)
         x_entire = self.hair_color_score_cnn(x_entire)
         x_bottom_half = self.hair_length_score_cnn(x_bottom_half)
+        x_mouth = self.mouth_score_cnn(x_mouth)
+        x_pose = self.pose_score_cnn(x_pose)
         x_upper_half = self.background_score_cnn(x_upper_half)
 
-        # Final Concatenate
-        x_final = torch.concat([x_eyes, x_mouth, x_pose, x_entire, x_bottom_half, x_upper_half], dim=1)
+        # Final Concatenate (SAME as all_scores_v2.csv column order :
+        #                    eyes, hair-color, hair-length, mouth, pose, back-mean, back-std)
+        x_final = torch.concat([x_eyes, x_entire, x_bottom_half, x_mouth, x_pose, x_upper_half], dim=1)
+
         return x_final
 
 
@@ -563,14 +571,14 @@ def train_cnn_model(device, fine_tuning_dataloader):
     best_epoch_model = None
 
     performance_dict = {'epoch': [], 'valid_loss': [],
-                        'eyes_score_loss': [], 'mouth_score_loss': [], 'pose_score_loss': [],
-                        'hair_color_score_loss': [], 'hair_length_score_loss': [],
+                        'eyes_score_loss': [], 'hair_color_score_loss': [], 'hair_length_score_loss': [],
+                        'mouth_score_loss': [], 'pose_score_loss': [],
                         'back_mean_score_loss': [], 'back_std_score_loss': [],
-                        'eyes_score_abs_diff': [], 'mouth_score_abs_diff': [], 'pose_score_abs_diff': [],
-                        'hair_color_score_abs_diff': [], 'hair_length_score_abs_diff': [],
+                        'eyes_score_abs_diff': [], 'hair_color_score_abs_diff': [], 'hair_length_score_abs_diff': [],
+                        'mouth_score_abs_diff': [], 'pose_score_abs_diff': [],
                         'back_mean_score_abs_diff': [], 'back_std_score_abs_diff': [],
-                        'eyes_score_corr': [], 'mouth_score_corr': [], 'pose_score_corr': [],
-                        'hair_color_score_corr': [], 'hair_length_score_corr': [],
+                        'eyes_score_corr': [], 'hair_color_score_corr': [], 'hair_length_score_corr': [],
+                        'mouth_score_corr': [], 'pose_score_corr': [],
                         'back_mean_score_corr': [], 'back_std_score_corr': []}
 
     # run training until early stopping
@@ -643,9 +651,9 @@ def train_cnn_train_step(cnn_model, cnn_train_dataloader):
         loss.backward()
         cnn_model.optimizer.step()
 
-#        if idx % 5 == 0:
-#            print(idx, 'train outputs:\n', outputs[:4])
-#            print(idx, 'train labels:\n', labels[:4])
+        if idx % 5 == 0:
+            print(idx, 'train outputs:\n', outputs[:4])
+            print(idx, 'train labels:\n', labels[:4])
 
 
 # CNN 모델의 Valid Step
@@ -671,11 +679,11 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
     val_loss_sum = 0
 
     valid_log = {'epoch': current_epoch,
-                 'eyes_score_loss': 0.0, 'mouth_score_loss': 0.0, 'pose_score_loss': 0.0,
-                 'hair_color_score_loss': 0.0, 'hair_length_score_loss': 0.0,
+                 'eyes_score_loss': 0.0, 'hair_color_score_loss': 0.0, 'hair_length_score_loss': 0.0,
+                 'mouth_score_loss': 0.0, 'pose_score_loss': 0.0,
                  'back_mean_score_loss': 0.0, 'back_std_score_loss': 0.0,
-                 'eyes_score_abs_diff': 0.0, 'mouth_score_abs_diff': 0.0, 'pose_score_abs_diff': 0.0,
-                 'hair_color_score_abs_diff': 0.0, 'hair_length_score_abs_diff': 0.0,
+                 'eyes_score_abs_diff': 0.0, 'hair_color_score_abs_diff': 0.0, 'hair_length_score_abs_diff': 0.0,
+                 'mouth_score_abs_diff': 0.0, 'pose_score_abs_diff': 0.0,
                  'back_mean_score_abs_diff': 0.0, 'back_std_score_abs_diff': 0.0}
 
     outputs_list = []
@@ -700,9 +708,9 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
             # compute detailed losses and abs. diff info
             compute_detailed_valid_results(outputs, labels, valid_log)
 
-#            if idx % 5 == 0:
-#                print(idx, 'valid outputs:\n', outputs)
-#                print(idx, 'valid labels:\n', labels)
+            if idx % 5 == 0:
+                print(idx, 'valid outputs:\n', outputs)
+                print(idx, 'valid labels:\n', labels)
 
         # Final Loss 계산
         val_loss = val_loss_sum / total
@@ -710,19 +718,19 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
 
         for metric_name in ['loss', 'abs_diff']:
             valid_log[f'eyes_score_{metric_name}'] /= total
-            valid_log[f'mouth_score_{metric_name}'] /= total
-            valid_log[f'pose_score_{metric_name}'] /= total
             valid_log[f'hair_color_score_{metric_name}'] /= total
             valid_log[f'hair_length_score_{metric_name}'] /= total
+            valid_log[f'mouth_score_{metric_name}'] /= total
+            valid_log[f'pose_score_{metric_name}'] /= total
             valid_log[f'back_mean_score_{metric_name}'] /= total
             valid_log[f'back_std_score_{metric_name}'] /= total
 
     # compute corr-coef
     valid_log['eyes_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 0], np.array(labels_list)[:, 0])[0][1]
-    valid_log['mouth_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 1], np.array(labels_list)[:, 1])[0][1]
-    valid_log['pose_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 2], np.array(labels_list)[:, 2])[0][1]
-    valid_log['hair_color_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 3], np.array(labels_list)[:, 3])[0][1]
-    valid_log['hair_length_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 4], np.array(labels_list)[:, 4])[0][1]
+    valid_log['hair_color_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 1], np.array(labels_list)[:, 1])[0][1]
+    valid_log['hair_length_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 2], np.array(labels_list)[:, 2])[0][1]
+    valid_log['mouth_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 3], np.array(labels_list)[:, 3])[0][1]
+    valid_log['pose_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 4], np.array(labels_list)[:, 4])[0][1]
     valid_log['back_mean_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 5], np.array(labels_list)[:, 5])[0][1]
     valid_log['back_std_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 6], np.array(labels_list)[:, 6])[0][1]
 
@@ -746,35 +754,35 @@ def compute_detailed_valid_results(outputs, labels, valid_log):
 
     # compute loss
     eyes_score_loss = float(cnn_loss_func(outputs[:, :1], labels[:, :1]).detach().cpu().numpy())
-    mouth_score_loss = float(cnn_loss_func(outputs[:, 1:2], labels[:, 1:2]).detach().cpu().numpy())
-    pose_score_loss = float(cnn_loss_func(outputs[:, 2:3], labels[:, 2:3]).detach().cpu().numpy())
-    hair_color_score_loss = float(cnn_loss_func(outputs[:, 3:4], labels[:, 3:4]).detach().cpu().numpy())
-    hair_length_score_loss = float(cnn_loss_func(outputs[:, 4:5], labels[:, 4:5]).detach().cpu().numpy())
+    hair_color_score_loss = float(cnn_loss_func(outputs[:, 1:2], labels[:, 1:2]).detach().cpu().numpy())
+    hair_length_score_loss = float(cnn_loss_func(outputs[:, 2:3], labels[:, 2:3]).detach().cpu().numpy())
+    mouth_score_loss = float(cnn_loss_func(outputs[:, 3:4], labels[:, 3:4]).detach().cpu().numpy())
+    pose_score_loss = float(cnn_loss_func(outputs[:, 4:5], labels[:, 4:5]).detach().cpu().numpy())
     back_mean_score_loss = float(cnn_loss_func(outputs[:, 5:6], labels[:, 5:6]).detach().cpu().numpy())
     back_std_score_loss = float(cnn_loss_func(outputs[:, 6:], labels[:, 6:]).detach().cpu().numpy())
 
     valid_log['eyes_score_loss'] += eyes_score_loss * labels.size(0)
-    valid_log['mouth_score_loss'] += mouth_score_loss * labels.size(0)
-    valid_log['pose_score_loss'] += pose_score_loss * labels.size(0)
     valid_log['hair_color_score_loss'] += hair_color_score_loss * labels.size(0)
     valid_log['hair_length_score_loss'] += hair_length_score_loss * labels.size(0)
+    valid_log['mouth_score_loss'] += mouth_score_loss * labels.size(0)
+    valid_log['pose_score_loss'] += pose_score_loss * labels.size(0)
     valid_log['back_mean_score_loss'] += back_mean_score_loss * labels.size(0)
     valid_log['back_std_score_loss'] += back_std_score_loss * labels.size(0)
 
     # compute abs diff
     eyes_score_abs_diff = float(nn.L1Loss()(outputs[:, :1], labels[:, :1]).detach().cpu().numpy())
-    mouth_score_abs_diff = float(nn.L1Loss()(outputs[:, 1:2], labels[:, 1:2]).detach().cpu().numpy())
-    pose_score_abs_diff = float(nn.L1Loss()(outputs[:, 2:3], labels[:, 2:3]).detach().cpu().numpy())
-    hair_color_score_abs_diff = float(nn.L1Loss()(outputs[:, 3:4], labels[:, 3:4]).detach().cpu().numpy())
-    hair_length_score_abs_diff = float(nn.L1Loss()(outputs[:, 4:5], labels[:, 4:5]).detach().cpu().numpy())
+    hair_color_score_abs_diff = float(nn.L1Loss()(outputs[:, 1:2], labels[:, 1:2]).detach().cpu().numpy())
+    hair_length_score_abs_diff = float(nn.L1Loss()(outputs[:, 2:3], labels[:, 2:3]).detach().cpu().numpy())
+    mouth_score_abs_diff = float(nn.L1Loss()(outputs[:, 3:4], labels[:, 3:4]).detach().cpu().numpy())
+    pose_score_abs_diff = float(nn.L1Loss()(outputs[:, 4:5], labels[:, 4:5]).detach().cpu().numpy())
     back_mean_score_abs_diff = float(nn.L1Loss()(outputs[:, 5:6], labels[:, 5:6]).detach().cpu().numpy())
     back_std_score_abs_diff = float(nn.L1Loss()(outputs[:, 6:], labels[:, 6:]).detach().cpu().numpy())
 
     valid_log['eyes_score_abs_diff'] += eyes_score_abs_diff * labels.size(0)
-    valid_log['mouth_score_abs_diff'] += mouth_score_abs_diff * labels.size(0)
-    valid_log['pose_score_abs_diff'] += pose_score_abs_diff * labels.size(0)
     valid_log['hair_color_score_abs_diff'] += hair_color_score_abs_diff * labels.size(0)
     valid_log['hair_length_score_abs_diff'] += hair_length_score_abs_diff * labels.size(0)
+    valid_log['mouth_score_abs_diff'] += mouth_score_abs_diff * labels.size(0)
+    valid_log['pose_score_abs_diff'] += pose_score_abs_diff * labels.size(0)
     valid_log['back_mean_score_abs_diff'] += back_mean_score_abs_diff * labels.size(0)
     valid_log['back_std_score_abs_diff'] += back_std_score_abs_diff * labels.size(0)
 
