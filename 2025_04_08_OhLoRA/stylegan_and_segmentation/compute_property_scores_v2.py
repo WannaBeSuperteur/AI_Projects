@@ -201,63 +201,23 @@ def compute_hair_length_score_v2(parsing_result):
 
 def compute_mouth_score_v2(parsing_result):
 
-    """
-    lips_min_y, lips_max_y = None, None
-    mouth_min_y, mouth_max_y = None, None
+    lips_pixels = 0
+    mouth_pixels = 0
 
     for y in range(PARSED_MAP_SIZE):
-        if 7 in parsing_result[y] or 9 in parsing_result[y]:
-            if lips_min_y is None:
-                lips_min_y = y
-                lips_max_y = y
-            else:
-                lips_max_y = max(lips_max_y, y)
+        upper_lips_pixels_y = np.count_nonzero(parsing_result[y] == 7)
+        lower_lips_pixels_y = np.count_nonzero(parsing_result[y] == 9)
+        mouth_pixels_y = np.count_nonzero(parsing_result[y] == 8)
 
-        if 8 in parsing_result[y]:
-            if mouth_min_y is None:
-                mouth_min_y = y
-                mouth_max_y = y
-            else:
-                mouth_max_y = max(mouth_max_y, y)
+        lips_pixels += (upper_lips_pixels_y + lower_lips_pixels_y)
+        mouth_pixels += mouth_pixels_y
 
-    lips_height = 0 if lips_min_y is None else lips_max_y - lips_min_y
-    mouth_height = 0 if mouth_min_y is None else mouth_max_y - mouth_min_y
+    if lips_pixels + mouth_pixels == 0:
+        return 0
+    else:
+        mouth_score = mouth_pixels / (lips_pixels + mouth_pixels)
 
-    mouth_score = lips_height + mouth_height
     return mouth_score
-    """
-
-    raise NotImplementedError
-
-
-# 고개 돌림 (pose) Score 계산
-# Create Date : 2025.04.14
-# Last Update Date : -
-
-# Arguments:
-# - parsing_result (np.array) : Parsing Result (224 x 224)
-
-# Returns:
-# - pose_score (float) : 고개 돌림 Score (왼쪽: -1 ~ 정면: 0 ~ 오른쪽: +1)
-
-def compute_pose_score_v2(parsing_result):
-
-    """
-    nose_xs = []
-    nose_ys = []
-
-    for y in range(PARSED_MAP_SIZE):
-        for x in range(PARSED_MAP_SIZE):
-            if parsing_result[y][x] == 6:
-                nose_xs.append(x)
-                nose_ys.append(y)
-
-    corr = np.corrcoef(nose_xs, nose_ys)[0][1]
-    pose_score = (-1.0) * corr
-    return pose_score
-    """
-
-    raise NotImplementedError
 
 
 # 생성된 이미지 중 필터링된 모든 이미지를 읽어서 그 이미지의 모든 Score 를 산출
