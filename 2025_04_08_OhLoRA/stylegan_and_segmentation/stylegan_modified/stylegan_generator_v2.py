@@ -21,6 +21,7 @@ np.set_printoptions(suppress=True)
 
 IMG_HEIGHT = 256
 IMG_WIDTH = 256
+PROPERTY_DIMS_Z = 7  # eyes, hair_color, hair_length, mouth, pose, background_mean, background_std
 
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
@@ -764,7 +765,7 @@ def save_valid_output_and_labels(outputs_list, labels_list, current_epoch):
     global cnn_valid_log
 
     value_types = ['output', 'label']
-    value_list = [np.array(outputs_list[:VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH]),
+    value_list = [np.round(np.array(outputs_list[:VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH]), 4),
                   np.array(labels_list[:VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH])]
 
     cnn_valid_log['epoch'] += [current_epoch] * VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH
