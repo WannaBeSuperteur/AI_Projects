@@ -1,2 +1,2 @@
 epoch,valid_loss,eyes_score_loss,mouth_score_loss,pose_score_loss,hair_color_score_loss,hair_length_score_loss,back_mean_score_loss,back_std_score_loss,eyes_score_abs_diff,mouth_score_abs_diff,pose_score_abs_diff,hair_color_score_abs_diff,hair_length_score_abs_diff,back_mean_score_abs_diff,back_std_score_abs_diff,eyes_score_corr,mouth_score_corr,pose_score_corr,hair_color_score_corr,hair_length_score_corr,back_mean_score_corr,back_std_score_corr
-0,0.7407,0.7235,0.9894,1.1168,0.9752,0.3844,0.1024,0.8936,0.633,0.8414,0.8413,0.8929,0.4159,0.2097,0.7692,0.6447,0.2961,-0.0246,0.3615,0.7328,0.9519,0.3161
+0,0.7008,0.5958,0.8595,0.8904,0.8204,0.557,0.0951,1.0875,0.5676,0.7608,0.7465,0.7827,0.4382,0.2137,0.7449,0.6593,0.3419,0.1021,0.5067,0.7567,0.9542,0.3306
