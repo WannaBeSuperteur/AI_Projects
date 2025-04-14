@@ -844,7 +844,8 @@ def compute_detailed_valid_results(outputs, labels, valid_log):
 
 # 학습된 CNN 모델 불러오기
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.14
+# - 모델 로딩 시 weights_only (가중치만 로딩) 를 False 로 설정
 
 # Arguments:
 # - cnn_model_path (str)    : CNN 모델 저장 경로
@@ -855,7 +856,7 @@ def compute_detailed_valid_results(outputs, labels, valid_log):
 
 def load_cnn_model(cnn_model_path, device):
     cnn_model = PropertyScoreCNN()
-    cnn_model.load_state_dict(torch.load(cnn_model_path, map_location=device, weights_only=True))
+    cnn_model.load_state_dict(torch.load(cnn_model_path, map_location=device, weights_only=False))
 
     cnn_model.to(device)
     cnn_model.device = device
