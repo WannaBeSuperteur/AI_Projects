@@ -105,8 +105,8 @@ def compute_eyes_and_pose_score_v2(parsing_result):
         right_eye_angle_cos = dist_x / dist_r
 
     # compute eyes score
-    left_eye_score = left_eye_max_height_per_x / left_eye_angle_cos
-    right_eye_score = right_eye_max_height_per_x / right_eye_angle_cos
+    left_eye_score = left_eye_max_height_per_x * left_eye_angle_cos
+    right_eye_score = right_eye_max_height_per_x * right_eye_angle_cos
     eyes_score = max(left_eye_score, right_eye_score)
 
     # compute pose score
