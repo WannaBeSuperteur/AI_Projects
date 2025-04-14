@@ -80,7 +80,10 @@ class PropertyScoreImageDataset(Dataset):
         # normalize
         image = self.transform(image)
 
-        return {'image': image, 'label': property_scores}
+        # return simplified image path
+        simplified_img_path = '/'.join(img_path.split('/')[-2:])
+
+        return {'image': image, 'label': property_scores, 'img_path': simplified_img_path}
 
 
 # StyleGAN Fine-Tuning 용 데이터셋의 Data Loader 로딩

@@ -27,7 +27,7 @@ TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 EARLY_STOPPING_ROUNDS = 20
 
-VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH = 20
+VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH = 30
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 INFERENCE_RESULT_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/inference_result'
@@ -35,7 +35,7 @@ CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_mo
 os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 cnn_loss_func = nn.MSELoss(reduction='mean')
-cnn_valid_log = {'epoch': [],
+cnn_valid_log = {'epoch': [], 'img_path': [],
                  'eyes_score_output': [], 'eyes_score_label': [],
                  'hair_color_score_output': [], 'hair_color_score_label': [],
                  'hair_length_score_output': [], 'hair_length_score_label': [],
@@ -674,7 +674,7 @@ def train_cnn_train_step(cnn_model, cnn_train_dataloader):
 # Create Date : 2025.04.13
 # Last Update Date : 2025.04.14
 # - train log 에 loss 외에도 abs diff, corr-coef 추가
-# - Valid Output 및 Valid Label 저장 부분 추가
+# - Valid Output 및 Valid Label 저장 부분 추가 (with image paths)
 
 # Arguments:
 # - cnn_model            (nn.Module)  : 학습 중인 CNN 모델
@@ -703,6 +703,7 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
 
     outputs_list = []
     labels_list = []
+    img_path_list = []
 
     with torch.no_grad():
         for idx, raw_data in enumerate(cnn_valid_dataloader):
@@ -719,6 +720,7 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
             # aggregate outputs and labels
             outputs_list += list(outputs.detach().cpu().numpy())
             labels_list += list(labels.detach().cpu().numpy())
+            img_path_list += list(raw_data['img_path'])
 
             # compute detailed losses and abs. diff info
             compute_detailed_valid_results(outputs, labels, valid_log)
@@ -749,22 +751,24 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
     valid_log['back_mean_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 5], np.array(labels_list)[:, 5])[0][1]
     valid_log['back_std_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 6], np.array(labels_list)[:, 6])[0][1]
 
-    # save output list and labels list (for first 20 samples in valid dataset)
-    save_valid_output_and_labels(outputs_list, labels_list, current_epoch)
+    # save output list and labels list (for first 30 samples in valid dataset)
+    save_valid_output_and_labels(outputs_list, labels_list, img_path_list, current_epoch)
 
     return valid_log
 
 
 # Valid Output 및 Label 의 리스트를 csv 형태로 저장 (stylegan_modified/train_log_v2_cnn_val_log.csv)
 # Create Date : 2025.04.14
-# Last Update Date : -
+# Last Update Date : 2025.04.14
+# - Valid Output 및 Label 기록에 해당 image path 추가
 
 # Arguments:
 # - outputs_list  (list) : Valid Output List
 # - labels_list   (list) : Valid Label List
+# - img_path_list (list) : Valid Sample 에 대한 Image Path Lost
 # - current_epoch (int)  : 현재 epoch 번호 (로깅 목적)
 
-def save_valid_output_and_labels(outputs_list, labels_list, current_epoch):
+def save_valid_output_and_labels(outputs_list, labels_list, img_path_list, current_epoch):
     global cnn_valid_log
 
     value_types = ['output', 'label']
@@ -772,6 +776,7 @@ def save_valid_output_and_labels(outputs_list, labels_list, current_epoch):
                   np.array(labels_list[:VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH])]
 
     cnn_valid_log['epoch'] += [current_epoch] * VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH
+    cnn_valid_log['img_path'] += img_path_list[:VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH]
 
     for value_type, value_list in zip(value_types, value_list):
         cnn_valid_log[f'eyes_score_{value_type}'] += list(value_list[:, 0])
