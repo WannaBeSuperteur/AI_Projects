@@ -26,12 +26,22 @@ TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 EARLY_STOPPING_ROUNDS = 20
 
+VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH = 20
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 INFERENCE_RESULT_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/inference_result'
 CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/tensor_visualize_test_cnn'
 os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 cnn_loss_func = nn.MSELoss(reduction='mean')
+cnn_valid_log = {'epoch': [],
+                 'eyes_score_output': [], 'eyes_score_label': [],
+                 'hair_color_score_output': [], 'hair_color_score_label': [],
+                 'hair_length_score_output': [], 'hair_length_score_label': [],
+                 'mouth_score_output': [], 'mouth_score_label': [],
+                 'pose_score_output': [], 'pose_score_label': [],
+                 'back_mean_score_output': [], 'back_mean_score_label': [],
+                 'back_std_score_output': [], 'back_std_score_label': []}
 
 
 # Eyes Score part of CNN
@@ -651,15 +661,16 @@ def train_cnn_train_step(cnn_model, cnn_train_dataloader):
         loss.backward()
         cnn_model.optimizer.step()
 
-        if idx % 5 == 0:
-            print(idx, 'train outputs:\n', outputs[:4])
-            print(idx, 'train labels:\n', labels[:4])
+#        if idx % 5 == 0:
+#            print(idx, 'train outputs:\n', outputs[:4])
+#            print(idx, 'train labels:\n', labels[:4])
 
 
 # CNN 모델의 Valid Step
 # Create Date : 2025.04.13
 # Last Update Date : 2025.04.14
 # - train log 에 loss 외에도 abs diff, corr-coef 추가
+# - Valid Output 및 Valid Label 저장 부분 추가
 
 # Arguments:
 # - cnn_model            (nn.Module)  : 학습 중인 CNN 모델
@@ -708,9 +719,9 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
             # compute detailed losses and abs. diff info
             compute_detailed_valid_results(outputs, labels, valid_log)
 
-            if idx % 5 == 0:
-                print(idx, 'valid outputs:\n', outputs)
-                print(idx, 'valid labels:\n', labels)
+#            if idx % 5 == 0:
+#                print(idx, 'valid outputs:\n', outputs)
+#                print(idx, 'valid labels:\n', labels)
 
         # Final Loss 계산
         val_loss = val_loss_sum / total
@@ -734,7 +745,41 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
     valid_log['back_mean_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 5], np.array(labels_list)[:, 5])[0][1]
     valid_log['back_std_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 6], np.array(labels_list)[:, 6])[0][1]
 
+    # save output list and labels list (for first 20 samples in valid dataset)
+    save_valid_output_and_labels(outputs_list, labels_list, current_epoch)
+
     return valid_log
+
+
+# Valid Output 및 Label 의 리스트를 csv 형태로 저장 (stylegan_modified/train_log_v2_cnn_val_log.csv)
+# Create Date : 2025.04.14
+# Last Update Date : -
+
+# Arguments:
+# - outputs_list  (list) : Valid Output List
+# - labels_list   (list) : Valid Label List
+# - current_epoch (int)  : 현재 epoch 번호 (로깅 목적)
+
+def save_valid_output_and_labels(outputs_list, labels_list, current_epoch):
+    global cnn_valid_log
+
+    value_types = ['output', 'label']
+    value_list = [np.array(outputs_list[:VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH]),
+                  np.array(labels_list[:VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH])]
+
+    cnn_valid_log['epoch'] += [current_epoch] * VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH
+
+    for value_type, value_list in zip(value_types, value_list):
+        cnn_valid_log[f'eyes_score_{value_type}'] += list(value_list[:, 0])
+        cnn_valid_log[f'hair_color_score_{value_type}'] += list(value_list[:, 1])
+        cnn_valid_log[f'hair_length_score_{value_type}'] += list(value_list[:, 2])
+        cnn_valid_log[f'mouth_score_{value_type}'] += list(value_list[:, 3])
+        cnn_valid_log[f'pose_score_{value_type}'] += list(value_list[:, 4])
+        cnn_valid_log[f'back_mean_score_{value_type}'] += list(value_list[:, 5])
+        cnn_valid_log[f'back_std_score_{value_type}'] += list(value_list[:, 6])
+
+    cnn_valid_log_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/train_log_v2_cnn_val_log.csv'
+    pd.DataFrame(cnn_valid_log).to_csv(cnn_valid_log_path, index=False)
 
 
 # CNN 모델의 Valid Step 에서 상세한 Valid Loss 결과 (Loss, Abs Diff) 저장
