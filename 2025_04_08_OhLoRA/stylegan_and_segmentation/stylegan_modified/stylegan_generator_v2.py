@@ -581,7 +581,7 @@ def train_cnn_model(device, fine_tuning_dataloader):
     min_val_loss = None
     best_epoch_model = None
 
-    performance_dict = {'epoch': [], 'valid_loss': [],
+    performance_dict = {'epoch': [], 'valid_loss': [], 'val_loss_except_back_std': [],
                         'eyes_score_loss': [], 'hair_color_score_loss': [], 'hair_length_score_loss': [],
                         'mouth_score_loss': [], 'pose_score_loss': [],
                         'back_mean_score_loss': [], 'back_std_score_loss': [],
@@ -604,7 +604,8 @@ def train_cnn_model(device, fine_tuning_dataloader):
                                          current_epoch=current_epoch)
 
         val_loss = valid_log['valid_loss']
-        print(f'epoch : {current_epoch}, valid_loss : {val_loss:.4f}')
+        val_loss_early_stop = (val_loss * PROPERTY_DIMS_Z - valid_log['back_std_score_loss']) / (PROPERTY_DIMS_Z - 1)
+        print(f'epoch : {current_epoch}, valid_loss : {val_loss:.4f} (except back std : {val_loss_early_stop:.4f})')
 
         # update log
         for k, v in valid_log.items():
@@ -612,6 +613,8 @@ def train_cnn_model(device, fine_tuning_dataloader):
                 performance_dict[k].append(v)
             else:
                 performance_dict[k].append(round(v, 4))
+
+        performance_dict['val_loss_except_back_std'].append(round(val_loss_early_stop, 4))
 
         # save train log
         train_log_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/train_log_v2_cnn.csv'
@@ -622,8 +625,8 @@ def train_cnn_model(device, fine_tuning_dataloader):
         cnn_model.scheduler.step()
 
         # update best epoch
-        if min_val_loss is None or val_loss < min_val_loss:
-            min_val_loss = val_loss
+        if min_val_loss is None or val_loss_early_stop < min_val_loss:
+            min_val_loss = val_loss_early_stop
             min_val_loss_epoch = current_epoch
 
             best_epoch_model = PropertyScoreCNN().to(cnn_model.device)
