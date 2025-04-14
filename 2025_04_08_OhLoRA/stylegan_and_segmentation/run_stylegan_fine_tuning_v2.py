@@ -1,17 +1,27 @@
 import os
+
+from torch.utils.data import DataLoader
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 import stylegan_modified.stylegan_generator as modified_gen
 import stylegan_modified.stylegan_generator_inference as modified_inf
 from stylegan_modified.stylegan_generator_v2 import run_fine_tuning
 
-from run_stylegan_fine_tuning import IMAGE_RESOLUTION, TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z, PROPERTY_DIMS_Z
-from run_stylegan_fine_tuning import (get_stylegan_fine_tuning_dataloader,
+from run_stylegan_fine_tuning import (IMAGE_RESOLUTION,
+                                      PROPERTY_SCORE_DIR_PATH,
+                                      TRAIN_BATCH_SIZE,
+                                      ORIGINAL_HIDDEN_DIMS_Z,
+                                      PROPERTY_DIMS_Z)
+
+from run_stylegan_fine_tuning import (PropertyScoreImageDataset,
+                                      stylegan_transform,
                                       save_model_structure_pdf,
                                       freeze_generator_layers,
                                       print_summary)
 
 import torch
+import pandas as pd
 
 
 # 기존 Pre-train 된 StyleGAN 모델 로딩
@@ -130,6 +140,25 @@ def run_stylegan_fine_tuning(generator, generator_state_dict, fine_tuning_datalo
 
     torch.save(fine_tuned_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v2.pth')
     torch.save(fine_tuned_generator_cnn.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v2_cnn.pth')
+
+
+# StyleGAN Fine-Tuning 용 데이터셋의 Data Loader 로딩
+# Create Date : 2025.04.14
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - stylegan_ft_loader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+
+def get_stylegan_fine_tuning_dataloader():
+    property_score_csv_path = f'{PROPERTY_SCORE_DIR_PATH}/all_scores_v2.csv'
+    property_score_df = pd.read_csv(property_score_csv_path)
+
+    stylegan_ft_dataset = PropertyScoreImageDataset(dataset_df=property_score_df, transform=stylegan_transform)
+    stylegan_ft_loader = DataLoader(stylegan_ft_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    return stylegan_ft_loader
 
 
 if __name__ == '__main__':

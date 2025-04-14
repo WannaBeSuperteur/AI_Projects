@@ -466,7 +466,7 @@ class PropertyScoreCNN(nn.Module):
         self.hair_length_score_cnn = HairLengthScoreCNN()
         self.background_score_cnn = BackgroundMeanStdScoreCNN()
 
-    def forward(self, x, tensor_visualize_test=False):
+    def forward(self, x, tensor_visualize_test=True):
         x_eyes = x[:, :, 3 * IMG_HEIGHT // 8 : 9 * IMG_HEIGHT // 16, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
         x_mouth = x[:, :, 5 * IMG_HEIGHT // 8 : 13 * IMG_HEIGHT // 16, 3 * IMG_WIDTH // 8 : 5 * IMG_WIDTH // 8]
         x_nose = x[:, :, 15 * IMG_HEIGHT // 32 : 21 * IMG_HEIGHT // 32, 13 * IMG_WIDTH // 32 : 19 * IMG_WIDTH // 32]
@@ -708,8 +708,8 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
             valid_log['back_std_score_loss'] += back_std_score_loss * labels.size(0)
 
 #            if idx % 5 == 0:
-#                print('train outputs:\n', outputs)
-#                print('train labels:\n', labels)
+#                print('valid outputs:\n', outputs)
+#                print('valid labels:\n', labels)
 
         # Final Loss 계산
         val_loss = val_loss_sum / total
@@ -775,6 +775,6 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
 
         # train CNN model
         cnn_model = train_cnn_model(device, fine_tuning_dataloader)
-        torch.save(cnn_model.state_dict(), cnn_model_path)
+        torch.save(cnn_model.state_dict(), cnn_save_path)
 
     raise NotImplementedError
