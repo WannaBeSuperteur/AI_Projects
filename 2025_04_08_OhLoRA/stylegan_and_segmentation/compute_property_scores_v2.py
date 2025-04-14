@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import math
 
+np.set_printoptions(linewidth=160, suppress=True)
+
 from compute_property_scores import read_parsing_result, normalize_all_scores, compute_background_mean_and_std
 
 
@@ -130,19 +132,19 @@ def compute_eyes_and_pose_score_v2(parsing_result):
 # Last Update Date : -
 
 # Arguments:
-# - parsing_result (np.array) : Parsing Result (224 x 224)
-# - image          (np.array) : 원본 이미지 (224 x 224)
+# - parsing_result       (np.array) : Parsing Result (224 x 224)
+# - face_detection_image (np.array) : Segmentation 결과에서 Face Detection 처리된 원본 이미지 (224 x 224)
 
 # Returns:
 # - hair_color_score (float) : 머리 색 Score
 
-def compute_hair_color_score_v2(parsing_result, image):
+def compute_hair_color_score_v2(parsing_result, face_detection_image):
     hair_color_info = []
 
     for y in range(PARSED_MAP_SIZE):
         for x in range(PARSED_MAP_SIZE):
             if parsing_result[y][x] == 10:
-                hair_color_info.append(image[y][x])
+                hair_color_info.append(face_detection_image[y][x])
 
     hair_color_info = np.array(hair_color_info)
     hair_color_pixel_count = len(hair_color_info)
@@ -238,6 +240,7 @@ def compute_all_image_scores(all_img_nos):
 
     parsing_result_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/segmentation_results'
     parsing_result_paths = [f'{parsing_result_dir_path}/parsing_{img_no:06d}.png' for img_no in all_img_nos]
+    face_detection_result_paths = [f'{parsing_result_dir_path}/face_{img_no:06d}.png' for img_no in all_img_nos]
 
     all_scores_dict = {'img_no': all_img_nos,
                        'img_path': img_paths,
@@ -249,21 +252,22 @@ def compute_all_image_scores(all_img_nos):
                        'background_mean_score': [],
                        'background_std_score': []}
 
-    for idx, (img_path, parsing_result_path) in enumerate(zip(img_paths, parsing_result_paths)):
+    for idx, (img_path, parsing_result_path, face_detection_result_path) \
+            in enumerate(zip(img_paths, parsing_result_paths, face_detection_result_paths)):
+
         if idx < 10 or idx % 100 == 0:
             print(f'scoring image {idx + 1} / {len(parsing_result_paths)} ...')
 
         # read parsing result
         parsing_result = read_parsing_result(parsing_result_path)
-        image = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_COLOR)
-        image = cv2.resize(image, dsize=(PARSED_MAP_SIZE, PARSED_MAP_SIZE), interpolation=cv2.INTER_LINEAR)
+        face_detection_image = cv2.imdecode(np.fromfile(face_detection_result_path, dtype=np.uint8), cv2.IMREAD_COLOR)
 
         # compute property scores
         eyes_score, pose_score = compute_eyes_and_pose_score_v2(parsing_result)
-        hair_color_score = compute_hair_color_score_v2(parsing_result, image)
+        hair_color_score = compute_hair_color_score_v2(parsing_result, face_detection_image)
         hair_length_score = compute_hair_length_score_v2(parsing_result)
         mouth_score = compute_mouth_score_v2(parsing_result)
-        background_mean, background_std = compute_background_mean_and_std(parsing_result, image)
+        background_mean, background_std = compute_background_mean_and_std(parsing_result, face_detection_image)
 
         # append to all_scores result
         all_scores_dict['eyes_score'].append(eyes_score)
@@ -280,7 +284,7 @@ def compute_all_image_scores(all_img_nos):
 
 if __name__ == '__main__':
     img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results_filtered'
-    img_names = os.listdir(img_dir)
+    img_names = os.listdir(img_dir)[:120]
     img_nos = [int(img_name[:-4]) for img_name in img_names]
 
     all_scores = compute_all_image_scores(img_nos)
