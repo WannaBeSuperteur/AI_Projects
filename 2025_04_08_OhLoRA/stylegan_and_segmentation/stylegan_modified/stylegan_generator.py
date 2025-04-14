@@ -371,7 +371,7 @@ class StyleGANGeneratorForV2(nn.Module):
                 label,  # (eyes, hair_color, hair_length, mouth, pose) property score
                 lod=None,
                 w_moving_decay=0.995,
-                style_mixing_prob=0.9,
+                style_mixing_prob=0.0,  # originally 0.9
                 trunc_psi=None,
                 trunc_layers=None,
                 randomize_noise=False,

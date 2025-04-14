@@ -24,7 +24,7 @@ IMGS_PER_TEST_PROPERTY_SET = 10
 
 TRAIN_BATCH_SIZE = 16
 EARLY_STOPPING_ROUNDS = 10
-STEP_GROUP_SIZE = 5
+STEP_GROUP_SIZE = 50
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -225,7 +225,6 @@ def test_create_output_images(stylegan_finetune_v2, current_step_group):
     z = torch.randn((IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32).cuda()
 
     labels = [[ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
-              [ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2, -1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2, -1.2, -1.2, -1.2, -1.2,  1.2, 0.0],
