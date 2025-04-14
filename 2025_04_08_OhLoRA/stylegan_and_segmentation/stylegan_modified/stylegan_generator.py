@@ -185,7 +185,7 @@ class StyleGANGenerator(nn.Module):
 
     def forward(self,
                 z,
-                label,  # (eyes, hair_color, hair_length, mouth, pose) property score
+                label,  # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property score
                 lod=None,
                 w_moving_decay=0.995,
                 style_mixing_prob=0.9,
@@ -368,7 +368,7 @@ class StyleGANGeneratorForV2(nn.Module):
 
     def forward(self,
                 z,
-                label,  # (eyes, hair_color, hair_length, mouth, pose) property score
+                label,  # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property score
                 lod=None,
                 w_moving_decay=0.995,
                 style_mixing_prob=0.0,  # originally 0.9
