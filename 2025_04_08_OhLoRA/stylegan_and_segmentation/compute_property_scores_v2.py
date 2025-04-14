@@ -9,6 +9,7 @@ from compute_property_scores import read_parsing_result, normalize_all_scores, c
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 PARSED_MAP_SIZE = 224
+MIN_HAIR_PIXEL_THRESHOLD = 20
 
 
 # 눈을 뜬 정도 (eyes) 및 고개 돌림 (pose) Score 계산
@@ -136,8 +137,6 @@ def compute_eyes_and_pose_score_v2(parsing_result):
 # - hair_color_score (float) : 머리 색 Score
 
 def compute_hair_color_score_v2(parsing_result, image):
-
-    """
     hair_color_info = []
 
     for y in range(PARSED_MAP_SIZE):
@@ -146,13 +145,15 @@ def compute_hair_color_score_v2(parsing_result, image):
                 hair_color_info.append(image[y][x])
 
     hair_color_info = np.array(hair_color_info)
+    hair_color_pixel_count = len(hair_color_info)
 
     hair_color_rgb_mean = np.mean(hair_color_info, axis=1)
-    hair_color_score = np.median(hair_color_rgb_mean)
-    return hair_color_score
-    """
+    hair_color_rgb_mean = np.sort(hair_color_rgb_mean)
 
-    raise NotImplementedError
+    hair_color_rgb_mean = hair_color_rgb_mean[int(0.1 * hair_color_pixel_count):int(0.9 * hair_color_pixel_count)]
+    hair_color_score = np.mean(hair_color_rgb_mean)
+
+    return hair_color_score
 
 
 # 머리 길이 (hair_length) Score 계산
@@ -167,32 +168,25 @@ def compute_hair_color_score_v2(parsing_result, image):
 
 def compute_hair_length_score_v2(parsing_result):
 
-    """
-    hair_min_y, hair_max_y = None, None
+    hair_y_count = 0
+    additional_estimated_hair_len = 0
 
-    for y in range(PARSED_MAP_SIZE):
-        if 10 in parsing_result[y]:
-            if hair_min_y is None:
-                hair_min_y = y
-                hair_max_y = y
-            else:
-                hair_max_y = max(hair_max_y, y)
+    for y in range(PARSED_MAP_SIZE // 4, PARSED_MAP_SIZE):
+        if np.count_nonzero(parsing_result[y] == 10) >= MIN_HAIR_PIXEL_THRESHOLD:
+            hair_y_count += 1
 
-    if hair_max_y == PARSED_MAP_SIZE - 1:
+    if np.count_nonzero(parsing_result[PARSED_MAP_SIZE - 1] == 10) >= MIN_HAIR_PIXEL_THRESHOLD:
         left_half = parsing_result[PARSED_MAP_SIZE - 1][: PARSED_MAP_SIZE // 2]
         right_half = parsing_result[PARSED_MAP_SIZE - 1][PARSED_MAP_SIZE // 2 :]
 
         left_hair_point_count = np.count_nonzero(left_half == 10)
         right_hair_point_count = np.count_nonzero(right_half == 10)
 
-        additional_estimated_hair_length = (left_hair_point_count + right_hair_point_count) / 2.0
-        return hair_max_y + additional_estimated_hair_length
+        additional_estimated_left_hair_len = max(left_hair_point_count - MIN_HAIR_PIXEL_THRESHOLD // 2, 0) / 2.0
+        additional_estimated_right_hair_len = max(right_hair_point_count - MIN_HAIR_PIXEL_THRESHOLD // 2, 0) / 2.0
+        additional_estimated_hair_len = additional_estimated_left_hair_len + additional_estimated_right_hair_len
 
-    else:
-        return hair_max_y
-    """
-
-    raise NotImplementedError
+    return hair_y_count + additional_estimated_hair_len
 
 
 # 입을 벌린 정도 (mouth) Score 계산
