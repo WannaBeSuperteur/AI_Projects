@@ -895,6 +895,6 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
         torch.save(cnn_model.state_dict(), cnn_save_path)
 
     # Compare Property Values (Can we use CNN-derived property values for image generate model?)
-    write_property_compare_result(fine_tuning_dataloader, cnn_model)
+#    write_property_compare_result(fine_tuning_dataloader, cnn_model)
 
     raise NotImplementedError

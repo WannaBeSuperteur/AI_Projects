@@ -71,9 +71,33 @@ def compute_cnn_property_values(fine_tuning_dataloader, cnn_model):
 # - segmentation/property_score_results/compare/all_scores_v2_vs_cnn.csv 에 비교 결과 생성
 
 def compute_property_values(cnn_property):
-    print(cnn_property)
+    compare_result_dict = {}
+    all_scores_v2 = pd.read_csv(f'{PROPERTY_SCORE_DIR}/all_scores_v2.csv')
+    n = len(all_scores_v2)  # 이미지 개수 (4,703 장)
 
-    raise NotImplementedError
+    properties = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean', 'background_std']
+
+    compare_result_dict['img_no'] = all_scores_v2['img_no']
+    compare_result_dict['img_path'] = all_scores_v2['img_path']
+
+    for p in properties:
+        all_score_v2_values = list(all_scores_v2[f'{p}_score'])
+        cnn_property_values = list(cnn_property[f'{p}_score'])
+
+        compare_result_dict[f'{p}_v2'] = all_score_v2_values
+        compare_result_dict[f'{p}_v2_cnn'] = cnn_property_values
+        compare_result_dict[f'{p}_diff'] = [abs(all_score_v2_values[i] - cnn_property_values[i]) for i in range(n)]
+
+        corr_coef = np.corrcoef(all_score_v2_values, cnn_property_values)[0][1]
+        print(f'corr-coef of {p} between v2 and v2_cnn : {corr_coef}')
+
+    compare_result_df = pd.DataFrame(compare_result_dict)
+
+    for p in properties:
+        compare_result_df[f'{p}_v2_cnn'] = compare_result_df[f'{p}_v2_cnn'].apply(lambda x: round(x, 4))
+        compare_result_df[f'{p}_diff'] = compare_result_df[f'{p}_diff'].apply(lambda x: round(x, 4))
+
+    compare_result_df.to_csv(f'{PROPERTY_SCORE_COMPARE_DIR}/all_scores_v2_vs_cnn.csv', index=False)
 
 
 # for StyleGAN-FineTune-v2,v3 Property 값 (segmentation/property_score_results/all_scores_v2.csv) 와
