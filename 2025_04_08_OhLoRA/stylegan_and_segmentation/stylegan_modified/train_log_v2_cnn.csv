@@ -1,5 +1,2 @@
-epoch,valid_loss,eyes_score_loss,mouth_score_loss,pose_score_loss,hair_color_score_loss,hair_length_score_loss,back_mean_score_loss,back_std_score_loss
-0,0.6941,0.4985,0.9958,1.0241,0.9231,0.3447,0.1246,0.9478
-1,0.5328,0.3779,0.9951,1.0143,0.2,0.2454,0.094,0.8029
-2,0.4801,0.3285,0.9769,1.0133,0.1542,0.1501,0.0882,0.6493
-3,0.4664,0.3141,0.966,1.005,0.131,0.1596,0.092,0.597
+epoch,valid_loss,eyes_score_loss,mouth_score_loss,pose_score_loss,hair_color_score_loss,hair_length_score_loss,back_mean_score_loss,back_std_score_loss,eyes_score_abs_diff,mouth_score_abs_diff,pose_score_abs_diff,hair_color_score_abs_diff,hair_length_score_abs_diff,back_mean_score_abs_diff,back_std_score_abs_diff,eyes_score_corr,mouth_score_corr,pose_score_corr,hair_color_score_corr,hair_length_score_corr,back_mean_score_corr,back_std_score_corr
+0,0.7407,0.7235,0.9894,1.1168,0.9752,0.3844,0.1024,0.8936,0.633,0.8414,0.8413,0.8929,0.4159,0.2097,0.7692,0.6447,0.2961,-0.0246,0.3615,0.7328,0.9519,0.3161

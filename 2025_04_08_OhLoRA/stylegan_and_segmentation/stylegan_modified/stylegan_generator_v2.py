@@ -24,7 +24,7 @@ IMG_WIDTH = 256
 
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
-EARLY_STOPPING_ROUNDS = 10
+EARLY_STOPPING_ROUNDS = 20
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 INFERENCE_RESULT_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/inference_result'
@@ -466,7 +466,7 @@ class PropertyScoreCNN(nn.Module):
         self.hair_length_score_cnn = HairLengthScoreCNN()
         self.background_score_cnn = BackgroundMeanStdScoreCNN()
 
-    def forward(self, x, tensor_visualize_test=True):
+    def forward(self, x, tensor_visualize_test=False):
         x_eyes = x[:, :, 3 * IMG_HEIGHT // 8 : 9 * IMG_HEIGHT // 16, IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
         x_mouth = x[:, :, 5 * IMG_HEIGHT // 8 : 13 * IMG_HEIGHT // 16, 3 * IMG_WIDTH // 8 : 5 * IMG_WIDTH // 8]
         x_nose = x[:, :, 15 * IMG_HEIGHT // 32 : 21 * IMG_HEIGHT // 32, 13 * IMG_WIDTH // 32 : 19 * IMG_WIDTH // 32]
@@ -527,7 +527,9 @@ def define_cnn_model(device):
 
 # CNN 모델 학습
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.14
+# - train log 에 loss 외에도 abs diff, corr-coef 추가
+# - Train Loss 계산을 제거하여 학습 속도 향상 시도
 
 # Arguments:
 # - device                 (device)     : CNN 모델을 mapping 시킬 device (GPU 등)
@@ -555,27 +557,29 @@ def train_cnn_model(device, fine_tuning_dataloader):
     best_epoch_model = None
 
     performance_dict = {'epoch': [], 'valid_loss': [],
-                        'eyes_score_loss': [],
-                        'mouth_score_loss': [],
-                        'pose_score_loss': [],
-                        'hair_color_score_loss': [],
-                        'hair_length_score_loss': [],
-                        'back_mean_score_loss': [],
-                        'back_std_score_loss': []}
+                        'eyes_score_loss': [], 'mouth_score_loss': [], 'pose_score_loss': [],
+                        'hair_color_score_loss': [], 'hair_length_score_loss': [],
+                        'back_mean_score_loss': [], 'back_std_score_loss': [],
+                        'eyes_score_abs_diff': [], 'mouth_score_abs_diff': [], 'pose_score_abs_diff': [],
+                        'hair_color_score_abs_diff': [], 'hair_length_score_abs_diff': [],
+                        'back_mean_score_abs_diff': [], 'back_std_score_abs_diff': [],
+                        'eyes_score_corr': [], 'mouth_score_corr': [], 'pose_score_corr': [],
+                        'hair_color_score_corr': [], 'hair_length_score_corr': [],
+                        'back_mean_score_corr': [], 'back_std_score_corr': []}
 
     # run training until early stopping
     while True:
 
         # run train and validation
-        train_loss = train_cnn_train_step(cnn_model=cnn_model,
-                                          cnn_train_dataloader=train_loader)
+        train_cnn_train_step(cnn_model=cnn_model,
+                             cnn_train_dataloader=train_loader)
 
         valid_log = train_cnn_valid_step(cnn_model=cnn_model,
                                          cnn_valid_dataloader=valid_loader,
                                          current_epoch=current_epoch)
 
         val_loss = valid_log['valid_loss']
-        print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}, valid_loss : {val_loss:.4f}')
+        print(f'epoch : {current_epoch}, valid_loss : {val_loss:.4f}')
 
         # update log
         for k, v in valid_log.items():
@@ -610,19 +614,15 @@ def train_cnn_model(device, fine_tuning_dataloader):
 
 # CNN 모델의 Train Step
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.14
+# - Train Loss 계산을 제거하여 학습 속도 향상 시도
 
 # Arguments:
 # - cnn_model            (nn.Module)  : 학습 중인 CNN 모델
 # - cnn_train_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 CNN Train 용 Data Loader
 
-# Returns:
-# - train_loss (float) : 모델의 Training Loss
-
 def train_cnn_train_step(cnn_model, cnn_train_dataloader):
     cnn_model.train()
-    total = 0
-    train_loss_sum = 0.0
 
     for idx, raw_data in enumerate(cnn_train_dataloader):
         images = raw_data['image']
@@ -637,21 +637,15 @@ def train_cnn_train_step(cnn_model, cnn_train_dataloader):
         loss.backward()
         cnn_model.optimizer.step()
 
-        train_loss_current_batch = float(loss.detach().cpu().numpy())
-        train_loss_sum += train_loss_current_batch * labels.size(0)
-        total += labels.size(0)
-
-#        if idx % 5 == 0:
-#            print('train outputs:\n', outputs[:4])
-#            print('train labels:\n', labels[:4])
-
-    train_loss = train_loss_sum / total
-    return train_loss
+        if idx % 5 == 0:
+            print(idx, 'train outputs:\n', outputs[:4])
+            print(idx, 'train labels:\n', labels[:4])
 
 
 # CNN 모델의 Valid Step
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.14
+# - train log 에 loss 외에도 abs diff, corr-coef 추가
 
 # Arguments:
 # - cnn_model            (nn.Module)  : 학습 중인 CNN 모델
@@ -660,9 +654,10 @@ def train_cnn_train_step(cnn_model, cnn_train_dataloader):
 
 # Returns:
 # - valid_log (dict) : CNN 모델의 Validation Log
-#                      {'epoch': int, 'valid_loss': float, 'eyes_score_loss': float, 'mouth_score_loss': float,
-#                       'pose_score_loss': float, 'hair_color_score_loss': float, 'hair_length_score_loss': float,
-#                       'back_mean_score_loss': float, 'back_std_score_loss': float}
+#                      {'epoch': int, 'valid_loss': float,
+#                       'eyes_score_loss': float, ..., 'back_std_score_loss': float,
+#                       'eyes_score_abs_diff': float, ..., 'back_std_score_abs_diff': float,
+#                       'eyes_score_corr': float, ..., 'back_std_score_corr': float}
 
 def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
     cnn_model.eval()
@@ -670,13 +665,15 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
     val_loss_sum = 0
 
     valid_log = {'epoch': current_epoch,
-                 'eyes_score_loss': 0.0,
-                 'mouth_score_loss': 0.0,
-                 'pose_score_loss': 0.0,
-                 'hair_color_score_loss': 0.0,
-                 'hair_length_score_loss': 0.0,
-                 'back_mean_score_loss': 0.0,
-                 'back_std_score_loss': 0.0}
+                 'eyes_score_loss': 0.0, 'mouth_score_loss': 0.0, 'pose_score_loss': 0.0,
+                 'hair_color_score_loss': 0.0, 'hair_length_score_loss': 0.0,
+                 'back_mean_score_loss': 0.0, 'back_std_score_loss': 0.0,
+                 'eyes_score_abs_diff': 0.0, 'mouth_score_abs_diff': 0.0, 'pose_score_abs_diff': 0.0,
+                 'hair_color_score_abs_diff': 0.0, 'hair_length_score_abs_diff': 0.0,
+                 'back_mean_score_abs_diff': 0.0, 'back_std_score_abs_diff': 0.0}
+
+    outputs_list = []
+    labels_list = []
 
     with torch.no_grad():
         for idx, raw_data in enumerate(cnn_valid_dataloader):
@@ -690,40 +687,90 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
             val_loss_sum += val_loss_current_batch * labels.size(0)
             total += labels.size(0)
 
-            # compute detailed losses
-            eyes_score_loss = float(cnn_loss_func(outputs[:, :1], labels[:, :1]).detach().cpu().numpy())
-            mouth_score_loss = float(cnn_loss_func(outputs[:, 1:2], labels[:, 1:2]).detach().cpu().numpy())
-            pose_score_loss = float(cnn_loss_func(outputs[:, 2:3], labels[:, 2:3]).detach().cpu().numpy())
-            hair_color_score_loss = float(cnn_loss_func(outputs[:, 3:4], labels[:, 3:4]).detach().cpu().numpy())
-            hair_length_score_loss = float(cnn_loss_func(outputs[:, 4:5], labels[:, 4:5]).detach().cpu().numpy())
-            back_mean_score_loss = float(cnn_loss_func(outputs[:, 5:6], labels[:, 5:6]).detach().cpu().numpy())
-            back_std_score_loss = float(cnn_loss_func(outputs[:, 6:], labels[:, 6:]).detach().cpu().numpy())
+            # aggregate outputs and labels
+            outputs_list += list(outputs.detach().cpu().numpy())
+            labels_list += list(labels.detach().cpu().numpy())
 
-            valid_log['eyes_score_loss'] += eyes_score_loss * labels.size(0)
-            valid_log['mouth_score_loss'] += mouth_score_loss * labels.size(0)
-            valid_log['pose_score_loss'] += pose_score_loss * labels.size(0)
-            valid_log['hair_color_score_loss'] += hair_color_score_loss * labels.size(0)
-            valid_log['hair_length_score_loss'] += hair_length_score_loss * labels.size(0)
-            valid_log['back_mean_score_loss'] += back_mean_score_loss * labels.size(0)
-            valid_log['back_std_score_loss'] += back_std_score_loss * labels.size(0)
+            # compute detailed losses and abs. diff info
+            compute_detailed_valid_results(outputs, labels, valid_log)
 
-#            if idx % 5 == 0:
-#                print('valid outputs:\n', outputs)
-#                print('valid labels:\n', labels)
+            if idx % 5 == 0:
+                print(idx, 'valid outputs:\n', outputs)
+                print(idx, 'valid labels:\n', labels)
 
         # Final Loss 계산
         val_loss = val_loss_sum / total
         valid_log['valid_loss'] = val_loss
 
-        valid_log['eyes_score_loss'] /= total
-        valid_log['mouth_score_loss'] /= total
-        valid_log['pose_score_loss'] /= total
-        valid_log['hair_color_score_loss'] /= total
-        valid_log['hair_length_score_loss'] /= total
-        valid_log['back_mean_score_loss'] /= total
-        valid_log['back_std_score_loss'] /= total
+        for metric_name in ['loss', 'abs_diff']:
+            valid_log[f'eyes_score_{metric_name}'] /= total
+            valid_log[f'mouth_score_{metric_name}'] /= total
+            valid_log[f'pose_score_{metric_name}'] /= total
+            valid_log[f'hair_color_score_{metric_name}'] /= total
+            valid_log[f'hair_length_score_{metric_name}'] /= total
+            valid_log[f'back_mean_score_{metric_name}'] /= total
+            valid_log[f'back_std_score_{metric_name}'] /= total
+
+    # compute corr-coef
+    valid_log['eyes_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 0], np.array(labels_list)[:, 0])[0][1]
+    valid_log['mouth_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 1], np.array(labels_list)[:, 1])[0][1]
+    valid_log['pose_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 2], np.array(labels_list)[:, 2])[0][1]
+    valid_log['hair_color_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 3], np.array(labels_list)[:, 3])[0][1]
+    valid_log['hair_length_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 4], np.array(labels_list)[:, 4])[0][1]
+    valid_log['back_mean_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 5], np.array(labels_list)[:, 5])[0][1]
+    valid_log['back_std_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 6], np.array(labels_list)[:, 6])[0][1]
 
     return valid_log
+
+
+# CNN 모델의 Valid Step 에서 상세한 Valid Loss 결과 (Loss, Abs Diff) 저장
+# Create Date : 2025.04.14
+# Last Update Date : -
+
+# Arguments:
+# - outputs   (PyTorch Tensor) : Valid dataset 에 대한 predicted output
+# - labels    (PyTorch Tensor) : Valid dataset 에 대한 label
+# - valid_log (dict)           : CNN 모델의 Validation Log
+#                                {'epoch': int, 'valid_loss': float,
+#                                 'eyes_score_loss': float, ..., 'back_std_score_loss': float,
+#                                 'eyes_score_abs_diff': float, ..., 'back_std_score_abs_diff': float,
+#                                 'eyes_score_corr': float, ..., 'back_std_score_corr': float}
+
+def compute_detailed_valid_results(outputs, labels, valid_log):
+
+    # compute loss
+    eyes_score_loss = float(cnn_loss_func(outputs[:, :1], labels[:, :1]).detach().cpu().numpy())
+    mouth_score_loss = float(cnn_loss_func(outputs[:, 1:2], labels[:, 1:2]).detach().cpu().numpy())
+    pose_score_loss = float(cnn_loss_func(outputs[:, 2:3], labels[:, 2:3]).detach().cpu().numpy())
+    hair_color_score_loss = float(cnn_loss_func(outputs[:, 3:4], labels[:, 3:4]).detach().cpu().numpy())
+    hair_length_score_loss = float(cnn_loss_func(outputs[:, 4:5], labels[:, 4:5]).detach().cpu().numpy())
+    back_mean_score_loss = float(cnn_loss_func(outputs[:, 5:6], labels[:, 5:6]).detach().cpu().numpy())
+    back_std_score_loss = float(cnn_loss_func(outputs[:, 6:], labels[:, 6:]).detach().cpu().numpy())
+
+    valid_log['eyes_score_loss'] += eyes_score_loss * labels.size(0)
+    valid_log['mouth_score_loss'] += mouth_score_loss * labels.size(0)
+    valid_log['pose_score_loss'] += pose_score_loss * labels.size(0)
+    valid_log['hair_color_score_loss'] += hair_color_score_loss * labels.size(0)
+    valid_log['hair_length_score_loss'] += hair_length_score_loss * labels.size(0)
+    valid_log['back_mean_score_loss'] += back_mean_score_loss * labels.size(0)
+    valid_log['back_std_score_loss'] += back_std_score_loss * labels.size(0)
+
+    # compute abs diff
+    eyes_score_abs_diff = float(nn.L1Loss()(outputs[:, :1], labels[:, :1]).detach().cpu().numpy())
+    mouth_score_abs_diff = float(nn.L1Loss()(outputs[:, 1:2], labels[:, 1:2]).detach().cpu().numpy())
+    pose_score_abs_diff = float(nn.L1Loss()(outputs[:, 2:3], labels[:, 2:3]).detach().cpu().numpy())
+    hair_color_score_abs_diff = float(nn.L1Loss()(outputs[:, 3:4], labels[:, 3:4]).detach().cpu().numpy())
+    hair_length_score_abs_diff = float(nn.L1Loss()(outputs[:, 4:5], labels[:, 4:5]).detach().cpu().numpy())
+    back_mean_score_abs_diff = float(nn.L1Loss()(outputs[:, 5:6], labels[:, 5:6]).detach().cpu().numpy())
+    back_std_score_abs_diff = float(nn.L1Loss()(outputs[:, 6:], labels[:, 6:]).detach().cpu().numpy())
+
+    valid_log['eyes_score_abs_diff'] += eyes_score_abs_diff * labels.size(0)
+    valid_log['mouth_score_abs_diff'] += mouth_score_abs_diff * labels.size(0)
+    valid_log['pose_score_abs_diff'] += pose_score_abs_diff * labels.size(0)
+    valid_log['hair_color_score_abs_diff'] += hair_color_score_abs_diff * labels.size(0)
+    valid_log['hair_length_score_abs_diff'] += hair_length_score_abs_diff * labels.size(0)
+    valid_log['back_mean_score_abs_diff'] += back_mean_score_abs_diff * labels.size(0)
+    valid_log['back_std_score_abs_diff'] += back_std_score_abs_diff * labels.size(0)
 
 
 # 학습된 CNN 모델 불러오기
