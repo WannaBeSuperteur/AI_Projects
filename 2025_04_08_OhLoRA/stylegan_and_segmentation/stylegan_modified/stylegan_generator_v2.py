@@ -13,6 +13,7 @@ from global_common.visualize_tensor import save_tensor_png
 
 from torch.utils.data import random_split, DataLoader
 from stylegan_modified.fine_tuning import concatenate_property_scores
+from stylegan_modified.stylegan_generator_v2_compare_property import write_property_compare_result
 from torchinfo import summary
 
 torch.set_printoptions(linewidth=160, sci_mode=False)
@@ -891,5 +892,8 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
         # train CNN model
         cnn_model = train_cnn_model(device, fine_tuning_dataloader)
         torch.save(cnn_model.state_dict(), cnn_save_path)
+
+    # Compare Property Values (Can we use CNN-derived property values for image generate model?)
+    write_property_compare_result(fine_tuning_dataloader, cnn_model)
 
     raise NotImplementedError
