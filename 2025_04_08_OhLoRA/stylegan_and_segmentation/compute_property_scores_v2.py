@@ -2,6 +2,8 @@ import pandas as pd
 import os
 import cv2
 import numpy as np
+import math
+
 from compute_property_scores import read_parsing_result, normalize_all_scores, compute_background_mean_and_std
 
 
@@ -9,7 +11,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 PARSED_MAP_SIZE = 224
 
 
-# 눈을 뜬 정도 (eyes) Score 계산
+# 눈을 뜬 정도 (eyes) 및 고개 돌림 (pose) Score 계산
 # Create Date : 2025.04.14
 # Last Update Date : -
 
@@ -18,38 +20,108 @@ PARSED_MAP_SIZE = 224
 
 # Returns:
 # - eyes_score (float) : 눈을 뜬 정도 Score
+# - pose_score (float) : 고개 돌림 score
 
-def compute_eyes_score_v2(parsing_result):
-
-    """
+def compute_eyes_and_pose_score_v2(parsing_result):
     left_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 3 * PARSED_MAP_SIZE // 4, : 3 * PARSED_MAP_SIZE // 4]
     right_eye_area = parsing_result[PARSED_MAP_SIZE // 4 : 3 * PARSED_MAP_SIZE // 4, PARSED_MAP_SIZE // 4 :]
 
-    left_eye_min_y, left_eye_max_y = None, None
-    right_eye_min_y, right_eye_max_y = None, None
+    left_eye_max_height_per_x = 0
+    right_eye_max_height_per_x = 0
 
-    for y in range(3 * PARSED_MAP_SIZE // 8):
-        if 4 in left_eye_area[y]:
-            if left_eye_min_y is None:
-                left_eye_min_y = y
-                left_eye_max_y = y
-            else:
-                left_eye_max_y = max(left_eye_max_y, y)
+    left_eye_points = []
+    right_eye_points = []
 
-        if 5 in right_eye_area[y]:
-            if right_eye_min_y is None:
-                right_eye_min_y = y
-                right_eye_max_y = y
-            else:
-                right_eye_max_y = max(right_eye_max_y, y)
+    # find max height of left and right eye
+    for x in range(3 * PARSED_MAP_SIZE // 4):
+        left_eye_min_y, left_eye_max_y = None, None
+        right_eye_min_y, right_eye_max_y = None, None
 
-    left_eye_height = 0 if left_eye_min_y is None else left_eye_max_y - left_eye_min_y
-    right_eye_height = 0 if right_eye_min_y is None else right_eye_max_y - right_eye_min_y
+        for y in range(PARSED_MAP_SIZE // 2):
+            if left_eye_area[y][x] == 4:
+                left_eye_points.append([y + PARSED_MAP_SIZE // 4, x])
 
-    return (left_eye_height + right_eye_height) / 2.0
-    """
+                if left_eye_min_y is None:
+                    left_eye_min_y = y
+                    left_eye_max_y = y
+                else:
+                    left_eye_max_y = max(left_eye_max_y, y)
 
-    raise NotImplementedError
+            if right_eye_area[y][x] == 5:
+                right_eye_points.append([y + PARSED_MAP_SIZE // 4, x + PARSED_MAP_SIZE // 4])
+
+                if right_eye_min_y is None:
+                    right_eye_min_y = y
+                    right_eye_max_y = y
+                else:
+                    right_eye_max_y = max(right_eye_max_y, y)
+
+        left_eye_height = 0 if left_eye_min_y is None else left_eye_max_y - left_eye_min_y
+        right_eye_height = 0 if right_eye_min_y is None else right_eye_max_y - right_eye_min_y
+
+        left_eye_max_height_per_x = max(left_eye_max_height_per_x, left_eye_height)
+        right_eye_max_height_per_x = max(right_eye_max_height_per_x, right_eye_height)
+
+    # find point pair with max distance (for left eye)
+    max_left_eye_distance = 0
+    max_left_eye_distance_pair = None
+    left_eye_angle_cos = 1.0
+
+    for i in range(len(left_eye_points)):
+        for j in range(i):
+            left_eye_pt_0 = left_eye_points[i]
+            left_eye_pt_1 = left_eye_points[j]
+            squared_distance = (left_eye_pt_0[0] - left_eye_pt_1[0]) ** 2 + (left_eye_pt_0[1] - left_eye_pt_1[1]) ** 2
+
+            if squared_distance > max_left_eye_distance:
+                max_left_eye_distance = squared_distance
+                max_left_eye_distance_pair = {'pt0': left_eye_pt_0, 'pt1': left_eye_pt_1}
+
+    if max_left_eye_distance_pair is not None:
+        dist_y = abs(max_left_eye_distance_pair['pt0'][0] - max_left_eye_distance_pair['pt1'][0])
+        dist_x = abs(max_left_eye_distance_pair['pt0'][1] - max_left_eye_distance_pair['pt1'][1])
+        dist_r = math.sqrt(dist_y ** 2 + dist_x ** 2)
+        left_eye_angle_cos = dist_x / dist_r
+
+    # find point pair with max distance (for right eye)
+    max_right_eye_distance = 0
+    max_right_eye_distance_pair = None
+    right_eye_angle_cos = 1.0
+
+    for i in range(len(right_eye_points)):
+        for j in range(i):
+            right_eye_pt_0 = right_eye_points[i]
+            right_eye_pt_1 = right_eye_points[j]
+            squared_distance = (right_eye_pt_0[0] - right_eye_pt_1[0])**2 + (right_eye_pt_0[1] - right_eye_pt_1[1])**2
+
+            if squared_distance > max_right_eye_distance:
+                max_right_eye_distance = squared_distance
+                max_right_eye_distance_pair = {'pt0': right_eye_pt_0, 'pt1': right_eye_pt_1}
+
+    if max_right_eye_distance_pair is not None:
+        dist_y = abs(max_right_eye_distance_pair['pt0'][0] - max_right_eye_distance_pair['pt1'][0])
+        dist_x = abs(max_right_eye_distance_pair['pt0'][1] - max_right_eye_distance_pair['pt1'][1])
+        dist_r = math.sqrt(dist_y ** 2 + dist_x ** 2)
+        right_eye_angle_cos = dist_x / dist_r
+
+    # compute eyes score
+    left_eye_score = left_eye_max_height_per_x / left_eye_angle_cos
+    right_eye_score = right_eye_max_height_per_x / right_eye_angle_cos
+    eyes_score = max(left_eye_score, right_eye_score)
+
+    # compute pose score
+    if len(left_eye_points) == 0 or len(right_eye_points) == 0:
+        pose_score = 0.0
+
+    else:
+        left_eye_points_mean = np.mean(np.array(left_eye_points), axis=0)
+        right_eye_points_mean = np.mean(np.array(right_eye_points), axis=0)
+
+        eyes_dist_y = right_eye_points_mean[0] - left_eye_points_mean[0]
+        eyes_dist_x = right_eye_points_mean[1] - left_eye_points_mean[1]
+        pose_score = eyes_dist_y / eyes_dist_x
+
+    return eyes_score, pose_score
 
 
 # 머리 색 (hair_color) 의 밝기 Score 계산
@@ -233,11 +305,10 @@ def compute_all_image_scores(all_img_nos):
         image = cv2.resize(image, dsize=(PARSED_MAP_SIZE, PARSED_MAP_SIZE), interpolation=cv2.INTER_LINEAR)
 
         # compute property scores
-        eyes_score = compute_eyes_score_v2(parsing_result)
+        eyes_score, pose_score = compute_eyes_and_pose_score_v2(parsing_result)
         hair_color_score = compute_hair_color_score_v2(parsing_result, image)
         hair_length_score = compute_hair_length_score_v2(parsing_result)
         mouth_score = compute_mouth_score_v2(parsing_result)
-        pose_score = compute_pose_score_v2(parsing_result)
         background_mean, background_std = compute_background_mean_and_std(parsing_result, image)
 
         # append to all_scores result

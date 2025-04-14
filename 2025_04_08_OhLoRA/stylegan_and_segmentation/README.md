@@ -98,15 +98,13 @@
   * **StyleGAN-FineTune-v2**
   * **StyleGAN-FineTune-v3**
 
-**1. 눈을 뜬 정도 (eyes)**
+**1. 눈을 뜬 정도 (eyes), 고개 돌림 (pose)**
 
 **2. 머리 색 (hair_color)**
 
 **3. 머리 길이 (hair_length)**
 
 **4. 입을 벌린 정도 (mouth)**
-
-**5. 고개 돌림 (pose)**
 
 ## 3. 사용 모델 설명
 
