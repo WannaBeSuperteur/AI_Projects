@@ -14,6 +14,8 @@ from global_common.visualize_tensor import save_tensor_png
 from torch.utils.data import random_split, DataLoader
 from stylegan_modified.fine_tuning import concatenate_property_scores
 from stylegan_modified.stylegan_generator_v2_compare_property import write_property_compare_result
+from stylegan_modified.stylegan_generator_v2_gen_model import train_stylegan_finetune_v2
+from stylegan_modified.stylegan_generator import StyleGANGenerator
 from torchinfo import summary
 
 torch.set_printoptions(linewidth=160, sci_mode=False)
@@ -864,8 +866,29 @@ def load_cnn_model(cnn_model_path, device):
     return cnn_model
 
 
+# Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Generator 불러오기
+# Create Date : 2025.04.14
+# Last Update Date : -
+
+# Arguments:
+# - v2_gen_path (str)    : StyleGAN-FineTune-v2 모델 저장 경로
+# - device      (device) : StyleGAN-FineTune-v2 모델을 mapping 시킬 device (GPU 등)
+
+# Returns:
+# - fine_tuned_generator (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Generator
+
+def load_stylegan_finetune_v2_model(v2_gen_path, device):
+    fine_tuned_generator = StyleGANGenerator(resolution=IMG_HEIGHT)  # IMG_HEIGHT = IMG_WIDTH = RESOLUTION
+    fine_tuned_generator.load_state_dict(torch.load(v2_gen_path, map_location=device, weights_only=False))
+
+    fine_tuned_generator.to(device)
+    fine_tuned_generator.device = device
+
+    return fine_tuned_generator
+
+
 # StyleGAN-FineTune-v2 모델 Fine-Tuning 실시
-# Create Date : 2025.04.13
+# Create Date : 2025.04.14
 # Last Update Date : -
 
 # Arguments:
@@ -873,11 +896,15 @@ def load_cnn_model(cnn_model_path, device):
 # - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
 
 # Returns:
-# - fine_tuned_generator     (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Generator
-# - fine_tuned_generator_cnn (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Discriminator
+# - fine_tuned_generator (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델의 Generator
+# - cnn_model            (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v2 모델을 학습하기 위한 CNN
+# - exist_dict           (dict)      : 각 모델 (CNN, StyleGAN-FineTune-v2) 의 존재 여부 (= 신규 학습 미 실시 여부)
 
 def run_fine_tuning(generator, fine_tuning_dataloader):
     cnn_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth'
+
+    cnn_model_exist = False
+    stylegan_finetune_v2_exist = False
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -886,6 +913,7 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
     # load CNN model
     try:
         cnn_model = load_cnn_model(cnn_save_path, device)
+        cnn_model_exist = True
 
     except Exception as e:
         print(f'cnn model load failed : {e}')
@@ -897,4 +925,22 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
     # Compare Property Values (Can we use CNN-derived property values for image generate model?)
 #    write_property_compare_result(fine_tuning_dataloader, cnn_model)
 
+    # load or newly train Fine-Tuned Generator (v2)
+    v2_gen_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2.pth'
+
+    try:
+        fine_tuned_generator = load_stylegan_finetune_v2_model(v2_gen_path, device)
+        stylegan_finetune_v2_exist = True
+
+    except Exception as e:
+        print(f'StyleGAN-FineTune-v2 model load failed : {e}')
+
+        # train StyleGAN-FineTune-v2 model
+        fine_tuned_generator = train_stylegan_finetune_v2(device, generator, cnn_model)
+        torch.save(fine_tuned_generator.state_dict(), v2_gen_path)
+
+    exist_dict = {'cnn': cnn_model_exist, 'stylegan_finetune_v2': stylegan_finetune_v2_exist}
+    print(f'model existance : {exist_dict}')
     raise NotImplementedError
+
+    return fine_tuned_generator, cnn_model, exist_dict

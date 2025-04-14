@@ -99,7 +99,8 @@ def run_inference_test_before_finetuning(restructured_generator):
 
 # StyleGAN Fine-Tuning 실시 (핵심 속성 값 7개를 latent vector 에 추가)
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.14
+# - exist_dict (CNN, StyleGAN-FineTune-v2 각 모델의 존재 여부) 추가 반영
 
 # Arguments:
 # - generator              (nn.Module)   : StyleGAN-FineTune-v1 모델의 Generator
@@ -133,13 +134,18 @@ def run_stylegan_fine_tuning(generator, generator_state_dict, fine_tuning_datalo
     run_inference_test_before_finetuning(generator)
 
     # fine tuning 실시
-    fine_tuned_generator, fine_tuned_generator_cnn = run_fine_tuning(generator, fine_tuning_dataloader)
+    fine_tuned_generator, fine_tuned_generator_cnn, exist_dict = run_fine_tuning(generator, fine_tuning_dataloader)
 
     fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
     os.makedirs(fine_tuned_model_path, exist_ok=True)
 
-    torch.save(fine_tuned_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v2.pth')
-    torch.save(fine_tuned_generator_cnn.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v2_cnn.pth')
+    if not exist_dict['stylegan_finetune_v2']:
+        torch.save(fine_tuned_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v2.pth')
+        print('StyleGAN-FineTune-v2 saved')
+
+    if not exist_dict['cnn']:
+        torch.save(fine_tuned_generator_cnn.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v2_cnn.pth')
+        print('CNN for StyleGAN-FineTune-v2 saved')
 
 
 # StyleGAN Fine-Tuning 용 데이터셋의 Data Loader 로딩
