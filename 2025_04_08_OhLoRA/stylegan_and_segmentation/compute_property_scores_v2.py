@@ -149,10 +149,16 @@ def compute_hair_color_score_v2(parsing_result, face_detection_image):
     hair_color_info = np.array(hair_color_info)
     hair_color_pixel_count = len(hair_color_info)
 
+    if len(hair_color_info) == 0:
+        return 127.5
+
     hair_color_rgb_mean = np.mean(hair_color_info, axis=1)
     hair_color_rgb_mean = np.sort(hair_color_rgb_mean)
-
     hair_color_rgb_mean = hair_color_rgb_mean[int(0.1 * hair_color_pixel_count):int(0.9 * hair_color_pixel_count)]
+
+    if len(hair_color_rgb_mean) == 0:
+        return 127.5
+
     hair_color_score = np.mean(hair_color_rgb_mean)
 
     return hair_color_score
@@ -284,7 +290,7 @@ def compute_all_image_scores(all_img_nos):
 
 if __name__ == '__main__':
     img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results_filtered'
-    img_names = os.listdir(img_dir)[:120]
+    img_names = os.listdir(img_dir)
     img_nos = [int(img_name[:-4]) for img_name in img_names]
 
     all_scores = compute_all_image_scores(img_nos)
