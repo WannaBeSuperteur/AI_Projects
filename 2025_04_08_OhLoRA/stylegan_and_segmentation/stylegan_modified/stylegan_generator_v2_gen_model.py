@@ -1,18 +1,32 @@
 import torch
 import torch.nn as nn
 from torchview import draw_graph
+import pandas as pd
 
 from stylegan_modified.stylegan_generator import StyleGANGenerator
 from stylegan_modified.stylegan_generator_v2_cnn import PropertyScoreCNN
 
 import os
+import sys
+
+global_path = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))))
+sys.path.append(global_path)
+
+from global_common.visualize_tensor import save_tensor_png
+
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/model_structure_pdf'
 
+TENSOR_VISUALIZE_TEST_BATCH_SIZE = 30
 TRAIN_BATCH_SIZE = 16
+
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 7           # eyes, hair_color, hair_length, mouth, pose, background_mean, background_std
+
+CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/tensor_visualize_test_cnn'
+os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 
 class StyleGANFineTuneV2(nn.Module):
@@ -25,9 +39,34 @@ class StyleGANFineTuneV2(nn.Module):
         kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
         self.stylegan_generator.G_kwargs_val = kwargs_val
 
-    def forward(self, z, property_label):
+    def forward(self, z, property_label, tensor_visualize_test=False):
         generated_image = self.stylegan_generator(z, property_label)
         property_score = self.property_score_cnn(generated_image['image'])
+
+        if tensor_visualize_test:
+            test_name = 'test_before_finetune'
+
+            current_batch_size = generated_image['image'].size(0)
+            property_score_np = property_score.detach().cpu().numpy()
+
+            property_score_info_dict = {
+                'img_no': list(range(current_batch_size)),
+                'eyes_score': list(property_score_np[:, 0]),
+                'hair_color_score': list(property_score_np[:, 1]),
+                'hair_length_score': list(property_score_np[:, 2]),
+                'mouth_score': list(property_score_np[:, 3]),
+                'pose_score': list(property_score_np[:, 4]),
+                'back_mean_score': list(property_score_np[:, 5]),
+                'back_std_score': list(property_score_np[:, 6])
+            }
+            property_score_info_df = pd.DataFrame(property_score_info_dict)
+            property_score_info_df.to_csv(f'{CNN_TENSOR_TEST_DIR}/finetune_v2_{test_name}_result.csv',
+                                          index=False)
+
+            for i in range(current_batch_size):
+                save_tensor_png(generated_image['image'][i],
+                                image_save_path=f'{CNN_TENSOR_TEST_DIR}/finetune_v2_{test_name}_{i:03d}.png')
+
         return property_score
 
 
@@ -59,8 +98,8 @@ def define_stylegan_finetune_v2(device, generator, cnn_model):
 
     # save model graph of StyleGAN-FineTune-v2 before training
     model_graph = draw_graph(stylegan_finetune_v2,
-                             input_size=[(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
-                                         (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)],
+                             input_data=[torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z)),
+                                         torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, PROPERTY_DIMS_Z))],
                              depth=5)
 
     visual_graph = model_graph.visual_graph
