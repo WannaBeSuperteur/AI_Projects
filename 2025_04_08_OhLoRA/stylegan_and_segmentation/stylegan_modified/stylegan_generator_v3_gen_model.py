@@ -239,7 +239,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
     min_train_loss_epoch = 0
     best_epoch_model = None
 
-    train_log = {'epoch': [], 'batch_idx': []}
+    train_log = {'epoch': [], 'batch_idx': [], 'mse': [], 'kld': []}
     for loss_type in loss_types:
         train_log[f'{loss_type}_mse'] = []
     for loss_type in loss_types:
@@ -294,6 +294,8 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         for key in total_loss_dict.keys():
             total_loss_dict[key] /= total
             total_loss_dict[key] = round(total_loss_dict[key], 4)
+        total_loss_dict['mse'] = train_loss_mse
+        total_loss_dict['kld'] = train_loss_kld
 
         print(f'epoch {current_epoch}: loss = {train_loss:.4f}')
         save_train_log(current_epoch, '-', train_log, loss_dict=total_loss_dict)

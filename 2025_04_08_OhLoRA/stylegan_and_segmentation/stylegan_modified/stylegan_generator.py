@@ -500,7 +500,7 @@ class StyleGANGeneratorForV3(nn.Module):
         self.mapping = MappingModule(input_space_dim=self.z_space_dim,
                                      hidden_space_dim=self.mapping_fmaps,
                                      final_space_dim=self.mapping_space_dim,
-                                     label_convert_dim=64,
+                                     label_convert_dim=100,
                                      label_size=self.label_size,
                                      num_layers=self.mapping_layers,
                                      use_wscale=self.use_wscale,
