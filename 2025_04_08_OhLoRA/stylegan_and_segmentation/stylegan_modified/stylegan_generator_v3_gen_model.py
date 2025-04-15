@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchview import draw_graph
 
+from stylegan_modified.fine_tuning import concatenate_property_scores
 from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
 
 import numpy as np
@@ -39,7 +40,9 @@ os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 def vae_loss_function(x_reconstructed, x, mu, logvar):
     mse_loss = F.mse_loss(x, x_reconstructed, reduction='sum')
     kl_divergence_loss = -0.5 * torch.sum(1.0 + logvar - mu.pow(2) - logvar.exp())
-    return mse_loss + kl_divergence_loss
+
+    loss_dict = {'mse': mse_loss, 'kld': kl_divergence_loss}
+    return mse_loss + kl_divergence_loss, loss_dict
 
 
 # Conditional-VAE Encoder for StyleGAN-FineTune-v3
@@ -119,7 +122,7 @@ class StyleGANFineTuneV3(nn.Module):
         z = self.reparameterize(mu, logvar)
         generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
 
-        return generated_image['image']
+        return generated_image['image'], mu, logvar
 
 
 # StyleGAN-FineTune-v3 모델 정의 및 generator 의 state_dict 를 로딩
@@ -196,7 +199,62 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader):
     stylegan_finetune_v3.train()
 
-    raise NotImplementedError
+    current_epoch = 0
+    min_train_loss = None
+    min_train_loss_epoch = 0
+    best_epoch_model = None
+
+    while True:
+        train_loss = 0.0
+        train_loss_mse = 0.0
+        train_loss_kld = 0.0
+        total = 0
+
+        for idx, raw_data in enumerate(fine_tuning_dataloader):
+            print('idx :', idx)
+
+            images = raw_data['image']
+            images = images.to(stylegan_finetune_v3.device)
+
+            labels = concatenate_property_scores(raw_data)
+            labels = labels.to(stylegan_finetune_v3.device).to(torch.float32)
+
+            reconstructed_images, mu, logvar = stylegan_finetune_v3(x=images, property_label=labels)
+            stylegan_finetune_v3.optimizer.zero_grad()
+
+            loss, loss_dict = vae_loss_function(reconstructed_images, images, mu, logvar)
+            loss.backward()
+
+            train_loss += float(loss.detach().cpu().numpy())
+            train_loss_mse += float(loss_dict['mse'].detach().cpu().numpy())
+            train_loss_kld += float(loss_dict['kld'].detach().cpu().numpy())
+
+            total += labels.size(0)
+
+            stylegan_finetune_v3.optimizer.step()
+
+        train_loss /= total
+        train_loss_mse /= total
+        train_loss_kld /= total
+
+        print(f'epoch {current_epoch}: loss = {train_loss:.4f} (mse: {train_loss_mse:.4f}, kld: {train_loss_kld:.4f})')
+
+        current_epoch += 1
+        stylegan_finetune_v3.scheduler.step()
+
+        # Early Stopping 처리
+        if min_train_loss is None or train_loss < min_train_loss:
+            min_train_loss = train_loss
+            min_train_loss_epoch = current_epoch
+
+            best_epoch_model = StyleGANFineTuneV3().to(stylegan_finetune_v3.device)
+            best_epoch_model.load_state_dict(stylegan_finetune_v3.state_dict())
+
+        if current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            break
+
+    fine_tuned_generator = best_epoch_model.stylegan_generator
+    return fine_tuned_generator
 
 
 # StyleGAN-FineTune-v3 모델 학습 중 출력 결과물 테스트
