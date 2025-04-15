@@ -210,7 +210,7 @@ def define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cn
 # - gender_cnn_model     (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 성별 판단용 학습된 CNN 모델
 # - check_again          (bool)      : freeze 여부 재 확인 테스트용
 
-def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, property_cnn_model, gender_cnn_model, check_again=True):
+def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, property_cnn_model, gender_cnn_model, check_again=False):
 
     # 모든 CNN Model freeze 범위 : 전체
     for name, param in property_cnn_model.named_parameters():
@@ -285,7 +285,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             train_loss_mse += train_loss_batch_mse * labels.size(0)
             train_loss_gender += train_loss_batch_gender * labels.size(0)
 
-            if (current_epoch < 10 and idx % 10 == 0) or (current_epoch == 0 and idx < 10):
+            if (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20):
                 print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch:.4f}')
                 save_train_log(current_epoch, idx, train_log, loss_dict=loss_dict)
 

@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 import pandas as pd
 
-from run_stylegan_fine_tuning import PROPERTY_SCORE_DIR_PATH, TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z, PROPERTY_DIMS_Z
+from run_stylegan_fine_tuning import PROPERTY_SCORE_DIR_PATH, ORIGINAL_HIDDEN_DIMS_Z, PROPERTY_DIMS_Z
 from run_stylegan_fine_tuning import (PropertyScoreImageDataset,
                                       stylegan_transform,
                                       save_model_structure_pdf,
@@ -17,6 +17,7 @@ from stylegan_modified.stylegan_generator_v3 import run_fine_tuning
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+TRAIN_BATCH_SIZE = 8
 
 
 # StyleGAN Fine-Tuning 용 데이터셋 (CNN 에 의해 계산된 property scores) 의 Data Loader 로딩
