@@ -2,7 +2,7 @@ import torch
 import os
 import numpy as np
 
-from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
+from stylegan_modified.stylegan_generator import StyleGANGeneratorForV3
 from stylegan_modified.stylegan_generator_v2 import load_cnn_model
 from stylegan_modified.stylegan_generator_v3_gen_model import train_stylegan_finetune_v3
 
@@ -28,7 +28,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 # - fine_tuned_generator (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator
 
 def load_stylegan_finetune_v3_model(v3_gen_path, device):
-    fine_tuned_generator = StyleGANGeneratorForV2(resolution=IMG_RESOLUTION)  # Style-Mixing 미 적용된 v2 model 그대로 사용
+    fine_tuned_generator = StyleGANGeneratorForV3(resolution=IMG_RESOLUTION)
     fine_tuned_generator.load_state_dict(torch.load(v3_gen_path, map_location=device, weights_only=False))
 
     fine_tuned_generator.to(device)

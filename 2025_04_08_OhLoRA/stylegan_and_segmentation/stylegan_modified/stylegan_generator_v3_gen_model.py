@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from torchview import draw_graph
 
 from stylegan_modified.fine_tuning import concatenate_property_scores
-from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
+from stylegan_modified.stylegan_generator import StyleGANGeneratorForV3
 from stylegan_modified.stylegan_generator_v2_cnn import PropertyScoreCNN
 
 import numpy as np
@@ -36,13 +36,21 @@ CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_mo
 os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 
-# Loss Function for VAE
+# Loss Function for VAE (Background std 제외)
 
 def vae_loss_function(generated_image_property_score, labels, mu, logvar):
-    mse_loss = 1000 * F.mse_loss(generated_image_property_score, labels, reduction='mean')
+    mse_loss = 200000 * F.mse_loss(generated_image_property_score[:, :6], labels[:, :6], reduction='mean')
     kl_divergence_loss = -0.5 * torch.sum(1.0 + logvar - mu.pow(2) - logvar.exp())
 
-    loss_dict = {'mse': mse_loss, 'kld': kl_divergence_loss}
+    loss_dict = {'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
+                 'kld': round(float(kl_divergence_loss.detach().cpu().numpy()), 4)}
+
+    loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean', 'back_std']
+    for idx, loss_type in enumerate(loss_types):
+        loss_of_type = nn.MSELoss()(generated_image_property_score[:, idx:idx+1], labels[:, idx:idx+1])
+        loss_of_type = float(loss_of_type.detach().cpu().numpy())
+        loss_dict[loss_type] = round(loss_of_type, 4)
+
     return mse_loss + kl_divergence_loss, loss_dict
 
 
@@ -107,7 +115,7 @@ class StyleGANFineTuneV3(nn.Module):
         super(StyleGANFineTuneV3, self).__init__()
 
         self.CVAE_encoder = CVAEEncoder()
-        self.stylegan_generator = StyleGANGeneratorForV2(resolution=IMG_RES)
+        self.stylegan_generator = StyleGANGeneratorForV3(resolution=IMG_RES)
         self.property_score_cnn = PropertyScoreCNN()
 
         kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
@@ -151,7 +159,16 @@ def define_stylegan_finetune_v3(device, generator, cnn_model):
     stylegan_finetune_v3.device = device
 
     # load state dict of generator
-    stylegan_finetune_v3.stylegan_generator.load_state_dict(generator.state_dict())
+    # (size mismatch of property score mapping layers between StyleGAN-FineTune-v1,v2 and StyleGAN-FineTune-v3)
+    stylegan_finetune_v3_generator_state_dict = {}
+
+    for k in generator.state_dict().keys():
+        if k not in ['mapping.label_weight', 'mapping.dense0.weight']:
+            stylegan_finetune_v3_generator_state_dict[k] = generator.state_dict()[k]
+
+    stylegan_finetune_v3.stylegan_generator.load_state_dict(stylegan_finetune_v3_generator_state_dict, strict=False)
+
+    # load state dict of CNN
     stylegan_finetune_v3.property_score_cnn.load_state_dict(cnn_model.state_dict())
 
     # save model graph of StyleGAN-FineTune-v3 before training
@@ -218,7 +235,10 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         train_loss = 0.0
         train_loss_mse = 0.0
         train_loss_kld = 0.0
+
         total = 0
+        total_loss_dict = {'eyes': 0.0, 'hair_color': 0.0, 'hair_length': 0.0,
+                           'mouth': 0.0, 'pose': 0.0, 'back_mean': 0.0, 'back_std': 0.0}
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             images = raw_data['image']
@@ -233,17 +253,18 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             loss.backward()
 
             train_loss_batch = float(loss.detach().cpu().numpy())
-            train_loss_batch_mse = float(loss_dict['mse'].detach().cpu().numpy())
-            train_loss_batch_kld = float(loss_dict['kld'].detach().cpu().numpy())
+            train_loss_batch_mse = loss_dict['mse']
+            train_loss_batch_kld = loss_dict['kld']
 
-            train_loss += train_loss_batch
-            train_loss_mse += train_loss_batch_mse
-            train_loss_kld += train_loss_batch_kld
+            train_loss += train_loss_batch * labels.size(0)
+            train_loss_mse += train_loss_batch_mse * labels.size(0)
+            train_loss_kld += train_loss_batch_kld * labels.size(0)
 
             if current_epoch < 3 and idx % 10 == 0:
-                print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch / labels.size(0):.4f} '
-                      f'(mse: {train_loss_batch_mse / labels.size(0):.4f}, '
-                      f'kld: {train_loss_batch_kld / labels.size(0):.4f})')
+                print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch:.4f} {loss_dict}')
+
+            for key in total_loss_dict.keys():
+                total_loss_dict[key] += loss_dict[key] * labels.size(0)
 
             total += labels.size(0)
 
@@ -253,7 +274,11 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         train_loss_mse /= total
         train_loss_kld /= total
 
-        print(f'epoch {current_epoch}: loss = {train_loss:.4f} (mse: {train_loss_mse:.4f}, kld: {train_loss_kld:.4f})')
+        for key in total_loss_dict.keys():
+            total_loss_dict[key] /= total
+            total_loss_dict[key] = round(total_loss_dict[key], 4)
+
+        print(f'epoch {current_epoch}: loss = {train_loss:.4f} {total_loss_dict}')
 
         # Early Stopping 처리
         if min_train_loss is None or train_loss < min_train_loss:

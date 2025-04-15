@@ -402,6 +402,190 @@ class StyleGANGeneratorForV2(nn.Module):
         return {**mapping_results, **synthesis_results}
 
 
+class StyleGANGeneratorForV3(nn.Module):
+    """Defines the generator network in StyleGAN.
+
+    NOTE: The synthesized images are with `RGB` channel order and pixel range
+    [-1, 1].
+
+    Settings for the mapping network:
+
+    (1) z_space_dim: Dimension of the input latent space, Z.
+        (default: 512 -> change to 128 is not compatible for pre-trained model)
+    (2) w_space_dim: Dimension of the output latent space, W.
+        (default: 512 -> change to 128 is not compatible for pre-trained model)
+    (3) label_size: Size of the additional label for conditional generation.
+        (default: 0)
+    (4）mapping_layers: Number of layers of the mapping network. (default: 8)
+    (5) mapping_fmaps: Number of hidden channels of the mapping network.
+        (default: 512)
+    (6) mapping_lr_mul: Learning rate multiplier for the mapping network.
+        (default: 0.01)
+    (7) repeat_w: Repeat w-code for different layers.
+
+    Settings for the synthesis network:
+
+    (1) resolution: The resolution of the output image.
+    (2) image_channels: Number of channels of the output image. (default: 3)
+    (3) final_tanh: Whether to use `tanh` to control the final pixel range.
+        (default: False)
+    (4) const_input: Whether to use a constant in the first convolutional layer.
+        (default: True)
+    (5) fused_scale: Whether to fused `upsample` and `conv2d` together,
+        resulting in `conv2d_transpose`. (default: `auto`)
+    (6) use_wscale: Whether to use weight scaling. (default: True)
+    (7) noise_type: Type of noise added to the convolutional results at each
+        layer. (default: `spatial`)
+    (8) fmaps_base: Factor to control number of feature maps for each layer.
+        (default: 16 << 10)
+    (9) fmaps_max: Maximum number of feature maps in each layer. (default: 512)
+    """
+
+    def __init__(self,
+                 resolution,
+                 z_space_dim=512,       # 512 in Original code
+                 w_space_dim=512,       # 512 in Original code
+                 label_size=7,          # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property
+                 mapping_layers=8,
+                 mapping_fmaps=512,
+                 mapping_lr_mul=0.01,
+                 repeat_w=True,
+                 image_channels=3,
+                 final_tanh=False,
+                 const_input=True,
+                 fused_scale='auto',
+                 use_wscale=True,
+                 noise_type='spatial',
+                 fmaps_base=16 << 10,
+                 fmaps_max=512):
+        """Initializes with basic settings.
+
+        Raises:
+            ValueError: If the `resolution` is not supported, or `fused_scale`
+                is not supported.
+        """
+        super().__init__()
+
+        if resolution not in _RESOLUTIONS_ALLOWED:
+            raise ValueError(f'Invalid resolution: `{resolution}`!\n'
+                             f'Resolutions allowed: {_RESOLUTIONS_ALLOWED}.')
+        if fused_scale not in _FUSED_SCALE_ALLOWED:
+            raise ValueError(f'Invalid fused-scale option: `{fused_scale}`!\n'
+                             f'Options allowed: {_FUSED_SCALE_ALLOWED}.')
+
+        self.init_res = _INIT_RES
+        self.resolution = resolution
+        self.z_space_dim = z_space_dim
+        self.w_space_dim = w_space_dim
+        self.label_size = label_size
+        self.mapping_layers = mapping_layers
+        self.mapping_fmaps = mapping_fmaps
+        self.mapping_lr_mul = mapping_lr_mul
+        self.repeat_w = repeat_w
+        self.image_channels = image_channels
+        self.final_tanh = final_tanh
+        self.const_input = const_input
+        self.fused_scale = fused_scale
+        self.use_wscale = use_wscale
+        self.noise_type = noise_type
+        self.fmaps_base = fmaps_base
+        self.fmaps_max = fmaps_max
+
+        self.num_layers = int(np.log2(self.resolution // self.init_res * 2)) * 2
+
+        if self.repeat_w:
+            self.mapping_space_dim = self.w_space_dim
+        else:
+            self.mapping_space_dim = self.w_space_dim * self.num_layers
+        self.mapping = MappingModule(input_space_dim=self.z_space_dim,
+                                     hidden_space_dim=self.mapping_fmaps,
+                                     final_space_dim=self.mapping_space_dim,
+                                     label_convert_dim=64,
+                                     label_size=self.label_size,
+                                     num_layers=self.mapping_layers,
+                                     use_wscale=self.use_wscale,
+                                     lr_mul=self.mapping_lr_mul)
+
+        self.truncation = TruncationModule(w_space_dim=self.w_space_dim,
+                                           num_layers=self.num_layers,
+                                           repeat_w=self.repeat_w)
+
+        self.synthesis = SynthesisModule(resolution=self.resolution,
+                                         init_resolution=self.init_res,
+                                         w_space_dim=self.w_space_dim,
+                                         image_channels=self.image_channels,
+                                         final_tanh=self.final_tanh,
+                                         const_input=self.const_input,
+                                         fused_scale=self.fused_scale,
+                                         use_wscale=self.use_wscale,
+                                         noise_type=self.noise_type,
+                                         fmaps_base=self.fmaps_base,
+                                         fmaps_max=self.fmaps_max)
+
+        self.pth_to_tf_var_mapping = {}
+        for key, val in self.mapping.pth_to_tf_var_mapping.items():
+            self.pth_to_tf_var_mapping[f'mapping.{key}'] = val
+        for key, val in self.truncation.pth_to_tf_var_mapping.items():
+            self.pth_to_tf_var_mapping[f'truncation.{key}'] = val
+        for key, val in self.synthesis.pth_to_tf_var_mapping.items():
+            self.pth_to_tf_var_mapping[f'synthesis.{key}'] = val
+
+    def set_space_of_latent(self, space_of_latent='w'):
+        """Sets the space to which the latent code belong.
+
+        This function is particually used for choosing how to inject the latent
+        code into the convolutional layers. The original generator will take a
+        W-Space code and apply it for style modulation after an affine
+        transformation. But, sometimes, it may need to directly feed an already
+        affine-transformed code into the convolutional layer, e.g., when
+        training an encoder for GAN inversion. We term the transformed space as
+        Style Space (or Y-Space). This function is designed to tell the
+        convolutional layers how to use the input code.
+
+        Args:
+            space_of_latent: The space to which the latent code belong. Case
+                insensitive. (default: 'w')
+        """
+        for module in self.modules():
+            if isinstance(module, StyleModLayer):
+                setattr(module, 'space_of_latent', space_of_latent)
+
+    def forward(self,
+                z,
+                label,  # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property score
+                lod=None,
+                w_moving_decay=0.995,
+                style_mixing_prob=0.0,  # originally 0.9
+                trunc_psi=None,
+                trunc_layers=None,
+                randomize_noise=False,
+                **_unused_kwargs):
+        mapping_results = self.mapping(z, label)
+        w = mapping_results['w']
+
+        if self.training and w_moving_decay < 1:
+            batch_w_avg = all_gather(w).mean(dim=0)
+            self.truncation.w_avg.copy_(
+                self.truncation.w_avg * w_moving_decay +
+                batch_w_avg * (1 - w_moving_decay))
+
+        if self.training and style_mixing_prob > 0:
+            new_z = torch.randn_like(z)
+            new_w = self.mapping(new_z, label)['w']
+            lod = self.synthesis.lod.cpu().tolist() if lod is None else lod
+            current_layers = self.num_layers - int(lod) * 2
+            if np.random.uniform() < style_mixing_prob:
+                mixing_cutoff = np.random.randint(1, current_layers)
+                w = self.truncation(w)
+                new_w = self.truncation(new_w)
+                w[:, mixing_cutoff:] = new_w[:, mixing_cutoff:]
+
+        wp = self.truncation(w, trunc_psi, trunc_layers)
+        synthesis_results = self.synthesis(wp, lod, randomize_noise)
+
+        return {**mapping_results, **synthesis_results}
+
+
 class MappingModule(nn.Module):
     """Implements the latent space mapping module.
 
