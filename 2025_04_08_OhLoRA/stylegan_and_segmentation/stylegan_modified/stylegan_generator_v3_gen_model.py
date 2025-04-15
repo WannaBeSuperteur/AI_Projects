@@ -1,5 +1,11 @@
+
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from torchview import draw_graph
+
+from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
+
 import numpy as np
 import os
 import sys
@@ -20,12 +26,100 @@ TRAIN_BATCH_SIZE = 16
 EARLY_STOPPING_ROUNDS = 10
 STEP_GROUP_SIZE = 50
 
-IMAGE_RESOLUTION = 256
+IMG_RES = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 7           # eyes, hair_color, hair_length, mouth, pose, background_mean, background_std
 
 CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/tensor_visualize_test_cnn'
 os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
+
+
+# Loss Function for VAE
+
+def vae_loss_function(x_reconstructed, x, mu, logvar):
+    mse_loss = F.mse_loss(x, x_reconstructed, reduction='sum')
+    kl_divergence_loss = -0.5 * torch.sum(1.0 + logvar - mu.pow(2) - logvar.exp())
+    return mse_loss + kl_divergence_loss
+
+
+# Conditional-VAE Encoder for StyleGAN-FineTune-v3
+
+class CVAEEncoder(nn.Module):
+    def __init__(self):
+        super(CVAEEncoder, self).__init__()
+
+        # Conv Layers
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU()
+        )
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU()
+        )
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU()
+        )
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(128, 128, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU()
+        )
+        self.conv5 = nn.Sequential(
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, padding_mode='reflect'),
+            nn.LeakyReLU()
+        )
+
+        # Fully-Connected Layer
+        self.fc1 = nn.Sequential(
+            nn.Linear(256 * 8 * 8 + PROPERTY_DIMS_Z, 512),
+            nn.ELU()
+        )
+        self.fc2_mu = nn.Linear(512 + PROPERTY_DIMS_Z, 512)
+        self.fc2_var = nn.Linear(512 + PROPERTY_DIMS_Z, 512)
+
+    def forward(self, x, property_label):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+
+        x = x.view(-1, 256 * 8 * 8)
+        x = torch.concat([x, property_label], dim=1)
+        x = self.fc1(x)
+        x = torch.concat([x, property_label], dim=1)
+
+        z_mu = self.fc2_mu(x)
+        z_var = self.fc2_var(x)
+
+        return z_mu, z_var
+
+
+# Entire model of StyleGAN-FineTune-v3
+
+class StyleGANFineTuneV3(nn.Module):
+    def __init__(self):
+        super(StyleGANFineTuneV3, self).__init__()
+
+        self.CVAE_encoder = CVAEEncoder()
+        self.stylegan_generator = StyleGANGeneratorForV2(resolution=IMG_RES)
+
+        kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+        self.stylegan_generator.G_kwargs_val = kwargs_val
+
+    def reparameterize(self, mu, logvar):
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+
+        return mu + eps * std
+
+    def forward(self, x, property_label):
+        mu, logvar = self.CVAE_encoder(x, property_label)
+        z = self.reparameterize(mu, logvar)
+        generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
+
+        return generated_image['image']
 
 
 # StyleGAN-FineTune-v3 모델 정의 및 generator 의 state_dict 를 로딩
@@ -54,7 +148,7 @@ def define_stylegan_finetune_v3(device, generator):
 
     # save model graph of StyleGAN-FineTune-v3 before training
     model_graph = draw_graph(stylegan_finetune_v3,
-                             input_data=[torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z)),
+                             input_data=[torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, 3, IMG_RES, IMG_RES)),
                                          torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, PROPERTY_DIMS_Z))],
                              depth=5)
 

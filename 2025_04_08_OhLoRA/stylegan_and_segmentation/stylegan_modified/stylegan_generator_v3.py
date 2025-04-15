@@ -1,11 +1,8 @@
 import torch
-import torch.nn as nn
 import os
-import pandas as pd
 import numpy as np
 
 from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
-from stylegan_modified.stylegan_generator_v2 import load_cnn_model
 from stylegan_modified.stylegan_generator_v3_gen_model import train_stylegan_finetune_v3
 
 torch.set_printoptions(linewidth=160, sci_mode=False)
@@ -52,15 +49,11 @@ def load_stylegan_finetune_v3_model(v3_gen_path, device):
 # - exist_dict           (dict)      : 각 모델 (CNN, StyleGAN-FineTune-v3) 의 존재 여부 (= 신규 학습 미 실시 여부)
 
 def run_fine_tuning(generator, fine_tuning_dataloader):
-    cnn_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth'
     stylegan_finetune_v3_exist = False
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for training StyleGAN-FineTune-v3 : {device}')
-
-    # load CNN model
-    cnn_model = load_cnn_model(cnn_save_path, device)
 
     # load or newly train Fine-Tuned Generator (StyleGAN-FineTune-v3)
     v3_gen_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v3.pth'
