@@ -257,11 +257,23 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         # Early Stopping 처리
         if min_train_loss is None or train_loss < min_train_loss:
+            prev_best_epoch = min_train_loss_epoch
             min_train_loss = train_loss
             min_train_loss_epoch = current_epoch
 
             best_epoch_model = StyleGANFineTuneV3().to(stylegan_finetune_v3.device)
             best_epoch_model.load_state_dict(stylegan_finetune_v3.state_dict())
+
+            stylegan_modified_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
+            ckpt_path = f'{stylegan_modified_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}.pth'
+            old_ckpt_path = f'{stylegan_modified_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{prev_best_epoch:04d}.pth'
+
+            try:
+                os.remove(old_ckpt_path)
+            except:
+                pass
+
+            torch.save(stylegan_finetune_v3.state_dict(), ckpt_path)
 
         if current_epoch >= MAX_EPOCHS and current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
@@ -335,7 +347,7 @@ def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, cnn_mo
 
     # define StyleGAN-FineTune-v3 model
     stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator, cnn_model)
-    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, cnn_model)
+#    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, cnn_model)
 
     # run Fine-Tuning
     fine_tuned_generator = run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader)
