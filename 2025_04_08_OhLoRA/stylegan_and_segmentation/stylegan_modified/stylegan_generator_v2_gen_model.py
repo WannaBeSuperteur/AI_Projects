@@ -23,8 +23,8 @@ TENSOR_VISUALIZE_TEST_BATCH_SIZE = 30
 IMGS_PER_TEST_PROPERTY_SET = 10
 
 TRAIN_BATCH_SIZE = 16
-EARLY_STOPPING_ROUNDS = 10
-STEP_GROUP_SIZE = 50
+EARLY_STOPPING_ROUNDS = 999999  # for test
+STEP_GROUP_SIZE = 10            # for test
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -77,7 +77,9 @@ class StyleGANFineTuneV2(nn.Module):
 
 # StyleGAN-FineTune-v2 모델 정의 및 generator 의 state_dict 를 로딩
 # Create Date : 2025.04.14
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - AdamW optimizer 적용 대상 parameter 지정 오류 수정
+# - Learning rate 5e-5 -> 1e-5 로 수정
 
 # Arguments:
 # - device    (device)    : 모델을 mapping 시킬 device (GPU 등)
@@ -89,9 +91,9 @@ class StyleGANFineTuneV2(nn.Module):
 
 def define_stylegan_finetune_v2(device, generator, cnn_model):
     stylegan_finetune_v2 = StyleGANFineTuneV2()
-    stylegan_finetune_v2.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.00005)
+    stylegan_finetune_v2.optimizer = torch.optim.AdamW(stylegan_finetune_v2.parameters(), lr=0.00001)
     stylegan_finetune_v2.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=stylegan_finetune_v2.optimizer,
-                                                                                T_max=10,
+                                                                                T_max=20,
                                                                                 eta_min=0)
 
     stylegan_finetune_v2.to(device)
@@ -146,7 +148,8 @@ def freeze_stylegan_finetune_v2_layers(stylegan_finetune_v2, cnn_model, check_ag
 
 # 정의된 StyleGAN-FineTune-v2 모델을 학습
 # Create Date : 2025.04.14
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - 각 속성 별 Loss 출력 추가
 
 # Arguments:
 # - stylegan_finetune_v2 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
@@ -167,6 +170,8 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
 
     while True:
         step_group_loss = 0.0
+        property_loss_dict = {'eyes': 0.0, 'hair_color': 0.0, 'hair_length': 0.0,
+                              'mouth': 0.0, 'pose': 0.0, 'background_mean': 0.0}
 
         for _ in range(STEP_GROUP_SIZE):
             z = torch.randn((TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z))
@@ -186,9 +191,21 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
             loss_float = float(loss.detach().cpu().numpy())
             step_group_loss += loss_float
 
-        step_group_loss /= STEP_GROUP_SIZE
-        print(f'step group {current_step_group} (best:{smallest_loss_step_group}), current loss:{step_group_loss:.4f}')
+            # 개별 property 의 Loss 계산
+            for idx, property in enumerate(property_loss_dict.keys()):
+                property_loss = nn.MSELoss()(property_output[:, idx:idx+1], property_label[:, idx:idx+1])
+                property_loss_dict[property] += float(property_loss.detach().cpu().numpy())
 
+        # Loss 출력
+        step_group_loss /= STEP_GROUP_SIZE
+        for key in property_loss_dict.keys():
+            property_loss_dict[key] /= STEP_GROUP_SIZE
+            property_loss_dict[key] = round(property_loss_dict[key], 4)
+
+        print(f'step group {current_step_group} (best: {smallest_loss_step_group}), '
+              f'current loss: {step_group_loss:.4f} ({property_loss_dict})')
+
+        # Early Stopping 처리
         if smallest_loss is None or step_group_loss < smallest_loss:
             smallest_loss = step_group_loss
             smallest_loss_step_group = current_step_group
@@ -196,11 +213,11 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
             stylegan_finetune_v2_at_best_step_group = StyleGANFineTuneV2().to(stylegan_finetune_v2.device)
             stylegan_finetune_v2_at_best_step_group.load_state_dict(stylegan_finetune_v2.state_dict())
 
-        stylegan_finetune_v2.scheduler.step()
-
         if current_step_group - smallest_loss_step_group >= EARLY_STOPPING_ROUNDS:
             break
 
+        # 정보 갱신 및 이미지 생성 테스트
+        stylegan_finetune_v2.scheduler.step()
         test_create_output_images(stylegan_finetune_v2, current_step_group)
         current_step_group += 1
 
@@ -267,7 +284,7 @@ def train_stylegan_finetune_v2(device, generator, cnn_model):
 
     # define StyleGAN-FineTune-v2 model
     stylegan_finetune_v2 = define_stylegan_finetune_v2(device, generator, cnn_model)
-    freeze_stylegan_finetune_v2_layers(stylegan_finetune_v2, cnn_model)
+#    freeze_stylegan_finetune_v2_layers(stylegan_finetune_v2, cnn_model)
 
     # run Fine-Tuning
     fine_tuned_generator = run_training_stylegan_finetune_v2(stylegan_finetune_v2)
