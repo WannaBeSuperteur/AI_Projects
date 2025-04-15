@@ -9,6 +9,7 @@ from stylegan_modified.stylegan_generator import StyleGANGeneratorForV3
 from stylegan_modified.stylegan_generator_v2_cnn import PropertyScoreCNN
 
 import numpy as np
+import pandas as pd
 import os
 import sys
 
@@ -36,6 +37,9 @@ CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_mo
 os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 
+loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean', 'back_std']
+
+
 # Loss Function for VAE (Background std 제외)
 
 def vae_loss_function(generated_image_property_score, labels, mu, logvar):
@@ -45,11 +49,15 @@ def vae_loss_function(generated_image_property_score, labels, mu, logvar):
     loss_dict = {'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
                  'kld': round(float(kl_divergence_loss.detach().cpu().numpy()), 4)}
 
-    loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean', 'back_std']
     for idx, loss_type in enumerate(loss_types):
-        loss_of_type = nn.MSELoss()(generated_image_property_score[:, idx:idx+1], labels[:, idx:idx+1])
-        loss_of_type = float(loss_of_type.detach().cpu().numpy())
-        loss_dict[loss_type] = round(loss_of_type, 4)
+        loss_of_type_mse = nn.MSELoss()(generated_image_property_score[:, idx:idx+1], labels[:, idx:idx+1])
+        loss_of_type_mse = float(loss_of_type_mse.detach().cpu().numpy())
+
+        loss_of_type_abs = nn.L1Loss()(generated_image_property_score[:, idx:idx + 1], labels[:, idx:idx + 1])
+        loss_of_type_abs = float(loss_of_type_abs.detach().cpu().numpy())
+
+        loss_dict[f'{loss_type}_mse'] = round(loss_of_type_mse, 4)
+        loss_dict[f'{loss_type}_abs'] = round(loss_of_type_abs, 4)
 
     return mse_loss + kl_divergence_loss, loss_dict
 
@@ -231,14 +239,22 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
     min_train_loss_epoch = 0
     best_epoch_model = None
 
+    train_log = {'epoch': [], 'batch_idx': []}
+    for loss_type in loss_types:
+        train_log[f'{loss_type}_mse'] = []
+    for loss_type in loss_types:
+        train_log[f'{loss_type}_abs'] = []
+
     while True:
         train_loss = 0.0
         train_loss_mse = 0.0
         train_loss_kld = 0.0
 
         total = 0
-        total_loss_dict = {'eyes': 0.0, 'hair_color': 0.0, 'hair_length': 0.0,
-                           'mouth': 0.0, 'pose': 0.0, 'back_mean': 0.0, 'back_std': 0.0}
+        total_loss_dict = {}
+        for loss_type in loss_types:
+            total_loss_dict[f'{loss_type}_mse'] = 0.0
+            total_loss_dict[f'{loss_type}_abs'] = 0.0
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             images = raw_data['image']
@@ -261,7 +277,8 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             train_loss_kld += train_loss_batch_kld * labels.size(0)
 
             if current_epoch < 3 and idx % 10 == 0:
-                print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch:.4f} {loss_dict}')
+                print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch:.4f}')
+                save_train_log(current_epoch, idx, train_log, loss_dict=loss_dict)
 
             for key in total_loss_dict.keys():
                 total_loss_dict[key] += loss_dict[key] * labels.size(0)
@@ -278,7 +295,8 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             total_loss_dict[key] /= total
             total_loss_dict[key] = round(total_loss_dict[key], 4)
 
-        print(f'epoch {current_epoch}: loss = {train_loss:.4f} {total_loss_dict}')
+        print(f'epoch {current_epoch}: loss = {train_loss:.4f}')
+        save_train_log(current_epoch, '-', train_log, loss_dict=total_loss_dict)
 
         # Early Stopping 처리
         if min_train_loss is None or train_loss < min_train_loss:
@@ -311,6 +329,31 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
     fine_tuned_generator = best_epoch_model.stylegan_generator
     return fine_tuned_generator
+
+
+# StyleGAN-FineTune-v3 모델 학습 중 Loss 를 csv 로 로깅
+# Create Date : 2025.04.15
+# Last Update Date : -
+
+# Arguments:
+# - current_epoch (int)  : 현재 epoch 번호
+# - batch_idx     (int)  : 현재 batch 번호
+# - train_log     (dict) : 현재 로깅 중인 학습 로그의 dict
+# - loss_dict     (dict) : 추가로 로깅할 Loss 의 dict
+
+def save_train_log(current_epoch, batch_idx, train_log, loss_dict):
+    train_log_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/train_log_v3.csv'
+
+    train_log['epoch'].append(current_epoch)
+    train_log['batch_idx'].append(batch_idx)
+
+    for key in train_log.keys():
+        if key in ['epoch', 'batch_idx']:
+            continue
+        train_log[key].append(loss_dict[key])
+
+    train_log_df = pd.DataFrame(train_log)
+    train_log_df.to_csv(train_log_path, index=False)
 
 
 # StyleGAN-FineTune-v3 모델 학습 중 출력 결과물 테스트
