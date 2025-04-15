@@ -210,7 +210,8 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
 
 # StyleGAN-FineTune-v2 모델 학습 중 출력 결과물 테스트
 # Create Date : 2025.04.14
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - Memory Leak 해결
 
 # Arguments:
 # - stylegan_finetune_v2 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
@@ -222,7 +223,7 @@ def test_create_output_images(stylegan_finetune_v2, current_step_group):
     os.makedirs(img_save_dir, exist_ok=True)
 
     # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
-    z = torch.randn((IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32).cuda()
+    z = torch.randn((IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32)
 
     labels = [[ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
@@ -235,15 +236,17 @@ def test_create_output_images(stylegan_finetune_v2, current_step_group):
     for label_idx, label in enumerate(labels):
         label_np = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
         label_np = label_np.reshape((IMGS_PER_TEST_PROPERTY_SET, PROPERTY_DIMS_Z))
-        label_torch = torch.tensor(label_np).to(torch.float32).cuda()
+        label_torch = torch.tensor(label_np).to(torch.float32)
 
-        generated_images = stylegan_finetune_v2.stylegan_generator(z=z, label=label_torch)
-        image_count = generated_images['image'].size(0)
+        with torch.no_grad():
+            generated_images = stylegan_finetune_v2.stylegan_generator(z=z.cuda(), label=label_torch.cuda())['image']
+            generated_images = generated_images.detach().cpu()
+        image_count = generated_images.size(0)
 
         for img_idx in range(image_count):
             img_no = label_idx * IMGS_PER_TEST_PROPERTY_SET + img_idx
 
-            save_tensor_png(generated_images['image'][img_idx],
+            save_tensor_png(generated_images[img_idx],
                             image_save_path=f'{img_save_dir}/test_img_{img_no}.png')
 
 
