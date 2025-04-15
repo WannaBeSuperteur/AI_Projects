@@ -24,41 +24,38 @@ import torch
 import pandas as pd
 
 
-# 기존 Pre-train 된 StyleGAN 모델 로딩
+# 기존 Pre-train 된 StyleGAN 모델의 state_dict 로딩
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - 불필요한 generator 반환값 삭제 및 필요한 device 인수 추가
 
 # Arguments:
-# - 없음
+# - device (device) : StyleGAN-FineTune-v2 모델을 mapping 시킬 device (GPU 등)
 
 # Returns:
-# - generator            (nn.Module)   : StyleGAN-FineTune-v1 모델의 Generator
 # - generator_state_dict (OrderedDict) : StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
 
-def load_existing_stylegan():
-    generator = modified_gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)
-
+def load_existing_stylegan_state_dict(device):
     model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v1.pth'
 
     # load generator state dict
     generator_state_dict = torch.load(model_path, map_location=device, weights_only=True)
-    generator.load_state_dict(generator_state_dict)
-    generator.to(device)
-
-    return generator, generator_state_dict
+    return generator_state_dict
 
 
 # StyleGAN-FineTune-v1 의 Generator 모델 생성 (with Pre-trained weights of StyleGAN-FineTune-v1)
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - 필요한 device 인수 추가
 
 # Arguments:
 # - generator_state_dict (OrderedDict) : StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
+# - device               (device)      : StyleGAN-FineTune-v2 모델을 mapping 시킬 device (GPU 등)
 
 # Returns:
 # - generator (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator
 
-def create_stylegan_finetune_v1(generator_state_dict):
+def create_stylegan_finetune_v1(generator_state_dict, device):
 
     # define model
     restructured_generator = modified_gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)
@@ -81,7 +78,8 @@ def create_stylegan_finetune_v1(generator_state_dict):
 
 # StyleGAN-Fine-Tune-v1 -> v2 로의 Fine-Tuning 이전 inference test 실시
 # Create Date : 2025.04.13
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - 인수 이름 수정 : reconstructed_generator -> generator
 
 # Arguments:
 # - generator (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator
@@ -89,21 +87,20 @@ def create_stylegan_finetune_v1(generator_state_dict):
 # Returns:
 # - stylegan_modified/inference_test_before_finetuning_v2 에 생성 결과 저장
 
-def run_inference_test_before_finetuning(restructured_generator):
+def run_inference_test_before_finetuning(generator):
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
-    restructured_generator.G_kwargs_val = kwargs_val
+    generator.G_kwargs_val = kwargs_val
 
     img_save_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_before_finetuning_v2'
-    modified_inf.synthesize(restructured_generator, num=20, save_dir=img_save_dir, z=None, label=None)
+    modified_inf.synthesize(generator, num=20, save_dir=img_save_dir, z=None, label=None)
 
 
 # StyleGAN Fine-Tuning 실시 (핵심 속성 값 7개를 latent vector 에 추가)
 # Create Date : 2025.04.13
-# Last Update Date : 2025.04.14
-# - exist_dict (CNN, StyleGAN-FineTune-v2 각 모델의 존재 여부) 추가 반영
+# Last Update Date : 2025.04.15
+# - 불필요한 generator 인수 삭제 및 필요한 device 인수 추가
 
 # Arguments:
-# - generator              (nn.Module)   : StyleGAN-FineTune-v1 모델의 Generator
 # - generator_state_dict   (OrderedDict) : StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
 # - fine_tuning_dataloader (DataLoader)  : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
 
@@ -111,16 +108,16 @@ def run_inference_test_before_finetuning(restructured_generator):
 # - stylegan_modified/stylegan_gen_fine_tuned_v2.pth     에 Fine-Tuning 된 StyleGAN-FineTune-v2 의 Generator 모델 저장
 # - stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth 에 Fine-Tuning 된 StyleGAN-FineTune-v2 중 CNN 모델 저장
 
-def run_stylegan_fine_tuning(generator, generator_state_dict, fine_tuning_dataloader):
+def run_stylegan_fine_tuning(generator_state_dict, fine_tuning_dataloader, device):
+
+    # StyleGAN-FineTune-v1 모델 생성
+    generator = create_stylegan_finetune_v1(generator_state_dict, device)
 
     # 모델 구조를 PDF 로 저장
     save_model_structure_pdf(generator,
                              model_name='stylegan_finetune_v1_generator',
                              input_size=[(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
                                          (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)])
-
-    # StyleGAN-FineTune-v1 모델 생성
-    generator = create_stylegan_finetune_v1(generator_state_dict)
 
     # StyleGAN-FineTune-v1 모델의 레이어 freeze 처리
     freeze_generator_layers(generator)
@@ -173,11 +170,11 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for training StyleGAN-FineTune-v2 : {device}')
 
-    # load Pre-trained StyleGAN
-    generator, generator_state_dict = load_existing_stylegan()
+    # load Pre-trained StyleGAN state_dict
+    generator_state_dict = load_existing_stylegan_state_dict(device)
 
     # load DataLoader
     fine_tuning_dataloader = get_stylegan_fine_tuning_dataloader()
 
     # Fine Tuning
-    run_stylegan_fine_tuning(generator, generator_state_dict, fine_tuning_dataloader)
+    run_stylegan_fine_tuning(generator_state_dict, fine_tuning_dataloader, device)
