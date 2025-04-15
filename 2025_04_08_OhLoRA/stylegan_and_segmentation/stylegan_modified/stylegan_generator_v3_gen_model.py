@@ -24,8 +24,8 @@ TENSOR_VISUALIZE_TEST_BATCH_SIZE = 30
 IMGS_PER_TEST_PROPERTY_SET = 10
 
 TRAIN_BATCH_SIZE = 16
-EARLY_STOPPING_ROUNDS = 10
-STEP_GROUP_SIZE = 50
+EARLY_STOPPING_ROUNDS = 20
+MAX_EPOCHS = 120
 
 IMG_RES = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -38,7 +38,7 @@ os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 # Loss Function for VAE
 
 def vae_loss_function(x_reconstructed, x, mu, logvar):
-    mse_loss = F.mse_loss(x, x_reconstructed, reduction='mean')
+    mse_loss = 2000 * F.mse_loss(x, x_reconstructed, reduction='mean')
     kl_divergence_loss = -0.5 * torch.sum(1.0 + logvar - mu.pow(2) - logvar.exp())
 
     loss_dict = {'mse': mse_loss, 'kld': kl_divergence_loss}
@@ -223,9 +223,18 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             loss, loss_dict = vae_loss_function(reconstructed_images, images, mu, logvar)
             loss.backward()
 
-            train_loss += float(loss.detach().cpu().numpy())
-            train_loss_mse += float(loss_dict['mse'].detach().cpu().numpy())
-            train_loss_kld += float(loss_dict['kld'].detach().cpu().numpy())
+            train_loss_batch = float(loss.detach().cpu().numpy())
+            train_loss_batch_mse = float(loss_dict['mse'].detach().cpu().numpy())
+            train_loss_batch_kld = float(loss_dict['kld'].detach().cpu().numpy())
+
+            train_loss += train_loss_batch
+            train_loss_mse += train_loss_batch_mse
+            train_loss_kld += train_loss_batch_kld
+
+            if current_epoch < 3 and idx % 10 == 0:
+                print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch / labels.size(0):.4f} '
+                      f'(mse: {train_loss_batch_mse / labels.size(0):.4f}, '
+                      f'kld: {train_loss_batch_kld / labels.size(0):.4f})')
 
             total += labels.size(0)
 
@@ -237,9 +246,6 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         print(f'epoch {current_epoch}: loss = {train_loss:.4f} (mse: {train_loss_mse:.4f}, kld: {train_loss_kld:.4f})')
 
-        current_epoch += 1
-        stylegan_finetune_v3.scheduler.step()
-
         # Early Stopping 처리
         if min_train_loss is None or train_loss < min_train_loss:
             min_train_loss = train_loss
@@ -248,11 +254,14 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             best_epoch_model = StyleGANFineTuneV3().to(stylegan_finetune_v3.device)
             best_epoch_model.load_state_dict(stylegan_finetune_v3.state_dict())
 
-        if current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
+        if current_epoch >= MAX_EPOCHS and current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
 
         # 이미지 생성 테스트
         test_create_output_images(stylegan_finetune_v3, current_epoch)
+
+        current_epoch += 1
+        stylegan_finetune_v3.scheduler.step()
 
     fine_tuned_generator = best_epoch_model.stylegan_generator
     return fine_tuned_generator
@@ -316,7 +325,7 @@ def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader):
 
     # define StyleGAN-FineTune-v3 model
     stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator)
-    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3)
+#    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3)
 
     # run Fine-Tuning
     fine_tuned_generator = run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader)
