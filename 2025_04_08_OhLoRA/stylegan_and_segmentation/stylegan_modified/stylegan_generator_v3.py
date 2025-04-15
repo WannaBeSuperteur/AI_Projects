@@ -5,6 +5,7 @@ import numpy as np
 from stylegan_modified.stylegan_generator import StyleGANGeneratorForV3
 from stylegan_modified.stylegan_generator_v2 import load_cnn_model
 from stylegan_modified.stylegan_generator_v3_gen_model import train_stylegan_finetune_v3
+from cnn.cnn_gender import GenderCNN
 
 torch.set_printoptions(linewidth=160, sci_mode=False)
 np.set_printoptions(suppress=True)
@@ -37,6 +38,27 @@ def load_stylegan_finetune_v3_model(v3_gen_path, device):
     return fine_tuned_generator
 
 
+# 학습된 성별 판단용 CNN 모델 불러오기
+# Create Date : 2025.04.15
+# Last Update Date : -
+
+# Arguments:
+# - gender_cnn_model_path (str)    : 성별 판단용 CNN 모델 저장 경로
+# - device                (device) : 성별 판단용 CNN 모델을 mapping 시킬 device (GPU 등)
+
+# Returns:
+# - gender_cnn_model (nn.Module) : 학습된 성별 판단용 CNN 모델
+
+def load_gender_cnn_model(gender_cnn_model_path, device):
+    cnn_model = GenderCNN()
+    cnn_model.load_state_dict(torch.load(gender_cnn_model_path, map_location=device, weights_only=False))
+
+    cnn_model.to(device)
+    cnn_model.device = device
+
+    return cnn_model
+
+
 # StyleGAN-FineTune-v3 모델 Fine-Tuning 실시
 # Create Date : 2025.04.15
 # Last Update Date : -
@@ -51,17 +73,21 @@ def load_stylegan_finetune_v3_model(v3_gen_path, device):
 
 def run_fine_tuning(generator, fine_tuning_dataloader):
     stylegan_finetune_v3_exist = False
+    stylegan_modified_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for training StyleGAN-FineTune-v3 : {device}')
 
-    # load pre-trained CNN model
-    cnn_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth'
-    cnn_model = load_cnn_model(cnn_save_path, device)
+    # load pre-trained CNN model for property and gender
+    property_cnn_save_path = f'{stylegan_modified_path}/stylegan_gen_fine_tuned_v2_cnn.pth'
+    property_cnn_model = load_cnn_model(property_cnn_save_path, device)
+
+    gender_cnn_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/cnn/models/gender_model_0.pt'
+    gender_cnn_model = load_gender_cnn_model(gender_cnn_save_path, device)
 
     # load or newly train Fine-Tuned Generator (StyleGAN-FineTune-v3)
-    v3_gen_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v3.pth'
+    v3_gen_path = f'{stylegan_modified_path}/stylegan_gen_fine_tuned_v3.pth'
 
     try:
         fine_tuned_generator = load_stylegan_finetune_v3_model(v3_gen_path, device)
@@ -71,7 +97,9 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
         print(f'StyleGAN-FineTune-v3 model load failed : {e}')
 
         # train StyleGAN-FineTune-v3 model
-        fine_tuned_generator = train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, cnn_model)
+        fine_tuned_generator = train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader,
+                                                          property_cnn_model, gender_cnn_model)
+
         torch.save(fine_tuned_generator.state_dict(), v3_gen_path)
 
     exist_dict = {'stylegan_finetune_v3': stylegan_finetune_v3_exist}

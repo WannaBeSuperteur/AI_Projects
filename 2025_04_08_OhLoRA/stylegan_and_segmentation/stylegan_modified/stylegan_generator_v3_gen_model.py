@@ -7,6 +7,7 @@ from torchview import draw_graph
 from stylegan_modified.fine_tuning import concatenate_property_scores
 from stylegan_modified.stylegan_generator import StyleGANGeneratorForV3
 from stylegan_modified.stylegan_generator_v2_cnn import PropertyScoreCNN
+from cnn.cnn_gender import GenderCNN
 
 import numpy as np
 import pandas as pd
@@ -42,12 +43,14 @@ loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean',
 
 # Loss Function for VAE (Background std 제외)
 
-def vae_loss_function(generated_image_property_score, labels, mu, logvar):
-    mse_loss = 200000 * F.mse_loss(generated_image_property_score[:, :6], labels[:, :6], reduction='mean')
-    kl_divergence_loss = -0.5 * torch.sum(1.0 + logvar - mu.pow(2) - logvar.exp())
+def vae_loss_function(generated_image_property_score, generated_image_gender_score, labels):
+    n = labels.size(0)
+
+    mse_loss = F.mse_loss(generated_image_property_score[:, :6], labels[:, :6], reduction='mean')
+    gender_loss = F.mse_loss(generated_image_gender_score, torch.ones((n, 1)).cuda(), reduction='mean')
 
     loss_dict = {'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
-                 'kld': round(float(kl_divergence_loss.detach().cpu().numpy()), 4)}
+                 'gender_loss': round(float(gender_loss.detach().cpu().numpy()), 4)}
 
     for idx, loss_type in enumerate(loss_types):
         loss_of_type_mse = nn.MSELoss()(generated_image_property_score[:, idx:idx+1], labels[:, idx:idx+1])
@@ -59,7 +62,7 @@ def vae_loss_function(generated_image_property_score, labels, mu, logvar):
         loss_dict[f'{loss_type}_mse'] = round(loss_of_type_mse, 4)
         loss_dict[f'{loss_type}_abs'] = round(loss_of_type_abs, 4)
 
-    return mse_loss + kl_divergence_loss, loss_dict
+    return mse_loss + gender_loss, loss_dict
 
 
 # Conditional-VAE Encoder for StyleGAN-FineTune-v3
@@ -125,6 +128,7 @@ class StyleGANFineTuneV3(nn.Module):
         self.CVAE_encoder = CVAEEncoder()
         self.stylegan_generator = StyleGANGeneratorForV3(resolution=IMG_RES)
         self.property_score_cnn = PropertyScoreCNN()
+        self.gender_cnn = GenderCNN()
 
         kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
         self.stylegan_generator.G_kwargs_val = kwargs_val
@@ -140,8 +144,9 @@ class StyleGANFineTuneV3(nn.Module):
         z = self.reparameterize(mu, logvar)
         generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
         generated_image_property_score = self.property_score_cnn(generated_image['image'])
+        gender_score = self.gender_cnn(generated_image['image'])
 
-        return mu, logvar, generated_image_property_score
+        return mu, logvar, generated_image_property_score, gender_score
 
 
 # StyleGAN-FineTune-v3 모델 정의 및 generator 의 state_dict 를 로딩
@@ -149,14 +154,15 @@ class StyleGANFineTuneV3(nn.Module):
 # Last Update Date : -
 
 # Arguments:
-# - device    (device)    : 모델을 mapping 시킬 device (GPU 등)
-# - generator (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
-# - cnn_model (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 학습된 CNN 모델
+# - device             (device)    : 모델을 mapping 시킬 device (GPU 등)
+# - generator          (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
+# - property_cnn_model (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 핵심 속성값 도출용 학습된 CNN 모델
+# - gender_cnn_model   (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 성별 판단용 학습된 CNN 모델
 
 # Returns:
 # - stylegan_finetune_v3 (nn.Module) : 학습할 StyleGAN-FineTune-v3 모델
 
-def define_stylegan_finetune_v3(device, generator, cnn_model):
+def define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cnn_model):
     stylegan_finetune_v3 = StyleGANFineTuneV3()
     stylegan_finetune_v3.optimizer = torch.optim.AdamW(stylegan_finetune_v3.parameters(), lr=0.00005)
     stylegan_finetune_v3.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=stylegan_finetune_v3.optimizer,
@@ -177,7 +183,8 @@ def define_stylegan_finetune_v3(device, generator, cnn_model):
     stylegan_finetune_v3.stylegan_generator.load_state_dict(stylegan_finetune_v3_generator_state_dict, strict=False)
 
     # load state dict of CNN
-    stylegan_finetune_v3.property_score_cnn.load_state_dict(cnn_model.state_dict())
+    stylegan_finetune_v3.property_score_cnn.load_state_dict(property_cnn_model.state_dict())
+    stylegan_finetune_v3.gender_cnn.load_state_dict(gender_cnn_model.state_dict())
 
     # save model graph of StyleGAN-FineTune-v3 before training
     model_graph = draw_graph(stylegan_finetune_v3,
@@ -199,19 +206,26 @@ def define_stylegan_finetune_v3(device, generator, cnn_model):
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : 학습할 StyleGAN-FineTune-v3 모델
-# - cnn_model            (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 학습된 CNN 모델
+# - property_cnn_model   (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 핵심 속성값 도출용 학습된 CNN 모델
+# - gender_cnn_model     (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 성별 판단용 학습된 CNN 모델
 # - check_again          (bool)      : freeze 여부 재 확인 테스트용
 
-def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, cnn_model, check_again=False):
+def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, property_cnn_model, gender_cnn_model, check_again=True):
 
-    # CNN Model freeze 범위 : 전체
-    for name, param in cnn_model.named_parameters():
+    # 모든 CNN Model freeze 범위 : 전체
+    for name, param in property_cnn_model.named_parameters():
+        param.requires_grad = False
+
+    for name, param in gender_cnn_model.named_parameters():
         param.requires_grad = False
 
     # 제대로 freeze 되었는지 확인
     if check_again:
-        for idx, param in enumerate(cnn_model.parameters()):
-            print(f'CNN layer {idx} : {param.requires_grad}')
+        for idx, param in enumerate(property_cnn_model.parameters()):
+            print(f'Property CNN layer {idx} : {param.requires_grad}')
+
+        for idx, param in enumerate(gender_cnn_model.parameters()):
+            print(f'Gender CNN layer {idx} : {param.requires_grad}')
 
 
 # 정의된 StyleGAN-FineTune-v3 모델을 학습
@@ -234,7 +248,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
     min_train_loss_epoch = 0
     best_epoch_model = None
 
-    train_log = {'epoch': [], 'batch_idx': [], 'mse': [], 'kld': []}
+    train_log = {'epoch': [], 'batch_idx': [], 'mse': [], 'gender_loss': []}
     for loss_type in loss_types:
         train_log[f'{loss_type}_mse'] = []
     for loss_type in loss_types:
@@ -243,7 +257,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
     while True:
         train_loss = 0.0
         train_loss_mse = 0.0
-        train_loss_kld = 0.0
+        train_loss_gender = 0.0
 
         total = 0
         total_loss_dict = {}
@@ -257,21 +271,21 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             labels = concatenate_property_scores(raw_data)
             labels = labels.to(stylegan_finetune_v3.device).to(torch.float32)
 
-            mu, logvar, gen_image_property_score = stylegan_finetune_v3(x=images, property_label=labels)
+            mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images, property_label=labels)
             stylegan_finetune_v3.optimizer.zero_grad()
 
-            loss, loss_dict = vae_loss_function(gen_image_property_score, labels, mu, logvar)
+            loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
             loss.backward()
 
             train_loss_batch = float(loss.detach().cpu().numpy())
             train_loss_batch_mse = loss_dict['mse']
-            train_loss_batch_kld = loss_dict['kld']
+            train_loss_batch_gender = loss_dict['gender_loss']
 
             train_loss += train_loss_batch * labels.size(0)
             train_loss_mse += train_loss_batch_mse * labels.size(0)
-            train_loss_kld += train_loss_batch_kld * labels.size(0)
+            train_loss_gender += train_loss_batch_gender * labels.size(0)
 
-            if current_epoch < 3 and idx % 10 == 0:
+            if (current_epoch < 10 and idx % 10 == 0) or (current_epoch == 0 and idx < 10):
                 print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch:.4f}')
                 save_train_log(current_epoch, idx, train_log, loss_dict=loss_dict)
 
@@ -284,13 +298,14 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         train_loss /= total
         train_loss_mse /= total
-        train_loss_kld /= total
+        train_loss_gender /= total
 
         for key in total_loss_dict.keys():
             total_loss_dict[key] /= total
             total_loss_dict[key] = round(total_loss_dict[key], 4)
+
         total_loss_dict['mse'] = train_loss_mse
-        total_loss_dict['kld'] = train_loss_kld
+        total_loss_dict['gender_loss'] = train_loss_gender
 
         print(f'epoch {current_epoch}: loss = {train_loss:.4f}')
         save_train_log(current_epoch, '-', train_log, loss_dict=total_loss_dict)
@@ -402,17 +417,18 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
 # - device                 (device)     : 모델을 mapping 시킬 device (GPU 등)
 # - generator              (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
 # - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
-# - cnn_model              (nn.Module)  : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 학습된 CNN 모델
+# - property_cnn_model     (nn.Module)  : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 핵심 속성값 도출용 학습된 CNN 모델
+# - gender_cnn_model       (nn.Module)  : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 성별 판단용 학습된 CNN 모델
 
 # Returns:
 # - fine_tuned_generator (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator
 #                                      (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
 
-def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, cnn_model):
+def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, property_cnn_model, gender_cnn_model):
 
     # define StyleGAN-FineTune-v3 model
-    stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator, cnn_model)
-    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, cnn_model)
+    stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cnn_model)
+    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, property_cnn_model, gender_cnn_model)
 
     # run Fine-Tuning
     fine_tuned_generator = run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader)
