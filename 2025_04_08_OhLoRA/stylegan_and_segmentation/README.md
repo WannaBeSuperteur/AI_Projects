@@ -88,12 +88,13 @@
 
 ## 3. 사용 모델 설명
 
-| 모델                      | 모델 분류                          | 사용 목적                                  |
-|-------------------------|--------------------------------|----------------------------------------|
-| **Original** StyleGAN   | Image Generation Model         | StyleGAN 의 Fine-Tuning 에 사용할 후보 이미지 생성 |
-| CNN                     |                                | StyleGAN Fine-Tuning 후보 이미지의 필터링       |
-| FaceXFormer             | Pre-trained Segmentation Model | 필터링된 후보 이미지의 핵심 속성 값 추출                |
-| **Fine-Tuned** StyleGAN | Image Generation Model         | **Oh-LoRA (오로라) 이미지 생성용 최종 모델**        |
+| 모델                      | 모델 분류                          | 사용 목적                                                       |
+|-------------------------|--------------------------------|-------------------------------------------------------------|
+| **Original** StyleGAN   | Image Generation Model         | StyleGAN 의 Fine-Tuning 에 사용할 후보 이미지 생성                      |
+| CNN (1)                 |                                | StyleGAN Fine-Tuning 후보 이미지의 필터링                            |
+| FaceXFormer             | Pre-trained Segmentation Model | 필터링된 후보 이미지의 핵심 속성 값 추출                                     |
+| **Fine-Tuned** StyleGAN | Image Generation Model         | **Oh-LoRA (오로라) 이미지 생성용 최종 모델**                             |
+| CNN (2)                 |                                | StyleGAN 생성 이미지의 핵심 속성 값**만** 계산 **(FaceXFormer 에 비해 간소화)** |
 
 ### 3-1. Image Generation Model (StyleGAN)
 
