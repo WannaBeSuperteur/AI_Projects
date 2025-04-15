@@ -25,10 +25,11 @@ MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/mo
 
 TENSOR_VISUALIZE_TEST_BATCH_SIZE = 8
 IMGS_PER_TEST_PROPERTY_SET = 10
+RANDOM_GEN_TEST_IMGS_PER_EPOCH = 30
 
 TRAIN_BATCH_SIZE = 16
-EARLY_STOPPING_ROUNDS = 20
-MAX_EPOCHS = 120
+EARLY_STOPPING_ROUNDS = 30
+MAX_EPOCHS = 1000
 
 IMG_RES = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -283,7 +284,6 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             is_check = (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20)
-            vis_test = idx in [100, 400]
 
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
@@ -292,7 +292,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
             mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images,
                                                                                         property_label=labels,
-                                                                                        tensor_visualize_test=vis_test)
+                                                                                        tensor_visualize_test=False)
             stylegan_finetune_v3.optimizer.zero_grad()
 
             loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
@@ -391,7 +391,8 @@ def save_train_log(current_epoch, batch_idx, train_log, loss_dict):
 
 # StyleGAN-FineTune-v3 모델 학습 중 출력 결과물 테스트
 # Create Date : 2025.04.15
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - 랜덤한 Label 로 30장 생성 및 그 판정 결과 저장
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning 중)
@@ -428,6 +429,43 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
 
             save_tensor_png(generated_images[img_idx],
                             image_save_path=f'{img_save_dir}/test_img_{img_no}.png')
+
+    # 랜덤하게 30장 생성
+    z_random_gen = torch.randn((RANDOM_GEN_TEST_IMGS_PER_EPOCH, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32)
+    label_np = np.random.randn(RANDOM_GEN_TEST_IMGS_PER_EPOCH, PROPERTY_DIMS_Z)
+    label_np[:, 6] = 0  # Background std 속성 제외
+    label_torch = torch.tensor(label_np).to(torch.float32)
+
+    with torch.no_grad():
+        random_generated_images = stylegan_finetune_v3.stylegan_generator(z=z_random_gen.cuda(),
+                                                                          label=label_torch.cuda())['image']
+        random_generated_images = random_generated_images.detach().cpu()
+
+        gender_scores = stylegan_finetune_v3.gender_cnn(random_generated_images.cuda())
+        property_scores = stylegan_finetune_v3.property_score_cnn(random_generated_images.cuda())
+        gender_scores = gender_scores.detach().cpu()
+        property_scores = property_scores.detach().cpu()
+
+        gender_score_np = gender_scores.numpy()
+        property_score_np = property_scores.numpy()
+
+    property_score_info_dict = {
+        'img_no': list(range(RANDOM_GEN_TEST_IMGS_PER_EPOCH)),
+        'gender_score': list(gender_score_np[:, 0]),
+        'eyes_score': list(property_score_np[:, 0]),
+        'hair_color_score': list(property_score_np[:, 1]),
+        'hair_length_score': list(property_score_np[:, 2]),
+        'mouth_score': list(property_score_np[:, 3]),
+        'pose_score': list(property_score_np[:, 4]),
+        'back_mean_score': list(property_score_np[:, 5]),
+        'back_std_score': list(property_score_np[:, 6])
+    }
+    property_score_info_df = pd.DataFrame(property_score_info_dict)
+    property_score_info_df.to_csv(f'{img_save_dir}/test_random_gen_result.csv', index=False)
+
+    for img_no in range(RANDOM_GEN_TEST_IMGS_PER_EPOCH):
+        save_tensor_png(random_generated_images[img_no],
+                        image_save_path=f'{img_save_dir}/test_random_gen_img_{img_no:03d}.png')
 
 
 # StyleGAN-FineTune-v3 모델 학습
