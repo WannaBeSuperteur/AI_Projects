@@ -99,12 +99,12 @@
 
 [Implementation & Pre-trained Model Source : GenForce GitHub](https://github.com/genforce/genforce/tree/master) (MIT License)
 
-| 모델                   | 설명                                                                                               | 여성 이미지 생성                        | 핵심 속성값 오류 없음 | 핵심 속성값 의미 반영 생성 |
-|----------------------|--------------------------------------------------------------------------------------------------|----------------------------------|--------------|-----------------|
-| Original StyleGAN    | [GenForce GitHub](https://github.com/genforce/genforce/tree/master) 에서 다운받은 Pre-trained StyleGAN | ❌ (**여성 55.6%** = 1,112 / 2,000) | ❌            | ❌               |
-| StyleGAN-FineTune-v1 | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | ✅ (**여성 93.7%** = 281 / 300)     | ❌            | ❌               |
-| StyleGAN-FineTune-v2 | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 |                                  |              |                 |
-| StyleGAN-FineTune-v3 | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                |                                  |              |                 |
+| 모델                                 | 설명                                                                                               | StyleGAN Style Mixing | Property Score 데이터                      | 여성 이미지 생성                        | 핵심 속성값 오류 없음 | 핵심 속성값 의미 반영 생성 |
+|------------------------------------|--------------------------------------------------------------------------------------------------|-----------------------|-----------------------------------------|----------------------------------|--------------|-----------------|
+| Original StyleGAN                  | [GenForce GitHub](https://github.com/genforce/genforce/tree/master) 에서 다운받은 Pre-trained StyleGAN | ✅ (90% 확률)            |                                         | ❌ (**여성 55.6%** = 1,112 / 2,000) | ❌            | ❌               |
+| StyleGAN-FineTune-v1               | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | ✅ (90% 확률)            | 1차 알고리즘 & Score                         | ✅ (**여성 93.7%** = 281 / 300)     | ❌            | ❌               |
+| StyleGAN-FineTune-v2 **(❌ 학습 불가)** | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | ❌ (미 적용)              | 2차 알고리즘 & Score 를 학습한 CNN에 의해 도출된 Score | ❓ (남성 이미지 생성 확률 증가)              | ✅            | ❌               |
+| StyleGAN-FineTune-v3               | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | ❌ (미 적용)              | 2차 알고리즘 & Score 를 학습한 CNN에 의해 도출된 Score |                                  |              |                 |
 
 * 핵심 속성값 오류
   * 핵심 속성 값 (성별, 이미지 품질 제외 7가지) 이 달라지면 **동일한 인물의 특징이 달라지는 것이 아닌, 아예 다른 인물이 생성되는** 것
@@ -250,7 +250,7 @@
     * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Generator 저장됨
     * ```stylegan_modified/stylegan_dis_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
     * 위 2개의 모델은 이름을 ```... fine_tuned.pth``` 에서 ```... fine_tuned_v1.pth``` 로 각각 변경하여 사용
-  * **StyleGAN-FineTune-v2 (CNN 기반)** 
+  * **StyleGAN-FineTune-v2 (CNN 기반, ❌ 학습 불가)** 
     * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v2.py```
     * ```stylegan_modified/stylegan_gen_fine_tuned_v2.pth``` 에 Fine-Tuning 된 Generator 저장됨
   * **StyleGAN-FineTune-v3 (Conditional VAE 기반)** 
