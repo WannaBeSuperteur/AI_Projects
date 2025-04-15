@@ -142,7 +142,7 @@ class StyleGANFineTuneV3(nn.Module):
 
         return mu + eps * std
 
-    def forward(self, x, property_label, tensor_visualize_test=True):
+    def forward(self, x, property_label, tensor_visualize_test=False):
         mu, logvar = self.CVAE_encoder(x, property_label)
         z = self.reparameterize(mu, logvar)
         generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
@@ -247,15 +247,17 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 
 # 정의된 StyleGAN-FineTune-v3 모델을 학습
 # Create Date : 2025.04.15
-# Last Update Date : -
+# Last Update Date : 2025.04.16
+# - Fine-Tuned Generator 의 Encoder 반환 및 checkpointing 추가
 
 # Arguments:
 # - stylegan_finetune_v3   (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
 # - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
 
 # Returns:
-# - fine_tuned_generator (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator
-#                                      (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
+# - fine_tuned_generator         (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator
+#                                              (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
+# - fine_tuned_generator_encoder (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator 에 대한 CVAE Encoder
 
 def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader):
     stylegan_finetune_v3.train()
@@ -340,16 +342,20 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             best_epoch_model = StyleGANFineTuneV3().to(stylegan_finetune_v3.device)
             best_epoch_model.load_state_dict(stylegan_finetune_v3.state_dict())
 
-            stylegan_modified_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
-            ckpt_path = f'{stylegan_modified_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}.pth'
-            old_ckpt_path = f'{stylegan_modified_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{prev_best_epoch:04d}.pth'
+            model_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
+            ckpt_gen_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}_gen.pth'
+            old_ckpt_gen_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{prev_best_epoch:04d}_gen.pth'
+            ckpt_enc_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}_enc.pth'
+            old_ckpt_enc_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{prev_best_epoch:04d}_enc.pth'
 
             try:
-                os.remove(old_ckpt_path)
+                os.remove(old_ckpt_gen_path)
+                os.remove(old_ckpt_enc_path)
             except:
                 pass
 
-            torch.save(stylegan_finetune_v3.state_dict(), ckpt_path)
+            torch.save(stylegan_finetune_v3.stylegan_generator.state_dict(), ckpt_gen_path)
+            torch.save(stylegan_finetune_v3.CVAE_encoder.state_dict(), ckpt_enc_path)
 
         if current_epoch >= MAX_EPOCHS and current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
@@ -361,7 +367,9 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         stylegan_finetune_v3.scheduler.step()
 
     fine_tuned_generator = best_epoch_model.stylegan_generator
-    return fine_tuned_generator
+    fine_tuned_generator_encoder = best_epoch_model.CVAE_encoder
+
+    return fine_tuned_generator, fine_tuned_generator_encoder
 
 
 # StyleGAN-FineTune-v3 모델 학습 중 Loss 를 csv 로 로깅
@@ -470,7 +478,8 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
 
 # StyleGAN-FineTune-v3 모델 학습
 # Create Date : 2025.04.15
-# Last Update Date : -
+# Last Update Date : 2025.04.16
+# - Fine-Tuned Generator 의 Encoder 반환 추가
 
 # Arguments:
 # - device                 (device)     : 모델을 mapping 시킬 device (GPU 등)
@@ -480,8 +489,9 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
 # - gender_cnn_model       (nn.Module)  : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 성별 판단용 학습된 CNN 모델
 
 # Returns:
-# - fine_tuned_generator (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator
-#                                      (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
+# - fine_tuned_generator         (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator
+#                                              (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
+# - fine_tuned_generator_encoder (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator 에 대한 CVAE Encoder
 
 def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, property_cnn_model, gender_cnn_model):
 
@@ -501,6 +511,7 @@ def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, proper
     visual_graph.render(format='pdf', outfile=dest_name)
 
     # run Fine-Tuning
-    fine_tuned_generator = run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader)
+    fine_tuned_generator, fine_tuned_generator_encoder = (
+        run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader))
 
-    return fine_tuned_generator
+    return fine_tuned_generator, fine_tuned_generator_encoder

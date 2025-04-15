@@ -61,7 +61,8 @@ def load_gender_cnn_model(gender_cnn_model_path, device):
 
 # StyleGAN-FineTune-v3 모델 Fine-Tuning 실시
 # Create Date : 2025.04.15
-# Last Update Date : -
+# Last Update Date : 2025.04.16
+# - Fine-Tuned Generator 의 Encoder 추가 저장
 
 # Arguments:
 # - generator              (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator
@@ -88,6 +89,7 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
 
     # load or newly train Fine-Tuned Generator (StyleGAN-FineTune-v3)
     v3_gen_path = f'{stylegan_modified_path}/stylegan_gen_fine_tuned_v3.pth'
+    v3_gen_encoder_path = f'{stylegan_modified_path}/stylegan_gen_fine_tuned_v3_encoder.pth'
 
     try:
         fine_tuned_generator = load_stylegan_finetune_v3_model(v3_gen_path, device)
@@ -97,10 +99,14 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
         print(f'StyleGAN-FineTune-v3 model load failed : {e}')
 
         # train StyleGAN-FineTune-v3 model
-        fine_tuned_generator = train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader,
-                                                          property_cnn_model, gender_cnn_model)
+        fine_tuned_generator, fine_tuned_generator_encoder = train_stylegan_finetune_v3(device,
+                                                                                        generator,
+                                                                                        fine_tuning_dataloader,
+                                                                                        property_cnn_model,
+                                                                                        gender_cnn_model)
 
         torch.save(fine_tuned_generator.state_dict(), v3_gen_path)
+        torch.save(fine_tuned_generator_encoder.state_dict(), v3_gen_encoder_path)
 
     exist_dict = {'stylegan_finetune_v3': stylegan_finetune_v3_exist}
     print(f'model existance : {exist_dict}')
