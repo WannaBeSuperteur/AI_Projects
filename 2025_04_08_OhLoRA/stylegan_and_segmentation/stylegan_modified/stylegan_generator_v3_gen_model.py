@@ -283,6 +283,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             is_check = (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20)
+            vis_test = idx in [100, 400]
 
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
@@ -291,7 +292,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
             mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images,
                                                                                         property_label=labels,
-                                                                                        tensor_visualize_test=False)
+                                                                                        tensor_visualize_test=vis_test)
             stylegan_finetune_v3.optimizer.zero_grad()
 
             loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
