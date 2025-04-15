@@ -23,8 +23,8 @@ TENSOR_VISUALIZE_TEST_BATCH_SIZE = 30
 IMGS_PER_TEST_PROPERTY_SET = 10
 
 TRAIN_BATCH_SIZE = 16
-EARLY_STOPPING_ROUNDS = 999999  # for test
-STEP_GROUP_SIZE = 10            # for test
+EARLY_STOPPING_ROUNDS = 100
+STEP_GROUP_SIZE = 50
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -168,17 +168,25 @@ def run_training_stylegan_finetune_v2(stylegan_finetune_v2):
 
     print('Fine-Tuning StyleGAN-FineTune-v2 start.')
 
+    fixed_z = torch.randn((TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z))
+    fixed_z = fixed_z.to(stylegan_finetune_v2.device)
+    fixed_property_label = torch.randn((TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z))
+    fixed_property_label = fixed_property_label.to(stylegan_finetune_v2.device)
+
     while True:
         step_group_loss = 0.0
         property_loss_dict = {'eyes': 0.0, 'hair_color': 0.0, 'hair_length': 0.0,
                               'mouth': 0.0, 'pose': 0.0, 'background_mean': 0.0}
 
         for _ in range(STEP_GROUP_SIZE):
-            z = torch.randn((TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z))
-            z = z.to(stylegan_finetune_v2.device)
+            new_z = torch.randn((TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z))
+            new_z = new_z.to(stylegan_finetune_v2.device)
+            new_property_label = torch.randn((TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z))
+            new_property_label = new_property_label.to(stylegan_finetune_v2.device)
 
-            property_label = torch.randn((TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z))
-            property_label = property_label.to(stylegan_finetune_v2.device)
+            fixed_ratio = pow(0.9, current_step_group)
+            z = fixed_ratio * fixed_z + (1.0 - fixed_ratio) * new_z
+            property_label = fixed_ratio * fixed_property_label + (1.0 - fixed_ratio) * new_property_label
 
             # train 실시
             stylegan_finetune_v2.optimizer.zero_grad()
