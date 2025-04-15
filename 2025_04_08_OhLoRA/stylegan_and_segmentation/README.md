@@ -106,6 +106,9 @@
 | StyleGAN-FineTune-v2 **(❌ 학습 불가)** | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | ❌ (미 적용)              | 2차 알고리즘 & Score 를 학습한 CNN에 의해 도출된 Score | ❓ (남성 이미지 생성 확률 증가)              | ✅            | ❌               |
 | StyleGAN-FineTune-v3               | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | ❌ (미 적용)              | 2차 알고리즘 & Score 를 학습한 CNN에 의해 도출된 Score |                                  |              |                 |
 
+* [StyleGAN Style Mixing](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md#3-1-style-mixing-mixing-regularization)
+  * 적용 시, 동일한 latent vector z 와 동일한 property label 에 대해서도 **서로 다른 인물이나 특징의 이미지가 생성** 될 수 있음
+  * 이는 핵심 속성 값을 학습하는 데 지장을 줄 수 있음
 * 핵심 속성값 오류
   * 핵심 속성 값 (성별, 이미지 품질 제외 7가지) 이 달라지면 **동일한 인물의 특징이 달라지는 것이 아닌, 아예 다른 인물이 생성되는** 것
 * 핵심 속성값 의미 반영 생성
@@ -137,6 +140,10 @@
 * Model Save Path
   * ```stylegan_modified/stylegan_gen_fine_tuned_v1.pth``` (**Generator** of **Modified Fine-Tuned** StyleGAN)
   * ```stylegan_modified/stylegan_dis_fine_tuned_v1.pth``` (**Discriminator** of **Modified Fine-Tuned** StyleGAN)
+* 핵심 속성 값 학습 실패 원인 **(추정)**
+  * Property Score 계산 오류 (1차 알고리즘 자체의 오류 & 픽셀 색 관련 속성의 경우 이미지를 잘못 사용하여 픽셀 매칭 오류)
+  * [VAE (Variational Auto-Encoder)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md) 와 달리 [GAN](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_GAN.md) 은 잠재 변수 학습에 중점을 두지 않음
+  * StyleGAN 의 **Style Mixing** 메커니즘으로 인해 동일한 latent vector, label 에 대해서도 **서로 다른 이미지가 생성되어 학습에 지장**
 
 **3. Additional Fine-Tuned StyleGAN Generator (v2, CNN idea)**
 
