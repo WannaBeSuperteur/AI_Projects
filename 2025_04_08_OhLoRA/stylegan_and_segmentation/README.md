@@ -146,7 +146,7 @@
   * [VAE (Variational Auto-Encoder)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md) 와 달리 [GAN](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_GAN.md) 은 잠재 변수 학습에 중점을 두지 않음
   * StyleGAN 의 **Style Mixing** 메커니즘으로 인해 동일한 latent vector, label 에 대해서도 **서로 다른 이미지가 생성되어 학습에 지장**
 
-**3. Additional Fine-Tuned StyleGAN Generator (v2, CNN idea)**
+**3. Additional Fine-Tuned StyleGAN Generator (v2, CNN idea, ❌ Train Failed)**
 
 ![image](../../images/250408_11.PNG)
 
@@ -159,6 +159,9 @@
 * Model Save Path
   * ```stylegan_modified/stylegan_gen_fine_tuned_v2.pth``` (Generator Model)
   * ```stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth``` (**CNN** for Generator Model)
+* 학습 실패 분석
+  * CNN 을 완전히 Freeze 하고, StyleGAN 을 Dense Layer 를 제외한 모든 Layer 를 Freeze 하는 것보다, **모든 모델의 모든 레이어를 학습 가능하게 해야 학습이 잘 진행됨**
+  * 처음에는 Fixed Z + Label 로 학습하고 점차적으로 강한 Noise 를 추가하는 식으로 학습해도 **학습이 거의 진행되지 않음**
 
 **4. Additional Fine-Tuned StyleGAN Generator (v3, Conditional VAE idea)**
 
