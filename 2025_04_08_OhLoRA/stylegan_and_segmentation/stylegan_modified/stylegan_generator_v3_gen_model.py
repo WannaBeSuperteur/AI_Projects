@@ -37,6 +37,8 @@ PROPERTY_DIMS_Z = 7           # eyes, hair_color, hair_length, mouth, pose, back
 CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/tensor_visualize_test_cnn'
 os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
+torch.set_printoptions(linewidth=160, sci_mode=False)
+
 
 loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean', 'back_std']
 
@@ -212,45 +214,33 @@ def define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cn
     stylegan_finetune_v3.property_score_cnn.load_state_dict(property_cnn_model.state_dict())
     stylegan_finetune_v3.gender_cnn.load_state_dict(gender_cnn_model.state_dict())
 
-    # save model graph of StyleGAN-FineTune-v3 before training
-    model_graph = draw_graph(stylegan_finetune_v3,
-                             input_data=[torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, 3, IMG_RES, IMG_RES)),
-                                         torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, PROPERTY_DIMS_Z))],
-                             depth=5)
-
-    visual_graph = model_graph.visual_graph
-
-    dest_name = f'{MODEL_STRUCTURE_PDF_DIR_PATH}/stylegan_finetune_v3.pdf'
-    visual_graph.render(format='pdf', outfile=dest_name)
-
     return stylegan_finetune_v3
 
 
 # 정의된 StyleGAN-FineTune-v3 모델의 Layer 를 Freeze 처리 (CNN은 모두, Generator 는 Freeze 하지 않음)
 # Create Date : 2025.04.15
-# Last Update Date : -
+# Last Update Date : 2025.04.15
+# - Freeze 할 모델 지정 오류 수정
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : 학습할 StyleGAN-FineTune-v3 모델
-# - property_cnn_model   (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 핵심 속성값 도출용 학습된 CNN 모델
-# - gender_cnn_model     (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 성별 판단용 학습된 CNN 모델
 # - check_again          (bool)      : freeze 여부 재 확인 테스트용
 
-def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, property_cnn_model, gender_cnn_model, check_again=False):
+def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 
     # 모든 CNN Model freeze 범위 : 전체
-    for name, param in property_cnn_model.named_parameters():
+    for param in stylegan_finetune_v3.property_score_cnn.parameters():
         param.requires_grad = False
 
-    for name, param in gender_cnn_model.named_parameters():
+    for param in stylegan_finetune_v3.gender_cnn.parameters():
         param.requires_grad = False
 
     # 제대로 freeze 되었는지 확인
     if check_again:
-        for idx, param in enumerate(property_cnn_model.parameters()):
+        for idx, param in enumerate(stylegan_finetune_v3.property_score_cnn.parameters()):
             print(f'Property CNN layer {idx} : {param.requires_grad}')
 
-        for idx, param in enumerate(gender_cnn_model.parameters()):
+        for idx, param in enumerate(stylegan_finetune_v3.gender_cnn.parameters()):
             print(f'Gender CNN layer {idx} : {param.requires_grad}')
 
 
@@ -301,7 +291,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
             mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images,
                                                                                         property_label=labels,
-                                                                                        tensor_visualize_test=is_check)
+                                                                                        tensor_visualize_test=False)
             stylegan_finetune_v3.optimizer.zero_grad()
 
             loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
@@ -458,7 +448,18 @@ def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, proper
 
     # define StyleGAN-FineTune-v3 model
     stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cnn_model)
-    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, property_cnn_model, gender_cnn_model)
+    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3)
+
+    # save model graph of StyleGAN-FineTune-v3 before training
+    model_graph = draw_graph(stylegan_finetune_v3,
+                             input_data=[torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, 3, IMG_RES, IMG_RES)),
+                                         torch.randn((TENSOR_VISUALIZE_TEST_BATCH_SIZE, PROPERTY_DIMS_Z))],
+                             depth=5)
+
+    visual_graph = model_graph.visual_graph
+
+    dest_name = f'{MODEL_STRUCTURE_PDF_DIR_PATH}/stylegan_finetune_v3.pdf'
+    visual_graph.render(format='pdf', outfile=dest_name)
 
     # run Fine-Tuning
     fine_tuned_generator = run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader)
