@@ -23,7 +23,7 @@ from global_common.visualize_tensor import save_tensor_png
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/model_structure_pdf'
 
-TENSOR_VISUALIZE_TEST_BATCH_SIZE = 30
+TENSOR_VISUALIZE_TEST_BATCH_SIZE = 8
 IMGS_PER_TEST_PROPERTY_SET = 10
 
 TRAIN_BATCH_SIZE = 16
@@ -139,14 +139,40 @@ class StyleGANFineTuneV3(nn.Module):
 
         return mu + eps * std
 
-    def forward(self, x, property_label):
+    def forward(self, x, property_label, tensor_visualize_test=True):
         mu, logvar = self.CVAE_encoder(x, property_label)
         z = self.reparameterize(mu, logvar)
         generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
         generated_image_property_score = self.property_score_cnn(generated_image['image'])
-        gender_score = self.gender_cnn(generated_image['image'])
+        generated_image_gender_score = self.gender_cnn(generated_image['image'])
 
-        return mu, logvar, generated_image_property_score, gender_score
+        if tensor_visualize_test:
+            test_name = 'test_during_finetune'
+
+            current_batch_size = generated_image['image'].size(0)
+            property_score_np = generated_image_property_score.detach().cpu().numpy()
+            gender_score_np = generated_image_gender_score.detach().cpu().numpy()
+
+            property_score_info_dict = {
+                'img_no': list(range(current_batch_size)),
+                'gender_score': list(gender_score_np[:, 0]),
+                'eyes_score': list(property_score_np[:, 0]),
+                'hair_color_score': list(property_score_np[:, 1]),
+                'hair_length_score': list(property_score_np[:, 2]),
+                'mouth_score': list(property_score_np[:, 3]),
+                'pose_score': list(property_score_np[:, 4]),
+                'back_mean_score': list(property_score_np[:, 5]),
+                'back_std_score': list(property_score_np[:, 6])
+            }
+            property_score_info_df = pd.DataFrame(property_score_info_dict)
+            property_score_info_df.to_csv(f'{CNN_TENSOR_TEST_DIR}/finetune_v3_{test_name}_result.csv',
+                                          index=False)
+
+            for i in range(current_batch_size):
+                save_tensor_png(generated_image['image'][i],
+                                image_save_path=f'{CNN_TENSOR_TEST_DIR}/finetune_v3_{test_name}_{i:03d}.png')
+
+        return mu, logvar, generated_image_property_score, generated_image_gender_score
 
 
 # StyleGAN-FineTune-v3 모델 정의 및 generator 의 state_dict 를 로딩
@@ -266,12 +292,16 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             total_loss_dict[f'{loss_type}_abs'] = 0.0
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
+            is_check = (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20)
+
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
             labels = concatenate_property_scores(raw_data)
             labels = labels.to(stylegan_finetune_v3.device).to(torch.float32)
 
-            mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images, property_label=labels)
+            mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images,
+                                                                                        property_label=labels,
+                                                                                        tensor_visualize_test=is_check)
             stylegan_finetune_v3.optimizer.zero_grad()
 
             loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
@@ -285,7 +315,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             train_loss_mse += train_loss_batch_mse * labels.size(0)
             train_loss_gender += train_loss_batch_gender * labels.size(0)
 
-            if (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20):
+            if is_check:
                 print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch:.4f}')
                 save_train_log(current_epoch, idx, train_log, loss_dict=loss_dict)
 
