@@ -38,7 +38,7 @@ os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 # Loss Function for VAE
 
 def vae_loss_function(x_reconstructed, x, mu, logvar):
-    mse_loss = F.mse_loss(x, x_reconstructed, reduction='sum')
+    mse_loss = F.mse_loss(x, x_reconstructed, reduction='mean')
     kl_divergence_loss = -0.5 * torch.sum(1.0 + logvar - mu.pow(2) - logvar.exp())
 
     loss_dict = {'mse': mse_loss, 'kld': kl_divergence_loss}
@@ -211,8 +211,6 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         total = 0
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
-            print('idx :', idx)
-
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
 
@@ -252,6 +250,9 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         if current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
+
+        # 이미지 생성 테스트
+        test_create_output_images(stylegan_finetune_v3, current_epoch)
 
     fine_tuned_generator = best_epoch_model.stylegan_generator
     return fine_tuned_generator
