@@ -6,6 +6,7 @@ from torchview import draw_graph
 
 from stylegan_modified.fine_tuning import concatenate_property_scores
 from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
+from stylegan_modified.stylegan_generator_v2_cnn import PropertyScoreCNN
 
 import numpy as np
 import os
@@ -37,8 +38,8 @@ os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 # Loss Function for VAE
 
-def vae_loss_function(x_reconstructed, x, mu, logvar):
-    mse_loss = 2000 * F.mse_loss(x, x_reconstructed, reduction='mean')
+def vae_loss_function(generated_image_property_score, labels, mu, logvar):
+    mse_loss = 1000 * F.mse_loss(generated_image_property_score, labels, reduction='mean')
     kl_divergence_loss = -0.5 * torch.sum(1.0 + logvar - mu.pow(2) - logvar.exp())
 
     loss_dict = {'mse': mse_loss, 'kld': kl_divergence_loss}
@@ -107,6 +108,7 @@ class StyleGANFineTuneV3(nn.Module):
 
         self.CVAE_encoder = CVAEEncoder()
         self.stylegan_generator = StyleGANGeneratorForV2(resolution=IMG_RES)
+        self.property_score_cnn = PropertyScoreCNN()
 
         kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
         self.stylegan_generator.G_kwargs_val = kwargs_val
@@ -121,8 +123,9 @@ class StyleGANFineTuneV3(nn.Module):
         mu, logvar = self.CVAE_encoder(x, property_label)
         z = self.reparameterize(mu, logvar)
         generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
+        generated_image_property_score = self.property_score_cnn(generated_image['image'])
 
-        return generated_image['image'], mu, logvar
+        return mu, logvar, generated_image_property_score
 
 
 # StyleGAN-FineTune-v3 모델 정의 및 generator 의 state_dict 를 로딩
@@ -132,11 +135,12 @@ class StyleGANFineTuneV3(nn.Module):
 # Arguments:
 # - device    (device)    : 모델을 mapping 시킬 device (GPU 등)
 # - generator (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
+# - cnn_model (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 학습된 CNN 모델
 
 # Returns:
 # - stylegan_finetune_v3 (nn.Module) : 학습할 StyleGAN-FineTune-v3 모델
 
-def define_stylegan_finetune_v3(device, generator):
+def define_stylegan_finetune_v3(device, generator, cnn_model):
     stylegan_finetune_v3 = StyleGANFineTuneV3()
     stylegan_finetune_v3.optimizer = torch.optim.AdamW(stylegan_finetune_v3.parameters(), lr=0.00005)
     stylegan_finetune_v3.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=stylegan_finetune_v3.optimizer,
@@ -148,6 +152,7 @@ def define_stylegan_finetune_v3(device, generator):
 
     # load state dict of generator
     stylegan_finetune_v3.stylegan_generator.load_state_dict(generator.state_dict())
+    stylegan_finetune_v3.property_score_cnn.load_state_dict(cnn_model.state_dict())
 
     # save model graph of StyleGAN-FineTune-v3 before training
     model_graph = draw_graph(stylegan_finetune_v3,
@@ -169,14 +174,19 @@ def define_stylegan_finetune_v3(device, generator):
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : 학습할 StyleGAN-FineTune-v3 모델
+# - cnn_model            (nn.Module) : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 학습된 CNN 모델
 # - check_again          (bool)      : freeze 여부 재 확인 테스트용
 
-def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
+def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, cnn_model, check_again=False):
 
     # StyleGAN-FineTune-v3 freeze 범위 : Z -> W mapping 을 제외한 모든 레이어
     for name, param in stylegan_finetune_v3.named_parameters():
         if name.split('.')[1] != 'mapping':
             param.requires_grad = False
+
+    # CNN Model freeze 범위 : 전체
+    for name, param in cnn_model.named_parameters():
+        param.requires_grad = False
 
     # 제대로 freeze 되었는지 확인
     if check_again:
@@ -213,14 +223,13 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
-
             labels = concatenate_property_scores(raw_data)
             labels = labels.to(stylegan_finetune_v3.device).to(torch.float32)
 
-            reconstructed_images, mu, logvar = stylegan_finetune_v3(x=images, property_label=labels)
+            mu, logvar, gen_image_property_score = stylegan_finetune_v3(x=images, property_label=labels)
             stylegan_finetune_v3.optimizer.zero_grad()
 
-            loss, loss_dict = vae_loss_function(reconstructed_images, images, mu, logvar)
+            loss, loss_dict = vae_loss_function(gen_image_property_score, labels, mu, logvar)
             loss.backward()
 
             train_loss_batch = float(loss.detach().cpu().numpy())
@@ -316,16 +325,17 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
 # - device                 (device)     : 모델을 mapping 시킬 device (GPU 등)
 # - generator              (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
 # - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+# - cnn_model              (nn.Module)  : StyleGAN-FineTune-v3 Fine-Tuning 에 사용할 학습된 CNN 모델
 
 # Returns:
 # - fine_tuned_generator (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator
 #                                      (StyleGAN-FineTune-v1 모델을 Fine-Tuning 시킨)
 
-def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader):
+def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, cnn_model):
 
     # define StyleGAN-FineTune-v3 model
-    stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator)
-#    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3)
+    stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator, cnn_model)
+    freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, cnn_model)
 
     # run Fine-Tuning
     fine_tuned_generator = run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader)

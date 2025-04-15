@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 from stylegan_modified.stylegan_generator import StyleGANGeneratorForV2
+from stylegan_modified.stylegan_generator_v2 import load_cnn_model
 from stylegan_modified.stylegan_generator_v3_gen_model import train_stylegan_finetune_v3
 
 torch.set_printoptions(linewidth=160, sci_mode=False)
@@ -55,6 +56,10 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for training StyleGAN-FineTune-v3 : {device}')
 
+    # load pre-trained CNN model
+    cnn_save_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth'
+    cnn_model = load_cnn_model(cnn_save_path, device)
+
     # load or newly train Fine-Tuned Generator (StyleGAN-FineTune-v3)
     v3_gen_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/stylegan_gen_fine_tuned_v3.pth'
 
@@ -66,7 +71,7 @@ def run_fine_tuning(generator, fine_tuning_dataloader):
         print(f'StyleGAN-FineTune-v3 model load failed : {e}')
 
         # train StyleGAN-FineTune-v3 model
-        fine_tuned_generator = train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader)
+        fine_tuned_generator = train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, cnn_model)
         torch.save(fine_tuned_generator.state_dict(), v3_gen_path)
 
     exist_dict = {'stylegan_finetune_v3': stylegan_finetune_v3_exist}
