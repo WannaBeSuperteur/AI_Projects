@@ -58,7 +58,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 0.75 * mu_loss + 0.25 * logvar_loss
+    total_loss = mse_loss + gender_loss + 0.25 * mu_loss + 0.05 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
