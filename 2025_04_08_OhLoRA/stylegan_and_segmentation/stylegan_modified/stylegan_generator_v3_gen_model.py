@@ -43,6 +43,9 @@ torch.set_printoptions(linewidth=160, sci_mode=False)
 
 loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean', 'back_std']
 
+mus = []
+log_vars = []
+
 
 # Loss Function for VAE (Background std 제외)
 
@@ -142,9 +145,16 @@ class StyleGANFineTuneV3(nn.Module):
 
         return mu + eps * std
 
-    def forward(self, x, property_label, tensor_visualize_test=False):
+    def forward(self, x, property_label, tensor_visualize_test=False, use_mu_and_logvar_for_test_generation=False):
+        global mus, log_vars
+
         mu, logvar = self.CVAE_encoder(x, property_label)
         z = self.reparameterize(mu, logvar)
+
+        if use_mu_and_logvar_for_test_generation:
+            mus.append(list(mu[0].detach().cpu().numpy()))
+            log_vars.append(list(logvar[0].detach().cpu().numpy()))
+
         generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
         generated_image_property_score = self.property_score_cnn(generated_image['image'])
         generated_image_gender_score = self.gender_cnn(generated_image['image'])
@@ -249,6 +259,7 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 # Create Date : 2025.04.15
 # Last Update Date : 2025.04.16
 # - Fine-Tuned Generator 의 Encoder 반환 및 checkpointing 추가
+# - Test Image Generation 을 위한 mu, log_var 저장
 
 # Arguments:
 # - stylegan_finetune_v3   (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
@@ -260,6 +271,8 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 # - fine_tuned_generator_encoder (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator 에 대한 CVAE Encoder
 
 def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader):
+    global mus, log_vars
+
     stylegan_finetune_v3.train()
 
     current_epoch = 0
@@ -274,6 +287,9 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         train_log[f'{loss_type}_abs'] = []
 
     while True:
+        mus = []
+        log_vars = []
+
         train_loss = 0.0
         train_loss_mse = 0.0
         train_loss_gender = 0.0
@@ -286,6 +302,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             is_check = (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20)
+            use_mu_and_logvar = idx >= len(fine_tuning_dataloader) - IMGS_PER_TEST_PROPERTY_SET
 
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
@@ -294,7 +311,8 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
             mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images,
                                                                                         property_label=labels,
-                                                                                        tensor_visualize_test=False)
+                                                                                        tensor_visualize_test=False,
+                                                                                        use_mu_and_logvar_for_test_generation=use_mu_and_logvar)
             stylegan_finetune_v3.optimizer.zero_grad()
 
             loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
@@ -344,15 +362,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
             model_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
             ckpt_gen_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}_gen.pth'
-            old_ckpt_gen_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{prev_best_epoch:04d}_gen.pth'
             ckpt_enc_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}_enc.pth'
-            old_ckpt_enc_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{prev_best_epoch:04d}_enc.pth'
-
-            try:
-                os.remove(old_ckpt_gen_path)
-                os.remove(old_ckpt_enc_path)
-            except:
-                pass
 
             torch.save(stylegan_finetune_v3.stylegan_generator.state_dict(), ckpt_gen_path)
             torch.save(stylegan_finetune_v3.CVAE_encoder.state_dict(), ckpt_enc_path)
@@ -399,20 +409,37 @@ def save_train_log(current_epoch, batch_idx, train_log, loss_dict):
 
 # StyleGAN-FineTune-v3 모델 학습 중 출력 결과물 테스트
 # Create Date : 2025.04.15
-# Last Update Date : 2025.04.15
+# Last Update Date : 2025.04.16
 # - 랜덤한 Label 로 30장 생성 및 그 판정 결과 저장
+# - N(0, 1^2) 가 아닌, Encoder 에 의해 생성된 mu, log_var 에 의해 생성된 z 에 의한 이미지 생성 테스트
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning 중)
 # - current_epoch        (int)       : 현재 epoch 의 번호
 
 def test_create_output_images(stylegan_finetune_v3, current_epoch):
+    global mus, log_vars
+
     img_save_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning_v3'
     img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}'
     os.makedirs(img_save_dir, exist_ok=True)
 
+    # save as DataFrame first
+    mus_np = np.round(np.array(mus), 4)
+    log_vars_np = np.round(np.array(log_vars), 4)
+
+    pd.DataFrame(mus_np).to_csv(f'{img_save_dir}/test_mus.csv', index=False)
+    pd.DataFrame(log_vars_np).to_csv(f'{img_save_dir}/test_log_vars.csv', index=False)
+
     # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
-    z = torch.randn((IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32)
+    mus_torch = torch.tensor(mus)
+    log_vars_torch = torch.tensor(log_vars)
+
+    std = torch.exp(0.5 * log_vars_torch)
+    eps = torch.randn_like(std)
+
+    z = mus_torch + eps * std
+    z = z.to(torch.float32)
 
     labels = [[ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
               [-1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
