@@ -242,14 +242,19 @@ def define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cn
 
 # 정의된 StyleGAN-FineTune-v3 모델의 Layer 를 Freeze 처리 (CNN은 모두, Generator 는 Freeze 하지 않음)
 # Create Date : 2025.04.15
-# Last Update Date : 2025.04.15
-# - Freeze 할 모델 지정 오류 수정
+# Last Update Date : 2025.04.16
+# - Generator 의 mapping layer 를 제외한 모든 layer 를 Freeze 처리
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : 학습할 StyleGAN-FineTune-v3 모델
 # - check_again          (bool)      : freeze 여부 재 확인 테스트용
 
 def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
+
+    # Generator freeze 범위 : Z -> W mapping 을 제외한 모든 레이어
+    for name, param in stylegan_finetune_v3.stylegan_generator.named_parameters():
+        if name.split('.')[0] != 'mapping':
+            param.requires_grad = False
 
     # 모든 CNN Model freeze 범위 : 전체
     for param in stylegan_finetune_v3.property_score_cnn.parameters():
@@ -260,6 +265,9 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 
     # 제대로 freeze 되었는지 확인
     if check_again:
+        for idx, param in enumerate(stylegan_finetune_v3.stylegan_generator.parameters()):
+            print(f'StyleGAN Generator layer {idx} : {param.requires_grad}')
+
         for idx, param in enumerate(stylegan_finetune_v3.property_score_cnn.parameters()):
             print(f'Property CNN layer {idx} : {param.requires_grad}')
 
