@@ -29,7 +29,7 @@ LAST_BATCHES_TO_SAVE_MU_AND_LOGVAR = 100
 RANDOM_GEN_TEST_IMGS_PER_EPOCH = 30
 
 TRAIN_BATCH_SIZE = 16
-EARLY_STOPPING_ROUNDS = 30
+EARLY_STOPPING_ROUNDS = 40
 MAX_EPOCHS = 1000
 
 IMG_RES = 256
@@ -58,7 +58,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 0.05 * mu_loss + 0.05 * logvar_loss
+    total_loss = mse_loss + gender_loss + 0.75 * mu_loss + 0.001 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
@@ -215,7 +215,7 @@ class StyleGANFineTuneV3(nn.Module):
 
 def define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cnn_model):
     stylegan_finetune_v3 = StyleGANFineTuneV3()
-    stylegan_finetune_v3.optimizer = torch.optim.AdamW(stylegan_finetune_v3.parameters(), lr=0.00005)
+    stylegan_finetune_v3.optimizer = torch.optim.AdamW(stylegan_finetune_v3.parameters(), lr=0.0001)
     stylegan_finetune_v3.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=stylegan_finetune_v3.optimizer,
                                                                                 T_max=10,
                                                                                 eta_min=0)
