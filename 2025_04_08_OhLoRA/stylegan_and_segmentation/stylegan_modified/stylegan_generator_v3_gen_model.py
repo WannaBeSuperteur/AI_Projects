@@ -58,7 +58,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 0.5 * mu_loss + 0.5 * logvar_loss
+    total_loss = mse_loss + gender_loss + 0.05 * mu_loss + 0.05 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
@@ -470,13 +470,13 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     z = z.to(torch.float32)
 
     # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
-    labels = [[ 1.6,  1.8,  1.2, -1.8, -1.2,  1.4, 0.0],
-              [-1.6,  1.8,  1.2, -1.8, -1.2,  1.4, 0.0],
-              [-1.6, -1.4,  1.2, -1.8, -1.2,  1.4, 0.0],
-              [-1.6, -1.4, -2.0, -1.8, -1.2,  1.4, 0.0],
-              [-1.6, -1.4, -2.0,  1.2, -1.2,  1.4, 0.0],
-              [-1.6, -1.4, -2.0,  1.2,  3.0,  1.4, 0.0],
-              [-1.6, -1.4, -2.0,  1.2,  3.0, -1.6, 0.0]]
+    labels = [[ 1.5,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
+              [-1.5,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
+              [-1.5, -1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
+              [-1.5, -1.2, -1.5, -1.2, -1.2,  1.2, 0.0],
+              [-1.5, -1.2, -1.5,  1.2, -1.2,  1.2, 0.0],
+              [-1.5, -1.2, -1.5,  1.2,  2.4,  1.2, 0.0],
+              [-1.5, -1.2, -1.5,  1.2,  2.4, -1.2, 0.0]]
 
     for label_idx, label in enumerate(labels):
         label_np = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
