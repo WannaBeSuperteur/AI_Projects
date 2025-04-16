@@ -25,6 +25,7 @@ MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/mo
 
 TENSOR_VISUALIZE_TEST_BATCH_SIZE = 8
 IMGS_PER_TEST_PROPERTY_SET = 10
+LAST_BATCHES_TO_SAVE_MU_AND_LOGVAR = 100
 RANDOM_GEN_TEST_IMGS_PER_EPOCH = 30
 
 TRAIN_BATCH_SIZE = 16
@@ -145,13 +146,17 @@ class StyleGANFineTuneV3(nn.Module):
 
         return mu + eps * std
 
-    def forward(self, x, property_label, tensor_visualize_test=False, use_mu_and_logvar_for_test_generation=False):
+    def forward(self, x, property_label,
+                tensor_visualize_test=False,
+                use_mu_and_logvar_for_test_generation=False,
+                save_mu_and_logvar=False):
+
         global mus, log_vars
 
         mu, logvar = self.CVAE_encoder(x, property_label)
         z = self.reparameterize(mu, logvar)
 
-        if use_mu_and_logvar_for_test_generation:
+        if use_mu_and_logvar_for_test_generation or save_mu_and_logvar:
             mus.append(list(mu[0].detach().cpu().numpy()))
             log_vars.append(list(logvar[0].detach().cpu().numpy()))
 
@@ -303,16 +308,20 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             is_check = (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20)
             use_mu_and_logvar = idx >= len(fine_tuning_dataloader) - IMGS_PER_TEST_PROPERTY_SET
+            save_mu_and_logvar = idx >= len(fine_tuning_dataloader) - LAST_BATCHES_TO_SAVE_MU_AND_LOGVAR
 
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
             labels = concatenate_property_scores(raw_data)
             labels = labels.to(stylegan_finetune_v3.device).to(torch.float32)
 
-            mu, logvar, gen_img_prop_score, gen_img_gender_score = stylegan_finetune_v3(x=images,
-                                                                                        property_label=labels,
-                                                                                        tensor_visualize_test=False,
-                                                                                        use_mu_and_logvar_for_test_generation=use_mu_and_logvar)
+            mu, logvar, gen_img_prop_score, gen_img_gender_score = (
+                stylegan_finetune_v3(x=images,
+                                     property_label=labels,
+                                     tensor_visualize_test=False,
+                                     use_mu_and_logvar_for_test_generation=use_mu_and_logvar,
+                                     save_mu_and_logvar=save_mu_and_logvar))
+
             stylegan_finetune_v3.optimizer.zero_grad()
 
             loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
@@ -431,9 +440,8 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     pd.DataFrame(mus_np).to_csv(f'{img_save_dir}/test_mus.csv', index=False)
     pd.DataFrame(log_vars_np).to_csv(f'{img_save_dir}/test_log_vars.csv', index=False)
 
-    # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
-    mus_torch = torch.tensor(mus)
-    log_vars_torch = torch.tensor(log_vars)
+    mus_torch = torch.tensor(mus[-IMGS_PER_TEST_PROPERTY_SET:])
+    log_vars_torch = torch.tensor(log_vars[-IMGS_PER_TEST_PROPERTY_SET:])
 
     std = torch.exp(0.5 * log_vars_torch)
     eps = torch.randn_like(std)
@@ -441,13 +449,14 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     z = mus_torch + eps * std
     z = z.to(torch.float32)
 
-    labels = [[ 1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
-              [-1.2,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
-              [-1.2, -1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
-              [-1.2, -1.2, -1.2, -1.2, -1.2,  1.2, 0.0],
-              [-1.2, -1.2, -1.2,  1.2, -1.2,  1.2, 0.0],
-              [-1.2, -1.2, -1.2,  1.2,  1.2,  1.2, 0.0],
-              [-1.2, -1.2, -1.2,  1.2,  1.2, -1.2, 0.0]]
+    # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
+    labels = [[ 1.6,  1.8,  1.2, -1.8, -1.2,  1.4, 0.0],
+              [-1.6,  1.8,  1.2, -1.8, -1.2,  1.4, 0.0],
+              [-1.6, -1.4,  1.2, -1.8, -1.2,  1.4, 0.0],
+              [-1.6, -1.4, -2.0, -1.8, -1.2,  1.4, 0.0],
+              [-1.6, -1.4, -2.0,  1.2, -1.2,  1.4, 0.0],
+              [-1.6, -1.4, -2.0,  1.2,  3.0,  1.4, 0.0],
+              [-1.6, -1.4, -2.0,  1.2,  3.0, -1.6, 0.0]]
 
     for label_idx, label in enumerate(labels):
         label_np = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
