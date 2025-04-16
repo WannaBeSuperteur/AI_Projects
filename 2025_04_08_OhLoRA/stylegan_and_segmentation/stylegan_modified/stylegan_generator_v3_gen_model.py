@@ -50,14 +50,21 @@ log_vars = []
 
 # Loss Function for VAE (Background std 제외)
 
-def vae_loss_function(generated_image_property_score, generated_image_gender_score, labels):
+def vae_loss_function(generated_image_property_score, generated_image_gender_score, labels, mu, logvar):
     n = labels.size(0)
 
     mse_loss = F.mse_loss(generated_image_property_score[:, :6], labels[:, :6], reduction='mean')
     gender_loss = F.mse_loss(generated_image_gender_score, torch.ones((n, 1)).cuda(), reduction='mean')
+    mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
+    logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    loss_dict = {'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
-                 'gender_loss': round(float(gender_loss.detach().cpu().numpy()), 4)}
+    total_loss = mse_loss + gender_loss + 0.5 * mu_loss + 0.5 * logvar_loss
+
+    loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
+                 'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
+                 'gender_loss': round(float(gender_loss.detach().cpu().numpy()), 4),
+                 'mu_loss': round(float(mu_loss.detach().cpu().numpy()), 4),
+                 'logvar_loss': round(float(logvar_loss.detach().cpu().numpy()), 4)}
 
     for idx, loss_type in enumerate(loss_types):
         loss_of_type_mse = nn.MSELoss()(generated_image_property_score[:, idx:idx+1], labels[:, idx:idx+1])
@@ -69,7 +76,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
         loss_dict[f'{loss_type}_mse'] = round(loss_of_type_mse, 4)
         loss_dict[f'{loss_type}_abs'] = round(loss_of_type_abs, 4)
 
-    return mse_loss + gender_loss, loss_dict
+    return total_loss, loss_dict
 
 
 # Conditional-VAE Encoder for StyleGAN-FineTune-v3
@@ -285,7 +292,9 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
     min_train_loss_epoch = 0
     best_epoch_model = None
 
-    train_log = {'epoch': [], 'batch_idx': [], 'mse': [], 'gender_loss': []}
+    train_log = {'epoch': [], 'batch_idx': [],
+                 'total_loss': [], 'mse': [], 'gender_loss': [], 'mu_loss': [], 'logvar_loss': []}
+
     for loss_type in loss_types:
         train_log[f'{loss_type}_mse'] = []
     for loss_type in loss_types:
@@ -298,6 +307,8 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         train_loss = 0.0
         train_loss_mse = 0.0
         train_loss_gender = 0.0
+        train_loss_mu = 0.0
+        train_loss_logvar = 0.0
 
         total = 0
         total_loss_dict = {}
@@ -324,16 +335,21 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
             stylegan_finetune_v3.optimizer.zero_grad()
 
-            loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels)
+            loss, loss_dict = vae_loss_function(gen_img_prop_score, gen_img_gender_score, labels, mu, logvar)
             loss.backward()
 
             train_loss_batch = float(loss.detach().cpu().numpy())
+
             train_loss_batch_mse = loss_dict['mse']
             train_loss_batch_gender = loss_dict['gender_loss']
+            train_loss_batch_mu = loss_dict['mu_loss']
+            train_loss_batch_logvar = loss_dict['logvar_loss']
 
             train_loss += train_loss_batch * labels.size(0)
             train_loss_mse += train_loss_batch_mse * labels.size(0)
             train_loss_gender += train_loss_batch_gender * labels.size(0)
+            train_loss_mu += train_loss_batch_mu * labels.size(0)
+            train_loss_logvar += train_loss_batch_logvar * labels.size(0)
 
             if is_check:
                 print(f'epoch {current_epoch} batch {idx}: loss = {train_loss_batch:.4f}')
@@ -349,20 +365,24 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         train_loss /= total
         train_loss_mse /= total
         train_loss_gender /= total
+        train_loss_mu /= total
+        train_loss_logvar /= total
 
         for key in total_loss_dict.keys():
             total_loss_dict[key] /= total
             total_loss_dict[key] = round(total_loss_dict[key], 4)
 
+        total_loss_dict['total_loss'] = train_loss
         total_loss_dict['mse'] = train_loss_mse
         total_loss_dict['gender_loss'] = train_loss_gender
+        total_loss_dict['mu_loss'] = train_loss_mu
+        total_loss_dict['logvar_loss'] = train_loss_logvar
 
         print(f'epoch {current_epoch}: loss = {train_loss:.4f}')
         save_train_log(current_epoch, '-', train_log, loss_dict=total_loss_dict)
 
         # Early Stopping 처리
         if min_train_loss is None or train_loss < min_train_loss:
-            prev_best_epoch = min_train_loss_epoch
             min_train_loss = train_loss
             min_train_loss_epoch = current_epoch
 
