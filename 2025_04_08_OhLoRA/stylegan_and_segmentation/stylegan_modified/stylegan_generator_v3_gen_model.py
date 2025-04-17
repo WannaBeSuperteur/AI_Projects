@@ -458,9 +458,8 @@ def save_train_log(current_epoch, batch_idx, train_log, loss_dict):
 
 # StyleGAN-FineTune-v3 모델 학습 중 출력 결과물 테스트
 # Create Date : 2025.04.15
-# Last Update Date : 2025.04.16
-# - 랜덤한 Label 로 30장 생성 및 그 판정 결과 저장
-# - N(0, 1^2) 가 아닌, Encoder 에 의해 생성된 mu, log_var 에 의해 생성된 z 에 의한 이미지 생성 테스트
+# Last Update Date : 2025.04.17
+# - 테스트 이미지 생성 로직 수정
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning 중)
@@ -477,9 +476,6 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     mus_np = np.round(np.array(mus), 4)
     log_vars_np = np.round(np.array(log_vars), 4)
 
-    pd.DataFrame(mus_np).to_csv(f'{img_save_dir}/test_mus.csv', index=False)
-    pd.DataFrame(log_vars_np).to_csv(f'{img_save_dir}/test_log_vars.csv', index=False)
-
     mus_torch = torch.tensor(mus[-IMGS_PER_TEST_PROPERTY_SET:])
     log_vars_torch = torch.tensor(log_vars[-IMGS_PER_TEST_PROPERTY_SET:])
 
@@ -489,31 +485,100 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     z = mus_torch + eps * std
     z = z.to(torch.float32)
 
-    # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
-    labels = [[-1.5, 0.0, 0.0, -1.2, -1.2, 0.0, 0.0],
-              [-1.5, 0.0, 0.0, -1.2,  3.6, 0.0, 0.0],
-              [-1.5, 0.0, 0.0,  1.6, -1.2, 0.0, 0.0],
-              [-1.5, 0.0, 0.0,  1.6,  3.6, 0.0, 0.0],
-              [ 1.5, 0.0, 0.0, -1.2, -1.2, 0.0, 0.0],
-              [ 1.5, 0.0, 0.0, -1.2,  3.6, 0.0, 0.0],
-              [ 1.5, 0.0, 0.0,  1.6, -1.2, 0.0, 0.0],
-              [ 1.5, 0.0, 0.0,  1.6,  3.6, 0.0, 0.0]]
+    pd.DataFrame(mus_np).to_csv(f'{img_save_dir}/test_mus.csv', index=False)
+    pd.DataFrame(log_vars_np).to_csv(f'{img_save_dir}/test_log_vars.csv', index=False)
+    pd.DataFrame(np.array(z)).to_csv(f'{img_save_dir}/test_zs.csv', index=False)
 
-    for label_idx, label in enumerate(labels):
-        label_np = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
-        label_np = label_np.reshape((IMGS_PER_TEST_PROPERTY_SET, PROPERTY_DIMS_Z))
-        label_torch = torch.tensor(label_np).to(torch.float32)
+    # label: 'eyes', ('hair_color', 'hair_length',) 'mouth', 'pose', ('background_mean', 'background_std')
+    eyes_labels = [-1.5, 1.5]
+    mouth_labels = [-1.2, -0.6, 0.0, 0.8, 1.6]
+    pose_labels = [-1.2, 0.0, 1.2, 2.4, 3.6]
 
-        with torch.no_grad():
-            generated_images = stylegan_finetune_v3.stylegan_generator(z=z.cuda(), label=label_torch.cuda())['image']
-            generated_images = generated_images.detach().cpu()
-        image_count = generated_images.size(0)
+    labels = []
+    eyes_label_order = []
+    mouth_label_order = []
+    pose_label_order = []
 
-        for img_idx in range(image_count):
-            img_no = label_idx * IMGS_PER_TEST_PROPERTY_SET + img_idx
+    for mouth in mouth_labels:
+        for eyes in eyes_labels:
+            for pose in pose_labels:
+                labels.append([eyes, 0.0, 0.0, mouth, pose, 0.0, 0.0])
 
-            save_tensor_png(generated_images[img_idx],
-                            image_save_path=f'{img_save_dir}/test_img_{img_no}.png')
+                eyes_label_order.append(eyes)
+                mouth_label_order.append(mouth)
+                pose_label_order.append(pose)
+
+    eyes_corrcoefs, eyes_mses, eyes_maes = [], [], []
+    mouth_corrcoefs, mouth_mses, mouth_maes = [], [], []
+    pose_corrcoefs, pose_mses, pose_maes = [], [], []
+
+    label_count = len(labels)
+
+    for z_idx in range(IMGS_PER_TEST_PROPERTY_SET):
+        if current_epoch == 0:
+            print(f'test generation for z index {z_idx} ...')
+
+        save_dir = f'{img_save_dir}/{z_idx}'
+        os.makedirs(save_dir, exist_ok=True)
+
+        eyes_scores = []
+        mouth_scores = []
+        pose_scores = []
+
+        for label_idx, label in enumerate(labels):
+            label_np = np.array([[label]])
+            label_np = label_np.reshape((1, PROPERTY_DIMS_Z))
+            label_torch = torch.tensor(label_np).to(torch.float32)
+
+            with torch.no_grad():
+                z_of_idx = z[z_idx].unsqueeze(0)
+                generated_images = stylegan_finetune_v3.stylegan_generator(z=z_of_idx.cuda(),
+                                                                           label=label_torch.cuda())['image']
+                generated_images = generated_images.detach().cpu()
+
+                property_scores = stylegan_finetune_v3.property_score_cnn(generated_images.cuda())
+                property_scores_np = property_scores.detach().cpu().numpy()
+
+                eyes_scores.append(round(property_scores_np[0][0], 4))
+                mouth_scores.append(round(property_scores_np[0][3], 4))
+                pose_scores.append(round(property_scores_np[0][4], 4))
+
+            save_tensor_png(generated_images[0],
+                            image_save_path=f'{save_dir}/test_img_{label_idx:03d}.png')
+
+        eyes_corrcoefs.append(round(np.corrcoef(eyes_label_order, eyes_scores)[0][1], 4))
+        mouth_corrcoefs.append(round(np.corrcoef(mouth_label_order, mouth_scores)[0][1], 4))
+        pose_corrcoefs.append(round(np.corrcoef(pose_label_order, pose_scores)[0][1], 4))
+
+        eyes_mse = sum((eyes_label_order[i] - eyes_scores[i]) ** 2 for i in range(label_count)) / label_count
+        mouth_mse = sum((mouth_label_order[i] - mouth_scores[i]) ** 2 for i in range(label_count)) / label_count
+        pose_mse = sum((pose_label_order[i] - pose_scores[i]) ** 2 for i in range(label_count)) / label_count
+
+        eyes_mae = sum(abs(eyes_label_order[i] - eyes_scores[i]) for i in range(label_count)) / label_count
+        mouth_mae = sum(abs(mouth_label_order[i] - mouth_scores[i]) for i in range(label_count)) / label_count
+        pose_mae = sum(abs(pose_label_order[i] - pose_scores[i]) for i in range(label_count)) / label_count
+
+        eyes_mses.append(round(eyes_mse, 4))
+        mouth_mses.append(round(mouth_mse, 4))
+        pose_mses.append(round(pose_mse, 4))
+
+        eyes_maes.append(round(eyes_mae, 4))
+        mouth_maes.append(round(mouth_mae, 4))
+        pose_maes.append(round(pose_mae, 4))
+
+        z_info_dict = {'eyes_score': eyes_scores, 'eyes_label': eyes_label_order,
+                       'mouth_score': mouth_scores, 'mouth_label': mouth_label_order,
+                       'pose_score': pose_scores, 'pose_label': pose_label_order}
+        z_info_df = pd.DataFrame(z_info_dict)
+        z_info_df.to_csv(f'{save_dir}/test_result.csv')
+
+    result_dict = {'z_idx': list(range(IMGS_PER_TEST_PROPERTY_SET)),
+                   'eyes_corr': eyes_corrcoefs, 'mouth_corr': mouth_corrcoefs, 'pose_corr': pose_corrcoefs,
+                   'eyes_mse': eyes_mses, 'mouth_mse': mouth_mses, 'pose_mse': pose_mses,
+                   'eyes_mae': eyes_maes, 'mouth_mae': mouth_maes, 'pose_mae': pose_maes}
+
+    result_df = pd.DataFrame(result_dict)
+    result_df.to_csv(f'{img_save_dir}/result_each_z.csv')
 
     # 랜덤하게 30장 생성
     z_random_gen = torch.randn((RANDOM_GEN_TEST_IMGS_PER_EPOCH, ORIGINAL_HIDDEN_DIMS_Z)).to(torch.float32)
