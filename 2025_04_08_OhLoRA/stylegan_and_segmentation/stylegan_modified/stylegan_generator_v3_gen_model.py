@@ -67,7 +67,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 0.5 * mu_loss + 0.25 * logvar_loss
+    total_loss = mse_loss + gender_loss + 25 * mu_loss + 0.25 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
@@ -322,8 +322,6 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         for idx, raw_data in enumerate(fine_tuning_dataloader):
             is_check = (current_epoch < 10 and idx % 20 == 0) or (current_epoch == 0 and idx < 20)
-            use_mu_and_logvar = idx >= len(fine_tuning_dataloader) - IMGS_PER_TEST_PROPERTY_SET
-            save_mu_and_logvar = idx >= len(fine_tuning_dataloader) - LAST_BATCHES_TO_SAVE_MU_AND_LOGVAR
 
             images = raw_data['image']
             images = images.to(stylegan_finetune_v3.device)
