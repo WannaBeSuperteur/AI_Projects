@@ -67,7 +67,7 @@ def define_cnn_model(device):
     return cnn_model
 
 
-# CNN 모델 학습
+# CNN 모델 학습 (Property Score 계산용)
 # Create Date : 2025.04.13
 # Last Update Date : 2025.04.14
 # - train log 에 loss 외에도 abs diff, corr-coef 추가

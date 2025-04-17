@@ -2,7 +2,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.transforms as transforms
 from torchview import draw_graph
+from torchvision.io import read_image
 
 from stylegan_modified.fine_tuning import concatenate_property_scores
 from stylegan_modified.stylegan_generator import StyleGANGeneratorForV3
@@ -40,6 +42,12 @@ CNN_TENSOR_TEST_DIR = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_mo
 os.makedirs(CNN_TENSOR_TEST_DIR, exist_ok=True)
 
 torch.set_printoptions(linewidth=160, sci_mode=False)
+
+stylegan_transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
+])
 
 
 loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean', 'back_std']
@@ -545,6 +553,54 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
                         image_save_path=f'{img_save_dir}/test_random_gen_img_{img_no:03d}.png')
 
 
+# (테스트용) 매 epoch 마다 생성된 이미지에 대해 학습된 CNN 으로 Property Score 계산
+# Create Date : 2025.04.17
+# Last Update Date : -
+
+# Arguments:
+# - stylegan_finetune_v3 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning)
+# - max_epochs           (int)       : 최대 epoch 횟수
+# - images_per_epoch     (int)       : epoch 당 이미지 개수
+
+def test_compute_property_score(stylegan_finetune_v3, max_epochs, images_per_epoch=80):
+    img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning_v3'
+
+    for epoch in range(max_epochs):
+        print(f'checking epoch {epoch} ...')
+
+        epoch_dir = f'{img_dir}/epoch_{epoch:04d}'
+
+        try:
+            property_score_dict = {'epoch': [], 'img_name': [], 'eyes_score': [], 'mouth_score': [], 'pose_score': []}
+
+            image_names = list(filter(lambda x: x.startswith('test_random_gen_img'), os.listdir(epoch_dir)))
+            for img_no in range(images_per_epoch):
+                image_names.append(f'test_img_{img_no}.png')
+
+            image_paths = [f'{epoch_dir}/{name}' for name in image_names]
+
+            for image_name, image_path in zip(image_names, image_paths):
+                image = read_image(image_path)
+                image = stylegan_transform(image)
+
+                property_score_dict['epoch'].append(epoch)
+                property_score_dict['img_name'].append(image_name)
+
+                with torch.no_grad():
+                    property_scores = stylegan_finetune_v3.property_score_cnn(image.unsqueeze(0).cuda())
+                    property_score_np = property_scores.detach().cpu().numpy()
+
+                    property_score_dict['eyes_score'].append(round(property_score_np[0][0], 4))
+                    property_score_dict['mouth_score'].append(round(property_score_np[0][3], 4))
+                    property_score_dict['pose_score'].append(round(property_score_np[0][4], 4))
+
+            property_score_df = pd.DataFrame(property_score_dict)
+            property_score_df.to_csv(f'{epoch_dir}/test_property_cnn_result.csv')
+
+        except Exception as e:
+            print(f'error: {e}')
+
+
 # StyleGAN-FineTune-v3 모델 학습
 # Create Date : 2025.04.15
 # Last Update Date : 2025.04.16
@@ -567,6 +623,8 @@ def train_stylegan_finetune_v3(device, generator, fine_tuning_dataloader, proper
     # define StyleGAN-FineTune-v3 model
     stylegan_finetune_v3 = define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cnn_model)
     freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3)
+
+#    test_compute_property_score(stylegan_finetune_v3, max_epochs=70)
 
     # save model graph of StyleGAN-FineTune-v3 before training
     model_graph = draw_graph(stylegan_finetune_v3,
