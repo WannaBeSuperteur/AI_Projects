@@ -52,9 +52,6 @@ stylegan_transform = transforms.Compose([
 
 loss_types = ['eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'back_mean', 'back_std']
 
-mus = []
-log_vars = []
-
 
 # Loss Function for VAE (Background std 제외)
 
@@ -70,7 +67,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 0.1 * mu_loss + 0.01 * logvar_loss
+    total_loss = mse_loss + gender_loss + 0.5 * mu_loss + 0.25 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
@@ -165,19 +162,10 @@ class StyleGANFineTuneV3(nn.Module):
 
         return mu + eps * std
 
-    def forward(self, x, property_label,
-                tensor_visualize_test=False,
-                use_mu_and_logvar_for_test_generation=False,
-                save_mu_and_logvar=False):
-
-        global mus, log_vars
+    def forward(self, x, property_label, tensor_visualize_test=False):
 
         mu, logvar = self.CVAE_encoder(x, property_label)
         z = self.reparameterize(mu, logvar)
-
-        if use_mu_and_logvar_for_test_generation or save_mu_and_logvar:
-            mus.append(list(mu[0].detach().cpu().numpy()))
-            log_vars.append(list(logvar[0].detach().cpu().numpy()))
 
         generated_image = self.stylegan_generator(z, property_label, style_mixing_prob=0.0)
         generated_image_property_score = self.property_score_cnn(generated_image['image'])
@@ -289,8 +277,9 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 
 # 정의된 StyleGAN-FineTune-v3 모델을 학습
 # Create Date : 2025.04.15
-# Last Update Date : 2025.04.17
+# Last Update Date : 2025.04.18
 # - 이미지 생성 테스트를 통과한 z 값이 있는 모델만 저장하도록 수정
+# - 테스트 이미지 생성 시 사용할 z 값 도출 알고리즘 수정 사항 반영
 
 # Arguments:
 # - stylegan_finetune_v3   (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
@@ -302,14 +291,13 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 # - fine_tuned_generator_encoder (nn.Module) : Fine-Tuning 된 StyleGAN-FineTune-v3 모델의 Generator 에 대한 CVAE Encoder
 
 def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataloader):
-    global mus, log_vars
-
     stylegan_finetune_v3.train()
 
     current_epoch = 0
     min_train_loss = None
     min_train_loss_epoch = 0
     best_epoch_model = None
+    min_mean_mae = None
 
     train_log = {'epoch': [], 'batch_idx': [],
                  'total_loss': [], 'mse': [], 'gender_loss': [], 'mu_loss': [], 'logvar_loss': []}
@@ -320,9 +308,6 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         train_log[f'{loss_type}_abs'] = []
 
     while True:
-        mus = []
-        log_vars = []
-
         train_loss = 0.0
         train_loss_mse = 0.0
         train_loss_gender = 0.0
@@ -346,11 +331,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             labels = labels.to(stylegan_finetune_v3.device).to(torch.float32)
 
             mu, logvar, gen_img_prop_score, gen_img_gender_score = (
-                stylegan_finetune_v3(x=images,
-                                     property_label=labels,
-                                     tensor_visualize_test=False,
-                                     use_mu_and_logvar_for_test_generation=use_mu_and_logvar,
-                                     save_mu_and_logvar=save_mu_and_logvar))
+                stylegan_finetune_v3(x=images, property_label=labels, tensor_visualize_test=False))
 
             stylegan_finetune_v3.optimizer.zero_grad()
 
@@ -398,11 +379,13 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         total_loss_dict['logvar_loss'] = train_loss_logvar
 
         # 이미지 생성 테스트
-        passed_z_count = test_create_output_images(stylegan_finetune_v3, current_epoch)
+        passed_z_count, mean_mae = test_create_output_images(stylegan_finetune_v3,
+                                                             current_epoch,
+                                                             fine_tuning_dataloader)
 
         # 로그 출력
         print(f'epoch {current_epoch}: loss = {train_loss:.4f}, passed = {passed_z_count}, '
-              f'CUDA memory = {torch.cuda.memory_allocated()}')
+              f'mean MAE = {round(mean_mae, 4)}, CUDA memory = {torch.cuda.memory_allocated()}')
 
         save_train_log(current_epoch, '-', train_log, loss_dict=total_loss_dict)
 
@@ -415,7 +398,9 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             best_epoch_model.load_state_dict(stylegan_finetune_v3.state_dict())
 
         # 모델 저장
-        if passed_z_count >= 1:
+        if passed_z_count >= 1 and (min_mean_mae is None or mean_mae < min_mean_mae):
+            min_mean_mae = mean_mae
+
             passed_model = StyleGANFineTuneV3().to(stylegan_finetune_v3.device)
             passed_model.load_state_dict(stylegan_finetune_v3.state_dict())
 
@@ -465,29 +450,50 @@ def save_train_log(current_epoch, batch_idx, train_log, loss_dict):
 
 # StyleGAN-FineTune-v3 모델 학습 중 출력 결과물 테스트
 # Create Date : 2025.04.15
-# Last Update Date : 2025.04.17
+# Last Update Date : 2025.04.18
 # - 테스트 이미지 생성 로직 수정
+# - 테스트 이미지 생성 시 사용할 z 값 도출 알고리즘 수정
 
 # Arguments:
-# - stylegan_finetune_v3 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning 중)
-# - current_epoch        (int)       : 현재 epoch 의 번호
+# - stylegan_finetune_v3   (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning 중)
+# - current_epoch          (int)        : 현재 epoch 의 번호
+# - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
 
 # Returns:
-# - passed_z_count (int) : Oh-LoRA 생성을 위한 z 값으로 합격 판정을 받은 z 값의 개수
+# - passed_z_count (int)   : Oh-LoRA 생성을 위한 z 값으로 합격 판정을 받은 z 값의 개수
+# - mean_mae       (float) : eyes, mouth, pose score 의 평균 MAE 값
 
-def test_create_output_images(stylegan_finetune_v3, current_epoch):
-    global mus, log_vars
-
+def test_create_output_images(stylegan_finetune_v3, current_epoch, fine_tuning_dataloader):
     img_save_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning_v3'
     img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}'
     os.makedirs(img_save_dir, exist_ok=True)
 
-    # save as DataFrame first
-    mus_np = np.round(np.array(mus), 4)
-    log_vars_np = np.round(np.array(log_vars), 4)
+    # derive z
+    mus_np, log_vars_np = None, None
 
-    mus_torch = torch.tensor(mus[-IMGS_PER_TEST_PROPERTY_SET:])
-    log_vars_torch = torch.tensor(log_vars[-IMGS_PER_TEST_PROPERTY_SET:])
+    for idx, raw_data in enumerate(fine_tuning_dataloader):
+        with torch.no_grad():
+            images = raw_data['image']
+            images = images.to(stylegan_finetune_v3.device)
+            labels = concatenate_property_scores(raw_data)
+            labels = labels.to(stylegan_finetune_v3.device).to(torch.float32)
+
+            mu, logvar = stylegan_finetune_v3.CVAE_encoder(images, labels)
+
+            if mus_np is None or log_vars_np is None:
+                mus_np = mu.detach().cpu().numpy()
+                log_vars_np = logvar.detach().cpu().numpy()
+            else:
+                mus_np = np.concatenate([mus_np, mu.detach().cpu().numpy()], axis=0)
+                log_vars_np = np.concatenate([log_vars_np, logvar.detach().cpu().numpy()], axis=0)
+
+        if np.shape(mus_np)[0] >= IMGS_PER_TEST_PROPERTY_SET:
+            mus_np = mus_np[:IMGS_PER_TEST_PROPERTY_SET]
+            log_vars_np = log_vars_np[:IMGS_PER_TEST_PROPERTY_SET]
+            break
+
+    mus_torch = torch.tensor(mus_np[-IMGS_PER_TEST_PROPERTY_SET:])
+    log_vars_torch = torch.tensor(log_vars_np[-IMGS_PER_TEST_PROPERTY_SET:])
 
     std = torch.exp(0.5 * log_vars_torch)
     eps = torch.randn_like(std)
@@ -495,6 +501,7 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     z = mus_torch + eps * std
     z = z.to(torch.float32)
 
+    # save as DataFrame first
     pd.DataFrame(mus_np).to_csv(f'{img_save_dir}/test_mus.csv', index=False)
     pd.DataFrame(log_vars_np).to_csv(f'{img_save_dir}/test_log_vars.csv', index=False)
     pd.DataFrame(np.array(z)).to_csv(f'{img_save_dir}/test_zs.csv', index=False)
@@ -604,6 +611,11 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
                    'eyes_mse': eyes_mses, 'mouth_mse': mouth_mses, 'pose_mse': pose_mses,
                    'eyes_mae': eyes_maes, 'mouth_mae': mouth_maes, 'pose_mae': pose_maes}
 
+    mean_eyes_mae = np.mean(eyes_maes)
+    mean_mouth_mae = np.mean(mouth_maes)
+    mean_pose_mae = np.mean(pose_maes)
+    mean_mae = (mean_eyes_mae + mean_mouth_mae + mean_pose_mae) / 3
+
     result_df = pd.DataFrame(result_dict)
     result_df.to_csv(f'{img_save_dir}/result_each_z.csv')
 
@@ -644,7 +656,7 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
         save_tensor_png(random_generated_images[img_no],
                         image_save_path=f'{img_save_dir}/test_random_gen_img_{img_no:03d}.png')
 
-    return passed_z_count
+    return passed_z_count, mean_mae
 
 
 # (테스트용) 매 epoch 마다 생성된 이미지에 대해 학습된 CNN 으로 Property Score 계산
