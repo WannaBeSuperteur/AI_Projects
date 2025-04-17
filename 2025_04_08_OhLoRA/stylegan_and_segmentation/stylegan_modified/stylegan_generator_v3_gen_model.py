@@ -289,9 +289,8 @@ def freeze_stylegan_finetune_v3_layers(stylegan_finetune_v3, check_again=False):
 
 # 정의된 StyleGAN-FineTune-v3 모델을 학습
 # Create Date : 2025.04.15
-# Last Update Date : 2025.04.16
-# - Fine-Tuned Generator 의 Encoder 반환 및 checkpointing 추가
-# - Test Image Generation 을 위한 mu, log_var 저장
+# Last Update Date : 2025.04.17
+# - 이미지 생성 테스트를 통과한 z 값이 있는 모델만 저장하도록 수정
 
 # Arguments:
 # - stylegan_finetune_v3   (nn.Module)  : StyleGAN-FineTune-v1 모델의 Generator (Fine-Tuning 대상)
@@ -398,7 +397,13 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         total_loss_dict['mu_loss'] = train_loss_mu
         total_loss_dict['logvar_loss'] = train_loss_logvar
 
-        print(f'epoch {current_epoch}: loss = {train_loss:.4f}, CUDA memory = {torch.cuda.memory_allocated()}')
+        # 이미지 생성 테스트
+        passed_z_count = test_create_output_images(stylegan_finetune_v3, current_epoch)
+
+        # 로그 출력
+        print(f'epoch {current_epoch}: loss = {train_loss:.4f}, passed = {passed_z_count}, '
+              f'CUDA memory = {torch.cuda.memory_allocated()}')
+
         save_train_log(current_epoch, '-', train_log, loss_dict=total_loss_dict)
 
         # Early Stopping 처리
@@ -409,6 +414,11 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
             best_epoch_model = StyleGANFineTuneV3().to(stylegan_finetune_v3.device)
             best_epoch_model.load_state_dict(stylegan_finetune_v3.state_dict())
 
+        # 모델 저장
+        if passed_z_count >= 1:
+            passed_model = StyleGANFineTuneV3().to(stylegan_finetune_v3.device)
+            passed_model.load_state_dict(stylegan_finetune_v3.state_dict())
+
             model_dir_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
             ckpt_gen_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}_gen.pth'
             ckpt_enc_path = f'{model_dir_path}/stylegan_gen_fine_tuned_v3_ckpt_{current_epoch:04d}_enc.pth'
@@ -418,9 +428,6 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
 
         if current_epoch >= MAX_EPOCHS and current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
-
-        # 이미지 생성 테스트
-        test_create_output_images(stylegan_finetune_v3, current_epoch)
 
         current_epoch += 1
         stylegan_finetune_v3.scheduler.step()
@@ -464,6 +471,9 @@ def save_train_log(current_epoch, batch_idx, train_log, loss_dict):
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning 중)
 # - current_epoch        (int)       : 현재 epoch 의 번호
+
+# Returns:
+# - passed_z_count (int) : Oh-LoRA 생성을 위한 z 값으로 합격 판정을 받은 z 값의 개수
 
 def test_create_output_images(stylegan_finetune_v3, current_epoch):
     global mus, log_vars
@@ -513,6 +523,8 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     pose_corrcoefs, pose_mses, pose_maes = [], [], []
 
     label_count = len(labels)
+    passed_z_count = 0
+    passed_check = []
 
     for z_idx in range(IMGS_PER_TEST_PROPERTY_SET):
         if current_epoch == 0:
@@ -546,9 +558,9 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
             save_tensor_png(generated_images[0],
                             image_save_path=f'{save_dir}/test_img_{label_idx:03d}.png')
 
-        eyes_corrcoefs.append(round(np.corrcoef(eyes_label_order, eyes_scores)[0][1], 4))
-        mouth_corrcoefs.append(round(np.corrcoef(mouth_label_order, mouth_scores)[0][1], 4))
-        pose_corrcoefs.append(round(np.corrcoef(pose_label_order, pose_scores)[0][1], 4))
+        eyes_corrcoef = np.corrcoef(eyes_label_order, eyes_scores)[0][1]
+        mouth_corrcoef = np.corrcoef(mouth_label_order, mouth_scores)[0][1]
+        pose_corrcoef = np.corrcoef(pose_label_order, pose_scores)[0][1]
 
         eyes_mse = sum((eyes_label_order[i] - eyes_scores[i]) ** 2 for i in range(label_count)) / label_count
         mouth_mse = sum((mouth_label_order[i] - mouth_scores[i]) ** 2 for i in range(label_count)) / label_count
@@ -558,6 +570,10 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
         mouth_mae = sum(abs(mouth_label_order[i] - mouth_scores[i]) for i in range(label_count)) / label_count
         pose_mae = sum(abs(pose_label_order[i] - pose_scores[i]) for i in range(label_count)) / label_count
 
+        eyes_corrcoefs.append(round(eyes_corrcoef, 4))
+        mouth_corrcoefs.append(round(mouth_corrcoef, 4))
+        pose_corrcoefs.append(round(pose_corrcoef, 4))
+
         eyes_mses.append(round(eyes_mse, 4))
         mouth_mses.append(round(mouth_mse, 4))
         pose_mses.append(round(pose_mse, 4))
@@ -566,13 +582,24 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
         mouth_maes.append(round(mouth_mae, 4))
         pose_maes.append(round(pose_mae, 4))
 
+        # 합격 여부 판정 및 저장
+        is_passed_corr = eyes_corrcoef >= 0.85 and mouth_corrcoef >= 0.85 and pose_corrcoef >= 0.85
+        is_passed_mae = eyes_mae <= 0.8 and mouth_mae <= 0.6 and pose_mae <= 1.4
+        is_passed = is_passed_corr and is_passed_mae
+
+        if is_passed:
+            passed_z_count += 1
+            passed_check.append('O')
+        else:
+            passed_check.append('X')
+
         z_info_dict = {'eyes_score': eyes_scores, 'eyes_label': eyes_label_order,
                        'mouth_score': mouth_scores, 'mouth_label': mouth_label_order,
                        'pose_score': pose_scores, 'pose_label': pose_label_order}
         z_info_df = pd.DataFrame(z_info_dict)
         z_info_df.to_csv(f'{save_dir}/test_result.csv')
 
-    result_dict = {'z_idx': list(range(IMGS_PER_TEST_PROPERTY_SET)),
+    result_dict = {'z_idx': list(range(IMGS_PER_TEST_PROPERTY_SET)), 'passed': passed_check,
                    'eyes_corr': eyes_corrcoefs, 'mouth_corr': mouth_corrcoefs, 'pose_corr': pose_corrcoefs,
                    'eyes_mse': eyes_mses, 'mouth_mse': mouth_mses, 'pose_mse': pose_mses,
                    'eyes_mae': eyes_maes, 'mouth_mae': mouth_maes, 'pose_mae': pose_maes}
@@ -616,6 +643,8 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     for img_no in range(RANDOM_GEN_TEST_IMGS_PER_EPOCH):
         save_tensor_png(random_generated_images[img_no],
                         image_save_path=f'{img_save_dir}/test_random_gen_img_{img_no:03d}.png')
+
+    return passed_z_count
 
 
 # (테스트용) 매 epoch 마다 생성된 이미지에 대해 학습된 CNN 으로 Property Score 계산
