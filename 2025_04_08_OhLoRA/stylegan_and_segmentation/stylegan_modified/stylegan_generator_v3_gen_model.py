@@ -53,12 +53,16 @@ log_vars = []
 def vae_loss_function(generated_image_property_score, generated_image_gender_score, labels, mu, logvar):
     n = labels.size(0)
 
-    mse_loss = F.mse_loss(generated_image_property_score[:, :6], labels[:, :6], reduction='mean')
+    mse_loss_eyes = F.mse_loss(generated_image_property_score[:, :1], labels[:, :1], reduction='mean')
+    mse_loss_mouth = F.mse_loss(generated_image_property_score[:, 3:4], labels[:, 3:4], reduction='mean')
+    mse_loss_pose = F.mse_loss(generated_image_property_score[:, 4:5], labels[:, 4:5], reduction='mean')
+    mse_loss = (mse_loss_eyes + mse_loss_mouth + mse_loss_pose) / 3.0
+
     gender_loss = F.mse_loss(generated_image_gender_score, torch.ones((n, 1)).cuda(), reduction='mean')
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 0.1 * mu_loss + 0.001 * logvar_loss
+    total_loss = mse_loss + gender_loss + 0.1 * mu_loss + 0.01 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
@@ -386,7 +390,7 @@ def run_training_stylegan_finetune_v3(stylegan_finetune_v3, fine_tuning_dataload
         total_loss_dict['mu_loss'] = train_loss_mu
         total_loss_dict['logvar_loss'] = train_loss_logvar
 
-        print(f'epoch {current_epoch}: loss = {train_loss:.4f}')
+        print(f'epoch {current_epoch}: loss = {train_loss:.4f}, CUDA memory = {torch.cuda.memory_allocated()}')
         save_train_log(current_epoch, '-', train_log, loss_dict=total_loss_dict)
 
         # Early Stopping 처리
@@ -478,13 +482,14 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     z = z.to(torch.float32)
 
     # label: 'eyes', 'hair_color', 'hair_length', 'mouth', 'pose', 'background_mean' (, 'background_std')
-    labels = [[ 1.5,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
-              [-1.5,  1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
-              [-1.5, -1.2,  1.2, -1.2, -1.2,  1.2, 0.0],
-              [-1.5, -1.2, -1.5, -1.2, -1.2,  1.2, 0.0],
-              [-1.5, -1.2, -1.5,  1.2, -1.2,  1.2, 0.0],
-              [-1.5, -1.2, -1.5,  1.2,  2.4,  1.2, 0.0],
-              [-1.5, -1.2, -1.5,  1.2,  2.4, -1.2, 0.0]]
+    labels = [[-1.5, 0.0, 0.0, -1.2, -1.2, 0.0, 0.0],
+              [-1.5, 0.0, 0.0, -1.2,  3.6, 0.0, 0.0],
+              [-1.5, 0.0, 0.0,  1.6, -1.2, 0.0, 0.0],
+              [-1.5, 0.0, 0.0,  1.6,  3.6, 0.0, 0.0],
+              [ 1.5, 0.0, 0.0, -1.2, -1.2, 0.0, 0.0],
+              [ 1.5, 0.0, 0.0, -1.2,  3.6, 0.0, 0.0],
+              [ 1.5, 0.0, 0.0,  1.6, -1.2, 0.0, 0.0],
+              [ 1.5, 0.0, 0.0,  1.6,  3.6, 0.0, 0.0]]
 
     for label_idx, label in enumerate(labels):
         label_np = np.array([IMGS_PER_TEST_PROPERTY_SET * [label]])
