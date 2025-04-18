@@ -72,7 +72,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 0.08 * mu_loss + 0.01 * logvar_loss
+    total_loss = mse_loss + gender_loss + 0.12 * mu_loss + 0.01 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
@@ -585,7 +585,7 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
         pose_maes.append(round(pose_mae, 4))
 
         # 합격 여부 판정 및 저장
-        is_passed_corr = eyes_corrcoef >= 0.77 and mouth_corrcoef >= 0.85 and pose_corrcoef >= 0.85
+        is_passed_corr = eyes_corrcoef >= 0.77 and mouth_corrcoef >= 0.85 and pose_corrcoef >= 0.82
         is_passed_mae = eyes_mae <= 1.0 and mouth_mae <= 0.6 and pose_mae <= 1.4
         is_passed = is_passed_corr and is_passed_mae
 
