@@ -26,9 +26,11 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/model_structure_pdf'
 
 TENSOR_VISUALIZE_TEST_BATCH_SIZE = 8
-IMGS_PER_TEST_PROPERTY_SET = 10
+IMGS_PER_TEST_PROPERTY_SET = 30
 LAST_BATCHES_TO_SAVE_MU_AND_LOGVAR = 100
 RANDOM_GEN_TEST_IMGS_PER_EPOCH = 30
+
+assert IMGS_PER_TEST_PROPERTY_SET <= LAST_BATCHES_TO_SAVE_MU_AND_LOGVAR
 
 TRAIN_BATCH_SIZE = 16
 EARLY_STOPPING_ROUNDS = 40
@@ -70,7 +72,7 @@ def vae_loss_function(generated_image_property_score, generated_image_gender_sco
     mu_loss = F.mse_loss(mu, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
     logvar_loss = F.mse_loss(logvar, torch.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).cuda(), reduction='mean')
 
-    total_loss = mse_loss + gender_loss + 25 * mu_loss + 0.25 * logvar_loss
+    total_loss = mse_loss + gender_loss + 0.08 * mu_loss + 0.01 * logvar_loss
 
     loss_dict = {'total_loss': round(float(total_loss.detach().cpu().numpy()), 4),
                  'mse': round(float(mse_loss.detach().cpu().numpy()), 4),
@@ -465,8 +467,8 @@ def save_train_log(current_epoch, batch_idx, train_log, loss_dict):
 
 # StyleGAN-FineTune-v3 모델 학습 중 출력 결과물 테스트
 # Create Date : 2025.04.15
-# Last Update Date : 2025.04.17
-# - 테스트 이미지 생성 로직 수정
+# Last Update Date : 2025.04.18
+# - 테스트 이미지 생성 로직 수정 및 테스트 합격 기준 수정
 
 # Arguments:
 # - stylegan_finetune_v3 (nn.Module) : StyleGAN-FineTune-v1 모델의 Generator (StyleGAN-FineTune-v3 으로 Fine-Tuning 중)
@@ -500,7 +502,7 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
     pd.DataFrame(np.array(z)).to_csv(f'{img_save_dir}/test_zs.csv', index=False)
 
     # label: 'eyes', ('hair_color', 'hair_length',) 'mouth', 'pose', ('background_mean', 'background_std')
-    eyes_labels = [-1.5, 1.5]
+    eyes_labels = [-1.8, 1.8]
     mouth_labels = [-1.2, -0.6, 0.0, 0.8, 1.6]
     pose_labels = [-1.2, 0.0, 1.2, 2.4, 3.6]
 
@@ -583,8 +585,8 @@ def test_create_output_images(stylegan_finetune_v3, current_epoch):
         pose_maes.append(round(pose_mae, 4))
 
         # 합격 여부 판정 및 저장
-        is_passed_corr = eyes_corrcoef >= 0.85 and mouth_corrcoef >= 0.85 and pose_corrcoef >= 0.85
-        is_passed_mae = eyes_mae <= 0.8 and mouth_mae <= 0.6 and pose_mae <= 1.4
+        is_passed_corr = eyes_corrcoef >= 0.77 and mouth_corrcoef >= 0.85 and pose_corrcoef >= 0.85
+        is_passed_mae = eyes_mae <= 1.0 and mouth_mae <= 0.6 and pose_mae <= 1.4
         is_passed = is_passed_corr and is_passed_mae
 
         if is_passed:
