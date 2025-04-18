@@ -53,7 +53,7 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
                 'label': concatenated_labels.cuda()
             }
 
-            print_result_and_save_image = (idx % 10 == 0 or (current_epoch == 0 and idx < 10))
+            print_result_and_save_image = (idx % 20 == 0 or (current_epoch == 0 and idx < 10))
 
             d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
                 train_step(generator, generator_smooth, discriminator, data,
