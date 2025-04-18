@@ -228,6 +228,199 @@ class StyleGANDiscriminator(nn.Module):
         return x
 
 
+class StyleGANDiscriminatorForV4(nn.Module):
+    """Defines the discriminator network in StyleGAN.
+
+    NOTE: The discriminator takes images with `RGB` channel order and pixel
+    range [-1, 1] as inputs.
+
+    Settings for the network:
+
+    (1) resolution: The resolution of the input image.
+    (2) image_channels: Number of channels of the input image. (default: 3)
+    (3) label_size: Size of the additional label for conditional generation.
+        (default: 0)
+    (4) fused_scale: Whether to fused `conv2d` and `downsample` together,
+        resulting in `conv2d` with strides. (default: `auto`)
+    (5) use_wscale: Whether to use weight scaling. (default: True)
+    (6) minibatch_std_group_size: Group size for the minibatch standard
+        deviation layer. 0 means disable. (default: 4)
+    (7) minibatch_std_channels: Number of new channels after the minibatch
+        standard deviation layer. (default: 1)
+    (8) fmaps_base: Factor to control number of feature maps for each layer.
+        (default: 16 << 10)
+    (9) fmaps_max: Maximum number of feature maps in each layer. (default: 512)
+    """
+
+    def __init__(self,
+                 resolution,
+                 image_channels=3,
+                 label_size=3,  # (eyes, mouth, pose) property score
+                 fused_scale='auto',
+                 use_wscale=True,
+                 minibatch_std_group_size=TRAIN_BATCH_SIZE,
+                 minibatch_std_channels=1,
+                 fmaps_base=16 << 10,
+                 fmaps_max=512):
+        """Initializes with basic settings.
+
+        Raises:
+            ValueError: If the `resolution` is not supported, or `fused_scale`
+                is not supported.
+        """
+        super().__init__()
+
+        if resolution not in _RESOLUTIONS_ALLOWED:
+            raise ValueError(f'Invalid resolution: `{resolution}`!\n'
+                             f'Resolutions allowed: {_RESOLUTIONS_ALLOWED}.')
+        if fused_scale not in _FUSED_SCALE_ALLOWED:
+            raise ValueError(f'Invalid fused-scale option: `{fused_scale}`!\n'
+                             f'Options allowed: {_FUSED_SCALE_ALLOWED}.')
+
+        self.init_res = _INIT_RES
+        self.init_res_log2 = int(np.log2(self.init_res))
+        self.resolution = resolution
+        self.final_res_log2 = int(np.log2(self.resolution))
+        self.image_channels = image_channels
+        self.label_size = label_size
+        self.fused_scale = fused_scale
+        self.use_wscale = use_wscale
+        self.minibatch_std_group_size = minibatch_std_group_size
+        self.minibatch_std_channels = minibatch_std_channels
+        self.fmaps_base = fmaps_base
+        self.fmaps_max = fmaps_max
+
+        # Level of detail (used for progressive training).
+        self.register_buffer('lod', torch.zeros(()))
+        self.pth_to_tf_var_mapping = {'lod': 'lod'}
+
+        for res_log2 in range(self.final_res_log2, self.init_res_log2 - 1, -1):
+            res = 2 ** res_log2
+            block_idx = self.final_res_log2 - res_log2
+
+            # Input convolution layer for each resolution.
+            self.add_module(
+                f'input{block_idx}',
+                ConvBlock(in_channels=self.image_channels,
+                          out_channels=self.get_nf(res),
+                          kernel_size=1,
+                          padding=0,
+                          use_wscale=self.use_wscale))
+            self.pth_to_tf_var_mapping[f'input{block_idx}.weight'] = (
+                f'FromRGB_lod{block_idx}/weight')
+            self.pth_to_tf_var_mapping[f'input{block_idx}.bias'] = (
+                f'FromRGB_lod{block_idx}/bias')
+
+            # Convolution block for each resolution (except the last one).
+            if res != self.init_res:
+                if self.fused_scale == 'auto':
+                    fused_scale = (res >= _AUTO_FUSED_SCALE_MIN_RES)
+                else:
+                    fused_scale = self.fused_scale
+                self.add_module(
+                    f'layer{2 * block_idx}',
+                    ConvBlock(in_channels=self.get_nf(res),
+                              out_channels=self.get_nf(res),
+                              use_wscale=self.use_wscale))
+                tf_layer0_name = 'Conv0'
+                self.add_module(
+                    f'layer{2 * block_idx + 1}',
+                    ConvBlock(in_channels=self.get_nf(res),
+                              out_channels=self.get_nf(res // 2),
+                              downsample=True,
+                              fused_scale=fused_scale,
+                              use_wscale=self.use_wscale))
+                tf_layer1_name = 'Conv1_down'
+
+            # Convolution block for last resolution.
+            else:
+                self.add_module(
+                    f'layer{2 * block_idx}',
+                    ConvBlock(in_channels=self.get_nf(res),
+                              out_channels=self.get_nf(res),
+                              use_wscale=self.use_wscale,
+                              minibatch_std_group_size=minibatch_std_group_size,
+                              minibatch_std_channels=minibatch_std_channels))
+                tf_layer0_name = 'Conv'
+                self.add_module(
+                    f'layer{2 * block_idx + 1}',
+                    DenseBlock(in_channels=self.get_nf(res) * res * res,
+                               out_channels=self.get_nf(res // 2),
+                               use_wscale=self.use_wscale))
+                tf_layer1_name = 'Dense0'
+
+            self.pth_to_tf_var_mapping[f'layer{2 * block_idx}.weight'] = (
+                f'{res}x{res}/{tf_layer0_name}/weight')
+            self.pth_to_tf_var_mapping[f'layer{2 * block_idx}.bias'] = (
+                f'{res}x{res}/{tf_layer0_name}/bias')
+            self.pth_to_tf_var_mapping[f'layer{2 * block_idx + 1}.weight'] = (
+                f'{res}x{res}/{tf_layer1_name}/weight')
+            self.pth_to_tf_var_mapping[f'layer{2 * block_idx + 1}.bias'] = (
+                f'{res}x{res}/{tf_layer1_name}/bias')
+
+        # Final dense block.
+        self.add_module(
+            f'layer{2 * block_idx + 2}',
+            DenseBlock(in_channels=self.get_nf(res // 2) + self.label_size,
+                       out_channels=1,
+                       use_wscale=self.use_wscale,
+                       wscale_gain=1.0,
+                       activation_type='linear'))
+        self.pth_to_tf_var_mapping[f'layer{2 * block_idx + 2}.weight'] = (
+            f'{res}x{res}/Dense1/weight')
+        self.pth_to_tf_var_mapping[f'layer{2 * block_idx + 2}.bias'] = (
+            f'{res}x{res}/Dense1/bias')
+
+        self.downsample = DownsamplingLayer()
+
+    def get_nf(self, res):
+        """Gets number of feature maps according to current resolution."""
+        return min(self.fmaps_base // res, self.fmaps_max)
+
+    def forward(self, image, label, lod=None, **_unused_kwargs):
+        expected_shape = (self.image_channels, self.resolution, self.resolution)
+        if image.ndim != 4 or image.shape[1:] != expected_shape:
+            raise ValueError(f'The input tensor should be with shape '
+                             f'[batch_size, channel, height, width], where '
+                             f'`channel` equals to {self.image_channels}, '
+                             f'`height`, `width` equal to {self.resolution}!\n'
+                             f'But `{image.shape}` is received!')
+
+        lod = self.lod.cpu().tolist() if lod is None else lod
+        if lod + self.init_res_log2 > self.final_res_log2:
+            raise ValueError(f'Maximum level-of-detail (lod) is '
+                             f'{self.final_res_log2 - self.init_res_log2}, '
+                             f'but `{lod}` is received!')
+
+        batch_size = image.shape[0]
+        if label.ndim != 2 or label.shape != (batch_size, self.label_size):
+            raise ValueError(f'Input label should be with shape '
+                             f'[batch_size, label_size], where '
+                             f'`batch_size` equals to that of '
+                             f'images ({image.shape[0]}) and '
+                             f'`label_size` equals to {self.label_size}!\n'
+                             f'But `{label.shape}` is received!')
+
+        for res_log2 in range(self.final_res_log2, self.init_res_log2 - 1, -1):
+            block_idx = current_lod = self.final_res_log2 - res_log2
+            if current_lod <= lod < current_lod + 1:
+                x = self.__getattr__(f'input{block_idx}')(image)
+            elif current_lod - 1 < lod < current_lod:
+                alpha = lod - np.floor(lod)
+                x = (self.__getattr__(f'input{block_idx}')(image) * alpha +
+                     x * (1 - alpha))
+            if lod < current_lod + 1:
+                x = self.__getattr__(f'layer{2 * block_idx}')(x)
+                x = self.__getattr__(f'layer{2 * block_idx + 1}')(x)
+            if lod > current_lod:
+                image = self.downsample(image)
+
+        x = torch.cat([x, label], dim=1)
+        x = self.__getattr__(f'layer{2 * block_idx + 2}')(x)
+
+        return x
+
+
 class MiniBatchSTDLayer(nn.Module):
     """Implements the minibatch standard deviation layer."""
 
