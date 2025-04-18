@@ -216,7 +216,8 @@ class StyleGANFineTuneV3(nn.Module):
 
 # StyleGAN-FineTune-v3 모델 정의 및 generator 의 state_dict 를 로딩
 # Create Date : 2025.04.15
-# Last Update Date : -
+# Last Update Date : 2025.04.18
+# - CVAE Encoder 의 learning rate 를 기존의 1/10 으로 감소
 
 # Arguments:
 # - device             (device)    : 모델을 mapping 시킬 device (GPU 등)
@@ -229,7 +230,12 @@ class StyleGANFineTuneV3(nn.Module):
 
 def define_stylegan_finetune_v3(device, generator, property_cnn_model, gender_cnn_model):
     stylegan_finetune_v3 = StyleGANFineTuneV3()
-    stylegan_finetune_v3.optimizer = torch.optim.AdamW(stylegan_finetune_v3.parameters(), lr=0.0001)
+
+    stylegan_finetune_v3.optimizer = torch.optim.AdamW(
+        [{'params': stylegan_finetune_v3.stylegan_generator.parameters()},
+         {'params': stylegan_finetune_v3.CVAE_encoder.parameters(), 'lr': 0.00001}],
+        lr=0.0001)
+
     stylegan_finetune_v3.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=stylegan_finetune_v3.optimizer,
                                                                                 T_max=10,
                                                                                 eta_min=0)
