@@ -59,7 +59,8 @@ def run_inference_test_before_finetuning(generator):
 
 # StyleGAN-FineTune-v3 모델의 Fine-Tuning 실시 (핵심 속성 값 7개를 latent vector 에 추가)
 # Create Date : 2025.04.15
-# Last Update Date : -
+# Last Update Date : 2025.04.18
+# - 불필요한 'fine_tuned_generator_cnn' 변수 삭제
 
 # Arguments:
 # - generator_state_dict   (OrderedDict) : StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
@@ -92,7 +93,7 @@ def run_stylegan_fine_tuning(generator_state_dict, fine_tuning_dataloader, devic
     run_inference_test_before_finetuning(generator)
 
     # fine tuning 실시
-    fine_tuned_generator, fine_tuned_generator_cnn, exist_dict = run_fine_tuning(generator, fine_tuning_dataloader)
+    fine_tuned_generator, exist_dict = run_fine_tuning(generator, fine_tuning_dataloader)
 
     fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified'
     os.makedirs(fine_tuned_model_path, exist_ok=True)
