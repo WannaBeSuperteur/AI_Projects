@@ -19,7 +19,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 3               # eyes, mouth, pose
-TRAIN_BATCH_SIZE = 16
+TRAIN_BATCH_SIZE = 8
 TOTAL_EPOCHS = 500
 IMGS_PER_TEST_PROPERTY_SET = 1
 
