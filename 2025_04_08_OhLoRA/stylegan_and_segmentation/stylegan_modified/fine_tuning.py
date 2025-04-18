@@ -247,6 +247,25 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
         current_epoch += 1
 
 
+# Property Score 포맷의 데이터를 Concatenate 하여 PyTorch 형식으로 변환 (위 train 함수에는 추후 리팩토링 시 적용 예정)
+# Create Date : 2025.04.13
+# Last Update Date : -
+
+def concatenate_property_scores(raw_data):
+    concatenated_labels = torch.concat([raw_data['label']['eyes'],
+                                        raw_data['label']['hair_color'],
+                                        raw_data['label']['hair_length'],
+                                        raw_data['label']['mouth'],
+                                        raw_data['label']['pose'],
+                                        raw_data['label']['background_mean'],
+                                        raw_data['label']['background_std']])
+    concatenated_labels = torch.reshape(concatenated_labels, (PROPERTY_DIMS_Z, -1))
+    concatenated_labels = torch.transpose(concatenated_labels, 0, 1)
+    concatenated_labels = concatenated_labels.to(torch.float32)
+
+    return concatenated_labels
+
+
 # 모델의 각 레이어의 trainable / fronzen 상태 확인
 # Create Date : 2025.04.12
 # Last Update Date : -
