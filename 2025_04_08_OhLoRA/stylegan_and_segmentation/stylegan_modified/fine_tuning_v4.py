@@ -21,7 +21,7 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 PROPERTY_DIMS_Z = 3               # eyes, mouth, pose
 TRAIN_BATCH_SIZE = 16
 TOTAL_EPOCHS = 500
-IMGS_PER_TEST_PROPERTY_SET = 2
+IMGS_PER_TEST_PROPERTY_SET = 1
 
 
 def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args, dis_train_args,
