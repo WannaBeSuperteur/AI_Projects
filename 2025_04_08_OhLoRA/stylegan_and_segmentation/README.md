@@ -10,7 +10,8 @@
   * [3-2. CNN Model (성별, 이미지 품질)](#3-2-cnn-model-성별-이미지-품질)
   * [3-3. CNN Model (나머지 핵심 속성 값 7개)](#3-3-cnn-model-나머지-핵심-속성-값-7개)
   * [3-4. Segmentation Model (FaceXFormer)](#3-4-segmentation-model-facexformer)
-* [4. 코드 실행 방법](#4-코드-실행-방법)
+* [4. 향후 진행하고 싶은 것](#4-향후-진행하고-싶은-것)
+* [5. 코드 실행 방법](#5-코드-실행-방법)
 
 ## 1. 개요
 
@@ -18,8 +19,10 @@
 * 기본 StyleGAN 으로 이미지 생성 후, Pre-trained Segmentation 모델을 이용하여 **핵심 속성 값** 을 라벨링 
   * 단, 성별은 생성된 이미지 중 2,000 장에 대해 **수기로 라벨링** 하여 CNN 으로 학습 후, 해당 CNN 으로 나머지 8,000 장에 대해 성별 값 추정
   * 생성 대상 이미지가 여성이므로, **여성 이미지 (품질이 나쁜 이미지 제외) 만을 따로 필터링한 후, 필터링된 이미지에 대해서만 나머지 속성을 라벨링** 
-* 핵심 속성 값에 해당하는 element 를 StyleGAN 의 latent vector 에 추가하여, 생성된 이미지에 대해 Fine-Tuning 실시
-  * 이때, latent vector 와 관련된 부분을 제외한 나머지 StyleGAN parameter 는 모두 freeze
+* 모델 구조
+  * 핵심 속성 값에 해당하는 element 를 StyleGAN 의 latent vector 에 추가하여, 생성된 이미지에 대해 Fine-Tuning 실시 **(StyleGAN-FineTune-v1)**
+    * 이때, latent vector 와 관련된 부분을 제외한 나머지 StyleGAN parameter 는 모두 freeze
+  * 최종적으로, **StyleGAN-FineTune-v1** 의 Generator 를 Decoder 로 하는 **Conditional VAE 기반 모델 (StyleGAN-FineTune-v3)** 을 채택
 
 ![image](../../images/250408_1.PNG)
 
@@ -149,13 +152,13 @@
 
 [Implementation & Pre-trained Model Source : GenForce GitHub](https://github.com/genforce/genforce/tree/master) (MIT License)
 
-| 모델                                 | 설명                                                                                               | StyleGAN Style Mixing | Property Score 데이터                                                   | 여성 이미지 생성                         | 핵심 속성값 오류 없음  | 핵심 속성값 의미 반영 생성 |
-|------------------------------------|--------------------------------------------------------------------------------------------------|-----------------------|----------------------------------------------------------------------|-----------------------------------|---------------|-----------------|
-| Original StyleGAN                  | [GenForce GitHub](https://github.com/genforce/genforce/tree/master) 에서 다운받은 Pre-trained StyleGAN | ✅ (90% 확률)            |                                                                      | ❌ (**여성 55.6%** = 1,112 / 2,000)  | ❌             | ❌               |
-| StyleGAN-FineTune-v1               | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | ✅ (90% 확률)            | **1차 알고리즘** (for FineTune-v1) & Score                                | ✅ (**여성 93.7%** = 281 / 300)      | ❌             | ❌               |
-| StyleGAN-FineTune-v2 **(❌ 학습 불가)** | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ❓ (남성 이미지 생성 확률 증가)               | ✅             | ❌               |
-| StyleGAN-FineTune-v3               | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ✅ (남성 이미지 생성 방지를 위한 Loss Term 사용) | ✅ (만족할 만한 수준) | ✅ (학습 초중반)      |
-| StyleGAN-FineTune-v4               | StyleGAN-FineTune-v1 을 **Style Mixing 미 적용** 하여 재 학습                                             | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score |                                   |               |                 |
+| 모델                                    | 설명                                                                                               | StyleGAN Style Mixing | Property Score 데이터                                                   | 여성 이미지 생성                         | 핵심 속성값 오류 없음  | 핵심 속성값 의미 반영 생성 |
+|---------------------------------------|--------------------------------------------------------------------------------------------------|-----------------------|----------------------------------------------------------------------|-----------------------------------|---------------|-----------------|
+| Original StyleGAN                     | [GenForce GitHub](https://github.com/genforce/genforce/tree/master) 에서 다운받은 Pre-trained StyleGAN | ✅ (90% 확률)            |                                                                      | ❌ (**여성 55.6%** = 1,112 / 2,000)  | ❌             | ❌               |
+| StyleGAN-FineTune-v1                  | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | ✅ (90% 확률)            | **1차 알고리즘** (for FineTune-v1) & Score                                | ✅ (**여성 93.7%** = 281 / 300)      | ❌             | ❌               |
+| StyleGAN-FineTune-v2<br>**(❌ 학습 불가)** | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ❓ (남성 이미지 생성 확률 증가)               | ✅             | ❌               |
+| StyleGAN-FineTune-v3<br>**(✅ 최종 채택)** | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ✅ (남성 이미지 생성 방지를 위한 Loss Term 사용) | ✅ (만족할 만한 수준) | ✅ (학습 초중반)      |
+| StyleGAN-FineTune-v4                  | StyleGAN-FineTune-v1 을 **Style Mixing 미 적용** 하여 재 학습                                             | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score |                                   |               |                 |
 
 * [StyleGAN Style Mixing](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md#3-1-style-mixing-mixing-regularization)
   * 적용 시, 동일한 latent vector z 와 동일한 property label 에 대해서도 **서로 다른 인물이나 특징의 이미지가 생성** 될 수 있음
@@ -164,6 +167,20 @@
   * 핵심 속성 값 (성별, 이미지 품질 제외 7가지) 이 달라지면 **동일한 인물의 특징이 달라지는 것이 아닌, 아예 다른 인물이 생성되는** 것
 * 핵심 속성값 의미 반영 생성
   * 핵심 속성값의 의미 (눈을 뜬 정도, 입을 벌린 정도, 머리 색, 머리 길이, 배경 정보 등) 를 반영하여 인물 이미지가 생성되는지의 여부
+* Fine-Tuned 모델 별 핵심 속성 값 사용
+
+| Model                                 | 사용 핵심 속성 값 (성별, 이미지 품질 제외)                   |
+|---------------------------------------|----------------------------------------------|
+| StyleGAN-FineTune-v1                  | **7개** 모두                                    |
+| StyleGAN-FineTune-v2<br>**(❌ 학습 불가)** | 배경 색 표준편차 (background std) 를 제외한 **6개**      |
+| StyleGAN-FineTune-v3<br>**(✅ 최종 채택)** | ```eyes```, ```mouth```, ```pose``` 의 **3개** |
+| StyleGAN-FineTune-v4                  | ```eyes```, ```mouth```, ```pose``` 의 **3개** |
+
+* 전체 모델 개념도
+
+![image](../../images/250408_17.PNG)
+
+----
 
 **1. Original Model**
 
@@ -176,12 +193,17 @@
     * original model from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
 * Study Doc
   * [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
+* 모델 구조 정보
+  * [Generator 모델](model_structure_pdf/original_pretrained_generator.pdf)
+  * [Discriminator 모델](model_structure_pdf/original_pretrained_discriminator.pdf)
+
+----
 
 **2. Modified Fine-Tuned StyleGAN (v1)**
 
 ![image](../../images/250408_10.PNG)
 
-* How to run Fine-Tuning
+* Overview (How to run Fine-Tuning)
   * **핵심 속성 값 (Property) 에 해당하는 size 7 의 Tensor** 를 Generator 의 입력 부분 및 Discriminator 의 Final Dense Layer 부분에 추가
   * Generator 와 Discriminator 의 **Conv. Layer 를 Freeze 시키고, Dense Layer 들만 추가 학습**
   * Generator Loss 가 Discriminator Loss 의 2배 이상이면, Discriminator 를 한번 학습할 때 **Generator 를 최대 4번까지 연속 학습** 하는 메커니즘 적용 
@@ -196,15 +218,20 @@
   * Property Score 계산 오류 (1차 알고리즘 자체의 오류 & 픽셀 색 관련 속성의 경우 이미지를 잘못 사용하여 픽셀 매칭 오류)
   * [VAE (Variational Auto-Encoder)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md) 와 달리 [GAN](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_GAN.md) 은 잠재 변수 학습에 중점을 두지 않음
   * StyleGAN 의 **Style Mixing** 메커니즘으로 인해 동일한 latent vector, label 에 대해서도 **서로 다른 이미지가 생성되어 학습에 지장**
+* 모델 구조 정보
+  * [Generator 모델](model_structure_pdf/restructured_generator%20(AFTER%20FREEZING).pdf)
+  * [Discriminator 모델](model_structure_pdf/restructured_discriminator%20(AFTER%20FREEZING).pdf)
 * 학습 코드
   * [run_stylegan_fine_tuning.py **(entry)**](run_stylegan_fine_tuning.py)
   * [fine_tuning.py **(main training)**](stylegan_modified/fine_tuning.py)
+
+----
 
 **3. Additional Fine-Tuned StyleGAN Generator (v2, CNN idea, ❌ Train Failed)**
 
 ![image](../../images/250408_11.PNG)
 
-* How to run Fine-Tuning
+* Overview (How to run Fine-Tuning)
   * 이미지로부터 Property Score 를 예측하는 Conv. NN (위 그림의 녹색 점선으로 표시한 부분) 을 먼저 학습
     * CNN 의 학습 데이터는 Original StyleGAN 으로 생성한 10,000 장 이미지 중 필터링된 여성 이미지 4,703 장 
   * 해당 CNN 을 Freeze 시킨 후, Fine-Tuned Generator (v1) 을 포함한 전체 신경망을 학습
@@ -216,25 +243,119 @@
 * 학습 실패 분석
   * CNN 을 완전히 Freeze 하고, StyleGAN 을 Dense Layer 를 제외한 모든 Layer 를 Freeze 하는 것보다, **모든 모델의 모든 레이어를 학습 가능하게 해야 학습이 잘 진행됨**
   * 처음에는 Fixed Z + Label 로 학습하고 점차적으로 강한 Noise 를 추가하는 식으로 학습해도 **학습이 거의 진행되지 않음**
+* 모델 구조 정보
+  * [전체 모델 (StyleGAN-FineTune-v2)](model_structure_pdf/stylegan_finetune_v2.pdf)
 * 학습 코드
   * [run_stylegan_fine_tuning_v2.py **(entry)**](run_stylegan_fine_tuning_v2.py)
   * [stylegan_generator_v2.py **(main training)**](stylegan_modified/stylegan_generator_v2.py)
 
-**4. Additional Fine-Tuned StyleGAN Generator (v3, Conditional VAE idea)**
+----
+
+**4. Additional Fine-Tuned StyleGAN Generator (v3, Conditional VAE idea, ✅ Finally Decided to Use)**
 
 ![image](../../images/250408_12.PNG)
 
-* How to run Fine-Tuning
-  * Fine-Tuned Generator (v1) 을 **Conditional [VAE](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md)** 의 Decoder 로 사용하여, Conditional VAE 를 학습
-  * 필요에 따라 Conv. NN (Fine-Tuned Generator v2 에서 사용한) 을 Freeze 시켜서 사용할 수 있음
+* Overview (How to run Fine-Tuning)
+  * Fine-Tuned Generator (v1) 을 **Conditional [VAE](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md)** 의 Decoder 로 사용하여, Conditional VAE 에 기반한 모델 학습
+  * 추가 사용 모델
+    * Property Score 계산용 Conv. NN (Fine-Tuned Generator v2 에서 사용한)
+    * Gender Score 계산용 Conv. NN
 * Generator
   * ```stylegan_modified/stylegan_generator_v3.py```
 * Model Save Path
   * ```stylegan_modified/stylegan_gen_fine_tuned_v3.pth``` (Generator Model)
   * ```stylegan_modified/stylegan_gen_fine_tuned_v3_encoder.pth``` (**Encoder of Conditional VAE** for Generator Model)
+* 모델 구조 정보
+  * [전체 모델 (StyleGAN-FineTune-v3)](model_structure_pdf/stylegan_finetune_v3.pdf)
 * 학습 코드
   * [run_stylegan_fine_tuning_v3.py **(entry)**](run_stylegan_fine_tuning_v3.py)
   * [stylegan_generator_v3.py **(main training)**](stylegan_modified/stylegan_generator_v3.py)
+
+<details><summary>모델 상세 설명 (Trainable/Freeze 상세, Loss 등) [ 펼치기 / 접기 ]</summary>
+
+**4-1. Loss Function**
+
+* 아래 표에 설명된 4가지 Loss 를 가중 합산한 **$C + G + 0.2 \times M + 0.05 \times V$ 를 전체 모델의 Loss Function** 로 사용
+* MSE = [Mean Squared Error](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-1-mean-squared-error-mse)
+
+| Loss                                                   | Loss Term | Loss 가중치 | 사용 의도                                                                                        |
+|--------------------------------------------------------|-----------|----------|----------------------------------------------------------------------------------------------|
+| 핵심 속성값 3개의 MSE 평균                                      | C         | 1.00     | 핵심 속성값 오차를 줄여서, **Generator 에 핵심 속성값을 입력하면 그 속성값에 맞는 이미지가 생성** 되게 함                          |
+| 성별 예측값의 1.0 (여성) 과의 MSE                                | G         | 1.00     | 남성 이미지가 생성되는 것을 방지                                                                           |
+| $\mu$ (CVAE Encoder 출력) 의 제곱의 평균                       | M         | 0.20     | 생성되는 이미지가 **평균적인 범위에서 너무 멀어지는** 것을 방지                                                        |
+| $\sigma$ (CVAE Encoder 출력) 에 대한 $ln \sigma^2$ 의 제곱의 평균 | V         | 0.05     | 이미지 생성을 위해 Generator 에 입력되는 z vector (512 dim) 가 달라지면 **생성되는 이미지의 스타일 역시 일정 수준 달라지도록** 하기 위함 |
+
+**4-2. Trainable / Freeze 설정 & Learning Rate**
+
+* CVAE = Conditional [VAE (Variational Auto-Encoder)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md)
+* 모든 Network 의 모든 Trainable Layer 에 대해, Learning Rate scheduler 로 [Cosine Annealing Scheduler](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Learning_Rate_Scheduler.md#2-6-cosine-annealing-scheduler) (with ```T_max``` = 10) 사용 
+
+| Network                                                   | Trainable / Frozen                                                    | Learning Rate    |
+|-----------------------------------------------------------|-----------------------------------------------------------------------|------------------|
+| StyleGAN Generator (= CVAE Decoder)                       | - $z → w$ mapping 만 Trainable<br>- **나머지 DeConv. Layer 등은 모두 Frozen** | 0.0001 (= 1e-4)  |
+| CVAE Encoder                                              | - 모든 레이어 Trainable                                                    | 0.00001 (= 1e-5) |
+| [CNN (for Gender Score)](#3-2-cnn-model-성별-이미지-품질)        | - **모든 레이어 Frozen**                                                   | -                |
+| [CNN (for Property Score)](#3-3-cnn-model-나머지-핵심-속성-값-7개) | - **모든 레이어 Frozen**                                                   | -                |
+
+**4-3. 학습 과정**
+
+* 결론적으로, **학습 초중반, CVAE Encoder 에 의해 도출된 $\mu$ 값은 서로 다른 이미지에 대해서도 비슷하지만, 속성 값이 어느 정도 학습되었을 때** 의 생성 결과물은 의도한 대로 나온다.
+  * 이 '학습 초중반'의 시점을 최대한 늘리기 위해 CVAE Encoder 의 Learning Rate 를 최소화했다.
+* 이와 같이 구현했을 때, 다음과 같은 특징을 갖는다.
+  * 학습 초중반에는 **서로 다른 이미지에 대해서도 CVAE Encoder 에 의해 도출된 $\mu$ 값이 큰 차이가 없음**
+  * 이때는 Decoder (Generator) 에 **아무 이미지** 에 의해 도출된 $\mu$, $\sigma$ 값으로 $z$ 를 샘플링해도, **속성 값은 어느 정도 학습** 되었으므로, **의도한 대로 Property Score 에 맞게 이미지가 생성됨** 
+  * 학습 중반을 넘어가면 CVAE Encoder 가 충분히 학습되어, **$\mu$ 값의 영향이 커지면 의도한 대로 생성이 어려워진다.**
+
+![image](../../images/250408_18.PNG)
+
+**4-4. 이미지 생성 테스트**
+
+위와 같은 학습 과정의 특징 때문에, 다음과 같이 **이미지 생성 테스트** 를 실시한다.
+
+* 기본 컨셉
+  * 각 epoch 및 z 값 별로, 해당 z 값을 이용해 Generator 가 생성한 이미지에 대해 계산된 속성 값과 의도한 속성 값이 **충분히 유사한지** 판단
+  * 충분히 유사하다고 판단된 z 값이 **1개라도 있는** epoch 의 경우 **합격 판정 및 checkpoint 모델 저장**
+
+* 매 epoch 마다, 총 30 개의 z 값 각각에 대해 2 개의 eyes score, 5 개의 mouth score, 5 개의 pose score 조합 (총 50 장) 이미지 생성
+  * 즉, 매 epoch 마다 30 x (2 x 5 x 5) = 1,500 장 생성
+
+| Property Score | 조합<br>($N(0, 1^2)$ 로 정규화한, 실제 모델이 학습하는 값 기준) |
+|----------------|----------------------------------------------|
+| eyes score     | -1.8, +1.8                                   |
+| mouth score    | -1.2, -0.6, 0.0, +0.8, +1.6                  |
+| pose score     | -1.2, 0.0, +1.2, +2.4, +3.6                  |
+
+* 각 z 값에 대해 **생성된 이미지가 Property Score 가 잘 반영되었는지** 판단 
+  * z 값은 **해당 epoch 의 마지막 30개 batch 의 이미지** 를 Encoder 에 입력하여 추출된 $\mu$, $\sigma$ 값에 의해 샘플링
+  * 각 z 값에 대해, **다음 총 6 (= 3 x 2) 가지 조건을 모두 만족시키면 합격 판정**
+    * 의도한 score 와, 실제 생성된 이미지에 대해 Property Score CNN 이 계산한 score 를 비교
+    * 이 비교를 통해 양쪽의 상관계수 및 [Mean Absolute Error (MAE)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-3-mean-absolute-error-mae) 를 계산 
+  * 매 epoch 마다 합격 판정인 z 가 하나라도 있으면 **해당 epoch 를 합격 판정하고 모델 checkpoint 저장**
+
+| Property Score | 상관계수 조건 | MAE 조건 |
+|----------------|---------|--------|
+| eyes score     | ≥ 0.77  | ≤ 1.0  |
+| mouth score    | ≥ 0.85  | ≤ 0.6  |
+| pose score     | ≥ 0.82  | ≤ 1.4  |
+
+</details>
+
+----
+
+**5. Additional Fine-Tuned StyleGAN Generator (v4, Re-train StyleGAN-FineTune-v1)**
+
+* Overview (How to run Fine-Tuning)
+  * StyleGAN-FineTune-v1 (trained for 39 epochs = 16 hours) 을 **Style Mixing 없이 추가 학습**
+  * 핵심 속성 값을 기존 StyleGAN-FineTune-v1 의 7개에서 **eyes, mouth, pose score 의 3개로 축소**
+* Generator
+  * ```stylegan_modified/stylegan_generator.py```
+* Model Save Path
+  * ```stylegan_modified/stylegan_gen_fine_tuned_v4.pth``` (**Generator** Model)
+  * ```stylegan_modified/stylegan_dis_fine_tuned_v4.pth``` (**Discriminator** Model)
+* 추가 사항
+  * StyleGAN-FineTune-**v3** 이 아닌 StyleGAN-FineTune-**v1 을 추가 Fine-Tuning** 하는 이유
+    * StyleGAN-FineTune-v3 은 **Conditional VAE 의 Encoder 에서 출력한 $\mu$, $\sigma$ 근처의 z vector** 에서만 의도한 대로 Property Score 가 반영된 이미지가 생성됨
+    * 즉, **Conditional VAE 와는 결이 맞지 않음**
 
 ### 3-2. CNN Model (성별, 이미지 품질)
 
@@ -319,10 +440,7 @@
     * StyleGAN-FineTune-v2 모델 학습 시 해당 CNN Model 이 필요하며, 그 CNN Model 이 없으면 생성하는 방식 
     * [stylegan_generator_v2.py](stylegan_modified/stylegan_generator_v2.py) > ```train_cnn_model``` 함수 (Line 83)
   * 모델 저장 경로
-    * ```gender``` 모델 5개
-      * ```cnn/models/gender_model_{0|1|2|3|4}.pt```
-    * ```quality``` 모델 5개
-      * ```cnn/models/quality_model_{0|1|2|3|4}.pt```
+    * ```stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth```
 
 ### 3-4. Segmentation Model (FaceXFormer)
 
@@ -335,7 +453,14 @@
   * ```segmentation/models/mtcnn_rnet.pt``` (Pre-trained R-Net for MTCNN)
   * ```segmentation/models/mtcnn_onet.pt``` (Pre-trained O-Net for MTCNN)
 
-## 4. 코드 실행 방법
+## 4. 향후 진행하고 싶은 것
+
+* StyleGAN-FineTune-v1 의 **Discriminator 를 상술한 Property Score 도출용 CNN 구조로 바꿔서** StyleGAN 방식으로 Fine-Tuning
+  * 기존 StyleGAN-FineTune-v4 는 의도한 대로 학습하는 데 **시간이 너무 오래 걸릴** 것으로 추정
+* 4,703 장의 필터링된 이미지 데이터를 **규모를 올려서 추가 학습**
+  * 필요 시 [Image Augmentation](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_Image_Augmentation.md) (밝기, 채도 등) 사용
+
+## 5. 코드 실행 방법
 
 **모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행** (단, 추가 개발 목적이 아닌 경우, 마지막의 **"6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성"** 부분만 실행)
 
