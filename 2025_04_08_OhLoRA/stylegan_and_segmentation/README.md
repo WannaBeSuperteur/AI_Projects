@@ -3,8 +3,8 @@
 * [1. 개요](#1-개요)
   * [1-1. 품질 판단이 필요한 이유](#1-1-품질-판단이-필요한-이유) 
 * [2. 핵심 속성 값](#2-핵심-속성-값)
-  * [2-1. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v1)](#2-1-핵심-속성-값-계산-알고리즘-stylegan-finetune-v1)
-  * [2-2. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v2,v3)](#2-2-핵심-속성-값-계산-알고리즘-stylegan-finetune-v2-v3) 
+  * [2-1. 핵심 속성 값 계산 알고리즘 (1차 알고리즘, for StyleGAN-FineTune-v1)](#2-1-핵심-속성-값-계산-알고리즘-1차-알고리즘-for-stylegan-finetune-v1)
+  * [2-2. 핵심 속성 값 계산 알고리즘 (2차 알고리즘, for StyleGAN-FineTune-v2,v3,v4)](#2-2-핵심-속성-값-계산-알고리즘-2차-알고리즘-for-stylegan-finetune-v2-v3-v4) 
 * [3. 사용 모델 설명](#3-사용-모델-설명)
   * [3-1. Image Generation Model (StyleGAN)](#3-1-image-generation-model-stylegan)
   * [3-2. CNN Model](#3-2-cnn-model)
@@ -48,7 +48,14 @@
 | 배경색 평균 ```background_mean```  | 이미지 배경 부분 픽셀의 색의 평균값이 클수록 값이 큼        | $N(0, 1^2)$                                                       | X       |
 | 배경색 표준편차 ```background_std``` | 이미지 배경 부분 픽셀의 색의 표준편차가 클수록 값이 큼       | $N(0, 1^2)$                                                       | X       |
 
-### 2-1. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v1)
+**핵심 속성 값 계산 알고리즘 설명**
+
+| 알고리즘    | 설명                                                                                                                    | 적용 버전                      | 데이터                                                                                                                                                                                                                                                                                                   |
+|---------|-----------------------------------------------------------------------------------------------------------------------|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1차 알고리즘 | - 눈을 뜬 정도, 머리 색, 머리 길이 등을 **비교적 단순한 계산** 으로 산출                                                                        | StyleGAN-FineTune-v1       | - [필터링된 4,703 장에 대한 속성값](segmentation/property_score_results/all_scores.csv)                                                                                                                                                                                                                          |
+| 2차 알고리즘 | - **1차 알고리즘의, 핵심 속성 값 계산에 잘못된 이미지를 사용한 버그 해결**<br>- 배경 색 평균, 표준편차를 제외한 5가지 속성값을 **고개를 돌린 경우를 반영하여 보다 정교한 알고리즘** 으로 산출 | StyleGAN-FineTune-v2,v3,v4 | - [필터링된 4,703 장에 대한 속성값](segmentation/property_score_results/all_scores_v2.csv)<br>- [필터링된 4,703 장에 대한 속성값**을 학습한 CNN에 의해 도출된** 속성값](segmentation/property_score_results/all_scores_v2_cnn.csv)<br>- [원본 속성값 vs. CNN 도출 속성값 비교](segmentation/property_score_results/compare/all_scores_v2_vs_cnn.csv) |
+
+### 2-1. 핵심 속성 값 계산 알고리즘 (1차 알고리즘, for StyleGAN-FineTune-v1)
 
 * Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 7가지 핵심 속성 값들을 계산**
   * 계산 대상 핵심 속성 값 
@@ -89,7 +96,7 @@
 
 ![image](../../images/250408_8.PNG)
 
-### 2-2. 핵심 속성 값 계산 알고리즘 (StyleGAN-FineTune-v2, v3)
+### 2-2. 핵심 속성 값 계산 알고리즘 (2차 알고리즘, for StyleGAN-FineTune-v2, v3, v4)
 
 * Segmentation 결과를 바탕으로 다음과 같이 **성별, 이미지 품질을 제외한 7가지 핵심 속성 값들을 계산**
   * StyleGAN-FineTune-v1 에 적용된 핵심 속성 값과 동일한 종류, 동일한 Segmentation Result 를 이용
@@ -98,14 +105,27 @@
 * 적용 범위
   * **StyleGAN-FineTune-v2**
   * **StyleGAN-FineTune-v3**
+  * **StyleGAN-FineTune-v4**
 
 **1. 눈을 뜬 정도 (eyes), 고개 돌림 (pose)**
 
-**2. 머리 색 (hair_color)**
+* 양쪽 눈의 무게중심의 좌표를 이용하여 고개 돌림 각도 계산 → **pose score** 산출
+* 해당 각도를 각 눈의 기울기로 간주하여, 눈을 뜬 높이를 계산 → **eyes score** 산출
 
-**3. 머리 길이 (hair_length)**
+![image](../../images/250408_13.PNG)
 
-**4. 입을 벌린 정도 (mouth)**
+**2. 머리 색 (hair_color), 머리 길이 (hair_length)**
+
+* 이미지의 모든 hair pixel 의 R,G,B 성분의 평균값 중 **상위 10% 및 하위 10% 를 cutoff** 한 **나머지 80%의 평균값** 으로 머리 색 점수 계산
+* 이미지의 위쪽 1/4 부분을 제외한 나머지 y좌표 중, **hair 에 해당하는 pixel 이 일정 개수 이상인 y좌표의 개수** 를 이용하여 머리 길이 계산
+
+![image](../../images/250408_14.PNG)
+
+**3. 입을 벌린 정도 (mouth)**
+
+* 입 안쪽 및 입술에 해당하는 픽셀 중 **입 안쪽 픽셀이 차지하는 비율**, 즉 **(입 안쪽 픽셀 개수) / {(입 안쪽 픽셀 개수) + (입술 픽셀 개수)}** 로 입을 벌린 정도를 계산
+
+![image](../../images/250408_15.PNG)
 
 ## 3. 사용 모델 설명
 
@@ -121,13 +141,13 @@
 
 [Implementation & Pre-trained Model Source : GenForce GitHub](https://github.com/genforce/genforce/tree/master) (MIT License)
 
-| 모델                                 | 설명                                                                                               | StyleGAN Style Mixing | Property Score 데이터                                           | 여성 이미지 생성                         | 핵심 속성값 오류 없음  | 핵심 속성값 의미 반영 생성 |
-|------------------------------------|--------------------------------------------------------------------------------------------------|-----------------------|--------------------------------------------------------------|-----------------------------------|---------------|-----------------|
-| Original StyleGAN                  | [GenForce GitHub](https://github.com/genforce/genforce/tree/master) 에서 다운받은 Pre-trained StyleGAN | ✅ (90% 확률)            |                                                              | ❌ (**여성 55.6%** = 1,112 / 2,000)  | ❌             | ❌               |
-| StyleGAN-FineTune-v1               | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | ✅ (90% 확률)            | 1차 알고리즘 (for FineTune-v1) & Score                            | ✅ (**여성 93.7%** = 281 / 300)      | ❌             | ❌               |
-| StyleGAN-FineTune-v2 **(❌ 학습 불가)** | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | ❌ (미 적용)              | 2차 알고리즘 (for FineTune-v2,v3) & Score 를 학습한 CNN에 의해 도출된 Score | ❓ (남성 이미지 생성 확률 증가)               | ✅             | ❌               |
-| StyleGAN-FineTune-v3               | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | ❌ (미 적용)              | 2차 알고리즘 (for FineTune-v2,v3) & Score 를 학습한 CNN에 의해 도출된 Score | ✅ (남성 이미지 생성 방지를 위한 Loss Term 사용) | ✅ (만족할 만한 수준) | ✅ (학습 초중반)      |
-| StyleGAN-FineTune-v4               | StyleGAN-FineTune-v1 을 **Style Mixing 미 적용** 하여 재 학습                                             | ❌ (미 적용)              | 2차 알고리즘 (for FineTune-v2,v3) & Score 를 학습한 CNN에 의해 도출된 Score |                                   |               |                 |
+| 모델                                 | 설명                                                                                               | StyleGAN Style Mixing | Property Score 데이터                                                   | 여성 이미지 생성                         | 핵심 속성값 오류 없음  | 핵심 속성값 의미 반영 생성 |
+|------------------------------------|--------------------------------------------------------------------------------------------------|-----------------------|----------------------------------------------------------------------|-----------------------------------|---------------|-----------------|
+| Original StyleGAN                  | [GenForce GitHub](https://github.com/genforce/genforce/tree/master) 에서 다운받은 Pre-trained StyleGAN | ✅ (90% 확률)            |                                                                      | ❌ (**여성 55.6%** = 1,112 / 2,000)  | ❌             | ❌               |
+| StyleGAN-FineTune-v1               | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | ✅ (90% 확률)            | **1차 알고리즘** (for FineTune-v1) & Score                                | ✅ (**여성 93.7%** = 281 / 300)      | ❌             | ❌               |
+| StyleGAN-FineTune-v2 **(❌ 학습 불가)** | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ❓ (남성 이미지 생성 확률 증가)               | ✅             | ❌               |
+| StyleGAN-FineTune-v3               | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ✅ (남성 이미지 생성 방지를 위한 Loss Term 사용) | ✅ (만족할 만한 수준) | ✅ (학습 초중반)      |
+| StyleGAN-FineTune-v4               | StyleGAN-FineTune-v1 을 **Style Mixing 미 적용** 하여 재 학습                                             | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score |                                   |               |                 |
 
 * [StyleGAN Style Mixing](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md#3-1-style-mixing-mixing-regularization)
   * 적용 시, 동일한 latent vector z 와 동일한 property label 에 대해서도 **서로 다른 인물이나 특징의 이미지가 생성** 될 수 있음
