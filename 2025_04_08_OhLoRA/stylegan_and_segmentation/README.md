@@ -7,8 +7,9 @@
   * [2-2. 핵심 속성 값 계산 알고리즘 (2차 알고리즘, for StyleGAN-FineTune-v2,v3,v4)](#2-2-핵심-속성-값-계산-알고리즘-2차-알고리즘-for-stylegan-finetune-v2-v3-v4) 
 * [3. 사용 모델 설명](#3-사용-모델-설명)
   * [3-1. Image Generation Model (StyleGAN)](#3-1-image-generation-model-stylegan)
-  * [3-2. CNN Model](#3-2-cnn-model)
-  * [3-3. Segmentation Model (FaceXFormer)](#3-3-segmentation-model-facexformer)
+  * [3-2. CNN Model (성별, 이미지 품질)](#3-2-cnn-model-성별-이미지-품질)
+  * [3-3. CNN Model (나머지 핵심 속성 값 7개)](#3-3-cnn-model-나머지-핵심-속성-값-7개)
+  * [3-4. Segmentation Model (FaceXFormer)](#3-4-segmentation-model-facexformer)
 * [4. 코드 실행 방법](#4-코드-실행-방법)
 
 ## 1. 개요
@@ -35,18 +36,21 @@
 * 성별, 이미지 품질을 제외한 나머지 핵심 속성 값들은 아래 표와 같이, **계산된 값을 최종적으로 $N(0, 1^2)$ 로 정규화** 하여 AI 모델에 적용
 * 필터링에 사용
   * **해당 값이 모두 threshold 에 도달하는 이미지만** 따로 필터링하여, 나머지 7가지 속성 값을 Pre-trained Segmentation Model 을 이용하여 계산
+* v1 ~ v4 사용
+  * StyleGAN-FineTune-v1, v2, v3, v4 각 모델의 **최종 버전** 에 해당 속성 값을 사용하는지의 여부
+  * ```(v1 사용 여부)``` / ```(v2 사용 여부)``` / ```(v3 사용 여부)``` / ```(v4 사용 여부)``` 형식으로 표기
 
-| 핵심 속성 값 이름                    | 설명                                    | AI 모델에 저장되는 값의 범위 또는 분포<br>(CNN output or StyleGAN latent vector) | 필터링에 사용 |
-|-------------------------------|---------------------------------------|-------------------------------------------------------------------|---------|
-| 성별 ```gender```               | 0 (남성) ~ 1 (여성) 의 확률 값                | 0 ~ 1                                                             | **O**   |
-| 이미지 품질 ```quality```          | 0 (저품질) ~ 1 (고품질) 의 확률 값              | 0 ~ 1                                                             | **O**   |
-| 눈을 뜬 정도 ```eyes```            | 눈을 크게 뜰수록 값이 큼                        | $N(0, 1^2)$                                                       | X       |
-| 머리 색 ```hair_color```         | 머리 색이 밝을수록 값이 큼                       | $N(0, 1^2)$                                                       | X       |
-| 머리 길이 ```hair_length```       | 머리 길이가 길수록 값이 큼                       | $N(0, 1^2)$                                                       | X       |
-| 입을 벌린 정도 ```mouth```          | 입을 벌린 정도가 클수록 값이 큼                    | $N(0, 1^2)$                                                       | X       |
-| 고개 돌림 ```face_pose```         | 왼쪽 고개 돌림 (-1), 정면 (0), 오른쪽 고개 돌림 (+1) | $N(0, 1^2)$                                                       | X       |
-| 배경색 평균 ```background_mean```  | 이미지 배경 부분 픽셀의 색의 평균값이 클수록 값이 큼        | $N(0, 1^2)$                                                       | X       |
-| 배경색 표준편차 ```background_std``` | 이미지 배경 부분 픽셀의 색의 표준편차가 클수록 값이 큼       | $N(0, 1^2)$                                                       | X       |
+| 핵심 속성 값 이름                    | 설명                                    | AI 모델에 저장되는 값의 범위 또는 분포<br>(CNN output or StyleGAN latent vector) | 필터링에 사용 | v1 ~ v4 사용    |
+|-------------------------------|---------------------------------------|-------------------------------------------------------------------|---------|---------------|
+| 성별 ```gender```               | 0 (남성) ~ 1 (여성) 의 확률 값                | 0 ~ 1                                                             | ✅       | ✅ / ✅ / ✅ / ✅ |
+| 이미지 품질 ```quality```          | 0 (저품질) ~ 1 (고품질) 의 확률 값              | 0 ~ 1                                                             | ✅       | ✅ / ✅ / ✅ / ✅ |
+| 눈을 뜬 정도 ```eyes```            | 눈을 크게 뜰수록 값이 큼                        | $N(0, 1^2)$                                                       | ❌       | ✅ / ✅ / ✅ / ✅ |
+| 머리 색 ```hair_color```         | 머리 색이 밝을수록 값이 큼                       | $N(0, 1^2)$                                                       | ❌       | ✅ / ✅ / ❌ / ❌ |
+| 머리 길이 ```hair_length```       | 머리 길이가 길수록 값이 큼                       | $N(0, 1^2)$                                                       | ❌       | ✅ / ✅ / ❌ / ❌ |
+| 입을 벌린 정도 ```mouth```          | 입을 벌린 정도가 클수록 값이 큼                    | $N(0, 1^2)$                                                       | ❌       | ✅ / ✅ / ✅ / ✅ |
+| 고개 돌림 ```face_pose```         | 왼쪽 고개 돌림 (-1), 정면 (0), 오른쪽 고개 돌림 (+1) | $N(0, 1^2)$                                                       | ❌       | ✅ / ✅ / ✅ / ✅ |
+| 배경색 평균 ```background_mean```  | 이미지 배경 부분 픽셀의 색의 평균값이 클수록 값이 큼        | $N(0, 1^2)$                                                       | ❌       | ✅ / ✅ / ❌ / ❌ |
+| 배경색 표준편차 ```background_std``` | 이미지 배경 부분 픽셀의 색의 표준편차가 클수록 값이 큼       | $N(0, 1^2)$                                                       | ❌       | ✅ / ❌ / ❌ / ❌ |
 
 **핵심 속성 값 계산 알고리즘 설명**
 
@@ -65,6 +69,8 @@
   * Segmentation 결과는 **224 x 224 로 resize 된 이미지** 임
 * 적용 범위
   * **StyleGAN-FineTune-v1**
+* 구현 코드
+  * [compute_property_scores.py](compute_property_scores.py) 
 
 **1. 눈을 뜬 정도 (eyes)**
 
@@ -106,6 +112,8 @@
   * **StyleGAN-FineTune-v2**
   * **StyleGAN-FineTune-v3**
   * **StyleGAN-FineTune-v4**
+* 구현 코드
+  * [compute_property_scores_v2.py](compute_property_scores_v2.py) 
 
 **1. 눈을 뜬 정도 (eyes), 고개 돌림 (pose)**
 
@@ -166,7 +174,8 @@
 * Model Save Path
   * ```stylegan/stylegan_model.pth``` (**Original GAN**, including Generator & Discriminator)
     * original model from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
-* [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
+* Study Doc
+  * [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
 
 **2. Modified Fine-Tuned StyleGAN (v1)**
 
@@ -187,6 +196,9 @@
   * Property Score 계산 오류 (1차 알고리즘 자체의 오류 & 픽셀 색 관련 속성의 경우 이미지를 잘못 사용하여 픽셀 매칭 오류)
   * [VAE (Variational Auto-Encoder)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_Variational%20Auto%20Encoder.md) 와 달리 [GAN](https://github.com/WannaBeSuperteur/AI-study/blob/main/Generative%20AI/Basics_GAN.md) 은 잠재 변수 학습에 중점을 두지 않음
   * StyleGAN 의 **Style Mixing** 메커니즘으로 인해 동일한 latent vector, label 에 대해서도 **서로 다른 이미지가 생성되어 학습에 지장**
+* 학습 코드
+  * [run_stylegan_fine_tuning.py **(entry)**](run_stylegan_fine_tuning.py)
+  * [fine_tuning.py **(main training)**](stylegan_modified/fine_tuning.py)
 
 **3. Additional Fine-Tuned StyleGAN Generator (v2, CNN idea, ❌ Train Failed)**
 
@@ -204,6 +216,9 @@
 * 학습 실패 분석
   * CNN 을 완전히 Freeze 하고, StyleGAN 을 Dense Layer 를 제외한 모든 Layer 를 Freeze 하는 것보다, **모든 모델의 모든 레이어를 학습 가능하게 해야 학습이 잘 진행됨**
   * 처음에는 Fixed Z + Label 로 학습하고 점차적으로 강한 Noise 를 추가하는 식으로 학습해도 **학습이 거의 진행되지 않음**
+* 학습 코드
+  * [run_stylegan_fine_tuning_v2.py **(entry)**](run_stylegan_fine_tuning_v2.py)
+  * [stylegan_generator_v2.py **(main training)**](stylegan_modified/stylegan_generator_v2.py)
 
 **4. Additional Fine-Tuned StyleGAN Generator (v3, Conditional VAE idea)**
 
@@ -217,15 +232,18 @@
 * Model Save Path
   * ```stylegan_modified/stylegan_gen_fine_tuned_v3.pth``` (Generator Model)
   * ```stylegan_modified/stylegan_gen_fine_tuned_v3_encoder.pth``` (**Encoder of Conditional VAE** for Generator Model)
+* 학습 코드
+  * [run_stylegan_fine_tuning_v3.py **(entry)**](run_stylegan_fine_tuning_v3.py)
+  * [stylegan_generator_v3.py **(main training)**](stylegan_modified/stylegan_generator_v3.py)
 
-### 3-2. CNN Model
+### 3-2. CNN Model (성별, 이미지 품질)
 
 * CNN pipeline Overview
 
 ![image](../../images/250408_2.PNG)
 
 * Training Data
-  * ```cnn/synthesize_results_quality_and_gender.csv```
+  * [```cnn/synthesize_results_quality_and_gender.csv```](cnn/synthesize_results_quality_and_gender.csv)
   * Dataset size
     * **2,000 rows**
     * each corresponding to first 2,000 images in ```stylegan/synthesize_results```
@@ -255,13 +273,58 @@
 | 나머지 8,000 장 (unlabeled) | ```quality```              | ```cnn/inference_result/quality.csv```              | **O**                    |
 | **전체 이미지 10,000 장**     | ```gender``` ```quality``` | ```cnn/all_image_quality_and_gender.csv```          | **O**                    |
 
-* CNN model 저장 경로
-  * ```gender``` 모델 5개
-    * ```cnn/models/gender_model_{0|1|2|3|4}.pt```
-  * ```quality``` 모델 5개
-    * ```cnn/models/quality_model_{0|1|2|3|4}.pt```
+* 학습 코드 및 CNN model 저장 경로
+  * 학습 코드
+    * [run_cnn.py](run_cnn.py)
+  * 모델 저장 경로
+    * ```gender``` 모델 5개
+      * ```cnn/models/gender_model_{0|1|2|3|4}.pt```
+    * ```quality``` 모델 5개
+      * ```cnn/models/quality_model_{0|1|2|3|4}.pt```
 
-### 3-3. Segmentation Model (FaceXFormer)
+### 3-3. CNN Model (나머지 핵심 속성 값 7개)
+
+* CNN pipeline Overview
+
+![image](../../images/250408_16.PNG)
+
+* **Training Data**
+  * [```segmentation/property_score_results/all_scores_v2.csv```](segmentation/property_score_results/all_scores_v2.csv)
+  * Dataset size
+    * **4,703 rows (images)**
+    * each corresponding to FILTERED 4,703 IMAGES (using GENDER and IMAGE QUALITY score)
+  * columns
+    * Normalized **eyes / mouth / pose / hair-color / hair-length / background mean (back-mean) / background std (back-std)** scores
+
+* **Area Info**
+  * **H** indicates image height (= 256)
+  * **W** indicates image width (= 256)
+
+| Property Type   | Area Name            | Area Size<br>(width x height) | Area in the image<br>(y) | Area in the image<br>(x)  |
+|-----------------|----------------------|-------------------------------|--------------------------|---------------------------|
+| eyes            | eyes area            | 128 x 48                      | **3/8** H - **9/16** H   | **1/4** W - **3/4** W     |
+| mouth           | mouth area           | 64 x 48                       | **5/8** H - **13/16** H  | **3/8** W - **5/8** W     |
+| pose            | pose area            | 80 x 48                       | **7/16** H - **5/8** H   | **11/32** W - **21/32** W |
+| hair color      | **entire** area      | 256 x 256                     | 0 H - 1 H                | 0 W - 1 W                 |
+| hair length     | **bottom half** area | 256 x 128                     | 1/2 H - 1 H              | 0 W - 1 W                 |
+| background mean | **upper half** area  | 256 x 128                     | 0 H - 1/2 H              | 0 W - 1 W                 |
+| background std  | **upper half** area  | 256 x 128                     | 0 H - 1/2 H              | 0 W - 1 W                 |
+
+* 예상 효과 및 참고 사항
+  * [Pre-trained Segmentation Model (FaceXFormer)](#3-4-segmentation-model-facexformer) 에 의한 Segmentation 결과가 일부 이미지에 대해 매우 어색할 때, 이를 **CNN 을 이용하여 보정** 할 수 있을 것으로 예상 
+  * 해당 모델을 이용하여 재산출한 [각 Property Score 값들](segmentation/property_score_results/all_scores_v2_cnn.csv) 을 **StyleGAN-FineTune-v3,v4 학습 시 사용**
+
+* 학습 코드 및 CNN model 저장 경로
+  * 학습 코드
+    * StyleGAN-FineTune-v2 모델 학습 시 해당 CNN Model 이 필요하며, 그 CNN Model 이 없으면 생성하는 방식 
+    * [stylegan_generator_v2.py](stylegan_modified/stylegan_generator_v2.py) > ```train_cnn_model``` 함수 (Line 83)
+  * 모델 저장 경로
+    * ```gender``` 모델 5개
+      * ```cnn/models/gender_model_{0|1|2|3|4}.pt```
+    * ```quality``` 모델 5개
+      * ```cnn/models/quality_model_{0|1|2|3|4}.pt```
+
+### 3-4. Segmentation Model (FaceXFormer)
 
 [Implementation Source : FaceXFormer Official GitHub](https://github.com/Kartik-3004/facexformer/tree/main) (MIT License)
 
