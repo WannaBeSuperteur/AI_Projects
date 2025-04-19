@@ -341,7 +341,13 @@
 * 구현 코드
   * [stylegan_generator_v3_gen_model.py](stylegan_modified/stylegan_generator_v3_gen_model.py) > ```test_create_output_images``` 함수 (Line 486)
 
-**4-5. Oh-LoRA 캐릭터 최종 채택**
+**4-5. Q & A**
+
+* StyleGAN-FineTune-v3 에서 머리 색, 머리 길이, 배경 색을 제외하고 **속성 값 3개만 사용** 한 이유는?
+  * 머리 색, 머리 길이, 배경 색은 Property Score CNN 이 **이미지 전체 또는 상/하단 절반이라는 큰 부분** 을 보고 판단
+  * 이들 큰 부분끼리, 이들 부분과 ```eyes```, ```mouth```, ```pose``` Score 을 계산하는 작은 부분이 **영역이 중복되어 학습에 지장** 을 줄 수 있을 것으로 추정
+
+**4-6. Oh-LoRA 캐릭터 최종 채택**
 
 ![image](../../images/250408_19.PNG)
 
