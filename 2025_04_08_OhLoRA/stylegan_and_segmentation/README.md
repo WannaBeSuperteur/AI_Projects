@@ -299,7 +299,7 @@
 
 **4-3. 학습 과정**
 
-* 결론적으로, **학습 초중반, CVAE Encoder 에 의해 도출된 $\mu$ 값은 서로 다른 이미지에 대해서도 비슷하지만, 속성 값이 어느 정도 학습되었을 때** 의 생성 결과물은 의도한 대로 나온다.
+* 결론적으로, **학습 초중반, 아직 충분히 학습되지 않은 CVAE Encoder 에 의해 도출된 $\mu$ 값은 서로 다른 이미지에 대해서도 비슷하지만, 속성 값이 어느 정도 학습되었을 때** 의 생성 결과물은 의도한 대로 나온다.
   * 이 '학습 초중반'의 시점 구간을 최대한 늘리기 위해 CVAE Encoder 의 Learning Rate 를 1e-5 로 Generator 에 비해 감소시켰다.
 * 이와 같이 구현했을 때, 다음과 같은 특징을 갖는다.
   * 학습 초중반에는 **서로 다른 이미지에 대해서도 CVAE Encoder 에 의해 도출된 $\mu$ 값이 큰 차이가 없음**
@@ -337,6 +337,22 @@
 | eyes score     | ≥ 0.77  | ≤ 1.0  |
 | mouth score    | ≥ 0.85  | ≤ 0.6  |
 | pose score     | ≥ 0.82  | ≤ 1.4  |
+
+* 구현 코드
+  * [stylegan_generator_v3_gen_model.py](stylegan_modified/stylegan_generator_v3_gen_model.py) > ```test_create_output_images``` 함수 (Line 486)
+
+**4-5. Oh-LoRA 캐릭터 최종 채택**
+
+![image](../../images/250408_19.PNG)
+
+* 2025.04.18 생성
+* **6 번째 epoch (index = 5)** 의 **22 번째 (index = 21)** z 값 [(csv 보기)](stylegan_modified/test_z_vector_0005.csv) 이용
+
+| Property Score | 상관계수              | MAE              |
+|----------------|-------------------|------------------|
+| eyes score     | **0.8928** ≥ 0.77 | **0.9342** ≤ 1.0 |
+| mouth score    | **0.8582** ≥ 0.85 | **0.4452** ≤ 0.6 |
+| pose score     | **0.9318** ≥ 0.82 | **1.2365** ≤ 1.4 |
 
 </details>
 
