@@ -54,4 +54,23 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 
 ### 3-2. 최종 모델 선정 결과
 
-TBU
+* 설정
+  * 환경
+    * Google Colab, T4 GPU (15 GB RAM) 
+  * Fine-Tuning 설정
+    * data (row) count = **20**, train batch size = **4**, epochs = **10**
+    * total **50 steps** with **size-4 batch** for each step
+  * Inference 설정
+    * data (row) count = **25**, max output length (tokens) = **80** 
+
+* 최종 모델 선정 결과
+
+| 모델 이름 (리포트) | 종합 점수<br>(Average from Leaderboard) | 파라미터 개수 | Fine-Tuning 시간<br>(LoRA rank 16, 32, 64) | Fine-Tuning 최대 메모리 사용량<br>(LoRA rank 16, 32, 64) | Inference 시간 | Inference 최대 메모리 사용량 | 답변 품질 |
+|-------------|-------------------------------------|---------|------------------------------------------|--------------------------------------------------|--------------|----------------------|-------|
+|             |                                     |         |                                          |                                                  |              |                      |       |
+
+* 모델 후보 평가 결과
+
+| 모델 이름 (리포트) | 종합 점수<br>(Average from Leaderboard) | 파라미터 개수 | Fine-Tuning 시간<br>(LoRA rank 16, 32, 64) | Fine-Tuning 최대 메모리 사용량<br>(LoRA rank 16, 32, 64) | Inference 시간 | Inference 최대 메모리 사용량 | 답변 품질 |
+|-------------|-------------------------------------|---------|------------------------------------------|--------------------------------------------------|--------------|----------------------|-------|
+|             |                                     |         |                                          |                                                  |              |                      |       |
