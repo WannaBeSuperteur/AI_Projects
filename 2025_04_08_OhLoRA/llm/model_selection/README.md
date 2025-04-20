@@ -26,6 +26,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
   * 아래 기준을 모두 고려하여 **최종 1개 모델 선정**
     * Open Ko-LLM Leaderboard 기준 종합 점수 **(정량 평가)** 
     * Fine-Tuning 속도 및 Fine-Tuning 진행 중 최대 메모리 사용량 **(정량 평가)**
+      * LoRA Rank 16, 32, 64 로 각각 테스트 
     * Inference 속도 및 Inference 진행 중 최대 메모리 사용량 **(정량 평가)**
     * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 의 Valid Data 에 대한 답변 품질 **(정성 평가)**
   * 기준 데이터셋
@@ -42,7 +43,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 | 순위 | LLM 이름                                                                              | 파라미터 개수 | 종합 점수 (Average) |
 |----|-------------------------------------------------------------------------------------|---------|-----------------|
 | 1  | [koquality-polyglot-1.3b](https://huggingface.co/DILAB-HYU/koquality-polyglot-1.3b) | 1.3 B   | 31.07           |
-| 2  | [polyglot-ko-1.3b](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)              | 1.44 B  | 29.95           |
+| 2  | [polyglot-ko-1.3b](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)              | 1.43 B  | 29.95           |
 | 3  | [llama1B](https://huggingface.co/Yebin46/llama1B)                                   | 1.24 B  | 29.73           |
 | 4  | [KoAlpaca-KoRWKV-1.5B](https://huggingface.co/beomi/KoAlpaca-KoRWKV-1.5B)           | 1.5 B   | 28.74           |
 | 5  | [FinguAI-Chat-v1](https://huggingface.co/FINGU-AI/FinguAI-Chat-v1)                  | 0.46 B  | 28.09           |
