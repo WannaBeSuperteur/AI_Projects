@@ -520,10 +520,14 @@
 * **1. Original GAN Generator 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_original_generator.py```
   * ```stylegan/synthesize_results``` 에 생성된 이미지 저장됨
+  * ⚠ 새로 이미지를 생성하는 경우,
+    * 위 경로에 새로 생성된 이미지 중 **첫 2,000 장에 대한 성별 (남성: 0, 여성: 1), 이미지 품질 (저품질: 0, 고품질: 1) 정보를 ```stylegan_and_segmentation/cnn/synthesize_quality_and_gender.csv``` 에 새로 수기로 기재** 해야 함
+    * 약 1-2 시간 소요 예상
 
 * **2. CNN 실행**
   * ```python stylegan_and_segmentation/run_cnn.py```
-  * 모든 이미지에 대한 핵심 속성 값 데이터 (unlabeled image 의 경우 모델 계산값) 가 저장됨
+  * 모든 이미지에 대한 성별과 이미지 품질 값 데이터 (unlabeled image 의 경우 모델 계산값) 가 저장됨
+    * 저장 위치 : ```stylegan_and_segmentation/cnn/all_image_quality_and_gender.csv``` 
   * CNN model 이 지정된 경로에 없을 시, CNN 모델 학습
   * ```stylegan/synthesize_results_filtered``` 에 필터링된 이미지 저장됨 **(StyleGAN Fine-Tuning 학습 데이터로 사용)**
 
@@ -537,12 +541,15 @@
   * for **StyleGAN-FineTune-v1**
     * ```python stylegan_and_segmentation/compute_property_scores.py```
     * ```segmentation/property_score_results/all_scores.csv``` 에 결과 저장됨
-  * for **StyleGAN-FineTune-v2,v3**
+  * for **StyleGAN-FineTune-v2,v3,v4**
     * ```python stylegan_and_segmentation/compute_property_scores_v2.py```
     * ```segmentation/property_score_results/all_scores_v2.csv``` 에 결과 저장됨
 
 * **5. StyleGAN Fine-Tuning 실시**
-  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지 4,703 장** 대상 
+  * 전체 10,000 장이 아닌, 그 일부분에 해당하는 **따로 필터링된 이미지 4,703 장** 대상
+  * 표준 학습 과정
+    * **StyleGAN-FineTune-v1 → StyleGAN-FineTune-v3** 순으로, 해당 2개 모델만 학습 실시
+    * 단, Property Score CNN 의 학습을 위해, StyleGAN-FineTune-v1, v3 학습 시점의 사이에 **StyleGAN-FineTune-v2 학습 절차 실행** 필요
   * **StyleGAN-FineTune-v1** 
     * ```python stylegan_and_segmentation/run_stylegan_fine_tuning.py```
     * ```stylegan_modified/stylegan_gen_fine_tuned.pth``` 에 Fine-Tuning 된 모델의 Generator 저장됨
