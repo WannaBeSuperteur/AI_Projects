@@ -18,7 +18,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
   * [HuggingFace 의 Open Ko-LLM Leaderboard (2025.04.19 기준)](https://huggingface.co/spaces/upstage/open-ko-llm-leaderboard)
 * 모델 후보 선정 기준
   * 선정 기준 
-    * **1.5B parameter 이하** (Quadro M6000 12GB 에서 학습 및 추론 가능한 수준이어야 함)
+    * **3.0 B parameter 이하** (Quadro M6000 12GB 에서 학습 및 추론 가능한 수준이어야 함)
     * 자유 사용 가능 라이선스 (MIT, Apache-2.0 등)
     * 한국어 특화 또는 지원
   * 위 기준에 **셋 다** 해당하는 모델 중 **종합 점수 (Average)** 가 높은 순으로 테스트
@@ -34,20 +34,22 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 
 ## 3. 모델 선정 결과
 
-| 모델 후보 선정 결과                     | 최종 선정 모델 정보 |
-|---------------------------------|-------------|
-| 총 6개 모델 (0.04 B ~ 1.5 B params) |             |
+| 모델 후보 선정 결과                      | 최종 선정 모델 정보 |
+|----------------------------------|-------------|
+| 총 8개 모델 (0.04 B ~ 2.61 B params) |             |
 
 ### 3-1. 모델 후보 선정 결과
 
 | 순위 | LLM 이름                                                                              | 파라미터 개수 | 종합 점수 (Average) |
 |----|-------------------------------------------------------------------------------------|---------|-----------------|
-| 1  | [koquality-polyglot-1.3b](https://huggingface.co/DILAB-HYU/koquality-polyglot-1.3b) | 1.3 B   | 31.07           |
-| 2  | [polyglot-ko-1.3b](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)              | 1.43 B  | 29.95           |
-| 3  | [llama1B](https://huggingface.co/Yebin46/llama1B)                                   | 1.24 B  | 29.73           |
-| 4  | [KoAlpaca-KoRWKV-1.5B](https://huggingface.co/beomi/KoAlpaca-KoRWKV-1.5B)           | 1.5 B   | 28.74           |
-| 5  | [FinguAI-Chat-v1](https://huggingface.co/FINGU-AI/FinguAI-Chat-v1)                  | 0.46 B  | 28.09           |
-| 6  | [TinyKo-v5-a](https://huggingface.co/blueapple8259/TinyKo-v5-a)                     | 0.04 B  | 25.80           |
+| 1  | [gemma-2-2b-it](https://huggingface.co/unsloth/gemma-2-2b-it)                       | 2.61 B  | 40.43           |
+| 2  | [koquality-polyglot-1.3b](https://huggingface.co/DILAB-HYU/koquality-polyglot-1.3b) | 1.3 B   | 31.07           |
+| 3  | [gemma-ko-v01](https://huggingface.co/cpm-ai/gemma-ko-v01)                          | 2.51 B  | 30.78           |
+| 4  | [polyglot-ko-1.3b](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)              | 1.43 B  | 29.95           |
+| 5  | [llama1B](https://huggingface.co/Yebin46/llama1B)                                   | 1.24 B  | 29.73           |
+| 6  | [KoAlpaca-KoRWKV-1.5B](https://huggingface.co/beomi/KoAlpaca-KoRWKV-1.5B)           | 1.5 B   | 28.74           |
+| 7  | [FinguAI-Chat-v1](https://huggingface.co/FINGU-AI/FinguAI-Chat-v1)                  | 0.46 B  | 28.09           |
+| 8  | [TinyKo-v5-a](https://huggingface.co/blueapple8259/TinyKo-v5-a)                     | 0.04 B  | 25.80           |
 
 ### 3-2. 최종 모델 선정 결과
 
