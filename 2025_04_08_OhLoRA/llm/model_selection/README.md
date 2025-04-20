@@ -30,6 +30,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
     * Inference 속도 및 Inference 진행 중 최대 메모리 사용량 **(정량 평가)**
       * Inference test 는 **Fine-Tuning 되지 않은 원본 모델** 로 진행 
     * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 에 대한 답변 품질 **(정성 평가)**
+      * 단, LLM Fine Tuning 테스트 중 기록되는 Training Loss 값을 참고하여 평가 
   * 기준 데이터셋
     * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 의 Train Data 및 Valid Data 의 일부
 
@@ -40,6 +41,9 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 | 총 8개 모델 (0.04 B ~ 2.61 B params) |             |
 
 ### 3-1. 모델 후보 선정 결과
+
+* 총 8개 모델 후보 선정
+* 파라미터 개수 범위 : 0.04 B ~ 2.61 B
 
 | 순위 | LLM 이름                                                                              | 파라미터 개수 | 종합 점수 (Average) |
 |----|-------------------------------------------------------------------------------------|---------|-----------------|
@@ -59,7 +63,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
     * Google Colab, T4 GPU (15 GB RAM) 
   * Fine-Tuning 설정
     * data (row) count = **20**, train batch size = **4**, epochs = **10**
-    * total **50 steps** with **size-4 batch** for each step
+    * total **50 steps** with **size-4 batch** for each step **(= 실제 학습 데이터셋에서의 1 epoch 분량)**
   * Inference 설정
     * data (row) count = **25**, max output length (tokens) = **80** 
 
