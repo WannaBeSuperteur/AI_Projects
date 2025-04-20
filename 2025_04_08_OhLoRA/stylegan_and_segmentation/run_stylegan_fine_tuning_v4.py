@@ -1,12 +1,19 @@
 
+import numpy as np
+import pandas as pd
 import torch
+from torchvision.io import read_image
+
 import stylegan_modified.stylegan_generator as modified_gen
 import stylegan_modified.stylegan_discriminator as modified_dis
 import stylegan_modified.stylegan_generator_inference as modified_inf
 
 from run_stylegan_fine_tuning import TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z, IMAGE_RESOLUTION
 from run_stylegan_fine_tuning import save_model_structure_pdf, freeze_generator_layers, freeze_discriminator_layers
+from run_stylegan_fine_tuning import stylegan_transform
 from run_stylegan_fine_tuning_v3 import get_stylegan_fine_tuning_dataloader
+
+from stylegan_modified.stylegan_generator_v2 import load_cnn_model
 from stylegan_modified.fine_tuning_v4 import run_fine_tuning
 
 import os
@@ -153,11 +160,105 @@ def run_stylegan_fine_tuning(fine_tuning_dataloader, generator_state_dict, discr
     torch.save(fine_tuned_discriminator.state_dict(), f'{fine_tuned_model_path}/stylegan_dis_fine_tuned_v4.pth')
 
 
+# StyleGAN-FineTune-v4 학습 중 생성한 이미지의 eyes, mouth, pose 의 오차 및 상관계수 (생성된 이미지에 대한 CNN 산출값 vs. 의도한 label 값) 기록 (테스트용)
+# Create Date : 2025.04.20
+# Last Update Date : -
+
+# Arguments:
+# - max_epochs (int)    : 학습 중 생성된 이미지가 있는 최대 epoch 횟수
+# - device     (device) : Property CNN 모델을 mapping 시킬 device (GPU 등)
+
+def record_property_score_error_info(max_epochs, device):
+    error_info_log = {'epoch': [], 'batch_idx': [],
+                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': [],
+                      'eyes_mae': [], 'mouth_mae': [], 'pose_mae': []}
+
+    # load pre-trained CNN model for property
+    stylegan_and_seg_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation'
+    property_cnn_save_path = f'{stylegan_and_seg_path}/stylegan_modified/stylegan_gen_fine_tuned_v2_cnn.pth'
+    property_cnn = load_cnn_model(property_cnn_save_path, device)
+
+    img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning_v4'
+
+    # intended Property Labels
+    eyes_label_types = [-1.8, 1.8]
+    mouth_label_types = [-1.2, -0.6, 0.0, 0.8, 1.6]
+    pose_label_types = [-1.2, 0.0, 1.2, 2.4, 3.6]
+
+    eyes_labels = []
+    mouth_labels = []
+    pose_labels = []
+
+    for mouth in mouth_label_types:
+        for eyes in eyes_label_types:
+            for pose in pose_label_types:
+                eyes_labels.append(eyes)
+                mouth_labels.append(mouth)
+                pose_labels.append(pose)
+
+    label_count = len(eyes_labels)
+
+    # compute MAE and corr-coef for each (epoch, batch_idx) pair
+    for epoch in range(max_epochs):
+        batch_idx_dirs = list(filter(lambda x: x.startswith(f'epoch_{epoch:04d}') and int(x.split('_')[3]) % 20 == 0,
+                                     os.listdir(img_dir)))
+        batch_idx_dir_paths = [f'{img_dir}/{batch_idx_dir}' for batch_idx_dir in batch_idx_dirs]
+
+        for batch_idx_dir_path in batch_idx_dir_paths:
+            image_names = os.listdir(batch_idx_dir_path)
+            image_paths = [f'{batch_idx_dir_path}/{name}' for name in image_names]
+            batch_idx = int(batch_idx_dir_path.split('_')[-1])
+
+            print(f'checking epoch {epoch} batch {batch_idx} ...')
+
+            error_info_log['epoch'].append(epoch)
+            error_info_log['batch_idx'].append(batch_idx)
+
+            eyes_cnn_scores = []
+            mouth_cnn_scores = []
+            pose_cnn_scores = []
+
+            for image_name, image_path in zip(image_names, image_paths):
+                image = read_image(image_path)
+                image = stylegan_transform(image)
+
+                with torch.no_grad():
+                    property_scores = property_cnn(image.unsqueeze(0).cuda())
+                    property_score_np = property_scores.detach().cpu().numpy()
+
+                    eyes_cnn_scores.append(property_score_np[0][0])
+                    mouth_cnn_scores.append(property_score_np[0][3])
+                    pose_cnn_scores.append(property_score_np[0][4])
+
+            eyes_corr = np.corrcoef(eyes_labels, eyes_cnn_scores)[0][1]
+            mouth_corr = np.corrcoef(mouth_labels, mouth_cnn_scores)[0][1]
+            pose_corr = np.corrcoef(pose_labels, pose_cnn_scores)[0][1]
+
+            eyes_mae = sum(abs(eyes_labels[i] - eyes_cnn_scores[i]) for i in range(label_count)) / label_count
+            mouth_mae = sum(abs(mouth_labels[i] - mouth_cnn_scores[i]) for i in range(label_count)) / label_count
+            pose_mae = sum(abs(pose_labels[i] - pose_cnn_scores[i]) for i in range(label_count)) / label_count
+
+            error_info_log['eyes_corr'].append(eyes_corr)
+            error_info_log['mouth_corr'].append(mouth_corr)
+            error_info_log['pose_corr'].append(pose_corr)
+
+            error_info_log['eyes_mae'].append(eyes_mae)
+            error_info_log['mouth_mae'].append(mouth_mae)
+            error_info_log['pose_mae'].append(pose_mae)
+
+        # save as csv
+        error_info_log_df = pd.DataFrame(error_info_log)
+        error_info_log_df.to_csv(f'{stylegan_and_seg_path}/stylegan_modified/train_log_v4_errors.csv')
+
+
 if __name__ == '__main__':
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for training StyleGAN-FineTune-v4 : {device}')
+
+    # check error (after Fine-Tuning for some epochs)
+#    record_property_score_error_info(max_epochs=79, device=device)
 
     # load Pre-trained StyleGAN
     generator_state_dict, discriminator_state_dict = load_existing_stylegan_state_dict(device)
