@@ -562,4 +562,4 @@
 
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
-  * ```stylegan_modified/synthesize_results``` 에 생성된 이미지 저장됨
+  * ```stylegan_modified/final_inference_test_v3``` 에 생성된 이미지 저장됨
