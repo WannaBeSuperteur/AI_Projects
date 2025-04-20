@@ -341,12 +341,20 @@
 
 * 구현 코드
   * [stylegan_generator_v3_gen_model.py](stylegan_modified/stylegan_generator_v3_gen_model.py) > ```test_create_output_images``` 함수 (Line 486)
+* 실제 테스트 결과
+  * epoch 별 합격 판정된 z vector 의 개수 추이 [(상세 기록)](https://github.com/WannaBeSuperteur/AI_Projects/tree/3f3bbac2c7876eaa1f5252e6b3097bd1dc05c6ff/2025_04_08_OhLoRA/stylegan_and_segmentation/stylegan_modified/inference_test_during_finetuning_v3)
+
+![image](../../images/250408_26.PNG)
 
 **4-5. Q & A**
 
 * StyleGAN-FineTune-v3 에서 머리 색, 머리 길이, 배경 색을 제외하고 **속성 값 3개만 사용** 한 이유는?
   * 머리 색, 머리 길이, 배경 색은 Property Score CNN 이 **이미지 전체 또는 상/하단 절반이라는 큰 부분** 을 보고 판단
   * 이들 큰 부분끼리, 이들 부분과 ```eyes```, ```mouth```, ```pose``` Score 을 계산하는 작은 부분이 **영역이 중복되어 학습에 지장** 을 줄 수 있을 것으로 추정
+* [Gender 출력값이 0 ~ 1 임에도 불구하고](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_Function_Misuse.md), Gender 에 대한 Loss Function 으로 MSE 를 적용한 이유는?
+  * 여성 이미지 생성 비율이 높아지도록 학습하는 것이 목적
+  * 개발 목적상, Classification 정확도를 **100% 에 가깝게 높일 필요는 없다** 고 판단
+  * 다른 Loss Term 들과의 통일성을 고려한 것도 있음
 
 **4-6. Oh-LoRA 캐릭터 최종 채택**
 
