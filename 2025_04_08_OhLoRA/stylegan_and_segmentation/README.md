@@ -158,7 +158,7 @@
 | StyleGAN-FineTune-v1                  | Original StyleGAN 으로 생성한 여성 이미지 4,703 장으로 Fine-Tuning 한 StyleGAN                                 | ✅ (90% 확률)            | **1차 알고리즘** (for FineTune-v1) & Score                                | ✅ (**여성 93.7%** = 281 / 300)      | ❌             | ❌               |
 | StyleGAN-FineTune-v2<br>**(❌ 학습 불가)** | StyleGAN-FineTune-v1 을 **CNN을 포함한 신경망** 으로 추가 학습                                                 | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ❓ (남성 이미지 생성 확률 증가)               | ✅             | ❌               |
 | StyleGAN-FineTune-v3<br>**(✅ 최종 채택)** | StyleGAN-FineTune-v1 을 **Conditional VAE** 의 Decoder 로 사용하여 추가 학습                                | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ✅ (남성 이미지 생성 방지를 위한 Loss Term 사용) | ✅ (만족할 만한 수준) | ✅ (학습 초중반)      |
-| StyleGAN-FineTune-v4                  | StyleGAN-FineTune-v1 을 **Style Mixing 미 적용** 하여 재 학습                                             | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score |                                   |               |                 |
+| StyleGAN-FineTune-v4                  | StyleGAN-FineTune-v1 을 **Style Mixing 미 적용** 하여 재 학습                                             | ❌ (미 적용)              | **2차 알고리즘** (for FineTune-v2,v3) & Score 를 학습한 **CNN에 의해 도출된** Score | ❓ (남성 이미지 생성 확률 증가 추정)            | ❌             | ❌               |
 
 * [StyleGAN Style Mixing](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md#3-1-style-mixing-mixing-regularization)
   * 적용 시, 동일한 latent vector z 와 동일한 property label 에 대해서도 **서로 다른 인물이나 특징의 이미지가 생성** 될 수 있음
@@ -370,15 +370,37 @@
 * Overview (How to run Fine-Tuning)
   * StyleGAN-FineTune-v1 (trained for 39 epochs = 16 hours) 을 **Style Mixing 없이 추가 학습**
   * 핵심 속성 값을 기존 StyleGAN-FineTune-v1 의 7개에서 **eyes, mouth, pose score 의 3개로 축소**
+  * **79 epochs, 45 hours (2025.04.18 23:00 - 04.20 20:00) 학습 진행** 
 * Generator
   * ```stylegan_modified/stylegan_generator.py```
 * Model Save Path
   * ```stylegan_modified/stylegan_gen_fine_tuned_v4.pth``` (**Generator** Model)
   * ```stylegan_modified/stylegan_dis_fine_tuned_v4.pth``` (**Discriminator** Model)
+* 모델 구조 정보
+  * [Generator of StyleGAN-FineTune-v4](model_structure_pdf/stylegan_finetune_v4_generator.pdf)
+  * [Discriminator of StyleGAN-FineTune-v4](model_structure_pdf/stylegan_finetune_v4_discriminator.pdf)
+* 학습 코드
+  * [run_stylegan_fine_tuning_v4.py](run_stylegan_fine_tuning_v4.py)
 * 추가 사항
   * StyleGAN-FineTune-**v3** 이 아닌 StyleGAN-FineTune-**v1 을 추가 Fine-Tuning** 하는 이유
     * StyleGAN-FineTune-v3 은 **Conditional VAE 의 Encoder 에서 출력한 $\mu$, $\sigma$ 근처의 z vector** 에서만 의도한 대로 Property Score 가 반영된 이미지가 생성됨
     * 즉, **Conditional VAE 와는 결이 맞지 않음**
+
+<details><summary>모델 상세 학습 로그 [ 펼치기 / 접기 ]</summary>
+
+* 매 epoch, 20 batch 마다 **"4-4. 이미지 생성 테스트"** 와 같은 방법으로 테스트를 실시하여, Corr-coef 및 MAE 계산
+* 실험 결과
+  * 일부 Property score 가 학습이 진행됨에 따라 Corr-coef 가 점차 증가하고 MAE 가 점차 감소하는 모습을 보임
+  * 단, **만족할 만한 수준에는 이르지 못함**
+  * [학습 로그 (csv)](stylegan_modified/train_log_v4_errors.csv)
+
+| Property Score | Corr-coef trend (moving avg.)<br>가로축 : 학습 진행도 (epoch) | MAE trend (moving avg.)<br>가로축 : 학습 진행도 (epoch) |
+|----------------|-------------------------------------------------------|-------------------------------------------------|
+| eyes           | ![image](../../images/250408_20.PNG)                  | ![image](../../images/250408_23.PNG)            |
+| mouth          | ![image](../../images/250408_21.PNG)                  | ![image](../../images/250408_24.PNG)            |
+| pose           | ![image](../../images/250408_22.PNG)                  | ![image](../../images/250408_25.PNG)            |
+
+</details>
 
 ### 3-2. CNN Model (성별, 이미지 품질)
 
@@ -521,10 +543,14 @@
   * **StyleGAN-FineTune-v2 (CNN 기반, ❌ 학습 불가)** 
     * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v2.py```
     * ```stylegan_modified/stylegan_gen_fine_tuned_v2.pth``` 에 Fine-Tuning 된 Generator 저장됨
-  * **StyleGAN-FineTune-v3 (Conditional VAE 기반)** 
+  * **StyleGAN-FineTune-v3 (Conditional VAE 기반, ✅ 최종 채택)** 
     * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v3.py```
     * ```stylegan_modified/stylegan_gen_fine_tuned_v3.pth``` 에 Fine-Tuning 된 Generator 저장됨
     * ```stylegan_modified/stylegan_gen_fine_tuned_v3_encoder.pth``` 에 Fine-Tuning 된 Generator 에 대한 VAE Encoder 저장됨
+  * **StyleGAN-FineTune-v4 (StyleGAN 재 학습)** 
+    * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v4.py```
+    * ```stylegan_modified/stylegan_gen_fine_tuned_v4.pth``` 에 Fine-Tuning 된 Generator 저장됨
+    * ```stylegan_modified/stylegan_dis_fine_tuned_v4.pth``` 에 Fine-Tuning 된 Generator 에 대한 VAE Encoder 저장됨
 
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
