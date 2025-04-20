@@ -558,7 +558,7 @@
   * **StyleGAN-FineTune-v4 (StyleGAN 재 학습)** 
     * ```python stylegan_and_segmentation/run_stylegan_fine_tuning_v4.py```
     * ```stylegan_modified/stylegan_gen_fine_tuned_v4.pth``` 에 Fine-Tuning 된 Generator 저장됨
-    * ```stylegan_modified/stylegan_dis_fine_tuned_v4.pth``` 에 Fine-Tuning 된 Generator 에 대한 VAE Encoder 저장됨
+    * ```stylegan_modified/stylegan_dis_fine_tuned_v4.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
 
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
