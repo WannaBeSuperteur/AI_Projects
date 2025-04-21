@@ -1,13 +1,15 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-from transformers import AutoModelForCausalLM
-import torch
-
 import peft
 from peft import LoraConfig
 from trl import SFTTrainer, SFTConfig
+from trl import DataCollatorForCompletionOnlyLM
 from datasets import DatasetDict, Dataset
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+import torch
+import pandas as pd
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -128,6 +130,12 @@ def generate_llm_trainable_dataset(dataset_df):
     dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'train'][['text']])
     dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'valid'][['text']])
 
+    print('\nLLM Trainable Dataset :')
+    train_texts = dataset['train']['text']
+    for i in range(10):
+        print(f'train data {i} : {train_texts[i]}')
+    print('\n')
+
     return dataset
 
 
@@ -144,4 +152,27 @@ def generate_llm_trainable_dataset(dataset_df):
 def fine_tune_model():
     print('Oh-LoRA LLM Fine Tuning start.')
 
-    raise NotImplementedError
+    # get original LLM and tokenizer
+    original_llm = get_original_llm()
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/original')
+
+    # read dataset
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning.csv')
+    dataset_df = dataset_df.sample(frac=1)  # shuffle
+
+    # prepare Fine-Tuning
+    lora_llm = get_lora_llm(llm=original_llm, lora_rank=64)
+    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} ### Answer: {x['output_data']}", axis=1)
+    dataset = generate_llm_trainable_dataset(dataset_df)
+
+    response_template = [43774, 10358, 235292]  # '### Answer :'
+    collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
+
+    training_args = get_training_args()
+    trainer = get_sft_trainer(lora_llm, dataset, tokenizer, collator, training_args)
+
+    # run Fine-Tuning
+    trainer.train()
+
+    # save Fine-Tuned model
+    trainer.save_model(OUTPUT_DIR_PATH)
