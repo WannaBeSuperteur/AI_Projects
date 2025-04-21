@@ -95,12 +95,17 @@ TBU
 **2. 실험 결과**
 
 * 결론
+  * **❌ Quadro M6000 (12 GB) 에서 Unsloth 학습 불가능** [(참고)](https://github.com/unslothai/unsloth/issues/1998)
+
+```
+RuntimeError: Found Quadro M6000 which is too old to be supported by the triton GPU compiler, which is used as the backend. Triton only supports devices of CUDA Capability >= 7.0, but your device is of CUDA capability 5.2       
+```
 
 | 테스트              | Inference 메모리<br>(nvidia-smi 측정값) | Inference 시간 | Fine-Tuning 메모리<br>(nvidia-smi 측정값) | Fine-Tuning 시간 |
 |------------------|-----------------------------------|--------------|-------------------------------------|----------------|
-| **with** Unsloth |                                   |              |                                     |                |
+| **with** Unsloth | 2,169 MB (3,829 MB) ❌             | ❌            | ❌                                   | ❌              |
 | **w/o** Unsloth  | 5,013 MB (5,924 MB)               | 158.2 s      | 5,994 MB (9,503 MB)                 | 19.7 s         |
-| 절감               |                                   |              |                                     |                |
+| 절감               | 56.7 % (35.4 %)                   | -            | -                                   | -              |
 
 **3. 실험 설정**
 

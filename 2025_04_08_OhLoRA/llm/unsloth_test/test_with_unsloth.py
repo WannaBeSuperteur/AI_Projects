@@ -1,3 +1,5 @@
+# Remove 'unsloth_compiled_cache' before running !!
+
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -21,11 +23,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'device for testing LLM Fine-Tuning with Unsloth : {device}')
 
 
-def get_llm():
-    llm = FastLanguageModel.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/original',
-                                            trust_remote_code=True,
-                                            torch_dtype=torch.bfloat16).cuda()
-    return llm
+def get_llm_and_tokenizer():
+    llm, tokenizer = FastLanguageModel.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/original',
+                                                       trust_remote_code=True,
+                                                       dtype=torch.bfloat16,
+                                                       fast_inference=False)
+
+    return llm, tokenizer
 
 
 def run_inference_test(llm):
@@ -52,9 +56,8 @@ if __name__ == '__main__':
     # 1. read dataset
     dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning.csv')
 
-    # 2. get LLM
-    llm = get_llm()
-    tokenizer = AutoTokenizer.from_pretrained(llm_path)
+    # 2. get LLM and tokenizer
+    llm, tokenizer = get_llm_and_tokenizer()
 
     used_memory = torch.cuda.memory_allocated() / (1024 * 1024)
     print(f'used memory (inference) : {used_memory:.2f} MB')
