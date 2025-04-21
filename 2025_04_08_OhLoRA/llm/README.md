@@ -87,23 +87,32 @@ TBU
 
 ### 4-2. Unsloth use test
 
-**1. 실험 결과**
+**1. 실험 목적**
+
+* 2024년에 공개된 [Unsloth](https://unsloth.ai/) 라는 툴을 이용하면 **LLM 의 학습 시간 및 메모리 등 자원을 절약** 할 수 있다.
+* 본 task (with Quadro 6000 12GB GPU) 에서는 어느 정도의 속도 향상 및 메모리 절감이 있는지 파악하여 향후 참고한다.
+
+**2. 실험 결과**
 
 * 결론
 
-| 테스트              | Inference 메모리 | Inference 시간 | Fine-Tuning 메모리 | Fine-Tuning 시간 |
-|------------------|---------------|--------------|-----------------|----------------|
-| **with** Unsloth |               |              |                 |                |
-| **w/o** Unsloth  |               |              |                 |                |
+| 테스트              | Inference 메모리 | Inference 시간 | Fine-Tuning 메모리<br>(nvidia-smi 측정값) | Fine-Tuning 시간 |
+|------------------|---------------|--------------|-------------------------------------|----------------|
+| **with** Unsloth |               |              |                                     |                |
+| **w/o** Unsloth  | 4,987 MB      | 150.9 s      | 5,968 MB (9,492 MB)                 | 20.1 s         |
+| 절감               |               |              |                                     |                |
 
-**2. 실험 설정**
+**3. 실험 설정**
 
 * Inference
   * run inference on 25 data (Q & A pairs)
-* Fine-Tuning 
+* Fine-Tuning
+  * **60 (data * epochs) = 20 data * 3 epochs**
+    * 실제 학습 데이터의 **30% = 0.3 epochs** 분량
   * epoch & batch size
-    * 2 epochs
-    * batch size = 2
+    * 3 epochs
+    * train batch size = 4
+    * valid batch size = 1
   * data
     * total 20 data (Q & A pairs) for training
     * 5 data (Q & A pairs) for validation

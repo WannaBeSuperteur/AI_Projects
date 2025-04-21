@@ -15,12 +15,12 @@ output_dir_path = f'{PROJECT_DIR_PATH}/llm/unsloth_test/model_output_without_uns
 
 training_args = SFTConfig(
     learning_rate=0.0002,           # lower learning rate is recommended for fine tuning
-    num_train_epochs=2,
+    num_train_epochs=3,
     logging_steps=1,                # logging frequency
     gradient_checkpointing=False,
     output_dir=output_dir_path,
     save_total_limit=3,             # max checkpoint count to save
-    per_device_train_batch_size=2,  # batch size per device during training
+    per_device_train_batch_size=4,  # batch size per device during training
     per_device_eval_batch_size=1,   # batch size per device during validation
     report_to=None                  # to prevent wandb API key request at start of Fine-Tuning
 )
