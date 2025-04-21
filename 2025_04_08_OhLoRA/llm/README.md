@@ -7,7 +7,8 @@
 * [4. Test / Run Model](#4-test--run-model)
   * [4-1. Prepare Model](#4-1-prepare-model)
   * [4-2. Unsloth use test](#4-2-unsloth-use-test)
-  * [4-3. Run Final Fine-Tuned Model](#4-3-run-final-fine-tuned-model)
+  * [4-3. Run LLM Fine-Tuning](#4-3-run-llm-fine-tuning)
+  * [4-4. Run Final Fine-Tuned Model](#4-4-run-final-fine-tuned-model)
 
 ## 1. LLM Final Selection
 
@@ -83,7 +84,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 **2. Final Fine-Tuned Model for Oh-LoRA (오로라)**
 
-TBU
+* ```2025_04_08_OhLoRA/llm/models/ohlora``` 에 모델 저장
 
 ### 4-2. Unsloth use test
 
@@ -132,6 +133,10 @@ RuntimeError: Found Quadro M6000 which is too old to be supported by the triton 
 | **with** Unsloth | ```python llm/unsloth_test/test_with_unsloth.py```    |
 | **w/o** Unsloth  | ```python llm/unsloth_test/test_without_unsloth.py``` |
 
-### 4-3. Run Final Fine-Tuned Model
+### 4-3. Run LLM Fine-Tuning
+
+* 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning.py``` 실행
+
+### 4-4. Run Final Fine-Tuned Model
 
 * TBU
