@@ -24,7 +24,7 @@ OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/fine_tuned'
 # Returns:
 # - original_llm (LLM) : Original Gemma-2 2B LLM
 
-def get_llm():
+def get_original_llm():
     original_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/original',
                                                         trust_remote_code=True,
                                                         torch_dtype=torch.bfloat16).cuda()
@@ -142,4 +142,6 @@ def generate_llm_trainable_dataset(dataset_df):
 # - 2025_04_08_OhLoRA/llm/models/ohlora 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model():
+    print('Oh-LoRA LLM Fine Tuning start.')
+
     raise NotImplementedError
