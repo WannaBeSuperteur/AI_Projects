@@ -1,14 +1,16 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+from test_unsloth_common import llm_path, output_dir_path
+from test_unsloth_common import TEST_PROMPT_COUNT, START_PROMPT_IDX
+from test_unsloth_common import get_lora_llm, generate_llm_trainable_dataset, get_sft_trainer, get_training_args
+
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from trl import DataCollatorForCompletionOnlyLM
 import torch
 import pandas as pd
 import time
 
-from test_unsloth_common import llm_path, output_dir_path
-from test_unsloth_common import TEST_PROMPT_COUNT, START_PROMPT_IDX
-from test_unsloth_common import get_lora_llm, generate_llm_trainable_dataset, get_sft_trainer
-
-import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
@@ -24,7 +26,7 @@ def get_llm():
     return llm
 
 
-def run_inference_test():
+def run_inference_test(llm):
     start_at = time.time()
 
     for i in range(TEST_PROMPT_COUNT):
@@ -54,7 +56,7 @@ if __name__ == '__main__':
     print(f'used memory (inference) : {used_memory:.2f} MB')
 
     # 3. inference test
-    run_inference_test()
+    run_inference_test(llm)
 
     # 4. Fine-Tuning test prepare
     lora_llm = get_lora_llm(llm=llm, lora_rank=64)
@@ -64,7 +66,8 @@ if __name__ == '__main__':
     response_template = [43774, 10358, 235292]  # '### Answer :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
-    trainer = get_sft_trainer(lora_llm, dataset, tokenizer, collator)
+    training_args = get_training_args(with_unsloth=False)
+    trainer = get_sft_trainer(lora_llm, dataset, tokenizer, collator, training_args)
 
     # 5. Fine-Tuning test
     fine_tuning_start_at = time.time()
