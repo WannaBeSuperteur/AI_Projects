@@ -18,7 +18,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
   * [HuggingFace 의 Open Ko-LLM Leaderboard (2025.04.19 기준)](https://huggingface.co/spaces/upstage/open-ko-llm-leaderboard)
 * 모델 후보 선정 기준
   * 선정 기준 
-    * **3.0 B parameter 이하** (Quadro M6000 12GB 에서 학습 및 추론 가능한 수준이어야 함)
+    * **0.25 B - 3.0 B 사이의 parameter** (Quadro M6000 12GB 에서 학습 및 추론 가능한 수준이어야 함)
     * 자유 사용 가능 라이선스 (MIT, Apache-2.0 등)
     * 한국어 특화 또는 지원
   * 위 기준에 **셋 다** 해당하는 모델 중 **종합 점수 (Average)** 가 높은 순으로 테스트
@@ -43,7 +43,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 ### 3-1. 모델 후보 선정 결과
 
 * 총 8개 모델 후보 선정
-* 파라미터 개수 범위 : 0.04 B ~ 2.61 B
+* 파라미터 개수 범위 : 0.46 B ~ 2.61 B
 
 | 순위 | LLM 이름                                                                              | 파라미터 개수 | 종합 점수 (Average) |
 |----|-------------------------------------------------------------------------------------|---------|-----------------|
@@ -54,7 +54,6 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 | 5  | [llama1B](https://huggingface.co/Yebin46/llama1B)                                   | 1.24 B  | 29.73           |
 | 6  | [KoAlpaca-KoRWKV-1.5B](https://huggingface.co/beomi/KoAlpaca-KoRWKV-1.5B)           | 1.5 B   | 28.74           |
 | 7  | [FinguAI-Chat-v1](https://huggingface.co/FINGU-AI/FinguAI-Chat-v1)                  | 0.46 B  | 28.09           |
-| 8  | [TinyKo-v5-a](https://huggingface.co/blueapple8259/TinyKo-v5-a)                     | 0.04 B  | 25.80           |
 
 ### 3-2. 최종 모델 선정 결과
 
