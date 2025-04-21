@@ -16,21 +16,24 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 
 * 모델 후보 선정 시 참고 페이지
   * [HuggingFace 의 Open Ko-LLM Leaderboard (2025.04.19 기준)](https://huggingface.co/spaces/upstage/open-ko-llm-leaderboard)
+
 * 모델 후보 선정 기준
   * 선정 기준 
     * **0.25 B - 3.0 B 사이의 parameter** (Quadro M6000 12GB 에서 학습 및 추론 가능한 수준이어야 함)
     * 자유 사용 가능 라이선스 (MIT, Apache-2.0 등)
     * 한국어 특화 또는 지원
   * 위 기준에 **셋 다** 해당하는 모델 중 **종합 점수 (Average)** 가 높은 순으로 테스트
+
 * 모델 선정 기준
   * 아래 기준을 모두 고려하여 **최종 1개 모델 선정**
-    * Open Ko-LLM Leaderboard 기준 종합 점수 **(정량 평가)** 
+    * **(중요)** Open Ko-LLM Leaderboard 기준 종합 점수 **(정량 평가)** 
     * Fine-Tuning 속도 및 Fine-Tuning 진행 중 최대 메모리 사용량 **(정량 평가)**
       * LoRA Rank 16, 32, 64 로 각각 테스트 
     * Inference 속도 및 Inference 진행 중 최대 메모리 사용량 **(정량 평가)**
       * Inference test 는 **Fine-Tuning 되지 않은 원본 모델** 로 진행 
-    * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 에 대한 답변 품질 **(정성 평가)**
-      * 단, LLM Fine Tuning 테스트 중 기록되는 Training Loss 값을 참고하여 평가 
+    * **(가장 중요)** [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 에 대한 위 Inference test 시의 답변 품질 **(정성 평가)**
+      * 단, LLM Fine Tuning 테스트 중 기록되는 Training Loss 값을 참고하여 평가
+      * LLM 이 Fine-Tuning 을 통해 **의도한 답변을 생성할 수 있는 잠재력** 을 평가하는 의도임
   * 기준 데이터셋
     * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 의 Train Data 및 Valid Data 의 일부
 
