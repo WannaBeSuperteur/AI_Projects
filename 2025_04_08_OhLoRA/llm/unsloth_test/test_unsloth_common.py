@@ -3,11 +3,12 @@ from trl import SFTTrainer, SFTConfig
 from datasets import DatasetDict, Dataset
 
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
 llm_path = 'unsloth/gemma-2-2b-it'
-TEST_PROMPT_COUNT = 5
+TEST_PROMPT_COUNT = 25
 START_PROMPT_IDX = 81
 output_dir_path = f'{PROJECT_DIR_PATH}/llm/unsloth_test/model_output_without_unsloth'
 
