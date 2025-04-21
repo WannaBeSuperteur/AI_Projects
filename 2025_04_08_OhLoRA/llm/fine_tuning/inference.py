@@ -24,7 +24,7 @@ def load_valid_user_prompts():
 
 
 # Fine Tuning 된 LLM (gemma-2 2b) 을 이용한 inference 실시
-# Create Date : 2025.04.21
+# Create Date : 2025.04.22
 # Last Update Date : -
 
 # Arguments:
@@ -39,5 +39,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer):
     inputs = tokenizer(user_prompt, return_tensors='pt').to(fine_tuned_llm.device)
 
     outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True)
-    llm_answer = user_prompt.decode(outputs[0], skip_special_tokens=True)
-    _ = llm_answer[len(user_prompt):]
+    llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    llm_answer = llm_answer[len(user_prompt):]
+
+    return llm_answer
