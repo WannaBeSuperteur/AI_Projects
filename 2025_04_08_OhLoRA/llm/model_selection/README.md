@@ -4,6 +4,8 @@
 
 * [1. 개요](#1-개요)
 * [2. 모델 선정 기준](#2-모델-선정-기준)
+  * [2-1. 모델 후보 선정 기준](#2-1-모델-후보-선정-기준)
+  * [2-2. 모델 선정 기준](#2-2-모델-선정-기준)
 * [3. 모델 선정 결과](#3-모델-선정-결과)
   * [3-1. 모델 후보 선정 결과](#3-1-모델-후보-선정-결과)
   * [3-2. 최종 모델 선정 결과](#3-2-최종-모델-선정-결과)
@@ -14,34 +16,37 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 
 ## 2. 모델 선정 기준
 
-* 모델 후보 선정 시 참고 페이지
-  * [HuggingFace 의 Open Ko-LLM Leaderboard (2025.04.19 기준)](https://huggingface.co/spaces/upstage/open-ko-llm-leaderboard)
+모델 후보 선정 시 참고 페이지
 
-* 모델 후보 선정 기준
-  * 선정 기준 
-    * **0.25 B - 3.0 B 사이의 parameter** (Quadro M6000 12GB 에서 학습 및 추론 가능한 수준이어야 함)
-    * 자유 사용 가능 라이선스 (MIT, Apache-2.0 등)
-    * 한국어 특화 또는 지원
-  * 위 기준에 **셋 다** 해당하는 모델 중 **종합 점수 (Average)** 가 높은 순으로 테스트
+* [HuggingFace 의 Open Ko-LLM Leaderboard (2025.04.19 기준)](https://huggingface.co/spaces/upstage/open-ko-llm-leaderboard)
 
-* 모델 선정 기준
-  * 아래 기준을 모두 고려하여 **최종 1개 모델 선정**
-    * **(중요)** Open Ko-LLM Leaderboard 기준 종합 점수 **(정량 평가)** 
-    * Fine-Tuning 속도 및 Fine-Tuning 진행 중 최대 메모리 사용량 **(정량 평가)**
-      * LoRA Rank 16, 32, 64 로 각각 테스트 
-    * Inference 속도 및 Inference 진행 중 최대 메모리 사용량 **(정량 평가)**
-      * Inference test 는 **Fine-Tuning 되지 않은 원본 모델** 로 진행 
-    * **(가장 중요)** [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 에 대한 위 Inference test 시의 답변 품질 **(정성 평가)**
-      * 단, LLM Fine Tuning 테스트 중 기록되는 Training Loss 값을 참고하여 평가
-      * LLM 이 Fine-Tuning 을 통해 **의도한 답변을 생성할 수 있는 잠재력** 을 평가하는 의도임
-  * 기준 데이터셋
-    * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 의 Train Data 및 Valid Data 의 일부
+## 2-1. 모델 후보 선정 기준
+
+* 모델 후보 선정 기준 
+  * **0.25 B - 3.0 B 사이의 parameter** (Quadro M6000 12GB 에서 학습 및 추론 가능한 수준이어야 함)
+  * 자유 사용 가능 라이선스 (MIT, Apache-2.0 등)
+  * 한국어 특화 또는 지원
+* 위 기준에 **셋 다** 해당하는 모델 중 **종합 점수 (Average)** 가 높은 순으로 테스트
+
+## 2-2. 모델 선정 기준
+
+* 아래 기준을 모두 고려하여 **최종 사용할 1개 모델 및 추가 1개 모델 (예비 모델)** 선정
+  * **(중요)** Open Ko-LLM Leaderboard 기준 종합 점수 **(정량 평가)** 
+  * Fine-Tuning 속도 및 Fine-Tuning 진행 중 최대 메모리 사용량 **(정량 평가)**
+    * LoRA Rank 16, 32, 64 로 각각 테스트 
+  * Inference 속도 및 Inference 진행 중 최대 메모리 사용량 **(정량 평가)**
+    * Inference test 는 **Fine-Tuning 되지 않은 원본 모델** 로 진행 
+  * **(가장 중요)** [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 에 대한 위 Inference test 시의 답변 품질 **(정성 평가)**
+    * 단, LLM Fine Tuning 테스트 중 기록되는 Training Loss 값을 참고하여 평가
+    * LLM 이 Fine-Tuning 을 통해 **의도한 답변을 생성할 수 있는 잠재력** 을 평가하는 의도임
+* 기준 데이터셋
+  * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 의 Train Data 및 Valid Data 의 일부
 
 ## 3. 모델 선정 결과
 
-| 모델 후보 선정 결과                       | 최종 선정 모델                                                                                        |
-|-----------------------------------|-------------------------------------------------------------------------------------------------|
-| 총 7 개 모델 (0.46 B ~ 2.61 B params) | **gemma-2-2b-it (2.61 B params)** [(HuggingFace)](https://huggingface.co/unsloth/gemma-2-2b-it) |
+| 모델 후보 선정 결과                       | 최종 선정 모델                                                                                                                                               |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 총 7 개 모델 (0.46 B ~ 2.61 B params) | **gemma-2-2b-it (2.61 B params)** [(HuggingFace)](https://huggingface.co/unsloth/gemma-2-2b-it) [(License : gemma)](https://ai.google.dev/gemma/terms) |
 
 ### 3-1. 모델 후보 선정 결과
 
@@ -63,7 +68,7 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 **1. 최종 모델 선정 결과**
 
 * **gemma-2-2b-it (2.61 B params)**
-  * [License : gemma (NOT totally free)](https://ai.google.dev/gemma/terms) 
+  * [License : gemma **(NOT totally free)**](https://ai.google.dev/gemma/terms) 
 * **리포트 (ipynb) 는 GitHub 에서 읽히지 않으므로, 다운로드 후 Google Colab 또는 PyCharm 에서 읽는 것을 권장** 합니다.
 
 | 구분           | 모델 이름 (리포트)                                                    | 종합 점수<br>(Average) | 파라미터 개수 | Fine-Tuning 시간 (LoRA rank 16 / 32 / 64) | Fine-Tuning 최대 메모리 사용량 (LoRA rank 16 / 32 / 64) | Inference 시간 | Inference 최대 메모리 사용량 | Inference 답변 품질                                     |
