@@ -2,10 +2,28 @@
 # - https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig
 
 
+from transformers import StoppingCriteria, StoppingCriteriaList
 import pandas as pd
+import torch
 
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+
+
+# stop when "LAST N TOKENS MATCHES stop_token_ids" - class code by ChatGPT-4o
+class StopOnTokens(StoppingCriteria):
+    def __init__(self, stop_token_ids):
+        self.stop_token_ids = list(stop_token_ids.detach().cpu().numpy())
+        self.current_ids = []
+
+    def __call__(self, input_ids, scores, **kwargs):
+        self.current_ids = input_ids[0].tolist()
+
+        if len(self.current_ids) >= len(self.stop_token_ids):
+            if self.current_ids[-len(self.stop_token_ids):] == self.stop_token_ids:
+                return True  # stop generation
+
+        return False
 
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
@@ -31,7 +49,7 @@ def load_valid_user_prompts():
 # Fine Tuning 된 LLM (gemma-2 2b) 을 이용한 inference 실시
 # Create Date : 2025.04.22
 # Last Update Date : 2025.04.22
-# - 'http' 가 포함된 문장은 안전성 이슈가 있으므로 최종 반환 불가 처리
+# - LLM 의 generate (문장 생성) 시 stopping criteria 적용
 
 # Arguments:
 # - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
@@ -62,8 +80,16 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
     trial_count = 0
     output_token_cnt = None
 
+    # for stopping criteria
+    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(fine_tuned_llm.device)  # '(답변 종료)'
+    stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
+
     while trial_count < max_trials:
-        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.0)
+        outputs = fine_tuned_llm.generate(**inputs,
+                                          max_length=80,
+                                          do_sample=True,
+                                          temperature=1.0,
+                                          stopping_criteria=stopping_criteria)
         output_token_cnt = len(outputs[0])
 
         llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -72,7 +98,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
 
         # check LLM answer and return or retry
         is_bracketed = llm_answer.startswith('[') and llm_answer.endswith(']')
-        is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '') != ''
+        is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') != ''
 
         if is_non_empty and 'http' not in llm_answer:
             break

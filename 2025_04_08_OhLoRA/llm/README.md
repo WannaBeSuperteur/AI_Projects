@@ -38,16 +38,27 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 ## 2. How to run Fine-Tuning
 
-* Fine-Tuning 방법 및 데이터셋
-  * 학습 방법 
-    * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
-    * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = 64
-  * 학습 데이터셋
-    * [Train & Valid Dataset](OhLoRA_fine_tuning_25042213.csv) (**360** Q & A pairs for training / **60** Q & A pairs for validation) 
+**1. Fine-Tuning 방법 및 데이터셋**
+
+* 학습 방법 
+  * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
+  * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = 64
+* 학습 데이터셋
+  * [Train & Valid Dataset](OhLoRA_fine_tuning_25042213.csv) (**360** Q & A pairs for training / **60** Q & A pairs for validation) 
 * Fine-Tuning 방법 선택 근거
   * 메모리 및 연산량을 절약 가능한, 최근 많이 쓰이는 LLM Fine-Tuning 방법 중 하나
   * **Oh-LoRA (오로라)** 라는 이름의 상징성을 고려
   * 널리 알려진 다른 방법들인 [Prefix Tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_PEFT.md#2-3-prefix-tuning), [Prompt Tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_PEFT.md#2-4-prompt-tuning), [Adapter Layer 추가](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_PEFT.md#2-5-adapter-layer-%EC%B6%94%EA%B0%80) 등은 Multi-task LLM 에 보다 적합한데, 본 LLM 은 **단순 대화형 LLM 이 목적이므로 Multi-task 로 보기 다소 어려움**
+
+**2. 모델 별 학습 특이 사항**
+
+* **Polyglot-Ko 1.3B**
+  * 학습 시 문제점 
+    * Original Polyglot-Ko 1.3B LLM 의 tokenizer 의 end-of-sequence token 인 ```<|endoftext|>``` 가, **Fine-Tuning 된 모델에서는 매우 드물게 생성** 됨
+    * 이로 인해 **거의 대부분의 생성 문장이 max token length 인 80 에 도달함**
+  * 해결책으로, 다음 방법을 이용
+    * 모든 학습 데이터의 답변 부분의 끝에 ```(답변 종료)``` 문구를 추가 후,
+    * ```stopping_criteria``` 를 이용하여 ```(답변 종료)``` 에 해당하는 token 이 출력될 시 문장 생성 중지
 
 ## 3. LLM Memory (RAG-like concept)
 

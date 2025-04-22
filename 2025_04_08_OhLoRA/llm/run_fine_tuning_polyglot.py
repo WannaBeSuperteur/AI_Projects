@@ -49,6 +49,9 @@ if __name__ == '__main__':
         fine_tune_model()
         fine_tuned_llm = load_fine_tuned_llm()
 
+    # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+    fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
+
     # run inference using Fine-Tuned LLM
     for user_prompt in valid_user_prompts:
         print(f'\nuser prompt :\n{user_prompt}')

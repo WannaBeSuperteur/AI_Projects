@@ -71,7 +71,7 @@ def get_original_llm():
 def get_training_args():
     training_args = SFTConfig(
         learning_rate=0.0002,           # lower learning rate is recommended for Fine-Tuning
-        num_train_epochs=20,
+        num_train_epochs=30,
         logging_steps=5,                # logging frequency
         gradient_checkpointing=False,
         output_dir=OUTPUT_DIR_PATH,
@@ -193,8 +193,9 @@ def fine_tune_model():
 
 #    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
 #    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
+#    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
 
-    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} <|endoftext|>",
+    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} (답변 종료) <|endoftext|>",
                                           axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
 
