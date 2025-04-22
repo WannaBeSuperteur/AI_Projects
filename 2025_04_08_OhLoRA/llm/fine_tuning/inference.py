@@ -70,9 +70,11 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
         llm_answer = llm_answer[len(user_prompt_):]
         trial_count += 1
 
-        if ('http' in llm_answer or
-                (llm_answer.startswith('[') and llm_answer.endswith(']')) or
-                llm_answer.replace('\n', '') != ''):
+        # check LLM answer and return or retry
+        is_bracketed = llm_answer.startswith('[') and llm_answer.endswith(']')
+        is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '') != ''
+
+        if is_non_empty and 'http' not in llm_answer:
             break
 
     # remove new-lines
