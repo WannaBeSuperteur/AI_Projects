@@ -4,25 +4,25 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from fine_tuning.fine_tuning import fine_tune_model
+from fine_tuning.fine_tuning_polyglot import fine_tune_model
 from fine_tuning.inference import run_inference, load_valid_user_prompts
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
-# Fine Tuning 된 LLM (gemma-2 2b) 로딩
-# Create Date : 2025.04.21
+# Fine Tuning 된 LLM (Polyglot-Ko 1.3B) 로딩
+# Create Date : 2025.04.22
 # Last Update Date : -
 
 # Arguments:
 # - 없음
 
 # Returns:
-# - fine_tuned_llm (LLM) : Fine-Tuning 된 LLM
+# - fine_tuned_llm (LLM) : Fine-Tuning 된 Polyglot-Ko 1.3B LLM
 
 def load_fine_tuned_llm():
-    fine_tuned_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/fine_tuned',
+    fine_tuned_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_fine_tuned',
                                                           trust_remote_code=True,
                                                           torch_dtype=torch.bfloat16).cuda()
     return fine_tuned_llm
@@ -37,14 +37,14 @@ if __name__ == '__main__':
         print(f'user prompt for validation : {user_prompt}')
 
     # load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/original')
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_original')
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
         fine_tuned_llm = load_fine_tuned_llm()
 
     except Exception as e:
-        print(f'Fine-Tuned LLM load failed : {e}')
+        print(f'Fine-Tuned LLM (Polyglot-Ko 1.3B) load failed : {e}')
 
         fine_tune_model()
         fine_tuned_llm = load_fine_tuned_llm()
@@ -57,12 +57,14 @@ if __name__ == '__main__':
         llm_answer_0, trial_count_0, output_token_cnt_0 = run_inference(fine_tuned_llm,
                                                                         user_prompt,
                                                                         tokenizer,
-                                                                        answer_start_mark=' (answer start)')
+                                                                        answer_start_mark=' (답변 시작)',
+                                                                        remove_token_type_ids=True)
 
         llm_answer_1, trial_count_1, output_token_cnt_1 = run_inference(fine_tuned_llm,
                                                                         user_prompt,
                                                                         tokenizer,
-                                                                        answer_start_mark=' (answer start)')
+                                                                        answer_start_mark=' (답변 시작)',
+                                                                        remove_token_type_ids=True)
 
         print(f'Oh-LoRA answer (trials: {trial_count_0},{trial_count_1}, '
               f'output_tkn_cnt : {output_token_cnt_0},{output_token_cnt_1}) '

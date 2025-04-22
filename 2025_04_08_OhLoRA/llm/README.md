@@ -5,10 +5,11 @@
 * [2. How to run Fine-Tuning](#2-how-to-run-fine-tuning)
 * [3. LLM Memory (RAG-like concept)](#3-llm-memory-rag-like-concept)
 * [4. Test / Run Model](#4-test--run-model)
-  * [4-1. Prepare Model](#4-1-prepare-model)
-  * [4-2. Unsloth use test](#4-2-unsloth-use-test)
-  * [4-3. Run LLM Fine-Tuning](#4-3-run-llm-fine-tuning)
-  * [4-4. Run Final Fine-Tuned Model](#4-4-run-final-fine-tuned-model)
+  * [4-1. Prepare Model (Gemma-2 2B Based)](#4-1-prepare-model-gemma-2-2b-based)
+  * [4-2. Prepare Model (Polyglot-Ko 1.3B Based)](#4-2-prepare-model-polyglot-ko-13b-based)
+  * [4-3. Unsloth use test](#4-3-unsloth-use-test)
+  * [4-4. Run LLM Fine-Tuning](#4-4-run-llm-fine-tuning)
+  * [4-5. Run Final Fine-Tuned Model](#4-5-run-final-fine-tuned-model)
 
 ## 1. LLM Final Selection
 
@@ -54,7 +55,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 ## 4. Test / Run Model
 
-### 4-1. Prepare Model
+### 4-1. Prepare Model (Gemma-2 2B Based)
 
 **1. Gemma-2-2b Original Unsloth Model (by Google & Unsloth)**
 
@@ -67,6 +68,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 ```
 2025_04_08_OhLoRA
 - llm
+  - fine_tuning
   - model_selection
   - models (디렉토리 새로 생성)
     - original (디렉토리 새로 생성)
@@ -79,15 +81,54 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
       - tokenizer.json (다운로드)
       - tokenizer.model (다운로드)
       - tokenizer_config.json (다운로드)
+    - ...
   - unsloth_test
   - ...  
 ```
 
-**2. Final Fine-Tuned Model for Oh-LoRA (오로라)**
+**2. Final Fine-Tuned Model**
 
-* ```2025_04_08_OhLoRA/llm/models/ohlora``` 에 모델 저장
+* ```2025_04_08_OhLoRA/llm/models/fine_tuned``` 에 모델 저장
+* TBU (기존 모델 준비)
 
-### 4-2. Unsloth use test
+### 4-2. Prepare Model (Polyglot-Ko 1.3B Based)
+
+**1. Polyglot-Ko Original Model (by EleutherAI)**
+
+* ```2025_04_08_OhLoRA/llm/models/polyglot_original``` 에, [Polyglot-Ko 1.3B Hugging-Face](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) 에서 다운로드받은 모델 및 관련 파일 저장
+  * 총 12 개 파일 (각종 정보 포함)
+  * 이때 ```models/polyglot_original``` 디렉토리는 Clone 받은 repo. 에 원래 없으므로, 새로 생성
+
+```
+2025_04_08_OhLoRA
+- llm
+  - fine_tuning
+  - model_selection
+  - models (디렉토리 새로 생성)
+    - polyglot_original (디렉토리 새로 생성)
+      - .gitarrtibutes (다운로드)
+      - README.md (다운로드)
+      - config.json (다운로드)
+      - generation_config.json (다운로드)
+      - model-00001-of-00003.safetensors (다운로드)
+      - model-00002-of-00003.safetensors (다운로드)
+      - model-00003-of-00003.safetensors (다운로드)
+      - model.safetensors.index.json (다운로드)
+      - pytorch_model.bin (다운로드)
+      - special_tokens_map.json (다운로드)
+      - tokenizer.json (다운로드)
+      - tokenizer_config.json (다운로드)
+    - ...
+  - unsloth_test
+  - ...  
+```
+
+**2. Final Fine-Tuned Model**
+
+* ```2025_04_08_OhLoRA/llm/models/polyglot_fine_tuned``` 에 모델 저장
+* TBU (기존 모델 준비)
+
+### 4-3. Unsloth use test
 
 **1. 실험 목적**
 
@@ -134,10 +175,14 @@ RuntimeError: Found Quadro M6000 which is too old to be supported by the triton 
 | **with** Unsloth | ```python llm/unsloth_test/test_with_unsloth.py```    |
 | **w/o** Unsloth  | ```python llm/unsloth_test/test_without_unsloth.py``` |
 
-### 4-3. Run LLM Fine-Tuning
+### 4-4. Run LLM Fine-Tuning
 
-* 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning.py``` 실행
+* Gemma2 2B Fine Tuning
+  * 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning.py``` 실행
+* Polyglot-Ko 1.3B Fine Tuning
+  * 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning_polyglot.py``` 실행
 
-### 4-4. Run Final Fine-Tuned Model
+### 4-5. Run Final Fine-Tuned Model
 
+* 먼저 (TBU) 를 참고하여 모델 준비 (모델 종류 : TBU)
 * TBU

@@ -31,28 +31,43 @@ def load_valid_user_prompts():
 # Fine Tuning 된 LLM (gemma-2 2b) 을 이용한 inference 실시
 # Create Date : 2025.04.22
 # Last Update Date : 2025.04.22
-# - 변경된 LLM input data format 반영
-# - empty answer 가 생기지 않을 때까지 반복 시도
+# - token_type_ids 제거 여부 변수 추가
+# - output token 개수 반환 추가
+# - answer start mark (질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구) 추가
 
 # Arguments:
-# - fine_tuned_llm (LLM)           : Fine-Tuning 된 LLM
-# - user_prompt    (str)           : LLM 에 입력할 사용자 프롬프트
-# - tokenizer      (AutoTokenizer) : LLM 의 Tokenizer
-# - max_trials     (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
+# - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
+# - user_prompt           (str)           : LLM 에 입력할 사용자 프롬프트
+# - tokenizer             (AutoTokenizer) : LLM 의 Tokenizer
+# - max_trials            (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
+# - remove_token_type_ids (bool)          : tokenizer 로 Encoding 된 input 의 dict 에서 'token_type_ids' 제거 여부
+# - answer_start_mark     (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
 
 # Returns:
-# - llm_answer  (str) : LLM 답변 중 user prompt 를 제외한 부분
-# - trial_count (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
+# - llm_answer       (str) : LLM 답변 중 user prompt 를 제외한 부분
+# - trial_count      (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
+# - output_token_cnt (int) : LLM output 의 token 개수
 
-def run_inference(fine_tuned_llm, user_prompt, tokenizer, max_trials=30):
-    user_prompt_ = user_prompt + ' (answer start)'
-    inputs = tokenizer(user_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
+def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
+                  max_trials=30, remove_token_type_ids=False):
+
+    user_prompt_ = user_prompt + answer_start_mark
+
+    if remove_token_type_ids:
+        inputs = tokenizer(user_prompt_, return_tensors='pt')
+        inputs = {'input_ids': inputs['input_ids'].to(fine_tuned_llm.device),
+                  'attention_mask': inputs['attention_mask'].to(fine_tuned_llm.device)}
+    else:
+        inputs = tokenizer(user_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
 
     llm_answer = ''
     trial_count = 0
+    output_token_cnt = None
 
     while trial_count < max_trials:
-        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.2)
+        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.0)
+        output_token_cnt = len(outputs[0])
+
         llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
         llm_answer = llm_answer[len(user_prompt_):]
         trial_count += 1
@@ -63,4 +78,4 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, max_trials=30):
     # remove new-lines
     llm_answer = llm_answer.replace('\n', '')
 
-    return llm_answer, trial_count
+    return llm_answer, trial_count, output_token_cnt
