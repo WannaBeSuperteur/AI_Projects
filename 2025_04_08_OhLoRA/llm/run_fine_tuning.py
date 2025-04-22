@@ -51,6 +51,10 @@ if __name__ == '__main__':
 
     # run inference using Fine-Tuned LLM
     for user_prompt in valid_user_prompts:
-        print(f'user prompt :\n{user_prompt}')
-        llm_answer = run_inference(fine_tuned_llm, user_prompt, tokenizer)
-        print(f'Oh-LoRA answer :\n{llm_answer}')
+        print(f'\nuser prompt :\n{user_prompt}')
+
+        # generate 2 answers for comparison
+        llm_answer_0, trial_count_0 = run_inference(fine_tuned_llm, user_prompt, tokenizer)
+        llm_answer_1, trial_count_1 = run_inference(fine_tuned_llm, user_prompt, tokenizer)
+
+        print(f'Oh-LoRA answer (trials: {trial_count_0},{trial_count_1}) :\n- {llm_answer_0}\n- {llm_answer_1}')

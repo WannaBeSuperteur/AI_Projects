@@ -1,3 +1,7 @@
+# for LLM answer generation config :
+# - https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig
+
+
 import pandas as pd
 
 import os
@@ -28,21 +32,35 @@ def load_valid_user_prompts():
 # Create Date : 2025.04.22
 # Last Update Date : 2025.04.22
 # - 변경된 LLM input data format 반영
+# - empty answer 가 생기지 않을 때까지 반복 시도
 
 # Arguments:
 # - fine_tuned_llm (LLM)           : Fine-Tuning 된 LLM
 # - user_prompt    (str)           : LLM 에 입력할 사용자 프롬프트
 # - tokenizer      (AutoTokenizer) : LLM 의 Tokenizer
+# - max_trials     (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
 
 # Returns:
-# - llm_answer (str) : LLM 답변 중 user prompt 를 제외한 부분
+# - llm_answer  (str) : LLM 답변 중 user prompt 를 제외한 부분
+# - trial_count (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
 
-def run_inference(fine_tuned_llm, user_prompt, tokenizer):
+def run_inference(fine_tuned_llm, user_prompt, tokenizer, max_trials=30):
     user_prompt_ = user_prompt + ' (answer start)'
     inputs = tokenizer(user_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
 
-    outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True)
-    llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    llm_answer = llm_answer[len(user_prompt_):]
+    llm_answer = ''
+    trial_count = 0
 
-    return llm_answer
+    while trial_count < max_trials:
+        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.0)
+        llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        llm_answer = llm_answer[len(user_prompt_):]
+        trial_count += 1
+
+        if (llm_answer.startswith('[') and llm_answer.endswith(']')) or llm_answer.replace('\n', '') != '':
+            break
+
+    # remove new-lines
+    llm_answer = llm_answer.replace('\n', '')
+
+    return llm_answer, trial_count

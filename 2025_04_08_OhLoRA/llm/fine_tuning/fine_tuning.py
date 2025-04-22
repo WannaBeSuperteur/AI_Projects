@@ -30,9 +30,9 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
         print('=== INFERENCE TEST ===')
 
         for user_prompt in valid_user_prompts:
-            llm_answer = run_inference(lora_llm, user_prompt, tokenizer)
+            llm_answer, trial_count = run_inference(lora_llm, user_prompt, tokenizer)
             print(f'user prompt : {user_prompt}')
-            print(f'llm answer : {llm_answer}')
+            print(f'llm answer (trials: {trial_count}) : {llm_answer}')
 
 
 # Original LLM (gemma-2 2b) 가져오기 (Fine-Tuning 실시할)
