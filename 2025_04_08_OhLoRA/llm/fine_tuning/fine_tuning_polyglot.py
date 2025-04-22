@@ -71,7 +71,7 @@ def get_original_llm():
 def get_training_args():
     training_args = SFTConfig(
         learning_rate=0.0002,           # lower learning rate is recommended for Fine-Tuning
-        num_train_epochs=30,
+        num_train_epochs=60,
         logging_steps=5,                # logging frequency
         gradient_checkpointing=False,
         output_dir=OUTPUT_DIR_PATH,
