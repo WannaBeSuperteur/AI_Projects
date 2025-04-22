@@ -36,11 +36,11 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
     * LoRA Rank 16, 32, 64 로 각각 테스트 
   * Inference 속도 및 Inference 진행 중 최대 메모리 사용량 **(정량 평가)**
     * Inference test 는 **Fine-Tuning 되지 않은 원본 모델** 로 진행 
-  * **(가장 중요)** [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 에 대한 위 Inference test 시의 답변 품질 **(정성 평가)**
+  * **(가장 중요)** [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) **(old version, 2025.04.19)** 에 대한 위 Inference test 시의 답변 품질 **(정성 평가)**
     * 단, LLM Fine Tuning 테스트 중 기록되는 Training Loss 값을 참고하여 평가
     * LLM 이 Fine-Tuning 을 통해 **의도한 답변을 생성할 수 있는 잠재력** 을 평가하는 의도임
 * 기준 데이터셋
-  * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 의 Train Data 및 Valid Data 의 일부
+  * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) **(old version, 2025.04.19)** 의 Train Data 및 Valid Data 의 일부
 
 ## 3. 모델 선정 결과
 

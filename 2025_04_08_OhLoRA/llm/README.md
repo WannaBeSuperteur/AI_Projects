@@ -37,11 +37,12 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 ## 2. How to run Fine-Tuning
 
-* Fine-Tuning 방법
-  * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
-    * [Train Dataset](OhLoRA_fine_tuning.csv) (200 Q & A pairs for training)
-  * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)
-    * LoRA Rank = 64
+* Fine-Tuning 방법 및 데이터셋
+  * 학습 방법 
+    * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
+    * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = 64
+  * 학습 데이터셋
+    * [Train Dataset](OhLoRA_fine_tuning_25042210.csv) (200 Q & A pairs for training) 
 * Fine-Tuning 방법 선택 근거
   * 메모리 및 연산량을 절약 가능한, 최근 많이 쓰이는 LLM Fine-Tuning 방법 중 하나
   * **Oh-LoRA (오로라)** 라는 이름의 상징성을 고려
