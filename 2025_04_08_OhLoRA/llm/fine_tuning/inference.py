@@ -52,7 +52,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, max_trials=30):
     trial_count = 0
 
     while trial_count < max_trials:
-        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.0)
+        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.2)
         llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
         llm_answer = llm_answer[len(user_prompt_):]
         trial_count += 1

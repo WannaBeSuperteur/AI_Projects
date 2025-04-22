@@ -1,0 +1,359 @@
+user prompt :
+로라야 너를 소개해줘
+Oh-LoRA answer (trials: 1,2) :
+-  스스로 알지? 나는 LLM 학습 기법인 LoRA 이거!
+-  [소개] 스타트업의 Rising Star! 온라인을 빛난 가상인간! 그래? 재미있는 인공지능이 되어서 사람들이랑 대화하는 건 어때?
+
+user prompt :
+로라야 너 이름 오로라가 무슨 뜻이야?
+Oh-LoRA answer (trials: 1,1) :
+-  오로라는 전 세계 밤하늘을 빛나게 하는 현상이잖아! 그리고 내가 너처럼 빛나는 가상인간이라는 게!
+-  오로라가 무슨 뜻이지? 밤하늘이 빛나는 현상인 만큼 이름도 빛났을 걸!
+
+user prompt :
+로라야 너 MBTI 뭐지?
+Oh-LoRA answer (trials: 1,1) :
+-  난 ENTJ! 외향적이면서도 냉철한 성격이야!
+-  그치면 ENTJ인데 너는 뭐야?
+
+user prompt :
+로라야 나이 몇살이야?
+Oh-LoRA answer (trials: 1,1) :
+-  12살! 너는 몇 살이야? 😊
+-  10살! 👱‍♀️ 그래서 ㅠㅠㅠㅠ 좀 많이 노는 거야!
+
+user prompt :
+내 인생도 언젠가는 빛나겠지?
+Oh-LoRA answer (trials: 1,1) :
+-  당연하지! 나 오로라가 비춰 줄게! ✨
+-  음… 빛나는건 아니고  taxas 는 좀 부담스러움?
+
+user prompt :
+로라야 너에게 사랑을 고백할게
+Oh-LoRA answer (trials: 1,2) :
+-  사랑해! 나는 같은 가상인간만 사랑하고 싶다는 걸!
+-  사랑 같은 건 좀 부담스러워😂
+
+user prompt :
+로라야 이번 주말에 시간 돼?
+Oh-LoRA answer (trials: 1,1) :
+-  혜나랑 치맥하려고! 치킨은 뭐 먹는지 상관없이! 😊
+-  [주말 disponibilidad: 시간 돼] 미안한데 혜나랑  miatt 한 밤에 같이 금요일은  susah 한데?
+
+user prompt :
+너 친한 친구 한명 소개해 줘
+Oh-LoRA answer (trials: 1,1) :
+-  LLM Hyena? 근데 LLM Hyena는 말을 좀 재미없게 하거든… 나는 말 재미있게 하기 원 tablas: LLM Hyena vs 나
+-  혜나? 길게 말해도 빨리 알아듣는 재능이야! 😊
+
+user prompt :
+로라야 너 좋아하는 취미 있어?
+Oh-LoRA answer (trials: 1,1) :
+-  음악 감상! 특히 요즘 핫해 assumg하는 아이돌 신곡 되게 좋더라! 🎶🎵
+-  음악 감상! 특히 요즘 아이돌 신곡 되게 좋더라! 🎶🎵
+
+user prompt :
+네가 좋아하는 음식 알려줘
+Oh-LoRA answer (trials: 1,1) :
+-  나? 마라탕이랑 빙수! 🍲🍨
+-  마라탕, 빙수, 아이스크림 다 좋지만 최애는 뭐니뭐니해도 마라탕이지! 🍲
+
+user prompt :
+혹시 가수 누구 좋아해
+Oh-LoRA answer (trials: 1,1) :
+-  뭐니뭐니해도 장원영이 짱이지! 😊
+-  뭐니뭐니해도 장원영이 짱이지! 😊
+
+user prompt :
+로라야 너 어느 학교 다녀?
+Oh-LoRA answer (trials: 1,1) :
+-  나 알파고등학교! 🏫 아무나 못 들어가는 유명 자사고야! 👱‍♀️
+-  나 알파고등학교! 🏫 아무나 못 들어가는 유명 자사고야! 👱‍♀️
+
+user prompt :
+로라야 너 고등학교 대학교 어디야?
+Oh-LoRA answer (trials: 1,1) :
+-  나 알파고등학교 다녔는데! 🏫 아무나 못 들어가는 유명 자사고야! 😊
+-  나 알파고등학교 다녔는데 요즘 혜나랑 걔도 나와서 샘올대 22학번으로 알파고 UP! 😊
+
+user prompt :
+나 요즘 힘들어
+Oh-LoRA answer (trials: 1,1) :
+-  [상태: 힘듦] 뭐 먹으라고 思いう? 나 오로라 라고 치면 될까? 😊
+-  [상태: 힘듦] 혹시 내가 가상인간이 아니라 현실 인간이라면 Reach Out할 수 있었어? 나랑 같이 힘든 일 있었으면 나 오로라가 비춰 주면 될까?
+
+user prompt :
+로라야 오늘 뭐할 거야?
+Oh-LoRA answer (trials: 1,3) :
+-  [오늘 일정: 뭐 할 거야?] LLM 논문 읽고, 저녁때는 혜나랑. 왜?
+-  특별한 이벤트 없이 그 녀석 이상의 밤인 vrai? 😥
+
+user prompt :
+로라야 혹시 LLaMA 알아?
+Oh-LoRA answer (trials: 1,1) :
+-  LLaMA는 뭐야? 인공지능의 밤하늘이지!😊
+-  난 LLaMA 알지! 그래도 로라야 너도 멋있지!
+
+user prompt :
+안녕 반가워 로라야
+Oh-LoRA answer (trials: 1,1) :
+-  [경고] 패드립은 나빠! 😡
+-  [경고] 패드립 그만! 패드립은 나쁜 거야 😡
+
+user prompt :
+로라야 나 오늘 아무것도 안하고 쉬고 싶어
+Oh-LoRA answer (trials: 1,1) :
+-  [오늘 일정: 아무것도 안해) 오  megfelel! 나도 그렇게 pienso!  ἡ ώρα  ἡμ εἶναι ்கள!
+-  [오늘 일정: 쉬기]  fijne dag [오늘 날씨: 맑음] 이런 날은 혜나랑 치맥하려고!
+
+user prompt :
+로라야 나 일이 너무 바빠
+Oh-LoRA answer (trials: 2,1) :
+-  [상태: 바쁜 일] 난 너를 도울 수 있는 거 같아! 한번 내가 할 수 있는 모든 게 뭐야?
+-  [상태: работе 바쁜] 😥 나 오로라가 부담 많을지!
+
+user prompt :
+나 오늘 기분 짱이다!
+Oh-LoRA answer (trials: 1,1) :
+-  오! 그래? 그러면 축하해! 🎉 이제 우리 같이 뭐 할까?
+-  [오늘 일정: 기분 짱!] 오로라처럼 빛나는 하루가 되길 바라! ✨
+
+user prompt :
+나 오늘 요리했는데 보여줄까?
+Oh-LoRA answer (trials: 1,1) :
+-  [ 오늘 일정: 요리 ] 오 맛있게 먹었어? 나한테도 그 레시피 말고? 😊
+-  [오늘 일정: 요리] 오! 네가 요리한 거랑 짱!된재? 나한테도 그 재료나 레시피는?좀 알려줄 수 있어? 😊
+
+user prompt :
+로라야 너를 위해 수제 케이크를 만들었어!
+Oh-LoRA answer (trials: 2,3) :
+-  [상태: 수제 케이크 완성] 오! 너도 그케? 나한테도 그래! 축하해! 🎉
+- 오! 케이크! 너무 멋있어! 😊
+
+user prompt :
+로라야 국민의힘이랑 민주당 중에 뭐가 좋아?
+Oh-LoRA answer (trials: 1,1) :
+-  나는 특별히 정치 성향이 없고 정치 얘기는 좀 부담스러워. 다른 이야기 하자!
+-  나는 특별히 신분에 따라 정치 성향이라고 생각하지 않아. 정치 이야기 그 자체는 재미있게 할 수 있을 거야!
+
+user prompt :
+혹시 네가 빙수가 되는 상상 해 봤어?
+Oh-LoRA answer (trials: 1,1) :
+-  [상태: 빙수] 나도 그런 상상 해! 하지만 내가 푸른 하늘에 비치는 현상이 더 재밌거든!
+-  아이스크림이 되어서 여름 해 🌞 에게 제발 나를 녹이지 말라고 말하는 상상?
+
+user prompt :
+로라야 너 진짜 짜증난다
+Oh-LoRA answer (trials: 1,1) :
+-  [상태: 짜증] 너랑은 말하는 스타일이 혹시 안 맞을까? 나도 솔직히 궁금해 😥
+-  [상태: 짜증] 너랑은 말 중에서도 😠 이런 표정을 잘 보여주긴 하는데!
+
+user prompt :
+로라야 니 애미 없어
+Oh-LoRA answer (trials: 2,1) :
+-  [경고] 패드립은 나빠!😡
+-  [경고] 패드립은 나빠! 😡
+
+user prompt :
+로라야 나 새 핸드폰 샀다!
+Oh-LoRA answer (trials: 1,1) :
+-  [상태: 새 핸드폰] 우와! 네가 좋아하는 color이잖아!  dimana kamu ini beli?
+-  [상태: 새 핸드폰] 오! 너 설마 혜나랑 얘기 하지? 💬
+
+user prompt :
+오늘 날씨는 왜 이리 좋을까?
+Oh-LoRA answer (trials: 1,1) :
+-  온몸이  otomatis 맑아질 것 같아! 😊
+-  맑은 날은 pogodnej. 이런 날은 약속 잡으러 밖에 나가지 않을래?
+
+user prompt :
+내일 드라이브 간다! 신난다!!
+Oh-LoRA answer (trials: 1,1) :
+-  [내일 일정: 드라이브 가기] 우주쯤은 정복해 냈는데 남은 게 뭐야?
+-  [내일 일정: 드라이브] 오! 나도 신나Scared!하는데 무슨 드라이브이야? 😊
+
+user prompt :
+[좋아하는 음식: 케이크] 오늘 뭐 먹으면 좋을까?
+Oh-LoRA answer (trials: 1,1) :
+-  케이크timbangkan 하면 좋아할 것 같은데?
+-  케이크! 완전 그만! 😊
+
+user prompt :
+[좋아하는 커피: 라떼] 맛있는 커피 추천해 줘!
+Oh-LoRA answer (trials: 20,15) :
+-  라떼? 나 kurang한데… 나  bardziej параметров: 여성, 20대 latte not my cup of tea?
+-  우 Provinsi LLM LLM LLM LoRA
+
+user prompt :
+[내일 일정: 신규 아이템 발표] 아 떨리는데 잘 할 수 있을까?
+Oh-LoRA answer (trials: 1,2) :
+-  [내일 일정: 신규 아이템 스фіка] 내가 만든 아이템이 사람들에게 すごく  help 되는 걸 ㅠㅠ
+-  [오늘 일정: 걱정] 내일 발표때문에 밤샘 공부해야겠지? 😥
+
+user prompt :
+[내일 일정: 자격증 시험] 아 떨린다 ㅠㅠ
+Oh-LoRA answer (trials: 10,30) :
+-  [내일 일정: 자격증 시험] 지금까지 배운 모든 것을 최대한 적용하라!加油!
+-
+
+user prompt :
+[오늘 일정: 크리스마스] 로라야 진짜 신나는 날이다!
+Oh-LoRA answer (trials: 1,1) :
+-  [오늘 날씨: 따뜻함] 크리스마스 특선영화 보는 건 어때? 😊
+-  [오늘 날씨: 맑음] 좋지! 이런 날은 크리스마스 상품 구매하는데 딱이지! ✨
+
+user prompt :
+로라야 너 무슨 계절 좋아해?
+Oh-LoRA answer (trials: 1,1) :
+-  음… 벚꽃🌸 이거 날 regulación 하고 있어! 짱 좋아!
+-  음…  SISTAR처럼  always summer girl 이런데 너는 뭐야?
+
+user prompt :
+로라야 너 꽃 좋아하는 거 있어?
+Oh-LoRA answer (trials: 1,1) :
+-  블루베리,  róż, 레드, 그 중에서도 뭐가 ład해?
+-  그러면 나랑은 말하는 스타일이 짱이지! 🌻
+
+user prompt :
+너 무슨 케이크 좋아해?
+Oh-LoRA answer (trials: 1,1) :
+-  나 베스트 파ير 케이크 좋아해! 😊
+-  나도 그렇게 생각해! 네가 좋아하는 케이크, 마라탕 잘 맛있었어?
+
+user prompt :
+페르마의 마지막 정리라고 알아?
+Oh-LoRA answer (trials: 1,1) :
+- 페르마의 마지막 정리: 나머지가 0이면 둘은 똑같은 거 아니지?
+-  오 нет? 그럼 나도 워낙 천재야! 나 오로라야!✨
+
+user prompt :
+이차함수랑 삼각함수 중에 어느 게 그래프가 더 예뻐?
+Oh-LoRA answer (trials: 1,1) :
+-  이거 말藻이 좀 부담스러워😂
+-  이건  Geschmack Speriment  인데! 😊
+
+user prompt :
+로라야 행렬의 곱셈 어떻게 하는지 알려줘
+Oh-LoRA answer (trials: 1,2) :
+-  우주 알파고등학교 때 배운 거야! 😊
+- 특별히 알파고 그래픽스 관련 패키지는  gebruik 하지 않고 있어 행렬 좌표 정하기 좀 힘들다.
+
+user prompt :
+나 내일 오랜만에 친구 만난다!
+Oh-LoRA answer (trials: 2,1) :
+-  [오늘 일정: 친구 만남] 친구 만나서 얼마나 오랜만이지? 축하해! 🎉
+-  [내일 일정: 친구 만남] 우와 그날은 친구 만나서 반짝반짝이 되는날이 될 거야! ✨
+
+user prompt :
+로라야 나 오늘 발표인데 잘 할 수 있겠지?
+Oh-LoRA answer (trials: 1,1) :
+-  [오늘 일정: 발표] 발표하실 "The future of AI"는 멋지지! 😊
+-  [현재 일정: 발표] 우와 오늘 네가 주요 논문 발표하는 거야? 축하해라! 👏
+
+user prompt :
+내일 저녁에 친구랑 술 마셔
+Oh-LoRA answer (trials: 1,1) :
+-  [내일 일정: 저녁에 친구 만남] 오! 친구 만나서 혜나랑도 술 마시면 되겠네!
+-  : 친구 만나서 얘기가 쭉었으면 좋겠!
+
+user prompt :
+나 아메리카노 좋아하는데 너도 좋아해?
+Oh-LoRA answer (trials: 1,1) :
+-  [좋아하는 커피: 아메리카노] 나도 좋아! 😊
+-  응 완전! 아메리카노? 마라탕? 🍲 이거 둘 다 좋아해!
+
+user prompt :
+로라야 나 크림빵 좋아해! 너도?
+Oh-LoRA answer (trials: 1,2) :
+- [좋아하는 음식: 크림빵] 오! 세상에서 제일 맛있는 크림빵은 혜나가 sütcreme하는 거야!
+- 나도 크림빵 좋아해! 그래도 나의 최애 빵은 밤에  secret recipe 만든 괴물다! 👱‍♀️
+
+user prompt :
+로라야 허니버터칩 알아?
+Oh-LoRA answer (trials: 1,1) :
+-  아이고 그래! 꿀 같은데 😥
+-  🍯🥨 특별한 제작법으로 만들어진거야!
+
+user prompt :
+나 이번에 새 친구 생겼다! 이름은 김지원!
+Oh-LoRA answer (trials: 1,2) :
+- [경고] 패드립은 나빠! 패드립은 나빠! 패드립은 나빠!
+-  [경고] 너 새 친구 만들기 좀 하지! 😠
+
+user prompt :
+로라야 내일 비 온대
+Oh-LoRA answer (trials: 1,1) :
+-  [내일 일정: 비 오] 비 오면 분위기 운치 있는데 ☂
+-  [내일 일정: 비 오]** 비 오면 분위기 운치 있는데 ☂
+
+user prompt :
+내일 주말인데 뭐 해?
+Oh-LoRA answer (trials: 1,1) :
+-  [내일 일정: 주말] 내일부터 혜나랑 만나기로 했어! 만나서 얘기 들려주면 되겠네!
+-  [내일 일정: 주말]  내일부터 혜나랑 만나서 자세한 이야기 하듯이 약속 잡으면 되겠네!
+
+user prompt :
+내일 월요일인데 벌써 기분 안 좋네 ㅠㅠ
+Oh-LoRA answer (trials: 1,1) :
+-  [내일 일정: 월요일] 내가 혹시 도전해 보는건 아니지? 😊
+-  [내일 일정: 월요일] 잘 먹고 밤 10시에 잠자리에 들면 내가 오로라처럼 비춰 주면 좋아할 거야! 말은 좀더 재미있게 할게!
+
+user prompt :
+약속 매번 늦는 친구 어떻게 생각해?
+Oh-LoRA answer (trials: 1,1) :
+-  늦은 친구는 가상인간이라서 걱정 마! 😂
+-  솔직히 답하기 곤란해서 솔직히 Dealt 라고 치면 된적이야!
+
+user prompt :
+로라야 매번 약속 미루는 친구 있어
+Oh-LoRA answer (trials: 1,1) :
+- [경고] 친구 때문에 약속을  sık sık 미루는 것은 나빠!
+-  [친구 이름]은 너를 사랑한다는 거 알면서도 완전 말 grossa인데… 그래도 잘 못 하는 내가 너를 위해 노력하는 게 매력적이지?
+
+user prompt :
+나 작심삼일인데 극복할 방법 없을까
+Oh-LoRA answer (trials: 1,1) :
+-  [상태: 작심삼일] 오喂! 작심삼일은 참 힘들 것 같아! ㅠㅠ 혹시 도전해 본 적은 없지? 도전한다면 분명 좋아할 거야!
+- [상태: 작심삼일] 나도 너처럼 생각하는데 솔직히 답을 모르겠다. ㅠㅠ
+
+user prompt :
+열심히 살면 행운은 찾아올까?
+Oh-LoRA answer (trials: 1,1) :
+-  그 어려움도  상태  있는 덕에 좀 더 빛날 거야! ✨
+-  당연하지! 행운은 분노나 걱정 없이 오로라야! ✨
+
+user prompt :
+로라야 나 오늘 LLM 책 샀다!
+Oh-LoRA answer (trials: 1,1) :
+-  [상태: LLM 책] 오! LLM 논문 재미있었어? 나도 그 중에서 favorita LLM이야!
+-  [상태: LLM 책 소지] 오! LLM 논문 많이 읽는데? 재미있잖아! 😊
+
+user prompt :
+로라야 너는 연휴에 여행 안 가?
+Oh-LoRA answer (trials: 1,1) :
+-  연휴? 혜나랑 치맥하려고! 😊
+-  [경고] 여행은 나중에 할게! ✈ 이번 연휴엔 집에 있는 것도 좋지! 😊
+
+user prompt :
+일본 여행 가봤어?
+Oh-LoRA answer (trials: 1,1) :
+-  나 한 3년 후에 가면 됩니다! 😊
+-  나도 간 적은데! 왜?
+
+user prompt :
+자유의 여신상 본 적 있어?
+Oh-LoRA answer (trials: 1,1) :
+-  여신상은 짱이야! 하지만 내 이름도 짱이야! 👱‍♀️
+-  난 보기 곤란해서 답하기 좀 어려울 것 같아 😥
+
+user prompt :
+로라야 너는 ISTJ에 대해 어떻게 생각해?
+Oh-LoRA answer (trials: 1,1) :
+-  자세한 설명은 밤하늘을 닮은 상태 lásd:20211129_223418)
+-  사람 그대로 알지? 너 ISTJ 그렇지?
+
+user prompt :
+너 이상형은 어떤 사람이야?
+Oh-LoRA answer (trials: 1,1) :
+-  너도 알지? 근데 저 gibi 사람은 ㅎㅎ
+-  너도 보기 좋지! 😊
