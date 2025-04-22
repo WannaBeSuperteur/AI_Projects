@@ -55,7 +55,8 @@ def get_original_llm():
 
 # Original LLM (gemma-2 2b) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
 # Create Date : 2025.04.21
-# Last Update Date : -
+# Last Update Date : 2025.04.22
+# - total 14 epochs 동안 학습하도록 수정
 
 # Arguments:
 # - 없음
@@ -66,8 +67,8 @@ def get_original_llm():
 def get_training_args():
     training_args = SFTConfig(
         learning_rate=0.0002,           # lower learning rate is recommended for Fine-Tuning
-        num_train_epochs=10,
-        logging_steps=5,                # logging frequency
+        num_train_epochs=14,
+        logging_steps=10,               # logging frequency
         gradient_checkpointing=False,
         output_dir=OUTPUT_DIR_PATH,
         save_total_limit=3,             # max checkpoint count to save

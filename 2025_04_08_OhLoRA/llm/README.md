@@ -115,7 +115,7 @@ RuntimeError: Found Quadro M6000 which is too old to be supported by the triton 
   * run inference on 25 data (Q & A pairs)
 * Fine-Tuning
   * **60 (data * epochs) = 20 data * 3 epochs**
-    * 실제 학습 데이터의 **30% = 0.3 epochs** 분량
+    * 실제 학습 데이터의 **16.7% = 0.167 epochs** 분량
   * epoch & batch size
     * 3 epochs
     * train batch size = 4
