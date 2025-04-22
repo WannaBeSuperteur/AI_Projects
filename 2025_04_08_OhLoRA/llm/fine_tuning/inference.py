@@ -31,9 +31,7 @@ def load_valid_user_prompts():
 # Fine Tuning 된 LLM (gemma-2 2b) 을 이용한 inference 실시
 # Create Date : 2025.04.22
 # Last Update Date : 2025.04.22
-# - token_type_ids 제거 여부 변수 추가
-# - output token 개수 반환 추가
-# - answer start mark (질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구) 추가
+# - 'http' 가 포함된 문장은 안전성 이슈가 있으므로 최종 반환 불가 처리
 
 # Arguments:
 # - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
@@ -72,7 +70,9 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
         llm_answer = llm_answer[len(user_prompt_):]
         trial_count += 1
 
-        if (llm_answer.startswith('[') and llm_answer.endswith(']')) or llm_answer.replace('\n', '') != '':
+        if ('http' in llm_answer or
+                (llm_answer.startswith('[') and llm_answer.endswith(']')) or
+                llm_answer.replace('\n', '') != ''):
             break
 
     # remove new-lines
