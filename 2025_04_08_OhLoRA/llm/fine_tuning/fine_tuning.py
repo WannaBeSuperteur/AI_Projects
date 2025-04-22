@@ -142,7 +142,7 @@ def get_lora_llm(llm, lora_rank):
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from OhLoRA_fine_tuning.csv)
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from OhLoRA_fine_tuning_25042210.csv)
 #                                   columns = ['data_type', 'input_data', 'output_data', 'output_message', 'memory']
 
 # Returns:
@@ -165,8 +165,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # LLM (gemma-2 2b) Fine Tuning 실시
 # Create Date : 2025.04.21
 # Last Update Date : 2025.04.22
-# - lora_llm 을 global 변수로 수정
-# - dataset 생성 시 end-of-sequence token <eos> 를 비롯한 토큰 추가
+# - 학습 데이터 및 그 csv 파일 경로 수정에 따른 경로 업데이트
 
 # Arguments:
 # - 없음
@@ -184,7 +183,7 @@ def fine_tune_model():
     tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/original')
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning_25042210.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning

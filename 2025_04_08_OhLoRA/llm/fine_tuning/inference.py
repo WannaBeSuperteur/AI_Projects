@@ -6,7 +6,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
 # Create Date : 2025.04.21
-# Last Update Date : -
+# Last Update Date : 2025.04.22
+# - 학습 데이터 및 그 csv 파일 경로 수정에 따른 경로 업데이트
 
 # Arguments:
 # - 없음
@@ -15,7 +16,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 # - valid_user_prompts (list(str)) : Valid Dataset 에 있는 user prompt 의 리스트
 
 def load_valid_user_prompts():
-    dataset_csv_path = f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning.csv'
+    dataset_csv_path = f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning_25042210.csv'
     dataset_df = pd.read_csv(dataset_csv_path)
     dataset_df_valid = dataset_df[dataset_df['data_type'] == 'valid']
 
