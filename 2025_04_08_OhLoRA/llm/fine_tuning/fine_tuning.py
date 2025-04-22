@@ -166,7 +166,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # Create Date : 2025.04.21
 # Last Update Date : 2025.04.22
 # - lora_llm 을 global 변수로 수정
-# - dataset 생성 시 end-of-sequence token <eos> 추가
+# - dataset 생성 시 end-of-sequence token <eos> 를 비롯한 토큰 추가
 
 # Arguments:
 # - 없음
@@ -189,7 +189,12 @@ def fine_tune_model():
 
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=64)
-    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} ### Answer: {x['output_data']}<eos>", axis=1)
+
+#    print(tokenizer.encode('### Answer:'))  ... [2, 6176, 10358, 235292]
+#    print(tokenizer.encode('(answer start) ### Answer:')) ... [2, 235278, 13072, 2238, 235275, 43774, 10358, 235292]
+
+    dataset_df['text'] = dataset_df.apply(lambda x: f"<bos>{x['input_data']} (answer start) ### Answer: {x['output_data']}<eos>",
+                                          axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
 
     response_template = [43774, 10358, 235292]  # '### Answer :'

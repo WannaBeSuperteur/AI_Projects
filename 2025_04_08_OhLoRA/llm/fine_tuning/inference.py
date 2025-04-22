@@ -25,7 +25,8 @@ def load_valid_user_prompts():
 
 # Fine Tuning 된 LLM (gemma-2 2b) 을 이용한 inference 실시
 # Create Date : 2025.04.22
-# Last Update Date : -
+# Last Update Date : 2025.04.22
+# - 변경된 LLM input data format 반영
 
 # Arguments:
 # - fine_tuned_llm (LLM)           : Fine-Tuning 된 LLM
@@ -36,10 +37,11 @@ def load_valid_user_prompts():
 # - llm_answer (str) : LLM 답변 중 user prompt 를 제외한 부분
 
 def run_inference(fine_tuned_llm, user_prompt, tokenizer):
-    inputs = tokenizer(user_prompt, return_tensors='pt').to(fine_tuned_llm.device)
+    user_prompt_ = user_prompt + ' (answer start)'
+    inputs = tokenizer(user_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
 
     outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True)
     llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    llm_answer = llm_answer[len(user_prompt):]
+    llm_answer = llm_answer[len(user_prompt_):]
 
     return llm_answer
