@@ -142,7 +142,7 @@ def get_lora_llm(llm, lora_rank):
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from OhLoRA_fine_tuning_25042210.csv)
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from OhLoRA_fine_tuning_25042213.csv)
 #                                   columns = ['data_type', 'input_data', 'output_data', 'output_message', 'memory']
 
 # Returns:
@@ -183,7 +183,7 @@ def fine_tune_model():
     tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/original')
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning_25042210.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning_25042213.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning

@@ -20,7 +20,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 # - valid_user_prompts (list(str)) : Valid Dataset 에 있는 user prompt 의 리스트
 
 def load_valid_user_prompts():
-    dataset_csv_path = f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning_25042210.csv'
+    dataset_csv_path = f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning_25042213.csv'
     dataset_df = pd.read_csv(dataset_csv_path)
     dataset_df_valid = dataset_df[dataset_df['data_type'] == 'valid']
 
@@ -52,7 +52,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, max_trials=30):
     trial_count = 0
 
     while trial_count < max_trials:
-        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.2)
+        outputs = fine_tuned_llm.generate(**inputs, max_length=80, do_sample=True, temperature=1.0)
         llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
         llm_answer = llm_answer[len(user_prompt_):]
         trial_count += 1
