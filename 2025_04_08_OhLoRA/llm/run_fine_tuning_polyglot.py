@@ -56,7 +56,7 @@ if __name__ == '__main__':
     for user_prompt in valid_user_prompts:
         print(f'\nuser prompt :\n{user_prompt}')
 
-        # generate 2 answers for comparison
+        # generate 4 answers for comparison
         llm_answer_0, trial_count_0, output_token_cnt_0 = run_inference(fine_tuned_llm,
                                                                         user_prompt,
                                                                         tokenizer,
@@ -69,6 +69,18 @@ if __name__ == '__main__':
                                                                         answer_start_mark=' (답변 시작)',
                                                                         remove_token_type_ids=True)
 
-        print(f'Oh-LoRA answer (trials: {trial_count_0},{trial_count_1}, '
-              f'output_tkn_cnt : {output_token_cnt_0},{output_token_cnt_1}) '
-              f':\n- {llm_answer_0}\n- {llm_answer_1}')
+        llm_answer_2, trial_count_2, output_token_cnt_2 = run_inference(fine_tuned_llm,
+                                                                        user_prompt,
+                                                                        tokenizer,
+                                                                        answer_start_mark=' (답변 시작)',
+                                                                        remove_token_type_ids=True)
+
+        llm_answer_3, trial_count_3, output_token_cnt_3 = run_inference(fine_tuned_llm,
+                                                                        user_prompt,
+                                                                        tokenizer,
+                                                                        answer_start_mark=' (답변 시작)',
+                                                                        remove_token_type_ids=True)
+
+        print(f'Oh-LoRA answer (trials: {trial_count_0},{trial_count_1},{trial_count_2},{trial_count_3} | '
+              f'output_tkn_cnt : {output_token_cnt_0},{output_token_cnt_1},{output_token_cnt_2},{output_token_cnt_3}) '
+              f':\n- {llm_answer_0}\n- {llm_answer_1}\n- {llm_answer_2}\n- {llm_answer_3}')

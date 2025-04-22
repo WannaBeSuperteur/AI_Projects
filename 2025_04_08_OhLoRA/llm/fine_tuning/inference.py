@@ -88,7 +88,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
         outputs = fine_tuned_llm.generate(**inputs,
                                           max_length=80,
                                           do_sample=True,
-                                          temperature=1.0,
+                                          temperature=0.6,
                                           stopping_criteria=stopping_criteria)
         output_token_cnt = len(outputs[0])
 
