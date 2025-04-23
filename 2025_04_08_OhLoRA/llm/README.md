@@ -65,8 +65,8 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
   * **Polyglot-Ko 1.3B (1.43 B params) (✅ 최종 채택)** [HuggingFace](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) 
 * 학습 방법 
   * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
-  * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = 64
-  * train for **60 epochs (= 2h 21m)** [(train report)](fine_tuning/fine_tuning_logs_polyglot/2504230200%20(stop%20crit,%2060%20epochs,%20rank=64).txt)
+  * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = 128
+  * train for **80 epochs (= 3h 21m)** [(train report)](fine_tuning/fine_tuning_logs_polyglot/2504231956%20(epochs=80,%20rank=128,%20temp=0.6).txt)
 * 학습 데이터셋
   * [Train & Valid Dataset](OhLoRA_fine_tuning_25042213.csv) (**360** Q & A pairs for training / **60** Q & A pairs for validation) 
 * Fine-Tuning 방법 선택 근거
