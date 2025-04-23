@@ -36,11 +36,11 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
     * LoRA Rank 16, 32, 64 로 각각 테스트 
   * Inference 속도 및 Inference 진행 중 최대 메모리 사용량 **(정량 평가)**
     * Inference test 는 **Fine-Tuning 되지 않은 원본 모델** 로 진행 
-  * **(가장 중요)** [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 에 대한 위 Inference test 시의 답변 품질 **(정성 평가)**
+  * **(가장 중요)** [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) **(old version, 2025.04.19)** 에 대한 위 Inference test 시의 답변 품질 **(정성 평가)**
     * 단, LLM Fine Tuning 테스트 중 기록되는 Training Loss 값을 참고하여 평가
     * LLM 이 Fine-Tuning 을 통해 **의도한 답변을 생성할 수 있는 잠재력** 을 평가하는 의도임
 * 기준 데이터셋
-  * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) 의 Train Data 및 Valid Data 의 일부
+  * [Fine-Tuning 학습 데이터셋](../OhLoRA_fine_tuning.csv) **(old version, 2025.04.19)** 의 Train Data 및 Valid Data 의 일부
 
 ## 3. 모델 선정 결과
 
@@ -75,6 +75,10 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 |--------------|----------------------------------------------------------------|--------------------|---------|-----------------------------------------|-------------------------------------------------|--------------|----------------------|-----------------------------------------------------|
 | **최종 선정 모델** | gemma-2-2b-it [(ipynb)](test_result_gemma_2_2b_it.ipynb)       | **40.43**          | 2.61 B  | 58.7 s / 63.0 s / 67.0 s                | 5,249 MB / 5,553 MB / 5,969 MB                  | 4.03 s       | 4,987 MB             | [**최상**](inference_test_result_gemma-2-2b-it.csv)   |
 | 예비 모델        | polyglot-ko-1.3b [(ipynb)](test_result_polyglot-ko-1.3b.ipynb) | 29.95              | 1.43 B  | 24.2 s / 24.8 s / 26.2 s                | 2,593 MB / 2,629 MB / 2,715 MB                  | 1.78 s       | 2,541 MB             | [**상**](inference_test_result_polyglot-ko-1.3b.csv) |
+
+* 실제 최종 모델 선택
+  * **Polyglot-Ko 1.3B** (예비 모델)
+  * [예비 모델인 Polyglot-Ko 1.3B 선택 이유](../README.md/#1-1-polyglot-ko-13b-선택-이유)
 
 **2. 모델 후보 평가 실험 설정**
 
