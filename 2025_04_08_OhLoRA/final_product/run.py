@@ -244,7 +244,8 @@ def save_memory_list(memory_list):
 
 # Oh-LoRA (오로라) 의 답변에 따라 눈을 뜬 정도 (eyes), 입을 벌린 정도 (mouth), 고개 돌림 (pose) 점수 산출
 # Create Date : 2025.04.23
-# Last Update Date : -
+# Last Update Date : 2025.04.24
+# - 눈을 크게 뜨고 입을 벌리는 감탄사 조건 일부 수정
 
 # Arguments :
 # - llm_answer_cleaned (str) : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
@@ -257,10 +258,15 @@ def save_memory_list(memory_list):
 def decide_property_scores(llm_answer_cleaned):
 
     if (('오!' in llm_answer_cleaned) or ('와!' in llm_answer_cleaned) or
-        ('와우' in llm_answer_cleaned) or (llm_answer_cleaned.startswith('오 '))):
+        ('와우' in llm_answer_cleaned) or (llm_answer_cleaned.strip().startswith('오 '))):
 
         eyes_score = 1.6
         mouth_score_bonus = 1.2
+
+    elif ('아!' in llm_answer_cleaned) or (llm_answer_cleaned.strip().startswith('아 ')):
+        eyes_score = 0.8
+        mouth_score_bonus = 0.6
+
     else:
         eyes_score = -1.2
         mouth_score_bonus = 0.0
@@ -284,7 +290,8 @@ def decide_property_scores(llm_answer_cleaned):
 
 # Oh-LoRA (오로라) 이미지 생성
 # Create Date : 2025.04.23
-# Last Update Date : -
+# Last Update Date : 2025.04.24
+# - noise 강도 수정 (0.3 -> 0.15)
 
 # Arguments :
 # - stylegan_generator (nn.Module) : StyleGAN-FineTune-v3 Generator (Decoder)
@@ -312,7 +319,7 @@ def generate_ohlora_image(stylegan_generator, eyes_score, mouth_score, pose_scor
 
     with torch.no_grad():
         z = z_vector_torch.to(torch.float32)
-        z_noised = z + 0.3 * torch.randn_like(z)
+        z_noised = z + 0.15 * torch.randn_like(z)
 
         generated_image = stylegan_generator(z=z_noised.cuda(), label=label_torch.cuda())['image']
         generated_image = generated_image.detach().cpu()
