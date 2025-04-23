@@ -251,7 +251,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 **1. 실험 목적**
 
 * 2024년에 공개된 [Unsloth](https://unsloth.ai/) 라는 툴을 이용하면 **LLM 의 학습 시간 및 메모리 등 자원을 절약** 할 수 있다.
-* 본 task (with Quadro 6000 12GB GPU) 에서는 어느 정도의 속도 향상 및 메모리 절감이 있는지 파악하여 향후 참고한다.
+* 본 task (with Quadro M6000 12GB GPU) 에서는 어느 정도의 속도 향상 및 메모리 절감이 있는지 파악하여 향후 참고한다.
 
 **2. 실험 결과**
 
