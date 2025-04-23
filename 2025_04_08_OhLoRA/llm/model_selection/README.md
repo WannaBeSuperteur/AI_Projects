@@ -76,6 +76,10 @@ Oh-LoRA (오로라) 의 [Fine-Tuning](https://github.com/WannaBeSuperteur/AI-stu
 | **최종 선정 모델** | gemma-2-2b-it [(ipynb)](test_result_gemma_2_2b_it.ipynb)       | **40.43**          | 2.61 B  | 58.7 s / 63.0 s / 67.0 s                | 5,249 MB / 5,553 MB / 5,969 MB                  | 4.03 s       | 4,987 MB             | [**최상**](inference_test_result_gemma-2-2b-it.csv)   |
 | 예비 모델        | polyglot-ko-1.3b [(ipynb)](test_result_polyglot-ko-1.3b.ipynb) | 29.95              | 1.43 B  | 24.2 s / 24.8 s / 26.2 s                | 2,593 MB / 2,629 MB / 2,715 MB                  | 1.78 s       | 2,541 MB             | [**상**](inference_test_result_polyglot-ko-1.3b.csv) |
 
+* 실제 최종 모델 선택
+  * **Polyglot-Ko 1.3B** (예비 모델)
+  * [예비 모델인 Polyglot-Ko 1.3B 선택 이유](../README.md/#1-1-polyglot-ko-13b-선택-이유)
+
 **2. 모델 후보 평가 실험 설정**
 
 * 환경

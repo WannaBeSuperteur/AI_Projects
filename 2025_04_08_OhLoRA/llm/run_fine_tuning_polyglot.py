@@ -42,6 +42,7 @@ if __name__ == '__main__':
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
         fine_tuned_llm = load_fine_tuned_llm()
+        print('Fine-Tuned LLM of Polyglot-Ko 1.3B - Load SUCCESSFUL! 👱‍♀️')
 
     except Exception as e:
         print(f'Fine-Tuned LLM (Polyglot-Ko 1.3B) load failed : {e}')
