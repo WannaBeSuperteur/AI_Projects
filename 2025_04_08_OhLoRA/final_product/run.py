@@ -150,10 +150,17 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') != ''
         is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
 
-        if is_non_empty and not is_answer_end_mark and 'http' not in llm_answer:
+        is_unnecessary_quote = '"' in llm_answer or '”' in llm_answer or '“' in llm_answer or '’' in llm_answer
+        is_unnecessary_mark = '�' in llm_answer
+        is_too_many_blanks = '     ' in llm_answer
+        is_low_quality = is_unnecessary_quote or is_unnecessary_mark or is_too_many_blanks
+
+        if is_non_empty and not is_answer_end_mark and 'http' not in llm_answer and not is_low_quality:
+            if llm_answer.startswith(']'):
+                return llm_answer[1:].replace('(답변 종료)', '')
             return llm_answer.replace('(답변 종료)', '')
 
-    return ''
+    return '(읽씹)'
 
 
 # Oh-LoRA (오로라) 의 생성된 답변으로부터 memory 정보를 parsing
@@ -184,11 +191,11 @@ def parse_memory(llm_answer):
         if bracket_end_idx is not None and llm_answer[i] == ':':
             is_colon = True
 
-        if llm_answer[i] == '[':
+        if llm_answer[i] == '[' and bracket_end_idx is not None:
             llm_answer_cleaned = llm_answer[bracket_end_idx+1:bracket_start_or_sentence_end_idx] + llm_answer_cleaned
 
             if is_colon:
-                memory_list.append(llm_answer[i:bracket_end_idx])
+                memory_list.append(llm_answer[i:bracket_end_idx+1])
 
             bracket_end_idx = None
             bracket_start_or_sentence_end_idx = i
