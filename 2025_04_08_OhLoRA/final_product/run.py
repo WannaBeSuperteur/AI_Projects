@@ -257,16 +257,19 @@ def decide_property_scores(llm_answer_cleaned):
         ('와우' in llm_answer_cleaned) or (llm_answer_cleaned.startswith('오 '))):
 
         eyes_score = 1.6
-        mouth_score_bonus = 0.4
+        mouth_score_bonus = 1.2
     else:
-        eyes_score = -0.8
+        eyes_score = -1.2
         mouth_score_bonus = 0.0
 
-    mouth_score = -1.2 + 0.4 * min(llm_answer_cleaned.count('!'), 5) + mouth_score_bonus
+    if '!' in llm_answer_cleaned or '?' in llm_answer_cleaned:
+        mouth_score = 0.3 + 0.3 * min(llm_answer_cleaned.count('!'), 3) + mouth_score_bonus / 3
+    else:
+        mouth_score = -1.2 + mouth_score_bonus
 
     if '미안' in llm_answer_cleaned and '싫어' in llm_answer_cleaned:
         pose_score = 3.6
-    elif '미안' in llm_answer_cleaned or '싫어' in llm_answer_cleaned:
+    elif '미안' in llm_answer_cleaned or '싫어' in llm_answer_cleaned or '별로' in llm_answer_cleaned:
         pose_score = 2.4
     elif '…' in llm_answer_cleaned:
         pose_score = 0.6
