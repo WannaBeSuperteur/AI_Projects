@@ -99,19 +99,20 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 * 구현 코드
   * [S-BERT Training](memory_mechanism/train_sbert.py)
   * [S-BERT Inference](memory_mechanism/inference_sbert.py)
+  * [Entry & Best Memory Item Choice](run_memory_mechanism.py)
 
 ![image](../../images/250408_28.PNG)
 
 ### 3-2. 학습 및 테스트 데이터 & 학습 설정
 
 * 학습 및 테스트 데이터
-  * **실제 데이터** 는 **데이터 생성용 조합** 의 각 line 의 memory (예: ```[오늘 일정: 친구랑 카페 방문]```) 와 message (나머지 부분) 을 combination (?) 하여 생성
+  * **실제 데이터** 는 **데이터 생성용 조합** 의 각 line 의 **memory** (예: ```[오늘 일정: 친구랑 카페 방문]```) 와 **message** (나머지 부분) 을 SQL 의 cartesian product 와 유사한 방법으로 combination (?) 하여 생성
   * [데이터 생성 구현 코드](memory_mechanism/generate_dataset.py)
 
-| 데이터        | 데이터 생성용 조합                                                                    | 실제 데이터                                                               |
-|------------|-------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| 학습 및 valid | [train_dataset_combs.txt](memory_mechanism/train_dataset_combs.txt) (40 rows) | [train_dataset.csv](memory_mechanism/train_dataset.csv) (1,600 rows) |
-| 테스트        | [test_dataset_combs.txt](memory_mechanism/test_dataset_combs.txt) (20 rows)   | [test_dataset.csv](memory_mechanism/test_dataset.csv) (400 rows)     |
+| 데이터        | 데이터 생성용 조합                                                                    | 실제 데이터<br>(학습 대상 column : ```memory_0``` ```user_prompt_1``` ```similarity_score```) |
+|------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| 학습 및 valid | [train_dataset_combs.txt](memory_mechanism/train_dataset_combs.txt) (40 rows) | [train_dataset.csv](memory_mechanism/train_dataset.csv) (1,600 rows)                 |
+| 테스트        | [test_dataset_combs.txt](memory_mechanism/test_dataset_combs.txt) (20 rows)   | [test_dataset.csv](memory_mechanism/test_dataset.csv) (400 rows)                     |
 
 * Cosine Similarity 의 Ground Truth 값
   * memory text 의 key (예: ```[오늘 일정: 친구랑 카페 방문]``` → ```오늘 일정```) 에 대해,
@@ -310,4 +311,4 @@ Oh-LoRA 차기 버전 개발 시 진행하고 싶은 것들:
 * **3. RAG-like Memory 메커니즘 고도화**
   * S-BERT 학습 데이터 추가 확보
   * Ground-truth Cosine Similarity Score 산출 알고리즘 고도화
-  * 기타 추가 연구
+  * 기타 추가 연구 (S-BERT 를 위한 적절한 Embedding 모델 선택 등)
