@@ -4,6 +4,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, StoppingCriteriaLi
 import pandas as pd
 import numpy as np
 
+import time
 import os
 import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -12,7 +13,7 @@ sys.path.append(PROJECT_DIR_PATH)
 from stylegan_and_segmentation.stylegan_modified.stylegan_generator import StyleGANGeneratorForV3
 from llm.memory_mechanism.train_sbert import load_pretrained_sbert_model
 from llm.run_memory_mechanism import pick_best_memory_item
-from llm.fine_tuning.inference import StopOnTokens
+from llm.fine_tuning.inference import StopOnTokens, load_valid_user_prompts
 
 
 global_path = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -108,7 +109,8 @@ def run_ohlora(stylegan_generator, ohlora_llm, ohlora_llm_tokenizer, sbert_model
 
 # Oh-LoRA (오로라) 의 답변 생성
 # Create Date : 2025.04.23
-# Last Update Date : -
+# Last Update Date : 2025.04.24
+# - 폭 없는 공백 (zwsp), 줄 바꿈 없는 공백 (nbsp) 제거 처리 추가
 
 # Arguments :
 # - ohlora_llm           (LLM)       : LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -143,6 +145,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
 
         llm_answer = ohlora_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
         llm_answer = llm_answer[len(final_ohlora_input_):]
+        llm_answer = llm_answer.replace('\u200b','').replace('\xa0', '')  # zwsp, nbsp (폭 없는 공백, 줄 바꿈 없는 공백) 제거
         trial_count += 1
 
         # check LLM answer and return or retry
@@ -318,6 +321,28 @@ def generate_ohlora_image(stylegan_generator, eyes_score, mouth_score, pose_scor
                     image_save_path=f'{PROJECT_DIR_PATH}/final_product/ohlora.png')
 
 
+# 답변 생성 테스트 (테스트용 함수, 실제 사용 시에는 해당 함수 실행 부분 주석 처리)
+# Create Date : 2025.04.24
+# Last Update Date : -
+
+# Arguments:
+# - ohlora_llm           (LLM)       : LLM (Polyglot-Ko 1.3B Fine-Tuned)
+# - ohlora_llm_tokenizer (tokenizer) : LLM (Polyglot-Ko 1.3B Fine-Tuned) 에 대한 tokenizer
+
+def test_generate(ohlora_llm, ohlora_llm_tokenizer):
+    valid_user_prompts = load_valid_user_prompts()
+
+    for user_prompt in valid_user_prompts:
+        print(f'\nuser prompt : [{user_prompt}]')
+
+        for _ in range(4):
+            start_at = time.time()
+            llm_answer = generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, user_prompt)
+            elapsed_time = time.time() - start_at
+
+            print(f'Oh-LoRA 👱‍♀️ : [{llm_answer}] (🕚 {elapsed_time:.2f}s)')
+
+
 if __name__ == '__main__':
 
     # check device
@@ -327,6 +352,9 @@ if __name__ == '__main__':
     # load model
     stylegan_generator, ohlora_llm, ohlora_llm_tokenizer, sbert_model = load_models(device)
     print('ALL MODELS for Oh-LoRA (오로라) load successful!! 👱‍♀️')
+
+    # test generating answer
+#    test_generate(ohlora_llm, ohlora_llm_tokenizer)
 
     # run Oh-LoRA (오로라)
     run_ohlora(stylegan_generator, ohlora_llm, ohlora_llm_tokenizer, sbert_model)
