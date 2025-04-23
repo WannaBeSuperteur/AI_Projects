@@ -16,6 +16,7 @@
   * [4-5. Run Final Fine-Tuned Model](#4-5-run-final-fine-tuned-model)
   * [4-6. Run S-BERT Memory Model](#4-6-run-s-bert-memory-model)
 * [5. Unsloth use test (❌ FAILED)](#5-unsloth-use-test--failed)
+* [6. 향후 하고 싶은 것](#6-향후-하고-싶은-것)
 
 ## 1. LLM Final Selection
 
@@ -128,7 +129,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 ![image](../../images/250408_27.PNG)
 
-* MSE, MAE & Corr-coef
+* MSE, MAE & Corr-coef (테스트 데이터셋)
 
 | MSE    | MAE    | Corr-coef |
 |--------|--------|-----------|
@@ -291,3 +292,22 @@ RuntimeError: Found Quadro M6000 which is too old to be supported by the triton 
 |------------------|-------------------------------------------------------|
 | **with** Unsloth | ```python llm/unsloth_test/test_with_unsloth.py```    |
 | **w/o** Unsloth  | ```python llm/unsloth_test/test_without_unsloth.py``` |
+
+## 6. 향후 하고 싶은 것
+
+Oh-LoRA 차기 버전 개발 시 진행하고 싶은 것들:
+
+* **1. 학습 데이터 증량**
+  * 학습 데이터셋 기존 360개 → 1,000개 정도로 증량 (다양한 상황)
+  * 학습 데이터의 LLM output 에 메시지, 메모리 외에 **표정을 바꾸는 지시문** 도 추가
+    * 이 경우, 메시지, 메모리, 표정 지시문을 각각 개별 LLM (총 3개) 으로 처리할 수 있음
+    * 1개의 LLM 으로 이 3가지 데이터를 모두 처리하는 경우, max token count 80 → 96 정도로 상향 가능
+
+* **2. 더 매력적인 답변을 하도록 성능 향상**
+  * LoRA Configuration 의 Target Module 범위 조정
+  * LoRA Rank 상향
+
+* **3. RAG-like Memory 메커니즘 고도화**
+  * S-BERT 학습 데이터 추가 확보
+  * Ground-truth Cosine Similarity Score 산출 알고리즘 고도화
+  * 기타 추가 연구
