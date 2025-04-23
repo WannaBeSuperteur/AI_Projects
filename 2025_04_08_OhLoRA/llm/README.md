@@ -5,12 +5,17 @@
   * [1-2. 참고: Gemma License](#1-2-참고-gemma-license)
 * [2. How to run Fine-Tuning](#2-how-to-run-fine-tuning)
 * [3. LLM Memory (RAG-like concept)](#3-llm-memory-rag-like-concept)
+  * [3-1. 동작 원리](#3-1-동작-원리)
+  * [3-2. 학습 및 테스트 데이터 & 학습 설정](#3-2-학습-및-테스트-데이터--학습-설정)
+  * [3-3. 테스트 결과](#3-3-테스트-결과)
 * [4. Test / Run Model](#4-test--run-model)
   * [4-1. Prepare Model (Gemma-2 2B Based)](#4-1-prepare-model-gemma-2-2b-based)
   * [4-2. Prepare Model (Polyglot-Ko 1.3B✅ Based)](#4-2-prepare-model-polyglot-ko-13b-based)
-  * [4-3. Unsloth use test](#4-3-unsloth-use-test)
+  * [4-3. Prepare S-BERT Model](#4-3-prepare-s-bert-model)
   * [4-4. Run LLM Fine-Tuning](#4-4-run-llm-fine-tuning)
   * [4-5. Run Final Fine-Tuned Model](#4-5-run-final-fine-tuned-model)
+  * [4-6. Run S-BERT Memory Model](#4-6-run-s-bert-memory-model)
+* [5. Unsloth use test (❌ FAILED)](#5-unsloth-use-test--failed)
 
 ## 1. LLM Final Selection
 
@@ -82,7 +87,47 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 ## 3. LLM Memory (RAG-like concept)
 
-* TBU
+* LLM 에는 기본적으로 메모리가 없어서 **방금 한 말조차 기억하지 못하고**, 이는 [환각 현상](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_%ED%99%98%EA%B0%81_%ED%98%84%EC%83%81.md) 의 원인 중 하나임
+* 본 Oh-LoRA 프로젝트에서는 [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 방법으로 LLM 의 메모리 구현
+
+### 3-1. 동작 원리
+
+* 사용자 입력에 대해 **가장 관련 있는 memory item** 을 [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 모델을 이용하여 탐색
+* 찾은 memory item (단, **cosine similarity $\ge$ 0.6** 이어야 함) 을 사용자 입력의 맨 앞에 추가
+* 오로라👱‍♀️ 에게 **memory item 내용이 앞에 추가된 프롬프트를 최종 전달**
+
+![image](../../images/250408_28.PNG)
+
+### 3-2. 학습 및 테스트 데이터 & 학습 설정
+
+* 학습 및 테스트 데이터
+
+| 데이터        | 데이터 생성용 조합                                                                    | 실제 데이터                                                               |
+|------------|-------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| 학습 및 valid | [train_dataset_combs.txt](memory_mechanism/train_dataset_combs.txt) (40 rows) | [train_dataset.csv](memory_mechanism/train_dataset.csv) (1,600 rows) |
+| 테스트        | [test_dataset_combs.txt](memory_mechanism/test_dataset_combs.txt) (20 rows)   | [test_dataset.csv](memory_mechanism/test_dataset.csv) (400 rows)     |
+
+* Cosine Similarity 의 Ground Truth 값
+  * memory text 의 key (예: ```[오늘 일정: 친구랑 카페 방문]``` → ```오늘 일정```) 에 대해,
+  * 이 key 를 **공백으로 구분한 각 단어 (예: ```오늘``` ```일정```) 에 대한 [IoU Score](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_Metrics.md#2-1-iou)** 를 Ground Truth 로 함
+  * 단, ```좋아하는 아이돌``` 과 ```좋아하는 가수``` 라는 key 는 동일한 key 로 간주 
+* 학습 설정
+  * Base Model : ```klue/roberta-base``` [(HuggingFace Link)](https://huggingface.co/klue/roberta-base)
+  * Pooling 설정 : Mean Pooling 적용
+  * 10 epochs
+* [참고한 블로그 포스팅](https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC%EB%A5%BC-%ED%99%9C%EC%9A%A9%ED%95%9C-SBERT-%ED%95%99%EC%8A%B5-%EB%B0%A9%EB%B2%95)
+
+### 3-3. 테스트 결과
+
+* Predicted vs. True Cosine Similarity 비교 (테스트 데이터셋)
+
+![image](../../images/250408_27.PNG)
+
+* MSE, MAE & Corr-coef
+
+| MSE    | MAE    | Corr-coef |
+|--------|--------|-----------|
+| 0.0880 | 0.1681 | 0.6259    |
 
 ## 4. Test / Run Model
 
@@ -160,7 +205,42 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 * ```2025_04_08_OhLoRA/llm/models/polyglot_fine_tuned``` 에 모델 저장
 * TBU (기존 모델 준비 방법)
 
-### 4-3. Unsloth use test
+### 4-3. Prepare S-BERT Model
+
+**1. Final Fine-Tuned S-BERT Model**
+
+* ```2025_04_08_OhLoRA/llm/models/memory_sbert``` 에 모델 저장
+* TBU (기존 모델 준비 방법)
+
+### 4-4. Run LLM Fine-Tuning
+
+**1. Gemma2 2B Fine Tuning**
+
+* 먼저, [이 문단](#4-1-prepare-model-gemma-2-2b-based) > **"1. Gemma-2-2b Original Unsloth Model (by Google & Unsloth)"** 에 따라 Original Gemma2 2B 모델 준비
+* 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning.py``` 실행
+* **Gemma2 2B 모델 사용 시, 라이선스 안내 필독 (완전 자유 라이선스가 아님)** 
+
+**2. Polyglot-Ko 1.3B (✅ 최종 채택) Fine Tuning**
+
+* 먼저, [이 문단](#4-2-prepare-model-polyglot-ko-13b-based) > **"1. Polyglot-Ko Original Model (by EleutherAI, ✅ 최종 채택)"** 에 따라 Original Polyglot-Ko 1.3B 모델 준비
+* 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning_polyglot.py``` 실행
+
+### 4-5. Run Final Fine-Tuned Model
+
+**진행 순서**
+
+* 먼저, [해당 문단](#4-2-prepare-model-polyglot-ko-13b-based) > **"2. Final Fine-Tuned Model"** 을 참고하여 **최종 Oh-LoRA LLM 모델 (Polyglot-Ko 1.3B Fine-Tuned LLM)** 준비
+* 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning_polyglot.py``` 실행
+  * 이때, Final Fine-Tuned 모델 ```2025_04_08_OhLoRA/llm/models/polyglot_fine_tuned``` 이 **이미 존재** 하므로, 모델이 새로 학습되지 않고 **Final Fine-Tuned Model 에 대한 Inference 가 진행** 됨
+
+### 4-6. Run S-BERT Memory Model
+
+**진행 순서**
+
+* 먼저, [해당 문단](#4-3-prepare-s-bert-model) > **"1. Final Fine-Tuned S-BERT Model"** 을 참고하여 **최종 Oh-LoRA S-BERT 모델** 준비
+* 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_memory_mechanism.py``` 실행
+
+## 5. Unsloth use test (❌ FAILED)
 
 **1. 실험 목적**
 
@@ -206,15 +286,3 @@ RuntimeError: Found Quadro M6000 which is too old to be supported by the triton 
 |------------------|-------------------------------------------------------|
 | **with** Unsloth | ```python llm/unsloth_test/test_with_unsloth.py```    |
 | **w/o** Unsloth  | ```python llm/unsloth_test/test_without_unsloth.py``` |
-
-### 4-4. Run LLM Fine-Tuning
-
-* Gemma2 2B Fine Tuning
-  * 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning.py``` 실행
-* **Polyglot-Ko 1.3B (✅ 최종 채택)** Fine Tuning
-  * 프로젝트 메인 디렉토리 (```2025_04_08_OhLoRA```) 에서 ```python llm/run_fine_tuning_polyglot.py``` 실행
-
-### 4-5. Run Final Fine-Tuned Model
-
-* 먼저 [해당 부분](#4-2-prepare-model-polyglot-ko-13b-based) 을 참고하여 **최종 Oh-LoRA LLM 모델 (Polyglot-Ko 1.3B Fine-Tuned LLM)** 준비
-* TBU
