@@ -22,7 +22,7 @@
 
 ### 1-1. Polyglot-Ko 1.3B 선택 이유
 
-* [실제 생성 문장 측면 (Gemma-2 2B 테스트 결과)](fine_tuning/fine_tuning_logs/2504221644%20(Inference,%2025042213%20dataset,%20temp=1.2).txt)
+* **실제 Fine-Tuning 된 모델** 의 생성 문장 측면 [(Gemma-2 2B 테스트 결과)](fine_tuning/fine_tuning_logs/2504221644%20(Inference,%2025042213%20dataset,%20temp=1.2).txt)
   * Gemma-2 2B 가 Polyglot-Ko 1.3B 보다 생성 문장의 품질이 전반적으로 떨어짐
     * Gemma-2 2B 는 동일 질문에 대해 **유사한 답변을 생성** 하는 빈도가 Polyglot-Ko 1.3B 보다 현저히 높음
     * Gemma-2 2B 는 **특정 질문에 대해 empty answer 를 생성 (읽씹)** 하는 빈도가 Polyglot-Ko 1.3B 보다 현저히 높음
