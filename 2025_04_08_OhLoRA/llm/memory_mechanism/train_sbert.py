@@ -39,20 +39,20 @@ class MemorySBERTDataset(Dataset):
         return input_example
 
 
-# Pre-trained S-BERT Model 로딩
+# Pre-trained (or Fine-Tuned) S-BERT Model 로딩
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
 # Create Date : 2025.04.23
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# - model_path (str) : Pre-trained (or Fine-Tuned) S-BERT Model 의 경로
 
 # Returns:
 # - pretrained_sbert_model (S-BERT Model) : Pre-train 된 Sentence-BERT 모델
 
-def load_pretrained_sbert_model():
+def load_pretrained_sbert_model(model_path="klue/roberta-base"):
     embedding_model = models.Transformer(
-        model_name_or_path="klue/roberta-base",
+        model_name_or_path=model_path,
         max_seq_length=64,
         do_lower_case=True
     )

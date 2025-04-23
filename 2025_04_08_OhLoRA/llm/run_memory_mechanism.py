@@ -1,4 +1,4 @@
-from memory_mechanism.train_sbert import train_sbert
+from memory_mechanism.train_sbert import train_sbert, load_pretrained_sbert_model
 from memory_mechanism.inference_sbert import run_inference
 
 import pandas as pd
@@ -18,7 +18,10 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # - sbert_model (S-BERT Model) : 학습된 Sentence BERT 모델
 
 def load_sbert_model():
-    raise NotImplementedError
+    model_path = f'{PROJECT_DIR_PATH}/llm/models/memory_sbert/trained_sbert_model'
+    sbert_model = load_pretrained_sbert_model(model_path)
+
+    return sbert_model
 
 
 if __name__ == '__main__':
