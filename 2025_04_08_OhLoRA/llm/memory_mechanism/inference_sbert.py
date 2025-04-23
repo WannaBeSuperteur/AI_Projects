@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 import os
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
 # Memory Mechanism 을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "데이터셋 전체에 대한" inference 실시
@@ -64,4 +64,11 @@ def run_inference(sbert_model, test_dataset_df):
 # - similarity_score (float) : 학습된 S-BERT 모델이 계산한 similarity score (RAG 유사 메커니즘 용)
 
 def run_inference_each_example(sbert_model, memory_info, user_prompt):
-    raise NotImplementedError
+    def compute_cosine_similarity(vector0, vector1):
+        return np.dot(vector0, vector1) / (np.linalg.norm(vector0) * np.linalg.norm(vector1))
+
+    memory_info_embedding = sbert_model.encode([memory_info])
+    user_prompt_embedding = sbert_model.encode([user_prompt])
+
+    similarity_score = compute_cosine_similarity(memory_info_embedding[0], user_prompt_embedding[0])
+    return similarity_score
