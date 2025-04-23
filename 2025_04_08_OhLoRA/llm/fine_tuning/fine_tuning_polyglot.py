@@ -60,7 +60,8 @@ def get_original_llm():
 
 # Original LLM (Polyglot-Ko 1.3B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
 # Create Date : 2025.04.22
-# Last Update Date : -
+# Last Update Date : 2025.04.23
+# - train epoch count 60 -> 80 으로 상향
 
 # Arguments:
 # - 없음
@@ -71,7 +72,7 @@ def get_original_llm():
 def get_training_args():
     training_args = SFTConfig(
         learning_rate=0.0002,           # lower learning rate is recommended for Fine-Tuning
-        num_train_epochs=60,
+        num_train_epochs=80,
         logging_steps=5,                # logging frequency
         gradient_checkpointing=False,
         output_dir=OUTPUT_DIR_PATH,
@@ -118,7 +119,7 @@ def get_sft_trainer(dataset, collator, training_args):
 
 # Arguments:
 # - llm       (LLM) : Fine-Tuning 실시할 LLM (Polyglot-Ko 1.3B)
-# - lora_rank (int) : LoRA 적용 시의 Rank (권장: 64)
+# - lora_rank (int) : LoRA 적용 시의 Rank
 
 # Returns:
 # - lora_llm (LLM) : LoRA 가 적용된 LLM
@@ -166,7 +167,8 @@ def generate_llm_trainable_dataset(dataset_df):
 
 # LLM (Polyglot-Ko 1.3B) Fine Tuning 실시
 # Create Date : 2025.04.22
-# Last Update Date : -
+# Last Update Date : 2025.04.23
+# - LoRA Rank 64 -> 128 로 상향
 
 # Arguments:
 # - 없음
@@ -189,7 +191,7 @@ def fine_tune_model():
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
-    get_lora_llm(llm=original_llm, lora_rank=64)
+    get_lora_llm(llm=original_llm, lora_rank=128)
 
 #    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
 #    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
