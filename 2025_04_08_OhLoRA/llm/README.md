@@ -95,12 +95,17 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 * 사용자 입력에 대해 **가장 관련 있는 memory item** 을 [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 모델을 이용하여 탐색
 * 찾은 memory item (단, **cosine similarity $\ge$ 0.6** 이어야 함) 을 사용자 입력의 맨 앞에 추가
 * 오로라👱‍♀️ 에게 **memory item 내용이 앞에 추가된 프롬프트를 최종 전달**
+* 구현 코드
+  * [S-BERT Training](memory_mechanism/train_sbert.py)
+  * [S-BERT Inference](memory_mechanism/inference_sbert.py)
 
 ![image](../../images/250408_28.PNG)
 
 ### 3-2. 학습 및 테스트 데이터 & 학습 설정
 
 * 학습 및 테스트 데이터
+  * **실제 데이터** 는 **데이터 생성용 조합** 의 각 line 의 key (예: ```[오늘 일정: 친구랑 카페 방문]```) 와 value (나머지 부분) 을 combination (?) 하여 생성
+  * [데이터 생성 구현 코드](memory_mechanism/generate_dataset.py)
 
 | 데이터        | 데이터 생성용 조합                                                                    | 실제 데이터                                                               |
 |------------|-------------------------------------------------------------------------------|----------------------------------------------------------------------|
