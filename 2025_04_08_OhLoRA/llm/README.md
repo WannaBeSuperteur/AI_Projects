@@ -26,6 +26,7 @@
   * Gemma-2 2B 가 Polyglot-Ko 1.3B 보다 생성 문장의 품질이 전반적으로 떨어짐
     * Gemma-2 2B 는 동일 질문에 대해 **유사한 답변을 생성** 하는 빈도가 Polyglot-Ko 1.3B 보다 현저히 높음
     * Gemma-2 2B 는 **특정 질문에 대해 empty answer 를 생성 (읽씹)** 하는 빈도가 Polyglot-Ko 1.3B 보다 현저히 높음
+    * Gemma-2 2B 는 **어색한 외국어 문장** 을 생성하는 경우가 많음 
   * memory 정보 (예: ```[오늘 일정: 신규 아이템 발표]```) 파악 및 패드립 대응 (경고 처리) 능력은 Gemma-2 2B 가 Polyglot-Ko 1.3B 보다 높은 편이지만, 치명적인 이슈는 아님
 * 기타
   * Gemma-2 2B 는 Polyglot-Ko 1.3B 와 달리 [Totally Free License 가 아님](#1-2-참고-gemma-license)
