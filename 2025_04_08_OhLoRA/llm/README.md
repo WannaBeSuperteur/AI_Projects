@@ -7,7 +7,7 @@
 * [3. LLM Memory (RAG-like concept)](#3-llm-memory-rag-like-concept)
 * [4. Test / Run Model](#4-test--run-model)
   * [4-1. Prepare Model (Gemma-2 2B Based)](#4-1-prepare-model-gemma-2-2b-based)
-  * [4-2. Prepare Model (Polyglot-Ko 1.3B Based)](#4-2-prepare-model-polyglot-ko-13b-based)
+  * [4-2. Prepare Model (Polyglot-Ko 1.3B✅ Based)](#4-2-prepare-model-polyglot-ko-13b-based)
   * [4-3. Unsloth use test](#4-3-unsloth-use-test)
   * [4-4. Run LLM Fine-Tuning](#4-4-run-llm-fine-tuning)
   * [4-5. Run Final Fine-Tuned Model](#4-5-run-final-fine-tuned-model)
@@ -56,7 +56,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 **1. Fine-Tuning 방법 및 데이터셋**
 
 * 학습 모델
-  * **Polyglot-Ko 1.3B (1.43 B params)** [HuggingFace](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) 
+  * **Polyglot-Ko 1.3B (1.43 B params) (✅ 최종 채택)** [HuggingFace](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) 
 * 학습 방법 
   * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
   * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = 64
@@ -70,7 +70,9 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 **2. 모델 별 학습 특이 사항**
 
-* **Polyglot-Ko 1.3B**
+* **Gemma-2 2B**
+  * 특이 사항 없음
+* **Polyglot-Ko 1.3B (✅ 최종 채택)**
   * 학습 시 문제점 
     * Original Polyglot-Ko 1.3B LLM 의 tokenizer 의 end-of-sequence token 인 ```<|endoftext|>``` 가, **Fine-Tuning 된 모델에서는 매우 드물게 생성** 됨
     * 이로 인해 **거의 대부분의 생성 문장이 max token length 인 80 에 도달함**
@@ -121,9 +123,9 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 * ```2025_04_08_OhLoRA/llm/models/fine_tuned``` 에 모델 저장
 * TBU (기존 모델 준비 방법)
 
-### 4-2. Prepare Model (Polyglot-Ko 1.3B Based)
+### 4-2. Prepare Model (Polyglot-Ko 1.3B✅ Based)
 
-**1. Polyglot-Ko Original Model (by EleutherAI)**
+**1. Polyglot-Ko Original Model (by EleutherAI, ✅ 최종 채택)**
 
 * ```2025_04_08_OhLoRA/llm/models/polyglot_original``` 에, [Polyglot-Ko 1.3B Hugging-Face](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) 에서 다운로드받은 모델 및 관련 파일 저장
   * 총 12 개 파일 (각종 정보 포함)
@@ -197,7 +199,7 @@ RuntimeError: Found Quadro M6000 which is too old to be supported by the triton 
 
 **3. 코드 실행 방법**
 
-* 먼저, [Prepare Model](#4-1-prepare-model) 에 나온 대로 모델 준비
+* 먼저, [Prepare Model](#4-1-prepare-model-gemma-2-2b-based) 에 나온 대로 모델 준비
 * ```2025_04_08_OhLoRA``` 메인 디렉토리에서 실행
 
 | 테스트              | Python 명령어                                            |
@@ -214,5 +216,5 @@ RuntimeError: Found Quadro M6000 which is too old to be supported by the triton 
 
 ### 4-5. Run Final Fine-Tuned Model
 
-* 먼저 (TBU) 를 참고하여 **모델 (Polyglot-Ko 1.3B Fine-Tuned LLM)** 준비
+* 먼저 [해당 부분](#4-2-prepare-model-polyglot-ko-13b-based) 을 참고하여 **최종 Oh-LoRA LLM 모델 (Polyglot-Ko 1.3B Fine-Tuned LLM)** 준비
 * TBU
