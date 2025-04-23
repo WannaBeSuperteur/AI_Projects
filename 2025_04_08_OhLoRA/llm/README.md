@@ -105,7 +105,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 ### 3-2. 학습 및 테스트 데이터 & 학습 설정
 
 * 학습 및 테스트 데이터
-  * **실제 데이터** 는 **데이터 생성용 조합** 의 각 line 의 key (예: ```[오늘 일정: 친구랑 카페 방문]```) 와 value (나머지 부분) 을 combination (?) 하여 생성
+  * **실제 데이터** 는 **데이터 생성용 조합** 의 각 line 의 memory (예: ```[오늘 일정: 친구랑 카페 방문]```) 와 message (나머지 부분) 을 combination (?) 하여 생성
   * [데이터 생성 구현 코드](memory_mechanism/generate_dataset.py)
 
 | 데이터        | 데이터 생성용 조합                                                                    | 실제 데이터                                                               |
