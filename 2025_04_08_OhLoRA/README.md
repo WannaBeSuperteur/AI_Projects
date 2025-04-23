@@ -125,7 +125,7 @@
 | 적절한 한국어 LLM 모델 선택 (Google Colab 에서)                                                                                                            | 04.19 토 - 04.21 월 (3d) |                            | ✅  |
 | Unsloth 실행 시도                                                                                                                                  | 04.21 월 (1d)           |                            | ❌  |
 | SFT + LoRA 를 이용한 Fine-Tuning                                                                                                                   | 04.21 월 - 04.23 수 (3d) | ```P002-011-SFT-LoRA```    | ✅  |
-| LLM 의 메모리 구현 ([RAG](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 와 유사한 메커니즘) | 04.23 수 (1d)           | ```P002-012-RAG```         | 💨 |
+| LLM 의 메모리 구현 ([RAG](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 와 유사한 메커니즘) | 04.23 수 (1d)           | ```P002-012-RAG```         | ✅  |
 
 ## 4. 프로젝트 상세 설명
 
