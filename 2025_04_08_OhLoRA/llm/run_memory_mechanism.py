@@ -1,5 +1,9 @@
-from memory_mechanism.train_sbert import train_sbert, load_pretrained_sbert_model
-from memory_mechanism.inference_sbert import run_inference, run_inference_each_example
+try:
+    from memory_mechanism.train_sbert import train_sbert, load_pretrained_sbert_model
+    from memory_mechanism.inference_sbert import run_inference, run_inference_each_example
+except:
+    from llm.memory_mechanism.train_sbert import train_sbert, load_pretrained_sbert_model
+    from llm.memory_mechanism.inference_sbert import run_inference, run_inference_each_example
 
 import pandas as pd
 
