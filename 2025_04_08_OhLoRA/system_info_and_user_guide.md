@@ -5,9 +5,8 @@
   * [1-2. 시스템에 설치된 전체 Python 라이브러리](#1-2-시스템에-설치된-전체-python-라이브러리)
 * [2. 사용자 가이드](#2-사용자-가이드)
   * [2-1. Python 환경 설정](#2-1-python-환경-설정) 
-  * [2-2. 모델 다운로드](#2-2-모델-다운로드)
-  * [2-3. 모델 준비](#2-3-모델-준비)
-  * [2-4. run.py 실행](#2-4-runpy-실행)
+  * [2-2. 모델 다운로드 및 준비](#2-2-모델-다운로드-및-준비)
+  * [2-3. run.py 실행](#2-3-runpy-실행)
 
 ## 1. 시스템 환경
 
@@ -242,17 +241,17 @@ zipp==3.17.0
 * Optional
   * 주요 라이브러리 설치 후에도 Python 라이브러리 이슈로 실행이 안 될 시, [전체 라이브러리 목록](#1-2-시스템에-설치된-전체-python-라이브러리) 을 참고하여 라이브러리를 추가 설치합니다.
 
-### 2-2. 모델 다운로드
+### 2-2. 모델 다운로드 및 준비
 
-HuggingFace 에서 아래와 같이 모델을 다운로드합니다.
+[해당 문서](MODEL_AND_DATASET_INFO.md), 특히 [해당 문단](MODEL_AND_DATASET_INFO.md#1-2-oh-lora-프로젝트-용-모델) 을 참고하여, HuggingFace 에서 아래와 같이 **총 3 개의 모델을 다운로드하여 지정된 경로에 추가** 합니다.
 
-* TBU
+| 모델 분류      | 모델 이름                              | 모델 파일 이름<br>(모두 원래 이름 그대로)                                                              | 저장 위치 (디렉토리)<br>(```2025_04_08_OhLoRA``` 까지의 경로 제외) | 다운로드 주소 (출처)                                                                                  |
+|------------|------------------------------------|-----------------------------------------------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| StyleGAN   | StyleGAN-FineTuned-v3 (Generator)  | ```stylegan_gen_fine_tuned_v3_ckpt_0005.pth```                                          | ```stylegan_and_segmentation/stylegan_modified```   | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_StyleGAN_FineTuned/tree/main) |
+| LLM        | OhLoRA LLM                         | 파일 배치 방법 : [해당 문단](MODEL_AND_DATASET_INFO.md#3-1-ohlora-llm) 참고                         | ```llm/models/polyglot_fine_tuned```                | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM/tree/main)                |
+| LLM S-BERT | S-BERT model for OhLoRA LLM memory | 파일 배치 방법 : [해당 문단](MODEL_AND_DATASET_INFO.md#3-2-s-bert-model-for-ohlora-llm-memory) 참고 | ```llm/models/memory_sbert/trained_sbert_model```   | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM_SBERT/tree/main)          |
 
-### 2-3. 모델 준비
-
-TBU
-
-### 2-4. run.py 실행
+### 2-3. run.py 실행
 
 이제 모든 준비가 끝났습니다. **프로젝트 메인 디렉토리인 ```2025_04_08_OhLoRA``` 디렉토리에서** ```run.py``` 파일을 실행합니다.
 
