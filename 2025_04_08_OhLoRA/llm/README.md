@@ -172,8 +172,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 **2. Final Fine-Tuned Model**
 
-* ```2025_04_08_OhLoRA/llm/models/fine_tuned``` 에 모델 저장
-* TBU (기존 모델 준비 방법)
+* [LLM Fine Tuning 방법](#4-4-run-llm-fine-tuning) 의 **"1. Gemma2 2B Fine Tuning"** 대로 실행하면 ```2025_04_08_OhLoRA/llm/models/fine_tuned``` 에 Fine-Tuning 된 Gemma2-2B 모델 저장됨
 
 ### 4-2. Prepare Model (Polyglot-Ko 1.3B✅ Based)
 
@@ -209,15 +208,63 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 **2. Final Fine-Tuned Model**
 
-* ```2025_04_08_OhLoRA/llm/models/polyglot_fine_tuned``` 에 모델 저장
-* TBU (기존 모델 준비 방법)
+* ```2025_04_08_OhLoRA/llm/models/polyglot_fine_tuned``` 에, [HuggingFace Link](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM/tree/main) 로부터 다운로드 받은 모델 저장
+  * 총 8 개 파일 (각종 정보 포함)
+  * 이때 ```models/polyglot_fine_tuned``` 디렉토리는 Clone 받은 repo. 에 원래 없으므로, 새로 생성
+
+```
+2025_04_08_OhLoRA
+- llm
+  - fine_tuning
+  - model_selection
+  - models                                 (필요 시 디렉토리 새로 생성)
+    - polyglot_fine_tuned                  (디렉토리 새로 생성)
+      - .gitarrtibutes                     (다운로드 받은 파일)
+      - adapter_config.json                (다운로드 받은 파일)
+      - adapter_model.safetensors          (다운로드 받은 파일)
+      - README.md                          (다운로드 받은 파일)
+      - special_tokens_map.json            (다운로드 받은 파일)
+      - tokenizer.json                     (다운로드 받은 파일)
+      - tokenizer_config.json              (다운로드 받은 파일)
+    - ...
+  - unsloth_test
+  - ...  
+```
 
 ### 4-3. Prepare S-BERT Model
 
 **1. Final Fine-Tuned S-BERT Model**
 
-* ```2025_04_08_OhLoRA/llm/models/memory_sbert``` 에 모델 저장
-* TBU (기존 모델 준비 방법)
+* ```2025_04_08_OhLoRA/llm/models/memory_sbert/trained_sbert_model``` 에, [HuggingFace Link](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM_SBERT/tree/main) 로부터 다운로드 받은 모델 저장
+  * 총 12 개 파일 (각종 정보 포함)
+  * 이때 ```models/memory_sbert/trained_sbert_model``` 디렉토리는 Clone 받은 repo. 에 원래 없으므로, 새로 생성
+
+```
+2025_04_08_OhLoRA
+- llm
+  - fine_tuning
+  - model_selection
+  - models                                                     (필요 시 디렉토리 새로 생성)
+    - memory_sbert                                             (디렉토리 새로 생성)
+      - trained_sbert_model                                    (디렉토리 새로 생성)
+        - 1_Pooling                                            (디렉토리 새로 생성)
+          - config.json                                        (다운로드 받은 파일)
+        - eval                                                 (디렉토리 새로 생성)
+          - similarity_evaluation_valid_evaluator_results.csv  (다운로드 받은 파일)
+        - config.json                                          (다운로드 받은 파일)
+        - config_sentence_transformers.json                    (다운로드 받은 파일)
+        - model.safetensors                                    (다운로드 받은 파일)
+        - modules.json                                         (다운로드 받은 파일)
+        - README.md                                            (다운로드 받은 파일)
+        - sentence_bert_config.json                            (다운로드 받은 파일)
+        - special_tokens_map.json                              (다운로드 받은 파일)
+        - tokenizer.json                                       (다운로드 받은 파일)
+        - tokenizer_config.json                                (다운로드 받은 파일)
+        - vocab.txt                                            (다운로드 받은 파일)
+    - ...
+  - unsloth_test
+  - ...  
+```
 
 ### 4-4. Run LLM Fine-Tuning
 
