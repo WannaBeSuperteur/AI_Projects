@@ -515,7 +515,13 @@
 
 ## 5. 코드 실행 방법
 
-**모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행** (단, 추가 개발 목적이 아닌 경우, 마지막의 **"6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성"** 부분만 실행)
+**모든 코드는 아래 순서대로, ```2025_04_08_OhLoRA``` main directory 에서 실행**
+
+* 단, 추가 개발 목적이 아닌 경우, 마지막의 **"6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성"** 부분만 실행
+
+----
+
+<details><summary>1. ~ 5. 모델 추가 개발을 위한 절차 [ 펼치기 / 접기 ]</summary>
 
 * **1. Original GAN Generator 실행하여 이미지 생성**
   * ```python stylegan_and_segmentation/run_original_generator.py```
@@ -567,6 +573,12 @@
     * ```stylegan_modified/stylegan_gen_fine_tuned_v4.pth``` 에 Fine-Tuning 된 Generator 저장됨
     * ```stylegan_modified/stylegan_dis_fine_tuned_v4.pth``` 에 Fine-Tuning 된 모델의 Discriminator 저장됨
 
+</details>
+
+----
+
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
-  * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
-  * ```stylegan_modified/final_inference_test_v3``` 에 생성된 이미지 저장됨
+  * 먼저, 모델 준비 절차 (링크 TBU) 를 참고하여 ```stylegan_gen_fine_tuned_v3_ckpt_0005_gen.pth``` 모델 파일을 ```stylegan_modified``` 디렉토리 안에 준비
+  * 코드 실행
+    * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
+    * ```stylegan_modified/final_inference_test_v3``` 에 생성된 이미지 저장됨

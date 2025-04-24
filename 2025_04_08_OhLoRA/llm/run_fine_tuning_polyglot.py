@@ -37,7 +37,7 @@ if __name__ == '__main__':
         print(f'user prompt for validation : {user_prompt}')
 
     # load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_original')
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_fine_tuned')
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
