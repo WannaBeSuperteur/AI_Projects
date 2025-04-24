@@ -519,6 +519,13 @@
 
 * 단, 추가 개발 목적이 아닌 경우, 마지막의 **"6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성"** 부분만 실행
 
+사전 준비해야 하는 모델
+
+* **1. ~ 5.** 를 포함한 추가 개발 시
+  * [모델 정보 - 기존 Pre-trained 모델](../MODEL_AND_DATASET_INFO.md#1-1-기존-pre-trained-모델) 에 있는 모델 중 'StyleGAN', 'Segmentation' 분류에 해당하는 총 5 개 모델을 정확한 경로에 준비 
+* **"6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성"** 만 진행 시
+  * [모델 정보 - Oh-LoRA 프로젝트 용 모델](../MODEL_AND_DATASET_INFO.md#1-2-oh-lora-프로젝트-용-모델) 중 모델 이름이 **StyleGAN-FineTune-v3 (Generator) ✅** 에 해당하는 모델만 정확한 경로에 준비 
+
 ----
 
 <details><summary>1. ~ 5. 모델 추가 개발을 위한 절차 [ 펼치기 / 접기 ]</summary>
@@ -578,7 +585,7 @@
 ----
 
 * **6. Fine-Tuning 된 StyleGAN 실행하여 이미지 생성**
-  * 먼저, 모델 준비 절차 (링크 TBU) 를 참고하여 ```stylegan_gen_fine_tuned_v3_ckpt_0005_gen.pth``` 모델 파일을 ```stylegan_modified``` 디렉토리 안에 준비
+  * 먼저, 위 모델 준비 절차 및 [모델 파일 정보](../MODEL_AND_DATASET_INFO.md#1-2-oh-lora-프로젝트-용-모델) 를 참고하여 ```stylegan_gen_fine_tuned_v3_ckpt_0005_gen.pth``` 모델 파일을 ```stylegan_modified``` 디렉토리 안에 준비
   * 코드 실행
     * ```python stylegan_and_segmentation/run_fine_tuned_generator.py```
     * ```stylegan_modified/final_inference_test_v3``` 에 생성된 이미지 저장됨
