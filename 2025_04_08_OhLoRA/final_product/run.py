@@ -246,6 +246,7 @@ def save_memory_list(memory_list):
 # Create Date : 2025.04.23
 # Last Update Date : 2025.04.24
 # - 눈을 크게 뜨고 입을 벌리는 감탄사 조건 일부 수정
+# - 고개 돌림 조건 로직 일부 수정
 
 # Arguments :
 # - llm_answer_cleaned (str) : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
@@ -278,6 +279,8 @@ def decide_property_scores(llm_answer_cleaned):
 
     if '미안' in llm_answer_cleaned and '싫어' in llm_answer_cleaned:
         pose_score = 3.6
+    elif '오!' not in llm_answer_cleaned and (' 못 ' in llm_answer_cleaned or '없어 ' in llm_answer_cleaned or '없어.' in llm_answer_cleaned):
+        pose_score = 3.0
     elif '미안' in llm_answer_cleaned or '싫어' in llm_answer_cleaned or '별로' in llm_answer_cleaned:
         pose_score = 2.4
     elif '…' in llm_answer_cleaned:
