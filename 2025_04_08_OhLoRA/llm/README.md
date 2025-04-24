@@ -347,15 +347,22 @@ Oh-LoRA 차기 버전 개발 시 진행하고 싶은 것들:
 
 * **1. 학습 데이터 증량**
   * 학습 데이터셋 기존 360개 → 1,000개 정도로 증량 (다양한 상황)
+    * 특히 현재 버전에서 [환각 현상](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_%ED%99%98%EA%B0%81_%ED%98%84%EC%83%81.md) 이 심하거나 읽씹 (30 회 답변 생성 시도 모두 실패) 인 부분에 대해 중점 증량 
+    * 사용자와 소통하는 느낌이 강화되도록 사용자에게 질문하는 내용이 포함된 학습 데이터 증량 
   * 학습 데이터의 LLM output 에 메시지, 메모리 외에 **표정을 바꾸는 지시문** 도 추가
-    * 이 경우, 메시지, 메모리, 표정 지시문을 각각 개별 LLM (총 3개) 으로 처리할 수 있음
+    * 이 경우, 메시지, 메모리, 표정 지시문을 각각 개별 LLM (총 3개) 으로 처리하는 것을 우선 고려 **(그래도 CUDA OOM 없을 것으로 예상)**
     * 1개의 LLM 으로 이 3가지 데이터를 모두 처리하는 경우, max token count 80 → 96 정도로 상향 가능
 
 * **2. 더 매력적인 답변을 하도록 성능 향상**
   * LoRA Configuration 의 Target Module 범위 조정
   * LoRA Rank 상향
+  * [2025.04.24 공개된 하이퍼클로바X 계열 모델](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Trend/AI_TREND_Apr_2025.md#20250423-%EC%88%98) 사용 고려
 
 * **3. RAG-like Memory 메커니즘 고도화**
   * S-BERT 학습 데이터 추가 확보
   * Ground-truth Cosine Similarity Score 산출 알고리즘 고도화
   * 기타 추가 연구 (S-BERT 를 위한 적절한 Embedding 모델 선택 등)
+
+* **4. 기타**
+  * 생성된 답변이 max token 개수 (80 tokens) 에 도달한 경우, 실패로 간주하여 생성 재 시도
+  * 과거 연도의 특정 날짜 (예: ```2021년 7월 18일```) 이 생성된 답변에 **아무 맥락 없이** 포함되는 경우, 실패로 간주하여 생성 재 시도
