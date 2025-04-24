@@ -247,7 +247,7 @@ zipp==3.17.0
 
 | 모델 분류      | 모델 이름                              | 모델 파일 이름<br>(모두 원래 이름 그대로)                                                              | 저장 위치 (디렉토리)<br>(```2025_04_08_OhLoRA``` 까지의 경로 제외) | 다운로드 주소 (출처)                                                                                  |
 |------------|------------------------------------|-----------------------------------------------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| StyleGAN   | StyleGAN-FineTuned-v3 (Generator)  | ```stylegan_gen_fine_tuned_v3_ckpt_0005.pth```                                          | ```stylegan_and_segmentation/stylegan_modified```   | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_StyleGAN_FineTuned/tree/main) |
+| StyleGAN   | StyleGAN-FineTuned-v3 (Generator)  | ```stylegan_gen_fine_tuned_v3_ckpt_0005_gen.pth```                                      | ```stylegan_and_segmentation/stylegan_modified```   | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_StyleGAN_FineTuned/tree/main) |
 | LLM        | OhLoRA LLM                         | 파일 배치 방법 : [해당 문단](MODEL_AND_DATASET_INFO.md#3-1-ohlora-llm) 참고                         | ```llm/models/polyglot_fine_tuned```                | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM/tree/main)                |
 | LLM S-BERT | S-BERT model for OhLoRA LLM memory | 파일 배치 방법 : [해당 문단](MODEL_AND_DATASET_INFO.md#3-2-s-bert-model-for-ohlora-llm-memory) 참고 | ```llm/models/memory_sbert/trained_sbert_model```   | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM_SBERT/tree/main)          |
 
