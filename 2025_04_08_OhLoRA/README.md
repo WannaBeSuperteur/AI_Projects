@@ -144,4 +144,9 @@
 
 ## 6. 사용자 가이드
 
+* [시스템 환경 정보 및 사용자 가이드 문서](system_info_and_user_guide.md)
+  * [시스템 환경 정보](system_info_and_user_guide.md#1-시스템-환경)
+  * [Oh-LoRA 👱‍♀️ (오로라) 와의 대화 실행을 위한 사용자 가이드](system_info_and_user_guide.md#2-사용자-가이드)
+* [모델 및 데이터셋 정보 (다운로드 주소 등)](MODEL_AND_DATASET_INFO.md)
+
 ## 7. 프로젝트 소감
