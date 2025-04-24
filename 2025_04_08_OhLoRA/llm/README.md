@@ -226,6 +226,7 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
       - special_tokens_map.json            (다운로드 받은 파일)
       - tokenizer.json                     (다운로드 받은 파일)
       - tokenizer_config.json              (다운로드 받은 파일)
+      - training_args.bin                  (다운로드 받은 파일)
     - ...
   - unsloth_test
   - ...  
