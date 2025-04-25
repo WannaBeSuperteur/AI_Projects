@@ -73,8 +73,8 @@ TBU
 ## 2. 기술 분야 및 사용 기술
 
 * 기술 분야
-  * Computer Vision
   * Image Generation (Generative AI)
+  * Computer Vision
   * LLM (Large Language Model)
 * 사용 기술
   * [본 프로젝트에서 사용한 모델 상세 정보](MODEL_AND_DATASET_INFO.md#1-모델-정보)
@@ -87,7 +87,7 @@ TBU
 | Computer Vision  | CNN (Conv. NN)                                                                                                                                                                           | StyleGAN 으로 생성한 가상 인간 이미지 중 성별, 품질 수준 값이 있는 2,000 장을 학습 후, 학습된 CNN 으로 제외한 나머지 이미지들의 **성별 값 및 이미지 품질 수준** 추론                                                                                           |
 | Computer Vision  | CNN (Conv. NN)                                                                                                                                                                           | StyleGAN 으로 생성한 가상 인간 이미지의 핵심 속성 값 (눈을 뜬 정도, 입을 벌린 정도, 고개 돌림 등) 추론                                                                                                                                    |
 | LLM              | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)                                | 가상 인간이 인물 설정에 맞게 사용자와 대화할 수 있게 하는 기술                                                                                                                                                                  |
-| LLM              | [LoRA (Low-Rank Adaption](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)                              | 가상 인간의 LLM 을 효율적으로 Fine-Tuning 하는 기술                                                                                                                                                                  |
+| LLM              | [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)                             | 가상 인간의 LLM 을 효율적으로 Fine-Tuning 하는 기술                                                                                                                                                                  |
 | LLM              | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) | 가상 인간이 사용자와의 대화 내용을 기억하는 메모리 역할<br>- [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 메커니즘 |
 
 ### 2-1. 관련 논문
