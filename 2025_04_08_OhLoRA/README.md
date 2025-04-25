@@ -58,7 +58,7 @@
   * 오로라의 빛✨ 으로 우리 모두의 인생을 밝게 비춰 주는 마법 능력
   * 사람이 아닌 AI 가상 인간만이 가질 수 있음
 * 기타 잡다한 TMI
-  * [오로라 Fine-Tuning 에 사용한 데이터셋](llm/OhLoRA_fine_tuning_25042213.csv) 을 보면 알 수 있어요!
+  * [오로라 Fine-Tuning 에 사용한 데이터셋 (직접 제작)](llm/OhLoRA_fine_tuning_25042213.csv) 을 보면 알 수 있어요!
 
 ![image](../images/250408_29.PNG)
 
@@ -70,7 +70,15 @@
 
 ### 1-2. 프로젝트 결과물 실행 스크린샷
 
-TBU
+![image](../images/250408_30.PNG)
+
+![image](../images/250408_31.PNG)
+
+![image](../images/250408_32.PNG)
+
+![image](../images/250408_33.PNG)
+
+![image](../images/250408_34.PNG)
 
 ## 2. 기술 분야 및 사용 기술
 
