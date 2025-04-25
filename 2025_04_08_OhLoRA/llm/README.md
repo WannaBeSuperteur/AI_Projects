@@ -357,7 +357,8 @@ Oh-LoRA 차기 버전 개발 시 진행하고 싶은 것들:
 * **2. 더 매력적인 답변을 하도록 성능 향상**
   * LoRA Configuration 의 Target Module 범위 조정
   * LoRA Rank 상향
-  * [2025.04.24 공개된 하이퍼클로바X 계열 모델](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Trend/AI_TREND_Apr_2025.md#20250423-%EC%88%98) 사용 고려
+  * [2025.04.24 공개된 하이퍼클로바X 계열 모델](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Trend/AI_TREND_Apr_2025.md#20250423-%EC%88%98) 사용 고려 (단, [저작권 이슈](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Trend/AI_TREND_Apr_2025.md#20250424-%EB%AA%A9) 로 인해 보류)
+  * [QuantumAI 의 KoreanLM](https://huggingface.co/quantumaikr/KoreanLM) 의 [1.5B size LLM](https://huggingface.co/quantumaikr/KoreanLM-1.5b) 사용 고려
 
 * **3. RAG-like Memory 메커니즘 고도화**
   * S-BERT 학습 데이터 추가 확보
