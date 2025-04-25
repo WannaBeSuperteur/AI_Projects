@@ -20,7 +20,7 @@
 
 * StyleGAN 및 LLM 을 응용한, 사용자와 대화하는 가상 인간 여성 캐릭터 **(이름 : Oh-LoRA (오로라))** 생성
 
-**2. 주요 내용 (이미지 생성 및 추천)**
+**2. 주요 내용 (이미지 생성)**
 
 * Fine-Tuning 된 StyleGAN 을 이용하여 이미지 생성
   * 이때, 다음과 같은 **핵심 속성** 값을 이용하여 이미지 생성
@@ -28,8 +28,8 @@
     * 성별, 이미지 품질, 눈을 뜬 정도, 머리 색, 머리 길이, 입을 벌린 정도, 고개 돌림, 배경색 평균, 배경색 표준편차
     * 성별, 이미지 품질이 **모두 조건을 충족시키는 이미지만 따로 필터링** 하여, 필터링된 이미지에 대해서만 나머지 7가지 속성 값 적용
     * 성별, 이미지 품질을 제외한 값은 **Pre-trained Segmentation Model 을 이용하여 라벨링**
-  * **핵심 속성** 값에 해당하는 벡터를 StyleGAN 의 latent vector 에 추가
-    * 해당 부분만 학습 가능하게 하고, **나머지 파라미터는 모두 Freeze 처리** 
+* 최종 채택 모델 : **StyleGAN-FineTune-v3** [(상세 정보)](stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan)
+  * StyleGAN 의 Generator 를 Conditional VAE 의 Decoder 로 사용하는 아이디어
 
 **3. 주요 내용 (LLM 을 이용한 대화)**
 
@@ -59,6 +59,8 @@
   * 사람이 아닌 AI 가상 인간만이 가질 수 있음
 * 기타 잡다한 TMI
   * [오로라 Fine-Tuning 에 사용한 데이터셋](llm/OhLoRA_fine_tuning_25042213.csv) 을 보면 알 수 있어요!
+
+![image](../images/250408_29.PNG)
 
 <details><summary>(스포일러) 오로라👱‍♀️ 가 2003년 10월 11일 생인 이유 [ 펼치기 / 접기 ] </summary>
 
