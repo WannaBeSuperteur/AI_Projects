@@ -72,6 +72,8 @@
 
 ![image](../images/250408_30.PNG)
 
+<details><summary>스크린샷 더보기 (4장) [ 펼치기 / 접기 ] </summary>
+
 ![image](../images/250408_31.PNG)
 
 ![image](../images/250408_32.PNG)
@@ -79,6 +81,8 @@
 ![image](../images/250408_33.PNG)
 
 ![image](../images/250408_34.PNG)
+
+</details>
 
 ## 2. 기술 분야 및 사용 기술
 
