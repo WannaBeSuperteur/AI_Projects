@@ -109,9 +109,11 @@
 본 프로젝트에서 사용할 기술에 대한 **탄탄한 기초가 중요하다** 는 판단 아래 작성한, 관련 논문에 관한 스터디 자료이다.
 
 * **StyleGAN** (이미지 생성 기술) 논문
-  * [A Style-Based Generator Architecture for Generative Adversarial Networks (2018.12)](https://arxiv.org/pdf/1812.04948)
+  * [논문 : A Style-Based Generator Architecture for Generative Adversarial Networks (2018.12)](https://arxiv.org/pdf/1812.04948)
+  * [스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md) 
 * **KTO** (LLM Fine-Tuning 기술) 논문 **(본 프로젝트에서는 미 적용)**
-  * [KTO: Model Alignment as Prospect Theoretic Optimization (2024.02)](https://arxiv.org/pdf/2402.01306)
+  * [논문 : KTO: Model Alignment as Prospect Theoretic Optimization (2024.02)](https://arxiv.org/pdf/2402.01306)
+  * [스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Large%20Language%20Model/%5B2025.04.09%5D%20KTO%20-%20Model%20Alignment%20as%20Prospect%20Theoretic%20Optimization.md)
 
 ### 2-2. 사용한 Python 라이브러리 및 시스템 환경
 
