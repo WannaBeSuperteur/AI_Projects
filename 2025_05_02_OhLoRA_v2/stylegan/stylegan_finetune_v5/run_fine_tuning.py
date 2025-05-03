@@ -38,7 +38,7 @@ def compute_grad_penalty(images, scores):
     return penalty
 
 
-def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma, save_image):
+def compute_d_loss(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamma, save_image):
     """Computes loss for discriminator."""
 
     reals = data['image']
@@ -53,8 +53,8 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     if save_image:
         save_real_fake_imgs(reals, fakes)
 
-    real_scores = discriminator(reals, label=labels, **dis_train_args)
-    fake_scores = discriminator(fakes, label=labels, **dis_train_args)
+    real_scores = discriminator(reals, label=labels)
+    fake_scores = discriminator(fakes, label=labels)
 
     d_loss = F.softplus(fake_scores).mean()
     d_loss += F.softplus(-real_scores).mean()
@@ -81,7 +81,7 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
             fake_grad_penalty * (r2_gamma * 0.5)), real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
-def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args):  # pylint: disable=no-self-use
+def compute_g_loss(generator, discriminator, data, gen_train_args):  # pylint: disable=no-self-use
     """Computes loss for generator."""
     # TODO: Use random labels.
 
@@ -90,7 +90,7 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_arg
 
     latents = torch.randn(batch_size, ORIGINAL_HIDDEN_DIMS_Z).cuda()
     fakes = generator(latents, label=labels, **gen_train_args)['image']
-    fake_scores = discriminator(fakes, label=labels, **dis_train_args)
+    fake_scores = discriminator(fakes, label=labels)
 
     g_loss = F.softplus(-fake_scores).mean()
     return g_loss
@@ -140,7 +140,7 @@ def moving_average_model(model, avg_model, beta=0.999):
                 model_params[param_name].data * (1 - beta))
 
 
-def train_step(generator, generator_smooth, discriminator, data, gen_train_args, dis_train_args,
+def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
                r1_gamma, r2_gamma, g_smooth_img, save_image):
 
     # Update discriminator.
@@ -149,7 +149,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
 #    check_model_trainable_status(0, generator, discriminator)
 
     d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
-                                                                                 gen_train_args, dis_train_args,
+                                                                                 gen_train_args,
                                                                                  r1_gamma, r2_gamma, save_image)
 
     discriminator.optimizer.zero_grad()
@@ -166,7 +166,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     g_loss_float = None
 
     while g_train_count < 4:
-        g_loss = compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args)
+        g_loss = compute_g_loss(generator, discriminator, data, gen_train_args)
         generator.optimizer.zero_grad()
         g_loss.backward()
         generator.optimizer.step()
@@ -180,7 +180,7 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     return d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
-def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args, dis_train_args,
+def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args,
           r1_gamma, r2_gamma, g_smooth_img):
 
     """Training function."""
@@ -208,7 +208,7 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
 
             d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
                 train_step(generator, generator_smooth, discriminator, data,
-                           gen_train_args, dis_train_args, r1_gamma, r2_gamma, g_smooth_img,
+                           gen_train_args, r1_gamma, r2_gamma, g_smooth_img,
                            save_image=print_result_and_save_image))
 
             if print_result_and_save_image:
@@ -369,7 +369,6 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
 
     gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.9,
                           trunc_psi=1.0, trunc_layers=0, randomize_noise=True)
-    dis_train_args = dict()
 
     r1_gamma = 10.0
     r2_gamma = 0.0
@@ -380,5 +379,5 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
 
     # run Fine-Tuning
     train(restructured_generator, restructured_generator_smooth, restructured_discriminator,
-          stylegan_ft_loader, gen_train_args, dis_train_args,
+          stylegan_ft_loader, gen_train_args,
           r1_gamma, r2_gamma, g_smooth_img)
