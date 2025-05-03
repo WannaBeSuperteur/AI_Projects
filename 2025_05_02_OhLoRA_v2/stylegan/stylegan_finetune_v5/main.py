@@ -88,7 +88,7 @@ def run_inference_test_before_finetuning(finetune_v1_generator):
 def create_stylegan_finetune_v1(generator_state_dict, discriminator_state_dict, device):
 
     # define model
-    finetune_v1_generator = gen.StyleGANGeneratorForV1(resolution=IMAGE_RESOLUTION)
+    finetune_v1_generator = gen.StyleGANGeneratorForV5(resolution=IMAGE_RESOLUTION)
     finetune_v1_discriminator = dis.StyleGANDiscriminator(resolution=IMAGE_RESOLUTION)
 
     # set optimizer and scheduler

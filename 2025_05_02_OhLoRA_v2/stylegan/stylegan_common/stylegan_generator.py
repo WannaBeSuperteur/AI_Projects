@@ -35,7 +35,7 @@ _WSCALE_GAIN = np.sqrt(2.0)
 _STYLEMOD_WSCALE_GAIN = 1.0
 
 
-class StyleGANGeneratorForV1(nn.Module):
+class StyleGANGeneratorForV5(nn.Module):
     """Defines the generator network in StyleGAN.
 
     NOTE: The synthesized images are with `RGB` channel order and pixel range
@@ -130,7 +130,7 @@ class StyleGANGeneratorForV1(nn.Module):
             self.mapping_space_dim = self.w_space_dim
         else:
             self.mapping_space_dim = self.w_space_dim * self.num_layers
-        self.mapping = MappingModuleForV1(input_space_dim=self.z_space_dim,
+        self.mapping = MappingModuleForV5(input_space_dim=self.z_space_dim,
                                           hidden_space_dim=self.mapping_fmaps,
                                           final_space_dim=self.mapping_space_dim,
                                           label_size=self.label_size,
@@ -218,7 +218,7 @@ class StyleGANGeneratorForV1(nn.Module):
         return {**mapping_results, **synthesis_results}
 
 
-class MappingModuleForV1(nn.Module):
+class MappingModuleForV5(nn.Module):
     """Implements the latent space mapping module.
 
     Basically, this module executes several dense layers in sequence.
