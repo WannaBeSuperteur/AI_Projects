@@ -140,8 +140,8 @@ def moving_average_model(model, avg_model, beta=0.999):
                 model_params[param_name].data * (1 - beta))
 
 
-def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
-               r1_gamma, r2_gamma, g_smooth_img, save_image):
+def train_step(generator, discriminator, data, gen_train_args,
+               r1_gamma, r2_gamma, save_image):
 
     # Update discriminator.
     set_model_requires_grad(discriminator, 'discriminator', True)
@@ -180,8 +180,8 @@ def train_step(generator, generator_smooth, discriminator, data, gen_train_args,
     return d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
-def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_train_args,
-          r1_gamma, r2_gamma, g_smooth_img):
+def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
+          r1_gamma, r2_gamma):
 
     """Training function."""
     print('Start training.')
@@ -207,8 +207,8 @@ def train(generator, generator_smooth, discriminator, stylegan_ft_loader, gen_tr
             print_result_and_save_image = (idx % 10 == 0 or (current_epoch == 0 and idx < 10))
 
             d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
-                train_step(generator, generator_smooth, discriminator, data,
-                           gen_train_args, r1_gamma, r2_gamma, g_smooth_img,
+                train_step(generator, discriminator, data,
+                           gen_train_args, r1_gamma, r2_gamma,
                            save_image=print_result_and_save_image))
 
             if print_result_and_save_image:
@@ -372,12 +372,8 @@ def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan
 
     r1_gamma = 10.0
     r2_gamma = 0.0
-    g_smooth_img = 100
-
-    # copy Re-constructed Generator Model
-    restructured_generator_smooth = deepcopy(restructured_generator)
 
     # run Fine-Tuning
-    train(restructured_generator, restructured_generator_smooth, restructured_discriminator,
+    train(restructured_generator, restructured_discriminator,
           stylegan_ft_loader, gen_train_args,
-          r1_gamma, r2_gamma, g_smooth_img)
+          r1_gamma, r2_gamma)
