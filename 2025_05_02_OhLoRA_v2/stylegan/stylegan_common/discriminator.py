@@ -206,10 +206,7 @@ class DiscriminatorForV5(nn.Module):
             nn.Linear(6, 256),
             nn.Tanh()
         )
-        self.fc_final = nn.Sequential(
-            nn.Linear(256, 1),
-            nn.Sigmoid()
-        )
+        self.fc_final = nn.Linear(256, 1)
 
     def forward(self, x, label):
         x_eyes = x[:, :,                                                    # for eyes score
