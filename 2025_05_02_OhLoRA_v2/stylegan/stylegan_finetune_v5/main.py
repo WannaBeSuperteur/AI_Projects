@@ -141,19 +141,19 @@ def run_stylegan_fine_tuning(generator_state_dict, discriminator_state_dict, sty
                                                                                    discriminator_state_dict,
                                                                                    device)
 
-    # StyleGAN-FineTune-v1 모델의 레이어 freeze 처리
-    freeze_generator_layers(finetune_v1_generator)
-    freeze_discriminator_layers(finetune_v1_discriminator)
+    # StyleGAN-FineTune-v1 모델의 레이어 freeze 처리 (미 적용)
+#    freeze_generator_layers(finetune_v1_generator)
+#    freeze_discriminator_layers(finetune_v1_discriminator)
 
     # freeze 후 모델 summary 출력
     save_model_structure_pdf(finetune_v1_generator,
-                             model_name='finetune_v1_generator (AFTER FREEZING)',
+                             model_name='finetune_v1_generator',
                              input_size=[(TRAIN_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
                                          (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)],
                              print_frozen=True)
 
     save_model_structure_pdf(finetune_v1_discriminator,
-                             model_name='finetune_v1_discriminator (AFTER FREEZING)',
+                             model_name='finetune_v1_discriminator',
                              input_size=[(TRAIN_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
                                          (TRAIN_BATCH_SIZE, PROPERTY_DIMS_Z)],
                              print_frozen=True)
