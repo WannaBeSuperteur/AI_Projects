@@ -49,7 +49,8 @@
 
 * **Conditional StyleGAN** (이미지 생성 기술) 논문
   * [논문 : Art Creation with Multi-Conditional StyleGANs (2022.02)](https://arxiv.org/pdf/2202.11777)
-  * 스터디 자료 (TBU)
+  * [스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.03%5D%20Art%20Creation%20with%20Multi-Conditional%20StyleGANs.md) 
+  * 해당 논문에서 아이디어를 얻어서 Conditional StyleGAN 컨셉으로 **Oh-LoRA 👱‍♀️ (오로라) v2** 개발 예정
 
 ### 2-2. 사용한 Python 라이브러리 및 시스템 환경
 
@@ -72,7 +73,7 @@
 | 계획 내용                                                                                                                                              | 일정                     | branch                                    | issue | 상태 |
 |----------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|-------------------------------------------|-------|----|
 | 프로젝트 개요 및 일정 작성                                                                                                                                    | 05.02 금 (1d)           |                                           |       | ✅  |
-| 논문 탐독 (Conditional StyleGAN)                                                                                                                       | 05.03 토 (1d)           |                                           |       | ⬜  |
+| 논문 탐독 (Conditional StyleGAN)                                                                                                                       | 05.03 토 (1d)           |                                           |       | 💨 |
 | StyleGAN Discriminator 구조 변경 ([Property Score 도출용 CNN](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 구조로) | 05.03 토 (1d)           | ```P003-001-StyleGAN-Dis```               |       | ⬜  |
 | StyleGAN 구조 추가 변경 (탐독한 논문 참고)                                                                                                                      | 05.04 일 (1d)           | ```P003-002-StyleGAN```                   |       | ⬜  |
 | StyleGAN 학습 데이터 Augmentation                                                                                                                       | 05.04 일 - 05.05 월 (2d) | ```P003-003-Augment```                    |       | ⬜  |
