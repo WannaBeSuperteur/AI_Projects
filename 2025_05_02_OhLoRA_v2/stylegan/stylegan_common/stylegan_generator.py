@@ -228,7 +228,6 @@ class MappingModuleForV1(nn.Module):
                  input_space_dim=512,
                  hidden_space_dim=512,
                  final_space_dim=512,
-                 label_convert_dim=16,
                  label_size=3,  # (eyes, mouth, pose) property score
                  num_layers=8,
                  normalize_input=True,
@@ -255,15 +254,13 @@ class MappingModuleForV1(nn.Module):
             out_channels = (final_space_dim if i == (num_layers - 1) else
                             hidden_space_dim)
             self.add_module(f'dense{i}',
-                            DenseBlock(in_channels=input_space_dim + label_convert_dim if i == 0 else in_channels,
+                            DenseBlock(in_channels=input_space_dim + label_size if i == 0 else in_channels,
                                        out_channels=out_channels,
                                        use_wscale=self.use_wscale,
                                        lr_mul=self.lr_mul))
             self.pth_to_tf_var_mapping[f'dense{i}.weight'] = f'Dense{i}/weight'
             self.pth_to_tf_var_mapping[f'dense{i}.bias'] = f'Dense{i}/bias'
         if label_size:
-            self.label_weight = nn.Parameter(
-                torch.randn(label_size, label_convert_dim))
             self.pth_to_tf_var_mapping[f'label_weight'] = f'LabelConcat/weight'
 
     def forward(self, z, label):
@@ -281,8 +278,7 @@ class MappingModuleForV1(nn.Module):
                              f'`label_size` equals to {self.label_size}!\n'
                              f'But `{label.shape}` is received!')
 
-        embedding = torch.matmul(label, self.label_weight)
-        z = torch.cat((z, embedding), dim=1)
+        z = torch.cat((z, label), dim=1)
 
         z = self.norm(z)
         w = z
@@ -293,8 +289,6 @@ class MappingModuleForV1(nn.Module):
             'label': label,
             'w': w,
         }
-        if self.label_size:
-            results['embedding'] = embedding
         return results
 
 

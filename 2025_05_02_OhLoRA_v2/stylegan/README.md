@@ -18,9 +18,13 @@
   * 기존 **StyleGAN-FineTune-v4** 의 경우 **StyleGAN-FineTune-v5** 와 마찬가지로 **StyleGAN-FineTune-v1** 을 핵심 속성 값을 이용하여 추가 Fine-Tuning
   * 그러나, **만족할 만한 성능이 나오지 않음**
 * 문제 원인 (추정)
-  * StyleGAN 의 Discriminator 를 **원래 StyleGAN 의 것으로** 사용
-  * 이로 인해, Property CNN 구조처럼 핵심 속성 값을 계산하는 데 특화되어 있지 않음
-  * 즉, **Discriminator 의 성능이 충분하지 않아서**, 이와 경쟁하는 Generator 의 성능도 크게 향상되기 어려웠음
+  * **Discriminator 구조상의 문제**
+    * StyleGAN 의 Discriminator 를 **원래 StyleGAN 의 것으로** 사용
+    * 이로 인해, Property CNN 구조처럼 핵심 속성 값을 계산하는 데 특화되어 있지 않음
+    * 즉, **Discriminator 의 성능이 충분하지 않아서**, 이와 경쟁하는 Generator 의 성능도 크게 향상되기 어려웠음
+  * **Frozen Layer**
+    * Discriminator 의 Conv. Layer, Generator 의 Synthesize Layer 등, **Dense Layer 를 제외한 거의 모든 레이어를 Freeze** 처리함
+    * 이로 인해 성능이 빠르게 향상되지 않음
 
 ### 1-2. StyleGAN-FineTune-v5 개선 방안
 
