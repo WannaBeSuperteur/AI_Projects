@@ -57,9 +57,7 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, r1_gamma, r2_
     if save_image:
         save_real_fake_imgs(reals, fakes)
 
-    print('real scores ...')
     real_scores = discriminator(reals, label=labels)
-    print('fake scores ...')
     fake_scores = discriminator(fakes, label=labels)
 
     d_loss = F.softplus(fake_scores).mean()
@@ -96,8 +94,6 @@ def compute_g_loss(generator, discriminator, data, gen_train_args):  # pylint: d
 
     latents = torch.randn(batch_size, ORIGINAL_HIDDEN_DIMS_Z).cuda()
     fakes = generator(latents, label=labels, **gen_train_args)['image']
-
-    print('generator fake scores ...')
     fake_scores = discriminator(fakes, label=labels)
 
     g_loss = F.softplus(-fake_scores).mean()

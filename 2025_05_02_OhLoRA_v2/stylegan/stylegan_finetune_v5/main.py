@@ -24,8 +24,8 @@ PROPERTY_DIMS_Z = 3           # eyes, mouth, pose
 TRAIN_BATCH_SIZE = 16
 
 
-# (미 사용) StyleGAN Fine-Tuning 을 위한 Generator Layer Freezing
-# Create Date : 2025.05.03
+# StyleGAN Fine-Tuning 을 위한 Generator Layer Freezing
+# Create Date : 2025.05.04
 # Last Update Date : -
 
 # Arguments:
@@ -39,8 +39,8 @@ def freeze_generator_layers(finetune_v1_generator):
             param.requires_grad = False
 
 
-# (미 사용) StyleGAN Fine-Tuning 을 위한 Discriminator Layer Freezing
-# Create Date : 2025.05.03
+# StyleGAN Fine-Tuning 을 위한 Discriminator Layer Freezing
+# Create Date : 2025.05.04
 # Last Update Date : -
 
 # Arguments:
@@ -48,9 +48,12 @@ def freeze_generator_layers(finetune_v1_generator):
 
 def freeze_discriminator_layers(finetune_v1_discriminator):
 
-    # freeze 범위 : Last Conv. Layer & Final Fully-Connected Layer 를 제외한 모든 레이어
+    # freeze 범위 : eyes/mouth/pose score CNN 의 Fully-Connected Layer 를 제외한 모든 레이어
     for name, param in finetune_v1_discriminator.named_parameters():
-        if name.split('.')[0] not in ['layer12', 'layer13', 'layer14']:
+        is_property_score_cnn = name.split('.')[0] in ['eyes_score_cnn', 'mouth_score_cnn', 'pose_score_cnn']
+        is_not_fc_layer = len(name.split('.')) >= 2 and 'fc' not in name.split('.')[1]
+
+        if is_property_score_cnn and is_not_fc_layer:
             param.requires_grad = False
 
 
@@ -138,9 +141,9 @@ def run_stylegan_fine_tuning(generator_state_dict, stylegan_ft_loader, device):
     # StyleGAN-FineTune-v1 모델 생성
     finetune_v1_generator, finetune_v1_discriminator = create_stylegan_finetune_v1(generator_state_dict, device)
 
-    # StyleGAN-FineTune-v1 모델의 레이어 freeze 처리 (미 적용)
-#    freeze_generator_layers(finetune_v1_generator)
-#    freeze_discriminator_layers(finetune_v1_discriminator)
+    # StyleGAN-FineTune-v1 모델의 레이어 freeze 처리
+    freeze_generator_layers(finetune_v1_generator)
+    freeze_discriminator_layers(finetune_v1_discriminator)
 
     # freeze 후 모델 summary 출력
     save_model_structure_pdf(finetune_v1_generator,
