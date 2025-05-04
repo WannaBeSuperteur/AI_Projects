@@ -31,6 +31,9 @@ TOTAL_EPOCHS = 500
 IMGS_PER_TEST_PROPERTY_SET = 10
 
 
+last_g_loss_float = None
+
+
 def compute_grad_penalty(images, scores):
     """Computes gradient penalty."""
     image_grad = torch.autograd.grad(
@@ -147,19 +150,30 @@ def moving_average_model(model, avg_model, beta=0.999):
 def train_step(generator, discriminator, data, gen_train_args,
                r1_gamma, r2_gamma, save_image):
 
+    global last_g_loss_float
+
     # Update discriminator.
     set_model_requires_grad(discriminator, 'discriminator', True)
     set_model_requires_grad(generator, 'generator', False)
 #    check_model_trainable_status(0, generator, discriminator)
 
-    d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
-                                                                                 gen_train_args,
-                                                                                 r1_gamma, r2_gamma, save_image)
+    d_train_count = 0
+    d_loss_float = None
 
-    discriminator.optimizer.zero_grad()
-    d_loss.backward()
-    discriminator.optimizer.step()
-    d_loss_float = float(d_loss.detach().cpu())
+    while d_train_count < 4:
+        d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
+                                                                                     gen_train_args,
+                                                                                     r1_gamma, r2_gamma, save_image)
+
+        discriminator.optimizer.zero_grad()
+        d_loss.backward()
+        discriminator.optimizer.step()
+
+        d_loss_float = float(d_loss.detach().cpu())
+        d_train_count += 1
+
+        if last_g_loss_float is None or d_loss_float < 1.5 * last_g_loss_float:
+            break
 
     # Update generator.
     set_model_requires_grad(discriminator, 'discriminator', False)
@@ -181,7 +195,8 @@ def train_step(generator, discriminator, data, gen_train_args,
         if g_loss_float < 2.0 * d_loss_float:
             break
 
-    return d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
+    last_g_loss_float = g_loss_float
+    return d_loss_float, g_loss_float, d_train_count, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
 def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
@@ -194,7 +209,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for training StyleGAN-FineTune-v5 : {device}')
 
-    train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'g_train_count': [],
+    train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'd_train_count': [], 'g_train_count': [],
                       'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': [],
                       'eyes_corr': [], 'mouth_corr': [], 'pose_corr': [],
                       'eyes_mae': [], 'mouth_mae': [], 'pose_mae': []}
@@ -219,14 +234,15 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
 
             print_result_and_save_image = (idx % 10 == 0 or (current_epoch == 0 and idx < 10))
 
-            d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
+            d_loss_float, g_loss_float, d_train_count, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
                 train_step(generator, discriminator, data,
                            gen_train_args, r1_gamma, r2_gamma,
                            save_image=print_result_and_save_image))
 
             if print_result_and_save_image:
                 print(f'epoch={current_epoch}, idx={idx}, '
-                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}, '
+                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, '
+                      f'd_train_count={d_train_count}, g_train_count={g_train_count}, '
                       f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
                       f'real_fake_auroc={real_fake_auroc:.4f}')
 
@@ -240,6 +256,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
                 train_log_dict['idx'].append(idx)
                 train_log_dict['d_loss'].append(round(d_loss_float, 4))
                 train_log_dict['g_loss'].append(round(g_loss_float, 4))
+                train_log_dict['d_train_count'].append(d_train_count)
                 train_log_dict['g_train_count'].append(g_train_count)
                 train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
                 train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
