@@ -51,7 +51,7 @@
 2025_04_08_OhLoRA/stylegan_and_segmentation/model_structure_pdf/*.gv
 2025_04_08_OhLoRA/llm/models/
 2025_04_08_OhLoRA/llm/models/*
-2025_05_02_OhLoRA_v2/stylegan/stylegan_models/*.pth
+2025_05_02_OhLoRA_v2/stylegan/models/*.pth
 2025_05_02_OhLoRA_v2/stylegan/synthesize_results_filtered
 2025_05_02_OhLoRA_v2/stylegan/synthesize_results_filtered/*
 2025_05_02_OhLoRA_v2/stylegan/model_structure_pdf/*.gv
