@@ -91,22 +91,27 @@ def create_stylegan_finetune_v1(generator_state_dict, device):
     finetune_v1_discriminator = dis.DiscriminatorForV5()
 
     # set optimizer and scheduler
-    finetune_v1_generator.optimizer = torch.optim.AdamW(finetune_v1_generator.parameters(), lr=0.00005)
+    finetune_v1_generator.optimizer = torch.optim.AdamW(finetune_v1_generator.parameters(), lr=0.0001)
     finetune_v1_generator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer=finetune_v1_generator.optimizer,
         T_max=10,
         eta_min=0)
 
-    finetune_v1_discriminator.optimizer = torch.optim.AdamW(finetune_v1_discriminator.parameters(), lr=0.00005)
+    finetune_v1_discriminator.optimizer = torch.optim.AdamW(finetune_v1_discriminator.parameters(), lr=0.0001)
     finetune_v1_discriminator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer=finetune_v1_discriminator.optimizer,
         T_max=10,
         eta_min=0)
 
-    # load state dict
+    # load state dict (generator)
     del generator_state_dict['mapping.dense0.weight']  # size mismatch because of added property vector
     del generator_state_dict['mapping.label_weight']  # size mismatch because of property score size mismatch (7 vs. 3)
     finetune_v1_generator.load_state_dict(generator_state_dict, strict=False)
+
+    # load state dict (discriminator)
+    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models/stylegan_gen_fine_tuned_v2_cnn.pth'
+    property_score_cnn_state_dict = torch.load(property_cnn_path, map_location=device, weights_only=False)
+    finetune_v1_discriminator.load_state_dict(property_score_cnn_state_dict, strict=False)
 
     # map to device
     finetune_v1_generator.to(device)

@@ -228,6 +228,7 @@ class DiscriminatorForV5(nn.Module):
 
         # Final Concatenate
         x_concat = torch.concat([x_eyes, x_mouth, x_pose, label], dim=1)
+        print(x_concat)
         x_fc1 = self.fc1(x_concat)
         x_final = self.fc_final(x_fc1)
 
