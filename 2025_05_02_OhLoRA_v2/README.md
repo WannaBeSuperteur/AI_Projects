@@ -95,22 +95,22 @@
 | 🔨 모델 개선 | 핵심 속성 값의 차이를 이용한 Loss 구현 (Generator 만 학습)                                                                                                          | 05.04 일 (1d)           | ```P003-008-StyleGAN-Loss```            | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/1) | 💨 |
 | 🧪 모델 학습 | StyleGAN 학습 **2차** (Loss 함수 변경된 버전)                                                                                                                | 05.04 일 - 05.05 월 (2d) | ```P003-008-StyleGAN-Loss```            | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/1) | 💨 |
 | 🔨 모델 개선 | StyleGAN 구조 추가 변경 (탐독한 논문 참고)                                                                                                                      | 05.05 월 (1d)           | ```P003-006-StyleGAN-Modify```          | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/1) | ⬜  |
-| 🧪 모델 학습 | StyleGAN 학습 **3차** (구조 추가 변경된 버전)                                                                                                                  | 05.05 월 (1d)           | ```P003-009-StyleGAN-Train```           |                                                                   | ⬜  |
+| 🧪 모델 학습 | StyleGAN 학습 **3차** (구조 추가 변경된 버전)                                                                                                                  | 05.05 월 (1d)           | ```P003-006-StyleGAN-Modify```          |                                                                   | ⬜  |
 | 📕 논문    | **(추가)** StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 방법 논문 탐독 ([참고 논문](https://arxiv.org/pdf/1911.09267))                                                 | 05.05 월 (1d)           |                                         |                                                                   | ⬜  |
-| 🔨 모델 개선 | **(추가)** StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현                                                                                                   | 05.05 월 (1d)           | ```P003-010-StyleGAN-VectorFind```      |                                                                   | ⬜  |
+| 🔨 모델 개선 | **(추가)** StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현                                                                                                   | 05.05 월 (1d)           | ```P003-009-StyleGAN-VectorFind```      |                                                                   | ⬜  |
 
 **3. LLM 을 이용한 대화 능력 향상**
 
 | 구분         | 계획 내용                                                                                 | 일정                     | branch                                    | issue | 상태 |
 |------------|---------------------------------------------------------------------------------------|------------------------|-------------------------------------------|-------|----|
 | 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 증량                                                  | 05.05 월 - 05.06 화 (2d) |                                           |       | ⬜  |
-| 🧪 모델 학습   | [KoreamLM (by QuantumAI)](https://huggingface.co/quantumaikr/KoreanLM) Fine-Tuning 시도 | 05.06 화 (1d)           | ```P003-011-KoreanLM```                   |       | ⬜  |
+| 🧪 모델 학습   | [KoreamLM (by QuantumAI)](https://huggingface.co/quantumaikr/KoreanLM) Fine-Tuning 시도 | 05.06 화 (1d)           | ```P003-010-KoreanLM```                   |       | ⬜  |
 | 📝 데이터셋 작성 | S-BERT (for memory) 학습 데이터 증량 및 품질 향상                                                 | 05.06 화 (1d)           |                                           |       | ⬜  |
-| 🔨 모델 개선   | S-BERT (for memory) ground-truth similarity score 계산 고도화                              | 05.06 화 (1d)           | ```P003-012-SBERT-sim```                  |       | ⬜  |
-| 🔨 모델 개선   | 하고 있는 대화 요약을 S-BERT (for memory) 와 연동                                                 | 05.07 수 (1d)           | ```P003-013-SBERT-current-conversation``` |       | ⬜  |              
-| 🔨 모델 개선   | S-BERT (for memory) 임베딩 방법 개선 연구                                                      | 05.07 수 - 05.08 목 (2d) | ```P003-014-SBERT-embedding```            |       | ⬜  |
-| ⚙ 기능 개선    | 답변 생성 시도 및 성공/실패 처리 메커니즘 개선                                                           | 05.08 목 (1d)           | ```P003-015-Answer```                     |       | ⬜  |
-| ⚙ 기능 개선    | 실시간 표정 변화 적용                                                                          | 05.08 목 (1d)           | ```P003-016-Realtime```                   |       | ⬜  |
+| 🔨 모델 개선   | S-BERT (for memory) ground-truth similarity score 계산 고도화                              | 05.06 화 (1d)           | ```P003-011-SBERT-sim```                  |       | ⬜  |
+| 🔨 모델 개선   | 하고 있는 대화 요약을 S-BERT (for memory) 와 연동                                                 | 05.07 수 (1d)           | ```P003-012-SBERT-current-conversation``` |       | ⬜  |              
+| 🔨 모델 개선   | S-BERT (for memory) 임베딩 방법 개선 연구                                                      | 05.07 수 - 05.08 목 (2d) | ```P003-013-SBERT-embedding```            |       | ⬜  |
+| ⚙ 기능 개선    | 답변 생성 시도 및 성공/실패 처리 메커니즘 개선                                                           | 05.08 목 (1d)           | ```P003-014-Answer```                     |       | ⬜  |
+| ⚙ 기능 개선    | 실시간 표정 변화 적용                                                                          | 05.08 목 (1d)           | ```P003-015-Realtime```                   |       | ⬜  |
 
 ## 4. 프로젝트 상세 설명
 
