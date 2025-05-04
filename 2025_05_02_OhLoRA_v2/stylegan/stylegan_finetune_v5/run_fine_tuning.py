@@ -17,7 +17,6 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
 
 import stylegan_common.stylegan_generator_inference as infer
 from property_score_cnn import load_cnn_model as load_property_cnn_model
@@ -31,9 +30,6 @@ TOTAL_EPOCHS = 500
 IMGS_PER_TEST_PROPERTY_SET = 10
 
 
-last_g_loss_float = None
-
-
 def compute_grad_penalty(images, scores):
     """Computes gradient penalty."""
     image_grad = torch.autograd.grad(
@@ -45,50 +41,7 @@ def compute_grad_penalty(images, scores):
     return penalty
 
 
-def compute_d_loss(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamma, save_image):
-    """Computes loss for discriminator."""
-
-    reals = data['image']
-    labels = data['label']
-    reals.requires_grad = True
-
-    latents = torch.randn(reals.shape[0], ORIGINAL_HIDDEN_DIMS_Z).cuda()
-    latents.requires_grad = True
-    # TODO: Use random labels.
-    fakes = generator(latents, label=labels, **gen_train_args)['image']
-
-    if save_image:
-        save_real_fake_imgs(reals, fakes)
-
-    real_scores = discriminator(reals, label=labels)
-    fake_scores = discriminator(fakes, label=labels)
-
-    d_loss = F.softplus(fake_scores).mean()
-    d_loss += F.softplus(-real_scores).mean()
-
-    real_grad_penalty = torch.zeros_like(d_loss)
-    fake_grad_penalty = torch.zeros_like(d_loss)
-    if r1_gamma:
-        real_grad_penalty = compute_grad_penalty(reals, real_scores)
-    if r2_gamma:
-        fake_grad_penalty = compute_grad_penalty(fakes, fake_scores)
-
-    real_scores_np = real_scores.detach().cpu().numpy()
-    fake_scores_np = fake_scores.detach().cpu().numpy()
-
-    real_scores_mean = np.mean(real_scores_np.flatten())
-    fake_scores_mean = np.mean(fake_scores_np.flatten())
-
-    all_scores = np.concatenate([real_scores_np, fake_scores_np])
-    all_labels = np.concatenate([np.ones(len(real_scores_np)), np.zeros(len(fake_scores_np))])
-    real_fake_auroc = roc_auc_score(all_labels, all_scores)
-
-    return (d_loss +
-            real_grad_penalty * (r1_gamma * 0.5) +
-            fake_grad_penalty * (r2_gamma * 0.5)), real_scores_mean, fake_scores_mean, real_fake_auroc
-
-
-def compute_g_loss(generator, discriminator, data, gen_train_args):  # pylint: disable=no-self-use
+def compute_g_loss(generator, discriminator, data, gen_train_args, save_image):  # pylint: disable=no-self-use
     """Computes loss for generator."""
     # TODO: Use random labels.
 
@@ -98,6 +51,11 @@ def compute_g_loss(generator, discriminator, data, gen_train_args):  # pylint: d
     latents = torch.randn(batch_size, ORIGINAL_HIDDEN_DIMS_Z).cuda()
     fakes = generator(latents, label=labels, **gen_train_args)['image']
     fake_scores = discriminator(fakes, label=labels)
+
+#    print(fake_scores)
+
+    if save_image:
+        save_real_fake_imgs(fakes)
 
     g_loss = F.softplus(-fake_scores).mean()
     return g_loss
@@ -123,82 +81,22 @@ def set_model_requires_grad(model, model_name, requires_grad):
             param.requires_grad = False
 
 
-def moving_average_model(model, avg_model, beta=0.999):
-    """Moving average model weights.
-
-    This trick is commonly used in GAN training, where the weight of the
-    generator is life-long averaged
-
-    Args:
-        model: The latest model used to update the averaged weights.
-        avg_model: The averaged model weights.
-        beta: Hyper-parameter used for moving average.
-    """
-    model_params = dict(model.named_parameters())
-    avg_params = dict(avg_model.named_parameters())
-
-    assert len(model_params) == len(avg_params)
-    for param_name in avg_params:
-        assert param_name in model_params
-        avg_params[param_name].data = (
-                avg_params[param_name].data * beta +
-                model_params[param_name].data * (1 - beta))
-
-
-def train_step(generator, discriminator, data, gen_train_args,
-               r1_gamma, r2_gamma, save_image):
-
-    global last_g_loss_float
-
-    # Update discriminator.
-    set_model_requires_grad(discriminator, 'discriminator', True)
-    set_model_requires_grad(generator, 'generator', False)
-#    check_model_trainable_status(0, generator, discriminator)
-
-    d_train_count = 0
-    d_loss_float = None
-
-    while d_train_count < 4:
-        d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
-                                                                                     gen_train_args,
-                                                                                     r1_gamma, r2_gamma, save_image)
-
-        discriminator.optimizer.zero_grad()
-        d_loss.backward()
-        discriminator.optimizer.step()
-
-        d_loss_float = float(d_loss.detach().cpu())
-        d_train_count += 1
-
-        if last_g_loss_float is None or d_loss_float < 1.5 * last_g_loss_float:
-            break
+def train_step(generator, discriminator, data, gen_train_args, save_image):
 
     # Update generator.
     set_model_requires_grad(discriminator, 'discriminator', False)
     set_model_requires_grad(generator, 'generator', True)
-#    check_model_trainable_status(1, generator, discriminator)
 
-    g_train_count = 0
-    g_loss_float = None
+    g_loss = compute_g_loss(generator, discriminator, data, gen_train_args, save_image)
+    generator.optimizer.zero_grad()
+    g_loss.backward()
+    generator.optimizer.step()
 
-    while g_train_count < 4:
-        g_loss = compute_g_loss(generator, discriminator, data, gen_train_args)
-        generator.optimizer.zero_grad()
-        g_loss.backward()
-        generator.optimizer.step()
-
-        g_loss_float = float(g_loss.detach().cpu())
-        g_train_count += 1
-
-        if g_loss_float < 2.0 * d_loss_float:
-            break
-
-    last_g_loss_float = g_loss_float
-    return d_loss_float, g_loss_float, d_train_count, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
+    g_loss_float = float(g_loss.detach().cpu())
+    return g_loss_float
 
 
-def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
-          r1_gamma, r2_gamma):
+def train(generator, discriminator, stylegan_ft_loader, gen_train_args):
 
     """Training function."""
     print('Start training.')
@@ -207,8 +105,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for training StyleGAN-FineTune-v5 : {device}')
 
-    train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'd_train_count': [], 'g_train_count': [],
-                      'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': [],
+    train_log_dict = {'epoch': [], 'idx': [], 'g_loss': [],
                       'eyes_corr': [], 'mouth_corr': [], 'pose_corr': [],
                       'eyes_mae': [], 'mouth_mae': [], 'pose_mae': []}
 
@@ -229,20 +126,12 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
                 'image': raw_data['image'].cuda(),
                 'label': concatenated_labels.cuda()
             }
-
             print_result_and_save_image = (idx % 10 == 0 or (current_epoch == 0 and idx < 10))
-
-            d_loss_float, g_loss_float, d_train_count, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
-                train_step(generator, discriminator, data,
-                           gen_train_args, r1_gamma, r2_gamma,
-                           save_image=print_result_and_save_image))
+            g_loss_float = train_step(generator, discriminator, data, gen_train_args,
+                                      save_image=print_result_and_save_image)
 
             if print_result_and_save_image:
-                print(f'epoch={current_epoch}, idx={idx}, '
-                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, '
-                      f'd_train_count={d_train_count}, g_train_count={g_train_count}, '
-                      f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
-                      f'real_fake_auroc={real_fake_auroc:.4f}')
+                print(f'epoch={current_epoch}, idx={idx}, g_loss={g_loss_float:.4f}')
 
                 corr_mae_dict = run_inference_test_during_finetuning(generator,
                                                                      current_epoch=current_epoch,
@@ -252,13 +141,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
                 # save train log
                 train_log_dict['epoch'].append(current_epoch)
                 train_log_dict['idx'].append(idx)
-                train_log_dict['d_loss'].append(round(d_loss_float, 4))
                 train_log_dict['g_loss'].append(round(g_loss_float, 4))
-                train_log_dict['d_train_count'].append(d_train_count)
-                train_log_dict['g_train_count'].append(g_train_count)
-                train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
-                train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
-                train_log_dict['real_fake_auroc'].append(round(real_fake_auroc, 4))
 
                 corr_mae_keys = ['eyes_corr', 'mouth_corr', 'pose_corr', 'eyes_mae', 'mouth_mae', 'pose_mae']
 
@@ -417,29 +300,26 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
 # - reals (Tensor) : Real Images
 # - fakes (Tensor) : Fake Images
 
-def save_real_fake_imgs(reals, fakes):
-    image_lists = [reals, fakes]
-    real_fake_label = ['real', 'fake']
+def save_real_fake_imgs(fakes):
     image_save_dir_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/inference_test_real_fake'
     os.makedirs(image_save_dir_path, exist_ok=True)
 
     max_val, min_val = 1.0, -1.0
 
-    for image_list, real_fake in zip(image_lists, real_fake_label):
-        for idx, image in enumerate(image_list):
-            img_ = np.array(image.detach().cpu())
-            img_ = np.transpose(img_, (1, 2, 0))
-            img_ = cv2.cvtColor(img_, cv2.COLOR_BGR2RGB)
-            img_ = (img_ - min_val) * 255 / (max_val - min_val)
+    for idx, image in enumerate(fakes):
+        img_ = np.array(image.detach().cpu())
+        img_ = np.transpose(img_, (1, 2, 0))
+        img_ = cv2.cvtColor(img_, cv2.COLOR_BGR2RGB)
+        img_ = (img_ - min_val) * 255 / (max_val - min_val)
 
-            result, overlay_image_arr = cv2.imencode(ext='.png',
-                                                     img=img_,
-                                                     params=[cv2.IMWRITE_PNG_COMPRESSION, 0])
+        result, overlay_image_arr = cv2.imencode(ext='.png',
+                                                 img=img_,
+                                                 params=[cv2.IMWRITE_PNG_COMPRESSION, 0])
 
-            if result:
-                image_save_path = f'{image_save_dir_path}/{real_fake}_{idx:06d}.png'
-                with open(image_save_path, mode='w+b') as f:
-                    overlay_image_arr.tofile(f)
+        if result:
+            image_save_path = f'{image_save_dir_path}/fake_{idx:06d}.png'
+            with open(image_save_path, mode='w+b') as f:
+                overlay_image_arr.tofile(f)
 
 
 # 모델 Fine Tuning 실시
@@ -457,13 +337,8 @@ def save_real_fake_imgs(reals, fakes):
 
 def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan_ft_loader):
 
-    gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.9,
+    gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.0,
                           trunc_psi=1.0, trunc_layers=0, randomize_noise=True)
 
-    r1_gamma = 10.0
-    r2_gamma = 0.0
-
     # run Fine-Tuning
-    train(restructured_generator, restructured_discriminator,
-          stylegan_ft_loader, gen_train_args,
-          r1_gamma, r2_gamma)
+    train(restructured_generator, restructured_discriminator, stylegan_ft_loader, gen_train_args)
