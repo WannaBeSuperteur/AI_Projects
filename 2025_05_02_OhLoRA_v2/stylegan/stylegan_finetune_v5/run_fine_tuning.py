@@ -7,17 +7,21 @@
 
 import os
 import time
+
+from torchvision.io import read_image
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 import cv2
 import torch
 import torch.nn.functional as F
-from copy import deepcopy
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 import stylegan_common.stylegan_generator_inference as infer
+from property_score_cnn import load_cnn_model
+from common import stylegan_transform
 
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -186,8 +190,14 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
     """Training function."""
     print('Start training.')
 
+    # check device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'device for training StyleGAN-FineTune-v5 : {device}')
+
     train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'g_train_count': [],
-                      'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': []}
+                      'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': [],
+                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': [],
+                      'eyes_mae': [], 'mouth_mae': [], 'pose_mae': []}
 
     current_epoch = 0
 
@@ -217,7 +227,13 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
                       f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
                       f'real_fake_auroc={real_fake_auroc:.4f}')
 
-                run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
+                property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models/stylegan_gen_fine_tuned_v2_cnn.pth'
+                property_score_cnn = load_cnn_model(property_cnn_path, device)
+
+                corr_mae_dict = run_inference_test_during_finetuning(generator,
+                                                                     current_epoch=current_epoch,
+                                                                     batch_idx=idx,
+                                                                     property_score_cnn=property_score_cnn)
 
                 # save train log
                 train_log_dict['epoch'].append(current_epoch)
@@ -228,6 +244,11 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
                 train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
                 train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
                 train_log_dict['real_fake_auroc'].append(round(real_fake_auroc, 4))
+
+                corr_mae_keys = ['eyes_corr', 'mouth_corr', 'pose_corr', 'eyes_mae', 'mouth_mae', 'pose_mae']
+
+                for corr_mae_key in corr_mae_keys:
+                    train_log_dict[corr_mae_key].append(round(corr_mae_dict[corr_mae_key], 4))
 
                 pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
 
@@ -273,17 +294,20 @@ def check_model_trainable_status(check_id, generator, discriminator):
 
 # StyleGAN Fine-Tuning 중 inference test 실시
 # Create Date : 2025.05.03
-# Last Update Date : -
+# Last Update Date : 2025.05.04
+# - train_log 에 추가할 각 핵심 속성 값 별 Corr-coef, MAE 반환값 추가
 
 # Arguments:
 # - restructured_generator (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
 # - current_epoch          (int)       : Fine-Tuning 중 현재 epoch 번호
 # - batch_idx              (int)       : Fine-Tuning 중 현재 epoch 에서의 batch index 번호
+# - property_score_cnn     (nn.Module) : 핵심 속성 값을 계산하기 위한 CNN
 
 # Returns:
-# - stylegan_modified/inference_test_during_finetuning 에 생성 결과 저장
+# - corr_mae_dict (dict) : train_log 에 추가할 각 핵심 속성 값 별 Corr-coef 및 MAE
+# - stylegan_modified/inference_test_during_finetuning 에 생성 결과 및 각 이미지 별 Property Score CNN 예측 핵심 속성 값 저장
 
-def run_inference_test_during_finetuning(restructured_generator, current_epoch, batch_idx):
+def run_inference_test_during_finetuning(restructured_generator, current_epoch, batch_idx, property_score_cnn):
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
     restructured_generator.G_kwargs_val = kwargs_val
 
@@ -292,6 +316,13 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
 
     # label: 'eyes', 'mouth', 'pose'
     current_idx = 0
+
+    eyes_cnn_scores = []
+    mouth_cnn_scores = []
+    pose_cnn_scores = []
+    eyes_labels = []
+    mouth_labels = []
+    pose_labels = []
 
     z = np.random.normal(0, 1, size=(IMGS_PER_TEST_PROPERTY_SET, ORIGINAL_HIDDEN_DIMS_Z))
 
@@ -316,7 +347,51 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
                          img_name_start_idx=current_idx,
                          verbose=False)
 
+        for image_no in range(current_idx, current_idx + IMGS_PER_TEST_PROPERTY_SET):
+            eyes_labels.append(label[0])
+            mouth_labels.append(label[1])
+            pose_labels.append(label[2])
+
+            image_path = f'{img_save_dir}/{image_no:06d}.jpg'
+            image = read_image(image_path)
+            image = stylegan_transform(image)
+
+            with torch.no_grad():
+                property_scores = property_score_cnn(image.unsqueeze(0).cuda())
+                property_score_np = property_scores.detach().cpu().numpy()
+
+                eyes_cnn_scores.append(property_score_np[0][0])
+                mouth_cnn_scores.append(property_score_np[0][3])
+                pose_cnn_scores.append(property_score_np[0][4])
+
         current_idx += IMGS_PER_TEST_PROPERTY_SET
+
+    # save label & Property CNN-derived score as csv file
+    label_count = len(labels) * IMGS_PER_TEST_PROPERTY_SET
+
+    label_info_dict = {
+        'image_no': list(range(label_count)),
+        'eyes_label': list(np.round(eyes_labels, 4)),
+        'mouth_label': list(np.round(mouth_labels, 4)),
+        'pose_label': list(np.round(pose_labels, 4)),
+        'eyes_cnn_score': list(np.round(eyes_cnn_scores, 4)),
+        'mouth_cnn_score': list(np.round(mouth_cnn_scores, 4)),
+        'pose_cnn_score': list(np.round(pose_cnn_scores, 4))
+    }
+    label_info_df = pd.DataFrame(label_info_dict)
+    label_info_df.to_csv(f'{img_save_dir}/label_info.csv', index=False)
+
+    # compute corr-coef & MAE and return
+    eyes_corr = np.corrcoef(eyes_labels, eyes_cnn_scores)[0][1]
+    mouth_corr = np.corrcoef(mouth_labels, mouth_cnn_scores)[0][1]
+    pose_corr = np.corrcoef(pose_labels, pose_cnn_scores)[0][1]
+
+    eyes_mae = sum(abs(eyes_labels[i] - eyes_cnn_scores[i]) for i in range(label_count)) / label_count
+    mouth_mae = sum(abs(mouth_labels[i] - mouth_cnn_scores[i]) for i in range(label_count)) / label_count
+    pose_mae = sum(abs(pose_labels[i] - pose_cnn_scores[i]) for i in range(label_count)) / label_count
+
+    return {'eyes_corr': eyes_corr, 'mouth_corr': mouth_corr, 'pose_corr': pose_corr,
+            'eyes_mae': eyes_mae, 'mouth_mae': mouth_mae, 'pose_mae': pose_mae}
 
 
 # StyleGAN Fine Tuning 에서 Discriminator 테스트용으로 real, fake 이미지 저장
