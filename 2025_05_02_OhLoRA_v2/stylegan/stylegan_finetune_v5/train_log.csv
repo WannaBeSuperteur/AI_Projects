@@ -1,2 +1,2 @@
 ,epoch,idx,d_loss,g_loss,d_train_count,g_train_count,real_scores_mean,fake_scores_mean,real_fake_auroc,eyes_corr,mouth_corr,pose_corr,eyes_mae,mouth_mae,pose_mae
-0,0,0,1.3996,0.665,1,1,0.0556,0.0407,0.543,-0.0024,-0.0242,0.0511,1.8503,1.4387,1.7799
+0,0,0,1.6796,0.7083,1,1,0.0102,0.0629,0.4336,-0.0093,-0.0181,0.0437,1.8241,1.4301,1.7837
