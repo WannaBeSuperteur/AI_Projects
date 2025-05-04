@@ -446,7 +446,7 @@ class PropertyScoreCNN(nn.Module):
         self.hair_length_score_cnn = HairLengthScoreCNN()
         self.background_score_cnn = BackgroundMeanStdScoreCNN()
 
-    def forward(self, x, tensor_visualize_test=False):
+    def forward(self, x):
         x_eyes        = x[:, :,                                         # for eyes score
                           3 * IMG_HEIGHT // 8 : 9 * IMG_HEIGHT // 16,
                           IMG_WIDTH // 4 : 3 * IMG_WIDTH // 4]
@@ -459,18 +459,6 @@ class PropertyScoreCNN(nn.Module):
                           7 * IMG_HEIGHT // 16 : 5 * IMG_HEIGHT // 8,
                           11 * IMG_WIDTH // 32 : 21 * IMG_WIDTH // 32]
         x_upper_half  = x[:, :, : IMG_HEIGHT // 2, :]                   # for background mean, std score
-
-        # Tensor Visualize Test
-        if tensor_visualize_test:
-            current_batch_size = x.size(0)
-
-            for i in range(current_batch_size):
-                save_tensor_png(x_eyes[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/eyes_{i:03d}.png')
-                save_tensor_png(x_entire[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/entire_{i:03d}.png')
-                save_tensor_png(x_bottom_half[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/b_half_{i:03d}.png')
-                save_tensor_png(x_mouth[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/mouth_{i:03d}.png')
-                save_tensor_png(x_pose[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/pose_{i:03d}.png')
-                save_tensor_png(x_upper_half[i], image_save_path=f'{CNN_TENSOR_TEST_DIR}/u_half_{i:03d}.png')
 
         # Compute Each Score
         x_eyes = self.eyes_score_cnn(x_eyes)

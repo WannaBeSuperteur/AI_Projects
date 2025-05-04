@@ -20,7 +20,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 import stylegan_common.stylegan_generator_inference as infer
-from property_score_cnn import load_cnn_model
+from property_score_cnn import load_cnn_model as load_property_cnn_model
 from common import stylegan_transform
 
 
@@ -221,7 +221,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
     train_log_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/train_log.csv'
 
     property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
-    property_score_cnn = load_cnn_model(property_cnn_path, device)
+    property_score_cnn = load_property_cnn_model(property_cnn_path, device)
 
     while current_epoch < TOTAL_EPOCHS:
         for idx, raw_data in enumerate(stylegan_ft_loader):
