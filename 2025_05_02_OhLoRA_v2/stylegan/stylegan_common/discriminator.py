@@ -203,10 +203,10 @@ class DiscriminatorForV5(nn.Module):
 
         # Final Fully-Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(6, 256),
+            nn.Linear(6, 64),
             nn.Tanh()
         )
-        self.fc_final = nn.Linear(256, 1)
+        self.fc_final = nn.Linear(64, 1)
 
     def forward(self, x, label):
         x_eyes = x[:, :,                                                    # for eyes score

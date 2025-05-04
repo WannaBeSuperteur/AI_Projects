@@ -205,6 +205,9 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
     dis_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/stylegan_dis_fine_tuned_v5.pth'
     train_log_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/train_log.csv'
 
+    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models/stylegan_gen_fine_tuned_v2_cnn.pth'
+    property_score_cnn = load_cnn_model(property_cnn_path, device)
+
     while current_epoch < TOTAL_EPOCHS:
         for idx, raw_data in enumerate(stylegan_ft_loader):
             concatenated_labels = concatenate_property_scores(raw_data)
@@ -226,9 +229,6 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
                       f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}, '
                       f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
                       f'real_fake_auroc={real_fake_auroc:.4f}')
-
-                property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models/stylegan_gen_fine_tuned_v2_cnn.pth'
-                property_score_cnn = load_cnn_model(property_cnn_path, device)
 
                 corr_mae_dict = run_inference_test_during_finetuning(generator,
                                                                      current_epoch=current_epoch,
