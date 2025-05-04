@@ -77,7 +77,8 @@ def run_inference_test_before_finetuning(finetune_v1_generator):
 
 # StyleGAN-FineTune-v1 모델 생성 (with Pre-trained weights)
 # Create Date : 2025.05.03
-# Last Update Date : -
+# Last Update Date : 2025.05.04
+# - 모델 디렉토리 이름 변경 (stylegan_models -> models) 반영
 
 # Arguments:
 # - generator_state_dict (OrderedDict) : 기존 Pre-train 된 StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
@@ -112,7 +113,7 @@ def create_stylegan_finetune_v1(generator_state_dict, device):
     finetune_v1_generator.load_state_dict(generator_state_dict, strict=False)
 
     # load state dict (discriminator)
-    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models/stylegan_gen_fine_tuned_v2_cnn.pth'
+    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
     property_score_cnn_state_dict = torch.load(property_cnn_path, map_location=device, weights_only=False)
     finetune_v1_discriminator.load_state_dict(property_score_cnn_state_dict, strict=False)
 
@@ -125,7 +126,8 @@ def create_stylegan_finetune_v1(generator_state_dict, device):
 
 # StyleGAN Fine-Tuning 실시 (핵심 속성 값 3개를 latent vector 에 추가)
 # Create Date : 2025.05.03
-# Last Update Date : -
+# Last Update Date : 2025.05.04
+# - 모델 디렉토리 이름 변경 (stylegan_models -> models) 반영
 
 # Arguments:
 # - generator_state_dict (OrderedDict) : StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
@@ -133,8 +135,8 @@ def create_stylegan_finetune_v1(generator_state_dict, device):
 # - device               (Device)      : CUDA or CPU device
 
 # Returns:
-# - stylegan/stylegan_models/stylegan_gen_fine_tuned.pth 에 StyleGAN-FineTune-v5 의 Generator 모델 저장
-# - stylegan/stylegan_models/stylegan_dis_fine_tuned.pth 에 StyleGAN-FineTune-v5 의 Discriminator 모델 저장
+# - stylegan/models/stylegan_gen_fine_tuned.pth 에 StyleGAN-FineTune-v5 의 Generator 모델 저장
+# - stylegan/models/stylegan_dis_fine_tuned.pth 에 StyleGAN-FineTune-v5 의 Discriminator 모델 저장
 
 def run_stylegan_fine_tuning(generator_state_dict, stylegan_ft_loader, device):
 
@@ -166,7 +168,7 @@ def run_stylegan_fine_tuning(generator_state_dict, stylegan_ft_loader, device):
                                                                      finetune_v1_discriminator,
                                                                      stylegan_ft_loader)
 
-    fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models'
+    fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan/models'
     os.makedirs(fine_tuned_model_path, exist_ok=True)
 
     torch.save(fine_tuned_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v5.pth')

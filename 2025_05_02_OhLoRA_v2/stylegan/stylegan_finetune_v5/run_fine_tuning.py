@@ -220,7 +220,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
     dis_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/stylegan_dis_fine_tuned_v5.pth'
     train_log_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/train_log.csv'
 
-    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models/stylegan_gen_fine_tuned_v2_cnn.pth'
+    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
     property_score_cnn = load_cnn_model(property_cnn_path, device)
 
     while current_epoch < TOTAL_EPOCHS:

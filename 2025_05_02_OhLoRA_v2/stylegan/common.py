@@ -138,7 +138,8 @@ def save_model_structure_pdf(model, model_name, input_size, print_layer_details=
 
 # 기존 Oh-LoRA Project 에서 Pre-train 된 StyleGAN (StyleGAN-FineTune-v1) 모델 로딩 (Generator 의 state dict 만)
 # Create Date : 2025.05.03
-# Last Update Date : -
+# Last Update Date : 2025.05.04
+# - 모델 디렉토리 이름 변경 (stylegan_models -> models) 반영
 
 # Arguments:
 # - device (Device) : CUDA or CPU device
@@ -147,7 +148,7 @@ def save_model_structure_pdf(model, model_name, input_size, print_layer_details=
 # - generator_state_dict (OrderedDict) : StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
 
 def load_existing_stylegan_finetune_v1(device):
-    generator_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_models/stylegan_gen_fine_tuned_v1.pth'
+    generator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v1.pth'
 
     # load generator state dict
     generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
