@@ -43,20 +43,17 @@ def freeze_generator_layers(finetune_v1_generator):
 
 # StyleGAN Fine-Tuning 을 위한 Discriminator Layer Freezing
 # Create Date : 2025.05.04
-# Last Update Date : -
+# Last Update Date : 2025.05.05
+# - Freeze 범위 수정
 
 # Arguments:
 # - finetune_v1_discriminator (nn.Module) : StyleGAN-FineTune-v1 모델의 Discriminator
 
 def freeze_discriminator_layers(finetune_v1_discriminator):
 
-    # freeze 범위 : eyes/mouth/pose score CNN 의 Fully-Connected Layer 를 제외한 모든 레이어
+    # freeze 범위 : 모든 레이어
     for name, param in finetune_v1_discriminator.named_parameters():
-        is_property_score_cnn = name.split('.')[0] in ['eyes_score_cnn', 'mouth_score_cnn', 'pose_score_cnn']
-        is_not_fc_layer = len(name.split('.')) >= 2 and 'fc' not in name.split('.')[1]
-
-        if is_property_score_cnn and is_not_fc_layer:
-            param.requires_grad = False
+        param.requires_grad = False
 
 
 # StyleGAN Fine-Tuning 이전 inference test 실시
@@ -166,7 +163,7 @@ def run_stylegan_fine_tuning(generator_state_dict, stylegan_ft_loader, device):
 
     # StyleGAN-FineTune-v1 모델의 레이어 freeze 처리
 #    freeze_generator_layers(finetune_v1_generator)
-#    freeze_discriminator_layers(finetune_v1_discriminator)
+    freeze_discriminator_layers(finetune_v1_discriminator)
 
     # freeze 후 모델 summary 출력
     save_model_structure_pdf(finetune_v1_generator,

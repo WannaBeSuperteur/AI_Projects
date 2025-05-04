@@ -52,12 +52,14 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, save_image): 
     fakes = generator(latents, label=labels, **gen_train_args)['image']
     fake_scores = discriminator(fakes, label=labels)
 
-#    print(fake_scores)
-
     if save_image:
         save_real_fake_imgs(fakes)
 
-    g_loss = F.softplus(-fake_scores).mean()
+    mse_loss_eyes = F.mse_loss(fake_scores[:, :1], fake_scores[:, 3:4], reduction='mean')
+    mse_loss_mouth = F.mse_loss(fake_scores[:, 1:2], fake_scores[:, 4:5], reduction='mean')
+    mse_loss_pose = F.mse_loss(fake_scores[:, 2:3], fake_scores[:, 5:6], reduction='mean')
+    g_loss = (mse_loss_eyes + mse_loss_mouth + mse_loss_pose) / 3.0
+
     return g_loss
 
 
