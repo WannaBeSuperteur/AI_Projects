@@ -143,7 +143,7 @@ def run_stylegan_fine_tuning(generator_state_dict, stylegan_ft_loader, device):
 
     # StyleGAN-FineTune-v1 모델의 레이어 freeze 처리
     freeze_generator_layers(finetune_v1_generator)
-    freeze_discriminator_layers(finetune_v1_discriminator)
+#    freeze_discriminator_layers(finetune_v1_discriminator)
 
     # freeze 후 모델 summary 출력
     save_model_structure_pdf(finetune_v1_generator,
