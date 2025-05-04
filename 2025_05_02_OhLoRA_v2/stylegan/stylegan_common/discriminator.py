@@ -284,14 +284,13 @@ class DiscriminatorForV5(nn.Module):
         self.eyes_score_cnn = EyesScoreCNN()
         self.mouth_score_cnn = MouthScoreCNN()
         self.pose_score_cnn = PoseScoreCNN()
-        self.gender_score_cnn = GenderCNN()
 
         # Final Fully-Connected Layers
-        self.discriminator_fc1 = nn.Sequential(
-            nn.Linear(7, 64),
+        self.fc1 = nn.Sequential(
+            nn.Linear(6, 64),
             nn.Tanh()
         )
-        self.discriminator_fc_final = nn.Linear(64, 1)
+        self.fc_final = nn.Linear(64, 1)
 
     def forward(self, x, label):
         x_eyes = x[:, :,                                                    # for eyes score
@@ -307,14 +306,14 @@ class DiscriminatorForV5(nn.Module):
                    11 * IMG_RESOLUTION // 32 : 21 * IMG_RESOLUTION // 32]
 
         # Compute Each Score
-        x_eyes_score = self.eyes_score_cnn(x_eyes)
-        x_mouth_score = self.mouth_score_cnn(x_mouth)
-        x_pose_score = self.pose_score_cnn(x_pose)
-        x_gender_score = self.gender_score_cnn(x)
+        x_eyes = self.eyes_score_cnn(x_eyes)
+        x_mouth = self.mouth_score_cnn(x_mouth)
+        x_pose = self.pose_score_cnn(x_pose)
 
         # Final Concatenate
-        x_concat = torch.concat([x_eyes_score, x_mouth_score, x_pose_score, x_gender_score, label], dim=1)
-        x_fc1 = self.discriminator_fc1(x_concat)
-        x_final = self.discriminator_fc_final(x_fc1)
+        x_concat = torch.concat([x_eyes, x_mouth, x_pose, label], dim=1)
+
+        x_fc1 = self.fc1(x_concat)
+        x_final = self.fc_final(x_fc1)
 
         return x_final

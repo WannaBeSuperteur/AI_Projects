@@ -121,6 +121,7 @@ def create_stylegan_finetune_v1(generator_state_dict, device):
     finetune_v1_discriminator.load_state_dict(property_score_cnn_state_dict, strict=False)
 
     # load state dict (discriminator / gender)
+    """
     gender_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/gender_model_0.pth'
     gender_score_cnn_state_dict = torch.load(gender_cnn_path, map_location=device, weights_only=False)
 
@@ -135,6 +136,7 @@ def create_stylegan_finetune_v1(generator_state_dict, device):
         gender_score_cnn_state_dict_[f'gender_score_cnn.{bias_name}'] = gender_score_cnn_state_dict[bias_name]
 
     finetune_v1_discriminator.load_state_dict(gender_score_cnn_state_dict_, strict=False)
+    """
 
     # map to device
     finetune_v1_generator.to(device)

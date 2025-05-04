@@ -104,7 +104,7 @@ def compute_g_loss(generator, discriminator, data, gen_train_args):  # pylint: d
 
 
 # generator     -> layers_to_train = ['mapping']
-# discriminator -> layers_to_train = ['layer12', 'layer13', 'layer14']
+# discriminator -> layers_to_train = (all layers)
 def set_model_requires_grad(model, model_name, requires_grad):
     """Sets the `requires_grad` configuration for a particular model."""
 
@@ -112,14 +112,13 @@ def set_model_requires_grad(model, model_name, requires_grad):
 
     for name, param in model.named_parameters():
 
-        if requires_grad:  # requires_grad == True
+        if requires_grad:
             if model_name == 'generator':
                 if name.split('.')[0] == 'mapping':
                     param.requires_grad = True
 
             elif model_name == 'discriminator':
-                if name.split('.')[0] in ['layer12', 'layer13', 'layer14']:
-                    param.requires_grad = True
+                param.requires_grad = True
 
         else:
             param.requires_grad = False
