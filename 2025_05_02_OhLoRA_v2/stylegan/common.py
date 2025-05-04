@@ -23,6 +23,13 @@ stylegan_transform = transforms.Compose([
     transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
 ])
 
+stylegan_transform_for_augmentation = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.ToTensor(),
+    transforms.ColorJitter(brightness=0.1, contrast=0.1),
+    transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
+])
+
 
 # Image Dataset with Property Scores
 class PropertyScoreImageDataset(Dataset):
@@ -60,7 +67,8 @@ class PropertyScoreImageDataset(Dataset):
 
 # StyleGAN Fine-Tuning 용 데이터셋의 Data Loader 로딩
 # Create Date : 2025.05.03
-# Last Update Date : -
+# Last Update Date : 2025.05.04
+# - Transformation (image augmentation) 에 brightness, contrast 추가 반영
 
 # Arguments:
 # - 없음
@@ -72,8 +80,13 @@ def get_stylegan_fine_tuning_dataloader():
     property_score_csv_path = f'{PROJECT_DIR_PATH}/stylegan/all_scores_v2_cnn.csv'
     property_score_df = pd.read_csv(property_score_csv_path)
 
-    stylegan_ft_dataset = PropertyScoreImageDataset(dataset_df=property_score_df, transform=stylegan_transform)
-    stylegan_ft_loader = DataLoader(stylegan_ft_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    stylegan_ft_dataset = PropertyScoreImageDataset(dataset_df=property_score_df,
+                                                    transform=stylegan_transform_for_augmentation)
+
+    stylegan_ft_loader = DataLoader(stylegan_ft_dataset,
+                                    batch_size=TRAIN_BATCH_SIZE,
+                                    shuffle=True)
+
     return stylegan_ft_loader
 
 
