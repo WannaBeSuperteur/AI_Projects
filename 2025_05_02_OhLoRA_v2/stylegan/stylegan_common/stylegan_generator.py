@@ -223,7 +223,7 @@ class StyleGANGeneratorForV5(nn.Module):
             w_space_center = self.mapping(z_space_center.cuda(), label[i:i+1, :].repeat(_NUM_WAVG_SAMPLES, 1))['w']
             w_avg[i:i+1, :] = torch.mean(w_space_center, dim=0)
 
-#        print(w_avg, w_avg.shape)
+        print(w_avg, w_avg.shape)
         wp = self.truncation(w, w_avg.cuda(), trunc_psi, trunc_layers)
         synthesis_results = self.synthesis(wp, lod, randomize_noise)
 
