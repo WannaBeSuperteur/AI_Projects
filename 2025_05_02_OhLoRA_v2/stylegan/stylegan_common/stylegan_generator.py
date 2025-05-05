@@ -35,8 +35,7 @@ _WSCALE_GAIN = np.sqrt(2.0)
 _STYLEMOD_WSCALE_GAIN = 1.0
 
 # Number of batches to generate, to compute w_avg for each condition for Conditional StyleGAN
-# (Number of samples to generate) = BATCH_SIZE * (Number of batches to generate)
-_NUM_WAVG_BATCHES = 50
+_NUM_WAVG_SAMPLES = 500
 
 
 class StyleGANGeneratorForV5(nn.Module):
@@ -217,14 +216,14 @@ class StyleGANGeneratorForV5(nn.Module):
                 w[:, mixing_cutoff:] = new_w[:, mixing_cutoff:]
 
         batch_size = z.shape[0]
-        z_space_center = torch.randn(_NUM_WAVG_BATCHES * batch_size, self.z_space_dim)
-        w_space_center = torch.zeros(_NUM_WAVG_BATCHES * batch_size, self.z_space_dim)
+        w_avg = torch.zeros(batch_size, self.z_space_dim)
 
-        for i in range(_NUM_WAVG_BATCHES):
-            w_space_center_batch = self.mapping(z_space_center[i*batch_size:(i+1)*batch_size, :].cuda(), label)
-            w_space_center[i*batch_size:(i+1)*batch_size, :] = w_space_center_batch['w']
+        for i in range(batch_size):
+            z_space_center = torch.randn(_NUM_WAVG_SAMPLES, self.z_space_dim)
+            w_space_center = self.mapping(z_space_center.cuda(), label[i:i+1, :].repeat(_NUM_WAVG_SAMPLES, 1))['w']
+            w_avg[i:i+1, :] = torch.mean(w_space_center, dim=0)
 
-        w_avg = torch.mean(w_space_center, dim=0)
+#        print(w_avg, w_avg.shape)
         wp = self.truncation(w, w_avg.cuda(), trunc_psi, trunc_layers)
         synthesis_results = self.synthesis(wp, lod, randomize_noise)
 
@@ -359,7 +358,7 @@ class TruncationModule(nn.Module):
             coefs *= trunc_psi
             coefs = torch.from_numpy(coefs).to(wp)
 
-            w_avg = w_avg.view(1, -1, self.w_space_dim)
+            w_avg = w_avg.view(-1, 1, self.w_space_dim)
             wp = w_avg + (wp - w_avg) * coefs
         return wp
 
