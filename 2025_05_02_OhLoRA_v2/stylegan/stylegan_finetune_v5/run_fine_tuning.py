@@ -309,8 +309,8 @@ def check_model_trainable_status(check_id, generator, discriminator):
 
 # StyleGAN Fine-Tuning 중 inference test 실시
 # Create Date : 2025.05.03
-# Last Update Date : 2025.05.04
-# - train_log 에 추가할 각 핵심 속성 값 별 Corr-coef, MAE 반환값 추가
+# Last Update Date : 2025.05.05
+# - trunc_psi 값 1.0 -> 0.5 로 변경 (for Conditional Generation)
 
 # Arguments:
 # - restructured_generator (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
@@ -323,7 +323,7 @@ def check_model_trainable_status(check_id, generator, discriminator):
 # - stylegan_modified/inference_test_during_finetuning 에 생성 결과 및 각 이미지 별 Property Score CNN 예측 핵심 속성 값 저장
 
 def run_inference_test_during_finetuning(restructured_generator, current_epoch, batch_idx, property_score_cnn):
-    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+    kwargs_val = dict(trunc_psi=0.5, trunc_layers=0, randomize_noise=False)
     restructured_generator.G_kwargs_val = kwargs_val
 
     img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/inference_test_during_finetuning'
@@ -457,8 +457,8 @@ def save_real_fake_imgs(reals, fakes):
 
 def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan_ft_loader):
 
-    gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.9,
-                          trunc_psi=1.0, trunc_layers=0, randomize_noise=True)
+    gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.0,
+                          trunc_psi=0.5, trunc_layers=0, randomize_noise=True)
 
     r1_gamma = 10.0
     r2_gamma = 0.0

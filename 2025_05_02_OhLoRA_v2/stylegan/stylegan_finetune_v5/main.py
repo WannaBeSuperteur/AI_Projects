@@ -61,7 +61,8 @@ def freeze_discriminator_layers(finetune_v1_discriminator):
 
 # StyleGAN Fine-Tuning 이전 inference test 실시
 # Create Date : 2025.05.03
-# Last Update Date : -
+# Last Update Date : 2025.05.05
+# - trunc_psi 값 1.0 -> 0.5 로 변경 (for Conditional Generation)
 
 # Arguments:
 # - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
@@ -70,7 +71,7 @@ def freeze_discriminator_layers(finetune_v1_discriminator):
 # - stylegan/stylegan_finetune_v5/inference_test_before_finetuning 에 생성 결과 저장
 
 def run_inference_test_before_finetuning(finetune_v1_generator):
-    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+    kwargs_val = dict(trunc_psi=0.5, trunc_layers=0, randomize_noise=False)
     finetune_v1_generator.G_kwargs_val = kwargs_val
 
     img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/inference_test_before_finetuning'
