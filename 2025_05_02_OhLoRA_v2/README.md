@@ -51,6 +51,13 @@
   * [논문 : Art Creation with Multi-Conditional StyleGANs (2022.02)](https://arxiv.org/pdf/2202.11777)
   * [스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.03%5D%20Art%20Creation%20with%20Multi-Conditional%20StyleGANs.md) 
   * 해당 논문에서 아이디어를 얻어서 Conditional StyleGAN 컨셉으로 **Oh-LoRA 👱‍♀️ (오로라) v2** 개발 예정
+  * 모델 명 : **StyleGAN-FineTune-v5**
+
+* **StyleGAN Condition (Label) Vector Finding**
+  * [논문 : Semantic Hierarchy Emerges in Deep Generative Representations for Scene Synthesis](https://arxiv.org/pdf/1911.09267) 
+  * [스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)
+  * Conditional StyleGAN Fine-Tuning 실패 (성능 미달) 시, 위 논문의 아이디어를 이용하여 **StyleGAN-FineTune-v1** 로부터 **Condition Vector 추출** 하는 방법 적용
+  * 모델 명 : **StyleGAN-VectorFind-v6**
 
 ### 2-2. 사용한 Python 라이브러리 및 시스템 환경
 
