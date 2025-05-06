@@ -13,7 +13,7 @@ IMAGE_RESOLUTION = 256
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
-TEST_IMG_CASES = 20
+TEST_IMG_CASES = 50
 
 
 # Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환
@@ -68,7 +68,7 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
         save_image(os.path.join(save_dir, f'case_{i:02d}_as_original.jpg'), images[0])
 
         for vector_name, vector in zip(vector_names, vectors):
-            pms = [-3.0, -1.0, 1.0, 3.0]
+            pms = [-2.0, -0.67, 0.67, 2.0]
 
             for pm_idx, pm in enumerate(pms):
                 with torch.no_grad():
