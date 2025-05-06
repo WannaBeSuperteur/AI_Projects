@@ -89,11 +89,44 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 # Returns:
 # - indices_info (dict) : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
 #                         {'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                          'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                          'eyes_largest': list(int), 'eyes_smallest': list(int)}
+#                          'mouth_largest': list(int), 'mouth_smallest': list(int),
+#                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
 def extract_best_and_worst_k_images(property_scores, k=200):
-    raise NotImplementedError
+
+    # sort scores with index
+    eyes_cnn_scores_with_idx = []
+    for i in range(len(property_scores['eyes_cnn_score'])):
+        eyes_cnn_scores_with_idx.append([i, property_scores['eyes_cnn_score'][i]])
+
+    mouth_cnn_scores_with_idx = []
+    for i in range(len(property_scores['mouth_cnn_score'])):
+        mouth_cnn_scores_with_idx.append([i, property_scores['mouth_cnn_score'][i]])
+
+    pose_cnn_scores_with_idx = []
+    for i in range(len(property_scores['pose_cnn_score'])):
+        pose_cnn_scores_with_idx.append([i, property_scores['pose_cnn_score'][i]])
+
+    eyes_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
+    mouth_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
+    pose_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
+
+    # generate largest/smallest score index info
+    eyes_largest_idxs = sorted([x[0] for x in eyes_cnn_scores_with_idx][:k])
+    mouth_largest_idxs = sorted([x[0] for x in mouth_cnn_scores_with_idx][:k])
+    pose_largest_idxs = sorted([x[0] for x in pose_cnn_scores_with_idx][:k])
+
+    eyes_smallest_idxs = sorted([x[0] for x in eyes_cnn_scores_with_idx][-k:])
+    mouth_smallest_idxs = sorted([x[0] for x in mouth_cnn_scores_with_idx][-k:])
+    pose_smallest_idxs = sorted([x[0] for x in pose_cnn_scores_with_idx][-k:])
+
+    indices_info = {
+        'eyes_largest': eyes_largest_idxs, 'eyes_smallest': eyes_smallest_idxs,
+        'mouth_largest': mouth_largest_idxs, 'mouth_smallest': mouth_smallest_idxs,
+        'pose_largest': pose_largest_idxs, 'pose_smallest': pose_smallest_idxs
+    }
+
+    return indices_info
 
 
 # 각 핵심 속성 값 별 핵심 속성 값이 가장 큰 & 작은 k 장의 이미지에 대해 t-SNE 를 이용하여 핵심 속성 값의 시각적 분포 파악
@@ -104,8 +137,8 @@ def extract_best_and_worst_k_images(property_scores, k=200):
 # - latent_vectors (NumPy array) : sampling 된 latent vector
 # - indices_info   (dict)        : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
 #                                  {'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                                   'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                                   'eyes_largest': list(int), 'eyes_smallest': list(int)}
+#                                   'mouth_largest': list(int), 'mouth_smallest': list(int),
+#                                   'pose_largest': list(int), 'pose_smallest': list(int)}
 
 # Returns:
 # - stylegan/stylegan_vectorfind_v6/tsne_result 디렉토리에 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
