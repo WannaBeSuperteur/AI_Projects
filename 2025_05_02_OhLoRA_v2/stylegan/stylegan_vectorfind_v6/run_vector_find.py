@@ -5,6 +5,10 @@ import stylegan_common.stylegan_generator_inference as infer
 import numpy as np
 import torch
 import os
+import pandas as pd
+import plotly.express as px
+
+from sklearn.manifold import TSNE
 from torchvision.io import read_image
 
 PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -30,7 +34,7 @@ BATCH_SIZE = 20
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=1000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=2500):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
@@ -92,7 +96,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=200):
+def extract_best_and_worst_k_images(property_scores, k=150):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
@@ -144,7 +148,43 @@ def extract_best_and_worst_k_images(property_scores, k=200):
 # - stylegan/stylegan_vectorfind_v6/tsne_result 디렉토리에 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
 
 def run_tsne(latent_vectors, indices_info):
-    raise NotImplementedError
+    property_names = ['eyes', 'mouth', 'pose']
+    tsne_result_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/tsne_result'
+    os.makedirs(tsne_result_path, exist_ok=True)
+
+    for property_name in property_names:
+        largest_img_idxs = indices_info[f'{property_name}_largest']
+        smallest_img_idxs = indices_info[f'{property_name}_smallest']
+        idxs = largest_img_idxs + smallest_img_idxs
+        indexed_latent_vectors = latent_vectors[idxs]
+
+        # run t-SNE
+        print(f'running t-SNE for {property_name} ...')
+        tsne_result = TSNE(n_components=2,
+                           perplexity=25,
+                           learning_rate=100,
+                           n_iter=500,
+                           random_state=2025).fit_transform(indexed_latent_vectors)
+
+        # save t-SNE plot result images
+        classes = ['largest'] * len(largest_img_idxs) + ['smallest'] * len(smallest_img_idxs)
+
+        data_dict = {
+            'dimension_0': tsne_result[:, 0],
+            'dimension_1': tsne_result[:, 1],
+            'class': classes
+        }
+        data_df = pd.DataFrame(data_dict)
+
+        fig = px.scatter(data_df,
+                         x='dimension_0',
+                         y='dimension_1',
+                         color='class',
+                         title=f't-SNE result of property {property_name}')
+
+        fig.update_layout(width=900, height=750)
+        fig.update_traces(marker=dict(size=5))
+        fig.write_image(f'{tsne_result_path}/tsne_result_{property_name}.png')
 
 
 # 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출하기 위한 SVM 학습
