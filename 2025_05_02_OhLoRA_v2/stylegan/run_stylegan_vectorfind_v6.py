@@ -13,7 +13,7 @@ IMAGE_RESOLUTION = 256
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
-TEST_IMG_CASES = 10
+TEST_IMG_CASES = 50
 
 
 # Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환

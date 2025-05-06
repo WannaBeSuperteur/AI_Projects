@@ -17,7 +17,7 @@ PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspa
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 BATCH_SIZE = 20
-SVMS_PER_EACH_PROPERTY = 10
+SVMS_PER_EACH_PROPERTY = 3      # also z-vector count for each property
 
 
 # Latent vector z 샘플링 및 해당 z 값으로 생성된 이미지에 대한 semantic score 계산
@@ -36,7 +36,7 @@ SVMS_PER_EACH_PROPERTY = 10
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=1000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=600000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
@@ -102,7 +102,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=50):
+def extract_best_and_worst_k_images(property_scores, k=2500):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
