@@ -14,9 +14,11 @@ PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspa
 RANK = 0
 WORLD_SIZE = 1
 VALID_BATCH_SIZE = 4
+IMG_RESOLUTION = 256
 
 
-def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_start_idx=0, verbose=True):
+def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_start_idx=0, verbose=True,
+               save_img=True, return_img=False):
     """Synthesizes images.
 
     Args:
@@ -28,6 +30,8 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
         label: additional label for conditional generation. (default: None)
         img_name_start_idx: start index number for image name.
         verbose: whether to print info
+        save_img: whether to save synthesized images
+        return_img: whether to return synthesized images
     """
 
     os.makedirs(save_dir, exist_ok=True)
@@ -48,6 +52,7 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
     indices = list(range(RANK, num, WORLD_SIZE))
     batch_count = len(indices) // VALID_BATCH_SIZE
     start_at = time.time()
+    all_images = np.zeros((num, IMG_RESOLUTION, IMG_RESOLUTION, 3))
 
     for batch_idx in range(0, len(indices), VALID_BATCH_SIZE):
         sub_indices = indices[batch_idx:batch_idx + VALID_BATCH_SIZE]
@@ -67,8 +72,9 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
             images = generator_model(code, property_vector, **generator_model.G_kwargs_val)['image']
             images = postprocess_image(images.detach().cpu().numpy())
 
-        for sub_idx, image in zip(sub_indices, images):
-            save_image(os.path.join(save_dir, f'{sub_idx+img_name_start_idx:06d}.jpg'), image)
+        if save_img:
+            for sub_idx, image in zip(sub_indices, images):
+                save_image(os.path.join(save_dir, f'{sub_idx+img_name_start_idx:06d}.jpg'), image)
 
         elapsed_time = time.time() - start_at
         img_cnt = batch_idx + VALID_BATCH_SIZE
@@ -76,5 +82,11 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
 
         if verbose and (batch_idx < 100 or batch_idx % 100 == 0):
             print(f'image {img_cnt} / {num}, time : {elapsed_time:.4f}, time/image : {avg_time:.4f}')
+
+        if return_img:
+            all_images[batch_idx:batch_idx + batch_size] = images
+
+    if return_img:
+        return all_images
 
 #    dist.barrier()

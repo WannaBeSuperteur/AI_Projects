@@ -10,7 +10,12 @@ import plotly.express as px
 
 from sklearn import svm
 from sklearn.manifold import TSNE
-from torchvision.io import read_image
+
+import sys
+global_path = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))))
+sys.path.append(global_path)
+
+from global_common.visualize_tensor import save_tensor_png
 
 PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
@@ -35,7 +40,7 @@ BATCH_SIZE = 20
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=3000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=5000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
@@ -53,21 +58,25 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
         z_ = z[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
         additional_ = additional[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
 
-        infer.synthesize(finetune_v1_generator,
-                         num=BATCH_SIZE,
-                         save_dir=save_dir,
-                         z=z_,
-                         label=additional_,
-                         img_name_start_idx=0,
-                         verbose=False)
+        images = infer.synthesize(finetune_v1_generator,
+                                  num=BATCH_SIZE,
+                                  save_dir=save_dir,
+                                  z=z_,
+                                  label=additional_,
+                                  img_name_start_idx=0,
+                                  verbose=False,
+                                  save_img=False,
+                                  return_img=True)
 
         with torch.no_grad():
             for image_no in range(BATCH_SIZE):
-                image_path = f'{save_dir}/{image_no:06d}.jpg'
-                image = read_image(image_path)
-                image = stylegan_transform(image)
+                image = images[image_no]
+                image_ = image / 255.0
+                image_ = (image_ - 0.5) / 0.5
+                image_ = torch.tensor(image_).type(torch.float32)
+                image_ = image_.permute(2, 0, 1)
 
-                property_scores = property_score_cnn(image.unsqueeze(0).cuda())
+                property_scores = property_score_cnn(image_.unsqueeze(0).cuda())
                 property_score_np = property_scores.detach().cpu().numpy()
 
                 eyes_cnn_scores.append(property_score_np[0][0])
@@ -97,7 +106,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=30):
+def extract_best_and_worst_k_images(property_scores, k=50):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
