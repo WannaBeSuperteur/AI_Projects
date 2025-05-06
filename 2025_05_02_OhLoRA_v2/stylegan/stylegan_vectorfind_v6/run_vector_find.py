@@ -35,7 +35,7 @@ BATCH_SIZE = 20
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=60000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=3000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
@@ -101,7 +101,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=300):
+def extract_best_and_worst_k_images(property_scores, k=50):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
@@ -166,9 +166,9 @@ def run_tsne(latent_vectors, indices_info):
         # run t-SNE
         print(f'running t-SNE for {property_name} ...')
         tsne_result = TSNE(n_components=2,
-                           perplexity=25,
+                           perplexity=50,
                            learning_rate=100,
-                           n_iter=500,
+                           n_iter=1000,
                            random_state=2025).fit_transform(indexed_latent_vectors)
 
         # save t-SNE plot result images
@@ -266,15 +266,13 @@ def train_svm(latent_vectors, indices_info):
     return svm_classifiers
 
 
-# SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출
+# SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출 (최종 z vector)
 # Create Date : 2025.05.06
 # Last Update Date : -
 
 # Arguments:
 # - svm_classifiers       (dict(SVM)) : 학습된 SVM (Support Vector Machine)
 #                                       {'eyes': SVM, 'mouth': SVM, 'pose': SVM}
-# - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
-# - property_score_cnn    (nn.Module) : 핵심 속성 값 계산용 CNN 모델
 
 # Returns:
 # - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector
@@ -282,8 +280,20 @@ def train_svm(latent_vectors, indices_info):
 #                                    'mouth_vector': Numpy array,
 #                                    'pose_vector': Numpy array}
 
-def find_property_score_vectors(svm_classifiers, finetune_v1_generator, property_score_cnn):
-    raise NotImplementedError
+def find_property_score_vectors(svm_classifiers):
+    property_names = ['eyes', 'mouth', 'pose']
+    dim = ORIGINAL_HIDDEN_DIMS_Z + ORIGINALLY_PROPERTY_DIMS_Z
+
+    property_score_vectors = {}
+
+    for property_name in property_names:
+        classifier = svm_classifiers[property_name]
+        direction = classifier.coef_.reshape(1, dim).astype(np.float32)
+        direction = direction / np.linalg.norm(direction)
+
+        property_score_vectors[f'{property_name}_vector'] = direction
+
+    return property_score_vectors
 
 
 # 핵심 속성 값의 변화를 나타내는 latent z vector 에 대한 정보 저장
@@ -319,8 +329,8 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
     indices_info = extract_best_and_worst_k_images(property_scores)
     run_tsne(latent_vectors, indices_info)
 
-    # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 latent z vector 도출
+    # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 latent z vector 도출
     svm_classifiers = train_svm(latent_vectors, indices_info)
-    property_score_vectors = find_property_score_vectors(svm_classifiers, finetune_v1_generator, property_score_cnn)
+    property_score_vectors = find_property_score_vectors(svm_classifiers)
 
     save_property_score_vectors_info(property_score_vectors)
