@@ -68,6 +68,8 @@
 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/inference_test_before_training/*
 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/inference_test_during_training
 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/inference_test_during_training/*
+2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/inference_test_after_training
+2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/inference_test_after_training/*
 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/*.pth
 venv
 venv/*
