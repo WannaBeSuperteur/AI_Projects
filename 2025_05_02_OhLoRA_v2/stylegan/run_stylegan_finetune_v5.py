@@ -15,7 +15,7 @@ IMAGE_RESOLUTION = 256
 # Last Update Date : -
 
 # Arguments:
-# - device (device) : StyleGAN-FineTune-v4 모델을 mapping 시킬 device (GPU 등)
+# - device (device) : StyleGAN-FineTune-v5 모델을 mapping 시킬 device (GPU 등)
 
 # Returns:
 # - finetune_v5_generator (nn.Module) : StyleGAN-FineTune-v5 모델의 Generator
