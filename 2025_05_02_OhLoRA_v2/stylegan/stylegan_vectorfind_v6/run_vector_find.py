@@ -11,11 +11,6 @@ import plotly.express as px
 from sklearn import svm
 from sklearn.manifold import TSNE
 
-import sys
-global_path = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))))
-sys.path.append(global_path)
-
-from global_common.visualize_tensor import save_tensor_png
 
 PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
