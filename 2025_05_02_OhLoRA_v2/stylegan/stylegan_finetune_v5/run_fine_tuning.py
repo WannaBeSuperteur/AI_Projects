@@ -244,10 +244,15 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args,
                       f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
                       f'real_fake_auroc={real_fake_auroc:.4f}')
 
-                corr_mae_dict = run_inference_test_during_finetuning(generator,
-                                                                     current_epoch=current_epoch,
-                                                                     batch_idx=idx,
-                                                                     property_score_cnn=property_score_cnn)
+                kwargs_val = dict(trunc_psi=0.5, trunc_layers=0, randomize_noise=False)
+                generator.G_kwargs_val = kwargs_val
+                img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/inference_test_during_finetuning'
+
+                corr_mae_dict = run_inference_test(generator,
+                                                   img_save_dir,
+                                                   current_epoch=current_epoch,
+                                                   batch_idx=idx,
+                                                   property_score_cnn=property_score_cnn)
 
                 # save train log
                 train_log_dict['epoch'].append(current_epoch)
@@ -307,13 +312,14 @@ def check_model_trainable_status(check_id, generator, discriminator):
         print(f'({check_id}) discriminator layer name = {name}, trainable = {param.requires_grad}')
 
 
-# StyleGAN Fine-Tuning 중 inference test 실시
+# StyleGAN Fine-Tuning 도중 / 이후 inference test 실시
 # Create Date : 2025.05.03
-# Last Update Date : 2025.05.04
-# - train_log 에 추가할 각 핵심 속성 값 별 Corr-coef, MAE 반환값 추가
+# Last Update Date : 2025.05.06
+# - 이 함수를 Fine-Tuning 이후 모델 테스트에도 사용함에 따라, 이름 및 Argument 수정
 
 # Arguments:
 # - restructured_generator (nn.Module) : StyleGAN 모델의 새로운 구조의 Generator
+# - img_save_dir           (str)       : StyleGAN inference test 로 생성한 이미지의 저장 경로
 # - current_epoch          (int)       : Fine-Tuning 중 현재 epoch 번호
 # - batch_idx              (int)       : Fine-Tuning 중 현재 epoch 에서의 batch index 번호
 # - property_score_cnn     (nn.Module) : 핵심 속성 값을 계산하기 위한 CNN
@@ -322,12 +328,8 @@ def check_model_trainable_status(check_id, generator, discriminator):
 # - corr_mae_dict (dict) : train_log 에 추가할 각 핵심 속성 값 별 Corr-coef 및 MAE
 # - stylegan_modified/inference_test_during_finetuning 에 생성 결과 및 각 이미지 별 Property Score CNN 예측 핵심 속성 값 저장
 
-def run_inference_test_during_finetuning(restructured_generator, current_epoch, batch_idx, property_score_cnn):
-    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
-    restructured_generator.G_kwargs_val = kwargs_val
-
-    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v5/inference_test_during_finetuning'
-    img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
+def run_inference_test(restructured_generator, img_save_dir, current_epoch, batch_idx, property_score_cnn):
+    img_save_dir_ = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
 
     # label: 'eyes', 'mouth', 'pose'
     current_idx = 0
@@ -356,7 +358,7 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
 
         infer.synthesize(restructured_generator,
                          num=IMGS_PER_TEST_PROPERTY_SET,
-                         save_dir=img_save_dir,
+                         save_dir=img_save_dir_,
                          z=z,
                          label=label_,
                          img_name_start_idx=current_idx,
@@ -367,7 +369,7 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
             mouth_labels.append(label[1])
             pose_labels.append(label[2])
 
-            image_path = f'{img_save_dir}/{image_no:06d}.jpg'
+            image_path = f'{img_save_dir_}/{image_no:06d}.jpg'
             image = read_image(image_path)
             image = stylegan_transform(image)
 
@@ -394,7 +396,7 @@ def run_inference_test_during_finetuning(restructured_generator, current_epoch, 
         'pose_cnn_score': list(np.round(pose_cnn_scores, 4))
     }
     label_info_df = pd.DataFrame(label_info_dict)
-    label_info_df.to_csv(f'{img_save_dir}/label_info.csv', index=False)
+    label_info_df.to_csv(f'{img_save_dir_}/label_info.csv', index=False)
 
     # compute corr-coef & MAE and return
     eyes_corr = np.corrcoef(eyes_labels, eyes_cnn_scores)[0][1]
@@ -457,8 +459,8 @@ def save_real_fake_imgs(reals, fakes):
 
 def run_fine_tuning(restructured_generator, restructured_discriminator, stylegan_ft_loader):
 
-    gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.9,
-                          trunc_psi=1.0, trunc_layers=0, randomize_noise=True)
+    gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.0,
+                          trunc_psi=0.5, trunc_layers=0, randomize_noise=True)
 
     r1_gamma = 10.0
     r2_gamma = 0.0

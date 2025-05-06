@@ -34,6 +34,9 @@ _AUTO_FUSED_SCALE_MIN_RES = 128
 _WSCALE_GAIN = np.sqrt(2.0)
 _STYLEMOD_WSCALE_GAIN = 1.0
 
+# Number of batches to generate, to compute w_avg for each condition for Conditional StyleGAN
+_NUM_WAVG_SAMPLES = 1000
+
 
 class StyleGANGeneratorForV5(nn.Module):
     """Defines the generator network in StyleGAN.
@@ -188,7 +191,7 @@ class StyleGANGeneratorForV5(nn.Module):
                 lod=None,
                 w_moving_decay=0.995,
                 style_mixing_prob=0.0,
-                trunc_psi=None,
+                trunc_psi=0.5,
                 trunc_layers=None,
                 randomize_noise=False,
                 **_unused_kwargs):
@@ -212,7 +215,16 @@ class StyleGANGeneratorForV5(nn.Module):
                 new_w = self.truncation(new_w)
                 w[:, mixing_cutoff:] = new_w[:, mixing_cutoff:]
 
-        wp = self.truncation(w, trunc_psi, trunc_layers)
+        batch_size = z.shape[0]
+        w_avg = torch.zeros(batch_size, self.z_space_dim)
+
+        for i in range(batch_size):
+            z_space_center = torch.randn(_NUM_WAVG_SAMPLES, self.z_space_dim)
+            w_space_center = self.mapping(z_space_center.cuda(), label[i:i+1, :].repeat(_NUM_WAVG_SAMPLES, 1))['w']
+            w_avg[i:i+1, :] = torch.mean(w_space_center, dim=0)
+
+#        print(w_avg, w_avg.shape)
+        wp = self.truncation(w, w_avg.cuda(), trunc_psi, trunc_layers)
         synthesis_results = self.synthesis(wp, lod, randomize_noise)
 
         return {**mapping_results, **synthesis_results}
@@ -322,7 +334,9 @@ class TruncationModule(nn.Module):
             self.register_buffer('w_avg', torch.zeros(num_layers * w_space_dim))
         self.pth_to_tf_var_mapping = {'w_avg': 'dlatent_avg'}
 
-    def forward(self, w, trunc_psi=None, trunc_layers=None):
+    def forward(self, w, w_avg, trunc_psi=None, trunc_layers=None):
+        self.w_avg = w_avg
+
         if w.ndim == 2:
             if self.repeat_w and w.shape[1] == self.w_space_dim:
                 w = w.view(-1, 1, self.w_space_dim)
@@ -337,12 +351,14 @@ class TruncationModule(nn.Module):
 
         trunc_psi = 1.0 if trunc_psi is None else trunc_psi
         trunc_layers = 0 if trunc_layers is None else trunc_layers
-        if trunc_psi < 1.0 and trunc_layers > 0:
+
+        if trunc_psi < 1.0:
             layer_idx = np.arange(self.num_layers).reshape(1, -1, 1)
             coefs = np.ones_like(layer_idx, dtype=np.float32)
-            coefs[layer_idx < trunc_layers] *= trunc_psi
+            coefs *= trunc_psi
             coefs = torch.from_numpy(coefs).to(wp)
-            w_avg = self.w_avg.view(1, -1, self.w_space_dim)
+
+            w_avg = w_avg.view(-1, 1, self.w_space_dim)
             wp = w_avg + (wp - w_avg) * coefs
         return wp
 
