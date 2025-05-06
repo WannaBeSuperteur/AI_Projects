@@ -13,7 +13,7 @@ IMAGE_RESOLUTION = 256
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
-TEST_IMG_CASES = 50
+TEST_IMG_CASES = 10
 
 
 # Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환
@@ -40,7 +40,8 @@ def get_property_change_vectors():
 
 # latent vector z 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.06
+# - 각 핵심 속성 값 별 여러 개의 SVM 학습한 것을 반영
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)   : StyleGAN-FineTune-v1 의 Generator
@@ -56,6 +57,8 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_after_training'
     os.makedirs(save_dir, exist_ok=True)
 
+    n_vector_cnt = len(eyes_vector)  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
+
     for i in range(TEST_IMG_CASES):
         code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)      # 512
         code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
@@ -63,23 +66,22 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
         vector_names = ['eyes', 'mouth', 'pose']
         vectors = [eyes_vector, mouth_vector, pose_vector]
 
-        images = finetune_v1_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
-        images = postprocess_image(images.detach().cpu().numpy())
-        save_image(os.path.join(save_dir, f'case_{i:02d}_as_original.jpg'), images[0])
+        for vi in range(n_vector_cnt):
+            for vector_name, vector in zip(vector_names, vectors):
+                pms = [-2.0, -0.67, 0.67, 2.0]
 
-        for vector_name, vector in zip(vector_names, vectors):
-            pms = [-2.0, -0.67, 0.67, 2.0]
+                for pm_idx, pm in enumerate(pms):
+                    with torch.no_grad():
+                        code_part1_ = code_part1 + pm * torch.tensor(vector[vi:vi+1, :ORIGINAL_HIDDEN_DIMS_Z])  # 512
+                        code_part2_ = code_part2 + pm * torch.tensor(vector[vi:vi+1, ORIGINAL_HIDDEN_DIMS_Z:])  # 3
+                        code_part1_ = code_part1_.type(torch.float32)
+                        code_part2_ = code_part2_.type(torch.float32)
 
-            for pm_idx, pm in enumerate(pms):
-                with torch.no_grad():
-                    code_part1_ = code_part1 + pm * torch.tensor(vector[:, :ORIGINAL_HIDDEN_DIMS_Z])  # 512
-                    code_part2_ = code_part2 + pm * torch.tensor(vector[:, ORIGINAL_HIDDEN_DIMS_Z:])  # 3
-                    code_part1_ = code_part1_.type(torch.float32)
-                    code_part2_ = code_part2_.type(torch.float32)
+                        images = finetune_v1_generator(code_part1_.cuda(), code_part2_.cuda(), **kwargs_val)['image']
+                        images = postprocess_image(images.detach().cpu().numpy())
 
-                    images = finetune_v1_generator(code_part1_.cuda(), code_part2_.cuda(), **kwargs_val)['image']
-                    images = postprocess_image(images.detach().cpu().numpy())
-                    save_image(os.path.join(save_dir, f'case_{i:02d}_{vector_name}_pm_{pm_idx}.jpg'), images[0])
+                        save_image(os.path.join(save_dir, f'case_{i:02d}_{vi:02d}_{vector_name}_pm_{pm_idx}.jpg'),
+                                   images[0])
 
 
 if __name__ == '__main__':

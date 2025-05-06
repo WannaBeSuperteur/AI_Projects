@@ -1,5 +1,4 @@
 from property_score_cnn import load_cnn_model as load_property_cnn_model
-from common import stylegan_transform
 import stylegan_common.stylegan_generator_inference as infer
 
 import numpy as np
@@ -7,6 +6,7 @@ import torch
 import os
 import pandas as pd
 import plotly.express as px
+import random
 
 from sklearn import svm
 from sklearn.manifold import TSNE
@@ -17,6 +17,7 @@ PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspa
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 BATCH_SIZE = 20
+SVMS_PER_EACH_PROPERTY = 10
 
 
 # Latent vector z 샘플링 및 해당 z 값으로 생성된 이미지에 대한 semantic score 계산
@@ -35,7 +36,7 @@ BATCH_SIZE = 20
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=120000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=1000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
@@ -101,7 +102,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=500):
+def extract_best_and_worst_k_images(property_scores, k=50):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
@@ -194,7 +195,8 @@ def run_tsne(latent_vectors, indices_info):
 
 # 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출하기 위한 SVM 학습
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.06
+# - 각 핵심 속성 값 별 여러 개의 SVM 학습
 
 # Arguments:
 # - latent_vectors (NumPy array) : sampling 된 latent vector
@@ -204,8 +206,8 @@ def run_tsne(latent_vectors, indices_info):
 #                                   'eyes_largest': list(int), 'eyes_smallest': list(int)}
 
 # Returns:
-# - svm_classifiers (dict(SVM)) : 학습된 SVM (Support Vector Machine)
-#                                 {'eyes': SVM, 'mouth': SVM, 'pose': SVM}
+# - svm_classifiers (dict(list)) : 학습된 SVM (Support Vector Machine) 의 list
+#                                  {'eyes': list(SVM), 'mouth': list(SVM), 'pose': list(SVM)}
 
 def train_svm(latent_vectors, indices_info):
     property_names = ['eyes', 'mouth', 'pose']
@@ -215,70 +217,79 @@ def train_svm(latent_vectors, indices_info):
     # use option from original paper (higan/blob/master/utils/boundary_searcher.py GenForce GitHub)
     for property_name in property_names:
 
-        # create dataset
-        largest_img_idxs = indices_info[f'{property_name}_largest']
-        smallest_img_idxs = indices_info[f'{property_name}_smallest']
-        largest_train_count = int(train_ratio * len(largest_img_idxs))
-        smallest_train_count = int(train_ratio * len(smallest_img_idxs))
-
-        train_idxs = largest_img_idxs[:largest_train_count] + smallest_img_idxs[:smallest_train_count]
-        valid_idxs = largest_img_idxs[largest_train_count:] + smallest_img_idxs[smallest_train_count:]
-        train_latent_vectors = latent_vectors[train_idxs]
-        valid_latent_vectors = latent_vectors[valid_idxs]
-
-        train_classes = ['largest'] * largest_train_count + ['smallest'] * smallest_train_count
-        valid_classes = ['largest'] * (len(largest_img_idxs) - largest_train_count) + ['smallest'] * (len(smallest_img_idxs) - smallest_train_count)
-
-        # train SVM
         print(f'\ntraining SVM for {property_name} ...')
-        svm_clf = svm.SVC(kernel='linear')
-        svm_classifier = svm_clf.fit(train_latent_vectors, train_classes)
+        svm_classifiers[property_name] = []
 
-        # valid SVM
-        valid_predictions = svm_classifier.predict(valid_latent_vectors)
+        for i in range(SVMS_PER_EACH_PROPERTY):
 
-        # compute performance metric
-        large_large = np.sum((np.array(valid_predictions) == 'largest') & (np.array(valid_classes) == 'largest'))
-        large_small = np.sum((np.array(valid_predictions) == 'largest') & (np.array(valid_classes) == 'smallest'))
-        small_large = np.sum((np.array(valid_predictions) == 'smallest') & (np.array(valid_classes) == 'largest'))
-        small_small = np.sum((np.array(valid_predictions) == 'smallest') & (np.array(valid_classes) == 'smallest'))
+            # create dataset
+            largest_img_idxs = indices_info[f'{property_name}_largest']
+            smallest_img_idxs = indices_info[f'{property_name}_smallest']
+            largest_img_idxs = random.sample(largest_img_idxs, len(largest_img_idxs))
+            smallest_img_idxs = random.sample(smallest_img_idxs, len(smallest_img_idxs))
 
-        accuracy = (large_large + small_small) / (large_large + large_small + small_large + small_small)
+            largest_train_count = int(train_ratio * len(largest_img_idxs))
+            smallest_train_count = int(train_ratio * len(smallest_img_idxs))
 
-        large_recall = large_large / (large_large + small_large)
-        large_precision = large_large / (large_large + large_small)
-        large_f1 = 2 * large_recall * large_precision / (large_recall + large_precision)
+            train_idxs = largest_img_idxs[:largest_train_count] + smallest_img_idxs[:smallest_train_count]
+            valid_idxs = largest_img_idxs[largest_train_count:] + smallest_img_idxs[smallest_train_count:]
+            train_latent_vectors = latent_vectors[train_idxs]
+            valid_latent_vectors = latent_vectors[valid_idxs]
 
-        small_recall = small_small / (small_small + large_small)
-        small_precision = small_small / (small_small + small_large)
-        small_f1 = 2 * small_recall * small_precision / (small_recall + small_precision)
+            train_classes = ['largest'] * largest_train_count + ['smallest'] * smallest_train_count
+            valid_classes = ['largest'] * (len(largest_img_idxs) - largest_train_count) + ['smallest'] * (len(smallest_img_idxs) - smallest_train_count)
 
-        print(f'accuracy          : {accuracy:.4f}')
-        print(f'recall    (large) : {large_recall:.4f}')
-        print(f'precision (large) : {large_precision:.4f}')
-        print(f'F1 score  (large) : {large_f1:.4f}')
-        print(f'recall    (small) : {small_recall:.4f}')
-        print(f'precision (small) : {small_precision:.4f}')
-        print(f'F1 score  (small) : {small_f1:.4f}')
+            # train SVM
+            svm_clf = svm.SVC(kernel='linear', random_state=2025+i)
+            svm_classifier = svm_clf.fit(train_latent_vectors, train_classes)
 
-        svm_classifiers[property_name] = svm_classifier
+            # valid SVM
+            valid_predictions = svm_classifier.predict(valid_latent_vectors)
+
+            # compute performance metric
+            large_large = np.sum((np.array(valid_predictions) == 'largest') & (np.array(valid_classes) == 'largest'))
+            large_small = np.sum((np.array(valid_predictions) == 'largest') & (np.array(valid_classes) == 'smallest'))
+            small_large = np.sum((np.array(valid_predictions) == 'smallest') & (np.array(valid_classes) == 'largest'))
+            small_small = np.sum((np.array(valid_predictions) == 'smallest') & (np.array(valid_classes) == 'smallest'))
+
+            accuracy = (large_large + small_small) / (large_large + large_small + small_large + small_small)
+
+            large_recall = large_large / (large_large + small_large)
+            large_precision = large_large / (large_large + large_small)
+            large_f1 = 2 * large_recall * large_precision / (large_recall + large_precision)
+
+            small_recall = small_small / (small_small + large_small)
+            small_precision = small_small / (small_small + small_large)
+            small_f1 = 2 * small_recall * small_precision / (small_recall + small_precision)
+
+            print(f'\n=== Support Vector Machine {i} for {property_name} ===')
+            print(f'accuracy          : {accuracy:.4f}')
+            print(f'recall    (large) : {large_recall:.4f}')
+            print(f'precision (large) : {large_precision:.4f}')
+            print(f'F1 score  (large) : {large_f1:.4f}')
+            print(f'recall    (small) : {small_recall:.4f}')
+            print(f'precision (small) : {small_precision:.4f}')
+            print(f'F1 score  (small) : {small_f1:.4f}')
+
+            svm_classifiers[property_name].append(svm_classifier)
 
     return svm_classifiers
 
 
 # SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출 (최종 z vector)
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.06
+# - 각 핵심 속성 값 별 여러 개의 SVM 학습한 것을 반영
 
 # Arguments:
-# - svm_classifiers       (dict(SVM)) : 학습된 SVM (Support Vector Machine)
-#                                       {'eyes': SVM, 'mouth': SVM, 'pose': SVM}
+# - svm_classifiers (dict(list)) : 학습된 SVM (Support Vector Machine) 의 list
+#                                  {'eyes': list(SVM), 'mouth': list(SVM), 'pose': list(SVM)}
 
 # Returns:
 # - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector
 #                                   {'eyes_vector': NumPy array,
-#                                    'mouth_vector': Numpy array,
-#                                    'pose_vector': Numpy array}
+#                                    'mouth_vector': NumPy array,
+#                                    'pose_vector': NumPy array}
 
 def find_property_score_vectors(svm_classifiers):
     property_names = ['eyes', 'mouth', 'pose']
@@ -287,11 +298,14 @@ def find_property_score_vectors(svm_classifiers):
     property_score_vectors = {}
 
     for property_name in property_names:
-        classifier = svm_classifiers[property_name]
-        direction = classifier.coef_.reshape(1, dim).astype(np.float32)
-        direction = direction / np.linalg.norm(direction)
+        classifiers = svm_classifiers[property_name]
+        property_score_vectors[f'{property_name}_vector'] = []
 
-        property_score_vectors[f'{property_name}_vector'] = direction
+        for classifier in classifiers:
+            direction = classifier.coef_.reshape(1, dim).astype(np.float32)
+            direction = direction / np.linalg.norm(direction)
+
+            property_score_vectors[f'{property_name}_vector'].append(direction.flatten())
 
     return property_score_vectors
 
@@ -303,8 +317,8 @@ def find_property_score_vectors(svm_classifiers):
 # Arguments:
 # - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector
 #                                   {'eyes_vector': NumPy array,
-#                                    'mouth_vector': Numpy array,
-#                                    'pose_vector': Numpy array}
+#                                    'mouth_vector': NumPy array,
+#                                    'pose_vector': NumPy array}
 
 # Returns:
 # - stylegan/stylegan_vectorfind_v6/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 latent z vector 정보 저장
