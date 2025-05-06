@@ -1,7 +1,17 @@
 from property_score_cnn import load_cnn_model as load_property_cnn_model
+from common import stylegan_transform
+import stylegan_common.stylegan_generator_inference as infer
 
+import numpy as np
+import torch
 import os
+from torchvision.io import read_image
+
 PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+
+ORIGINAL_HIDDEN_DIMS_Z = 512
+ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
+BATCH_SIZE = 20
 
 
 # Latent vector z 샘플링 및 해당 z 값으로 생성된 이미지에 대한 semantic score 계산
@@ -15,10 +25,55 @@ PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspa
 
 # Returns:
 # - latent_vectors  (NumPy array) : sampling 된 latent vector
-# - property_scores (NumPy array) : sampling 된 latent vector 로 생성된 이미지의 핵심 속성값 (eyes, mouth, pose 순서)
+# - property_scores (dict)        : sampling 된 latent vector 로 생성된 이미지의 (Pre-trained CNN 에 의해 도출된) 핵심 속성값
+#                                   {'eyes_cnn_score': list(float),
+#                                    'mouth_cnn_score': list(float),
+#                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=10000):
-    raise NotImplementedError
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=1000):
+    save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
+
+    z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
+    additional = np.random.normal(0, 1, size=(n, ORIGINALLY_PROPERTY_DIMS_Z)).astype(np.float64)
+    latent_vectors = np.concatenate([z, additional], axis=1)
+
+    eyes_cnn_scores = []
+    mouth_cnn_scores = []
+    pose_cnn_scores = []
+
+    for i in range(n // BATCH_SIZE):
+        if i % 10 == 0:
+            print(f'synthesizing for batch {i} ...')
+
+        z_ = z[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
+        additional_ = additional[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
+
+        infer.synthesize(finetune_v1_generator,
+                         num=BATCH_SIZE,
+                         save_dir=save_dir,
+                         z=z_,
+                         label=additional_,
+                         img_name_start_idx=0,
+                         verbose=False)
+
+        with torch.no_grad():
+            for image_no in range(BATCH_SIZE):
+                image_path = f'{save_dir}/{image_no:06d}.jpg'
+                image = read_image(image_path)
+                image = stylegan_transform(image)
+
+                property_scores = property_score_cnn(image.unsqueeze(0).cuda())
+                property_score_np = property_scores.detach().cpu().numpy()
+
+                eyes_cnn_scores.append(property_score_np[0][0])
+                mouth_cnn_scores.append(property_score_np[0][3])
+                pose_cnn_scores.append(property_score_np[0][4])
+
+    property_scores = {'eyes_cnn_score': eyes_cnn_scores,
+                       'mouth_cnn_score': mouth_cnn_scores,
+                       'pose_cnn_score': pose_cnn_scores}
+
+    return latent_vectors, property_scores
 
 
 # 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지를 각각 추출
@@ -26,7 +81,10 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 # Last Update Date : -
 
 # Arguments:
-# - property_scores (NumPy array) : sampling 된 latent vector 로 생성된 이미지의 핵심 속성값 (eyes, mouth, pose 순서)
+# - property_scores (dict) : sampling 된 latent vector 로 생성된 이미지의 (Pre-trained CNN 에 의해 도출된) 핵심 속성값
+#                            {'eyes_cnn_score': list(float),
+#                             'mouth_cnn_score': list(float),
+#                             'pose_cnn_score': list(float)}
 
 # Returns:
 # - indices_info (dict) : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
@@ -34,7 +92,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'eyes_largest': list(int), 'eyes_smallest': list(int),
 #                          'eyes_largest': list(int), 'eyes_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=1000):
+def extract_best_and_worst_k_images(property_scores, k=200):
     raise NotImplementedError
 
 
