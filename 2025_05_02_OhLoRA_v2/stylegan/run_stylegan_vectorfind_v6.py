@@ -22,7 +22,7 @@ if __name__ == '__main__':
     finetune_v1_generator.load_state_dict(generator_state_dict, strict=False)
 
     # get property score changing vector
-    stylegan_vectorfind_v6_main(finetune_v1_generator)
+    stylegan_vectorfind_v6_main(finetune_v1_generator, device)
 
     # image generation test
     # TODO: implement

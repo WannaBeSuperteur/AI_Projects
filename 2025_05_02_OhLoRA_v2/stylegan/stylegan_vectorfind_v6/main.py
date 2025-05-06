@@ -53,7 +53,7 @@ def run_inference_test_before_training(finetune_v1_generator):
     infer.synthesize(finetune_v1_generator, num=50, save_dir=img_save_dir, z=None, label=None)
 
 
-def main(finetune_v1_generator):
+def main(finetune_v1_generator, device):
 
     # model structure PDF file
     create_model_structure_pdf(finetune_v1_generator)
@@ -62,4 +62,4 @@ def main(finetune_v1_generator):
     run_inference_test_before_training(finetune_v1_generator)
 
     # Fine Tuning
-    run_stylegan_vector_find(finetune_v1_generator)
+    run_stylegan_vector_find(finetune_v1_generator, device)
