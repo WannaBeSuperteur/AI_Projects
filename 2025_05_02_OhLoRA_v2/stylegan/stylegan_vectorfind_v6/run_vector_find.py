@@ -310,7 +310,16 @@ def find_property_score_vectors(svm_classifiers):
 # - stylegan/stylegan_vectorfind_v6/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 latent z vector 정보 저장
 
 def save_property_score_vectors_info(property_score_vectors):
-    raise NotImplementedError
+    eyes_vector_df = pd.DataFrame(property_score_vectors['eyes_vector'])
+    mouth_vector_df = pd.DataFrame(property_score_vectors['mouth_vector'])
+    pose_vector_df = pd.DataFrame(property_score_vectors['pose_vector'])
+
+    vector_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/property_score_vectors'
+    os.makedirs(vector_save_path, exist_ok=True)
+
+    eyes_vector_df.to_csv(f'{vector_save_path}/eyes_change_z_vector.csv')
+    mouth_vector_df.to_csv(f'{vector_save_path}/mouth_change_z_vector.csv')
+    pose_vector_df.to_csv(f'{vector_save_path}/pose_change_z_vector.csv')
 
 
 # StyleGAN-FineTune-v1 모델을 이용한 vector find 실시
