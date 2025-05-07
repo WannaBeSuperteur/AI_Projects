@@ -38,7 +38,7 @@ SVMS_PER_EACH_PROPERTY = 1      # also z-vector count for each property
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=10000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=25000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
@@ -104,7 +104,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=2000):
+def extract_best_and_worst_k_images(property_scores, k=5000):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
