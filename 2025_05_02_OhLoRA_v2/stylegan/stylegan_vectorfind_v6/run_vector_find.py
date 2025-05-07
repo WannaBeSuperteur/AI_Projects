@@ -42,7 +42,7 @@ SVMS_PER_EACH_PROPERTY = 1      # also z-vector count for each property
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=4000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=50000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
