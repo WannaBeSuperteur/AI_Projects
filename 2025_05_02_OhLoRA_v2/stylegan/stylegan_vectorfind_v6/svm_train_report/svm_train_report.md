@@ -1,3 +1,50 @@
+## 2025.05.07 09:40
+
+* total synthesized samples = **25,000**
+* use each property score top **5,000 (= 20.0%)** & bottom **5,000 (= 20.0%)** for SVM training
+
+```
+training SVM for eyes ...
+
+=== Support Vector Machine 0 for eyes ===
+accuracy          : 0.8420
+recall    (large) : 0.8610
+precision (large) : 0.8295
+F1 score  (large) : 0.8449
+recall    (small) : 0.8230
+precision (small) : 0.8555
+F1 score  (small) : 0.8389
+
+training SVM for mouth ...
+
+=== Support Vector Machine 0 for mouth ===
+accuracy          : 0.8165
+recall    (large) : 0.8150
+precision (large) : 0.8175
+F1 score  (large) : 0.8162
+recall    (small) : 0.8180
+precision (small) : 0.8156
+F1 score  (small) : 0.8168
+
+training SVM for pose ...
+
+=== Support Vector Machine 0 for pose ===
+accuracy          : 0.8265
+recall    (large) : 0.8110
+precision (large) : 0.8369
+F1 score  (large) : 0.8238
+recall    (small) : 0.8420
+precision (small) : 0.8167
+F1 score  (small) : 0.8291
+```
+
+**Generated Images**
+
+* 한 행의 12장 중 왼쪽 4장은 ```eyes```, 가운데 4장은 ```mouth```, 오른쪽 4장은 ```pose``` 속성을 변동시킴
+* 아래와 같이 **어느 정도 의도대로 잘 나오는** 조합이 **6 / 50 개 (12 %)**
+
+![image](../../../../images/250502_8.PNG)
+
 ## 2025.05.07 07:00
 
 * total synthesized samples = **600,000**
