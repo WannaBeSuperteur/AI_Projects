@@ -201,8 +201,8 @@ def run_tsne(latent_vectors, indices_info):
 
 # 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출하기 위한 SVM 학습
 # Create Date : 2025.05.06
-# Last Update Date : 2025.05.06
-# - 각 핵심 속성 값 별 여러 개의 SVM 학습
+# Last Update Date : 2025.05.07
+# - SVC(kernel='linear', ...) 대신 LinearSVC(...) 사용
 
 # Arguments:
 # - latent_vectors (NumPy array) : sampling 된 latent vector
@@ -246,7 +246,7 @@ def train_svm(latent_vectors, indices_info):
             valid_classes = ['largest'] * (len(largest_img_idxs) - largest_train_count) + ['smallest'] * (len(smallest_img_idxs) - smallest_train_count)
 
             # train SVM
-            svm_clf = svm.SVC(kernel='linear', random_state=2025+i)
+            svm_clf = svm.LinearSVC(random_state=2025+i)
             svm_classifier = svm_clf.fit(train_latent_vectors, train_classes)
 
             # valid SVM
