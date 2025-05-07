@@ -13,6 +13,10 @@ import time
 from sklearn import svm
 from sklearn.manifold import TSNE
 
+# use sklearnex (scikit-learn-intelex) library for speedup SVM training
+from sklearnex import patch_sklearn
+patch_sklearn()
+
 
 PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
