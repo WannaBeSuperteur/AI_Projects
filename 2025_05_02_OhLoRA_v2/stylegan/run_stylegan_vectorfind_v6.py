@@ -18,7 +18,7 @@ IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
-TEST_IMG_CASES = 50
+TEST_IMG_CASES = 20
 TEST_IMG_CASES_FOR_COMPARE = 100
 
 
@@ -107,6 +107,7 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
 def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_vector, pose_vector):
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
     n_vector_cnt = len(eyes_vector)  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
+    passed_count = 0
 
     # get Property Score CNN
     property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
@@ -181,7 +182,10 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
             all_data_dict['pose_corr'].append(round(pose_corrcoef, 4))
 
             # check passed
-            passed = abs(eyes_corrcoef) >= 0.8 and abs(mouth_corrcoef) >= 0.82 and abs(pose_corrcoef) >= 0.75
+            passed = abs(eyes_corrcoef) >= 0.8 and abs(mouth_corrcoef) >= 0.82 and abs(pose_corrcoef) >= 0.8
+            if passed:
+                passed_count += 1
+
             passed = 'O' if passed else 'X'
             all_data_dict['passed'].append(passed)
 
@@ -202,6 +206,22 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
     all_data_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/svm_train_report/test_result.csv'
     all_data_df.to_csv(all_data_save_path, index=False)
 
+    # compute statistics
+    eyes_corr_mean = all_data_df['eyes_corr'].mean()
+    mouth_corr_mean = all_data_df['mouth_corr'].mean()
+    pose_corr_mean = all_data_df['pose_corr'].mean()
+    sum_abs_corr_mean = all_data_df['sum_abs_corr'].mean()
+
+    statistics_df = pd.DataFrame({'eyes_corr_mean': [round(eyes_corr_mean, 4)],
+                                  'mouth_corr_mean': [round(mouth_corr_mean, 4)],
+                                  'pose_corr_mean': [round(pose_corr_mean, 4)],
+                                  'sum_abs_corr_mean': [round(sum_abs_corr_mean, 4)],
+                                  'passed': passed_count,
+                                  'passed_ratio': passed_count / (TEST_IMG_CASES_FOR_COMPARE * n_vector_cnt)})
+
+    statistics_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/svm_train_report/test_statistics.csv'
+    statistics_df.to_csv(statistics_save_path)
+
 
 # 이미지 50장 생성 후 비교 테스트를 위한, property score label (latent z vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
 # Create Date : 2025.05.07
@@ -216,7 +236,7 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
 # - pose_pm_order  (list(float)) : pose (고개 돌림) 속성에 대한 50장 각각의 property score label
 
 def get_pm_labels():
-    eyes_pms = [-1.6, 1.6]
+    eyes_pms = [-1.8, 2.4]
     mouth_pms = [-2.8, -1.4, 0.0, 1.4, 2.8]
     pose_pms = [-2.1, -1.4, -0.7, 0.0, 0.7]
 
