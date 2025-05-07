@@ -20,6 +20,8 @@ ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으�
 
 TEST_IMG_CASES = 20
 TEST_IMG_CASES_FOR_COMPARE = 100
+IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
+os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
 
 
 # Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환
@@ -46,8 +48,8 @@ def get_property_change_vectors():
 
 # latent vector z 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
 # Create Date : 2025.05.06
-# Last Update Date : 2025.05.07
-# - 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교하는 로직 추가
+# Last Update Date : 2025.05.06
+# - 각 핵심 속성 값 별 여러 개의 SVM 학습한 것을 반영
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)   : StyleGAN-FineTune-v1 의 Generator
@@ -102,7 +104,7 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
 
 # Returns:
 # - stylegan_vectorfind_v6/inference_test_after_training 디렉토리에 이미지 생성
-# - stylegan_vectorfind_v6/svm_train_report 디렉토리에 테스트 결과를 csv 파일로 저장
+# - stylegan_vectorfind_v6/image_generation_report 디렉토리에 테스트 결과를 csv 파일로 저장
 
 def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_vector, pose_vector):
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
@@ -120,6 +122,9 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
     all_data_dict = {'case': [], 'vector_no': [], 'passed': [],
                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': []}
 
+    code_part1s_np = np.zeros((TEST_IMG_CASES_FOR_COMPARE, ORIGINAL_HIDDEN_DIMS_Z))
+    code_part2s_np = np.zeros((TEST_IMG_CASES_FOR_COMPARE, ORIGINALLY_PROPERTY_DIMS_Z))
+
     # image generation
     for i in range(TEST_IMG_CASES_FOR_COMPARE):
         print(f'testing idx {i} ...')
@@ -129,6 +134,8 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
 
         code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)  # 512
         code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
+        code_part1s_np[i] = code_part1[0]
+        code_part2s_np[i] = code_part2[0]
 
         for vi in range(n_vector_cnt):
             eyes_scores, mouth_scores, pose_scores = [], [], []
@@ -203,7 +210,7 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
     all_data_df['sum_abs_corr'] = abs(all_data_df['eyes_corr']) + abs(all_data_df['mouth_corr']) + abs(all_data_df['pose_corr'])
     all_data_df['sum_abs_corr'] = all_data_df['sum_abs_corr'].apply(lambda x: round(x, 4))
 
-    all_data_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/svm_train_report/test_result.csv'
+    all_data_save_path = f'{IMAGE_GENERATION_REPORT_PATH}/test_result.csv'
     all_data_df.to_csv(all_data_save_path, index=False)
 
     # compute statistics
@@ -219,8 +226,17 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
                                   'passed': passed_count,
                                   'passed_ratio': passed_count / (TEST_IMG_CASES_FOR_COMPARE * n_vector_cnt)})
 
-    statistics_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/svm_train_report/test_statistics.csv'
+    statistics_save_path = f'{IMAGE_GENERATION_REPORT_PATH}/test_statistics.csv'
     statistics_df.to_csv(statistics_save_path)
+
+    # save latent codes (z)
+    code_part1s_np = np.round(code_part1s_np, 4)
+    code_part2s_np = np.round(code_part2s_np, 4)
+    code_all_np = np.concatenate([code_part1s_np, code_part2s_np], axis=1)
+
+    pd.DataFrame(code_part1s_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_part1.csv', index=False)
+    pd.DataFrame(code_part2s_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_part2.csv', index=False)
+    pd.DataFrame(code_all_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_all.csv', index=False)
 
 
 # 이미지 50장 생성 후 비교 테스트를 위한, property score label (latent z vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환

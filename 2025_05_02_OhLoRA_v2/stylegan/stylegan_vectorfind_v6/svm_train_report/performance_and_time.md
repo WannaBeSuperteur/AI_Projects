@@ -29,6 +29,7 @@ TBU
 
 ## 2. Performance & Training Time Record
 
+* performance (accuracy of ```eyes```, ```mouth``` and ```pose```) means **SVM accuracy**
 * $\displaystyle \frac{k}{n}$ is always **0.2 (= 20.0%)**
 
 | Options                  |                                 |                                                                                                                      | Time (sec)                |                                      |                                             | Performance                    |                                 |                                |
