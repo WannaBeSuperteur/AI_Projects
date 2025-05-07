@@ -108,7 +108,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=800):
+def extract_best_and_worst_k_images(property_scores, k=4000):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
