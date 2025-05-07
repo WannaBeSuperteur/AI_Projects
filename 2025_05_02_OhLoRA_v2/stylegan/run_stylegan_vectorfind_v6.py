@@ -197,6 +197,7 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
     # save all data
     all_data_df = pd.DataFrame(all_data_dict)
     all_data_df['sum_abs_corr'] = abs(all_data_df['eyes_corr']) + abs(all_data_df['mouth_corr']) + abs(all_data_df['pose_corr'])
+    all_data_df['sum_abs_corr'] = all_data_df['sum_abs_corr'].apply(lambda x: round(x, 4))
 
     all_data_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/svm_train_report/test_result.csv'
     all_data_df.to_csv(all_data_save_path, index=False)
@@ -215,9 +216,9 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
 # - pose_pm_order  (list(float)) : pose (고개 돌림) 속성에 대한 50장 각각의 property score label
 
 def get_pm_labels():
-    eyes_pms = [-1.0, 1.0]
-    mouth_pms = [-2.0, -1.0, 0.0, 1.0, 2.0]
-    pose_pms = [-2.0, -1.0, 0.0, 1.0, 2.0]
+    eyes_pms = [-1.6, 1.6]
+    mouth_pms = [-2.8, -1.4, 0.0, 1.4, 2.8]
+    pose_pms = [-2.1, -1.4, -0.7, 0.0, 0.7]
 
     eyes_pm_order = []
     mouth_pm_order = []
