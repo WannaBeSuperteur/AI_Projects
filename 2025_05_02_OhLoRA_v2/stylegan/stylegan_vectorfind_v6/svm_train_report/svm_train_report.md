@@ -1,3 +1,45 @@
+## 2025.05.07 18:09
+
+* total synthesized samples = **50,000**
+* use each property score top **10,000 (= 20.0%)** & bottom **10,000 (= 20.0%)** for SVM training
+* **used scikit-learn-intelex & LinearSVC**
+
+```
+=== Support Vector Machine 0 for eyes ===
+accuracy          : 0.8200
+recall    (large) : 0.8235
+precision (large) : 0.8178
+F1 score  (large) : 0.8206
+recall    (small) : 0.8165
+precision (small) : 0.8223
+F1 score  (small) : 0.8194
+
+=== Support Vector Machine 0 for mouth ===
+accuracy          : 0.8245
+recall    (large) : 0.8260
+precision (large) : 0.8235
+F1 score  (large) : 0.8248
+recall    (small) : 0.8230
+precision (small) : 0.8255
+F1 score  (small) : 0.8242
+
+=== Support Vector Machine 0 for pose ===
+accuracy          : 0.8410
+recall    (large) : 0.8490
+precision (large) : 0.8356
+F1 score  (large) : 0.8423
+recall    (small) : 0.8330
+precision (small) : 0.8465
+F1 score  (small) : 0.8397
+```
+
+**Generated Images**
+
+* 한 행의 12장 중 왼쪽 4장은 ```eyes```, 가운데 4장은 ```mouth```, 오른쪽 4장은 ```pose``` 속성을 변동시킴
+* 아래와 같이 **의도대로 꽤 잘 나오는** 조합이 **4 / 50 개 (8 %)**
+
+![image](../../../../images/250502_9.PNG)
+
 ## 2025.05.07 09:40
 
 * total synthesized samples = **25,000**
