@@ -2,7 +2,7 @@
 
 * total synthesized samples = **50,000**
 * use each property score top **10,000 (= 20.0%)** & bottom **10,000 (= 20.0%)** for SVM training
-* **used scikit-learn-intelex & LinearSVC**
+* **used scikit-learn-intelex & ```LinearSVC``` (instead of ```SVC``` with ```kernel='linear'```)**
 
 ```
 === Support Vector Machine 0 for eyes ===
