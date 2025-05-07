@@ -3,10 +3,12 @@ import stylegan_common.stylegan_generator_inference as infer
 
 import numpy as np
 import torch
-import os
 import pandas as pd
 import plotly.express as px
+
+import os
 import random
+import time
 
 from sklearn import svm
 from sklearn.manifold import TSNE
@@ -36,7 +38,7 @@ SVMS_PER_EACH_PROPERTY = 1      # also z-vector count for each property
 #                                    'mouth_cnn_score': list(float),
 #                                    'pose_cnn_score': list(float)}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=100000):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=1000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
@@ -102,7 +104,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': list(int), 'mouth_smallest': list(int),
 #                          'pose_largest': list(int), 'pose_smallest': list(int)}
 
-def extract_best_and_worst_k_images(property_scores, k=20000):
+def extract_best_and_worst_k_images(property_scores, k=200):
 
     # sort scores with index
     eyes_cnn_scores_with_idx = []
@@ -338,7 +340,8 @@ def save_property_score_vectors_info(property_score_vectors):
 
 # StyleGAN-FineTune-v1 모델을 이용한 vector find 실시
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.07
+# - time check 추가
 
 # Arguments:
 # - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
@@ -348,12 +351,21 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
     property_score_cnn = load_property_cnn_model(property_cnn_path, device)
 
     # latent vector z 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
+    sampling_start_at = time.time()
     latent_vectors, property_scores = sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn)
+    print(f'sampling (from latent vector z) running time (s) : {time.time() - sampling_start_at}')
+
     indices_info = extract_best_and_worst_k_images(property_scores)
+
+    tsne_start_at = time.time()
     run_tsne(latent_vectors, indices_info)
+    print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
 
     # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 latent z vector 도출
+    svm_train_start_at = time.time()
     svm_classifiers = train_svm(latent_vectors, indices_info)
+    print(f'SVM training running time (s) : {time.time() - svm_train_start_at}')
+
     property_score_vectors = find_property_score_vectors(svm_classifiers)
 
     save_property_score_vectors_info(property_score_vectors)
