@@ -19,7 +19,9 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 20
-TEST_IMG_CASES_FOR_COMPARE = 100
+TEST_IMG_CASES_FOR_COMPARE_MAX = 1000
+TEST_IMG_CASES_NEEDED_PASS = 5
+
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
 
@@ -94,7 +96,8 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.05.07
-# Last Update Date : -
+# Last Update Date : 2025.05.08
+# - 정해진 PASSED (비교 테스트 합격) 케이스 개수를 채울 때까지 반복하는 메커니즘 적용
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)   : StyleGAN-FineTune-v1 의 Generator
@@ -122,13 +125,12 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
     all_data_dict = {'case': [], 'vector_no': [], 'passed': [],
                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': []}
 
-    code_part1s_np = np.zeros((TEST_IMG_CASES_FOR_COMPARE, ORIGINAL_HIDDEN_DIMS_Z))
-    code_part2s_np = np.zeros((TEST_IMG_CASES_FOR_COMPARE, ORIGINALLY_PROPERTY_DIMS_Z))
+    code_part1s_np = np.zeros((TEST_IMG_CASES_FOR_COMPARE_MAX, ORIGINAL_HIDDEN_DIMS_Z))
+    code_part2s_np = np.zeros((TEST_IMG_CASES_FOR_COMPARE_MAX, ORIGINALLY_PROPERTY_DIMS_Z))
+    generated_count = 0
 
     # image generation
-    for i in range(TEST_IMG_CASES_FOR_COMPARE):
-        print(f'testing idx {i} ...')
-
+    for i in range(TEST_IMG_CASES_FOR_COMPARE_MAX):
         save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_after_training/test_{i:04d}'
         os.makedirs(save_dir, exist_ok=True)
 
@@ -189,7 +191,11 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
             all_data_dict['pose_corr'].append(round(pose_corrcoef, 4))
 
             # check passed
-            passed = abs(eyes_corrcoef) >= 0.8 and abs(mouth_corrcoef) >= 0.82 and abs(pose_corrcoef) >= 0.8
+            generated_count += 1
+
+            passed = abs(eyes_corrcoef) >= 0.8 and abs(mouth_corrcoef) >= 0.8 and abs(pose_corrcoef) >= 0.8
+            pass_diff = max(0.8 - abs(eyes_corrcoef), 0) + max(0.8 - abs(mouth_corrcoef), 0) + max(0.8 - abs(pose_corrcoef), 0)
+
             if passed:
                 passed_count += 1
 
@@ -204,6 +210,11 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
 
             case_data_save_path = f'{save_dir}/case_{i:03d}_{vi:03d}_result.csv'
             case_data_df.to_csv(case_data_save_path, index=False)
+
+            print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current margin: {round(pass_diff, 4)})')
+
+        if passed_count >= TEST_IMG_CASES_NEEDED_PASS:
+            break
 
     # save all data
     all_data_df = pd.DataFrame(all_data_dict)
@@ -224,14 +235,14 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
                                   'pose_corr_mean': [round(pose_corr_mean, 4)],
                                   'sum_abs_corr_mean': [round(sum_abs_corr_mean, 4)],
                                   'passed': passed_count,
-                                  'passed_ratio': passed_count / (TEST_IMG_CASES_FOR_COMPARE * n_vector_cnt)})
+                                  'passed_ratio': passed_count / (TEST_IMG_CASES_FOR_COMPARE_MAX * n_vector_cnt)})
 
     statistics_save_path = f'{IMAGE_GENERATION_REPORT_PATH}/test_statistics.csv'
     statistics_df.to_csv(statistics_save_path)
 
     # save latent codes (z)
-    code_part1s_np = np.round(code_part1s_np, 4)
-    code_part2s_np = np.round(code_part2s_np, 4)
+    code_part1s_np = np.round(code_part1s_np[:generated_count], 4)
+    code_part2s_np = np.round(code_part2s_np[:generated_count], 4)
     code_all_np = np.concatenate([code_part1s_np, code_part2s_np], axis=1)
 
     pd.DataFrame(code_part1s_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_part1.csv', index=False)
