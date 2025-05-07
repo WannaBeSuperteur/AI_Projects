@@ -1,3 +1,38 @@
+## 2025.05.08 03:17
+
+* total synthesized samples = **300,000**
+* use each property score top **30,000 (= 10.0%)** & bottom **30,000 (= 10.0%)** for SVM training
+* **used scikit-learn-intelex & ```LinearSVC``` (instead of ```SVC``` with ```kernel='linear'```)**
+
+```
+=== Support Vector Machine 0 for eyes ===
+accuracy          : 0.8579
+recall    (large) : 0.8507
+precision (large) : 0.8632
+F1 score  (large) : 0.8569
+recall    (small) : 0.8652
+precision (small) : 0.8528
+F1 score  (small) : 0.8589
+
+=== Support Vector Machine 0 for mouth ===
+accuracy          : 0.8516
+recall    (large) : 0.8483
+precision (large) : 0.8539
+F1 score  (large) : 0.8511
+recall    (small) : 0.8548
+precision (small) : 0.8493
+F1 score  (small) : 0.8521
+
+=== Support Vector Machine 0 for pose ===
+accuracy          : 0.8777
+recall    (large) : 0.8700
+precision (large) : 0.8835
+F1 score  (large) : 0.8767
+recall    (small) : 0.8853
+precision (small) : 0.8720
+F1 score  (small) : 0.8786
+```
+
 ## 2025.05.07 18:09
 
 * total synthesized samples = **50,000**
