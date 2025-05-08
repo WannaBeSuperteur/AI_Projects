@@ -20,7 +20,7 @@ ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으�
 
 TEST_IMG_CASES = 20
 TEST_IMG_CASES_FOR_COMPARE_MAX = 1000
-TEST_IMG_CASES_NEEDED_PASS = 5
+TEST_IMG_CASES_NEEDED_PASS = 12
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
@@ -98,6 +98,7 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
 # Create Date : 2025.05.07
 # Last Update Date : 2025.05.08
 # - 정해진 PASSED (비교 테스트 합격) 케이스 개수를 채울 때까지 반복하는 메커니즘 적용
+# - 이미지 생성 도중 각 케이스에 대한 테스트 결과 출력
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)   : StyleGAN-FineTune-v1 의 Generator
@@ -193,8 +194,13 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
             # check passed
             generated_count += 1
 
-            passed = abs(eyes_corrcoef) >= 0.8 and abs(mouth_corrcoef) >= 0.8 and abs(pose_corrcoef) >= 0.8
-            pass_diff = max(0.8 - abs(eyes_corrcoef), 0) + max(0.8 - abs(mouth_corrcoef), 0) + max(0.8 - abs(pose_corrcoef), 0)
+            passed = abs(eyes_corrcoef) >= 0.75 and abs(mouth_corrcoef) >= 0.77 and abs(pose_corrcoef) >= 0.8
+            eyes_diff = max(0.75 - abs(eyes_corrcoef), 0)
+            mouth_diff = max(0.77 - abs(mouth_corrcoef), 0)
+            pose_diff = max(0.8 - abs(pose_corrcoef), 0)
+
+            pass_diff = eyes_diff + mouth_diff + pose_diff
+            diff = {'eyes': round(eyes_diff, 4), 'mouth': round(mouth_diff, 4), 'pose': round(pose_diff, 4)}
 
             if passed:
                 passed_count += 1
@@ -211,7 +217,8 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
             case_data_save_path = f'{save_dir}/case_{i:03d}_{vi:03d}_result.csv'
             case_data_df.to_csv(case_data_save_path, index=False)
 
-            print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current margin: {round(pass_diff, 4)})')
+            print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current margin: {round(pass_diff, 4)}, '
+                  f'diff: {diff})')
 
         if passed_count >= TEST_IMG_CASES_NEEDED_PASS:
             break
