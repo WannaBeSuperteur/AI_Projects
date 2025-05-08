@@ -242,7 +242,7 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
                                   'pose_corr_mean': [round(pose_corr_mean, 4)],
                                   'sum_abs_corr_mean': [round(sum_abs_corr_mean, 4)],
                                   'passed': passed_count,
-                                  'passed_ratio': passed_count / (TEST_IMG_CASES_FOR_COMPARE_MAX * n_vector_cnt)})
+                                  'passed_ratio': passed_count / (generated_count * n_vector_cnt)})
 
     statistics_save_path = f'{IMAGE_GENERATION_REPORT_PATH}/test_statistics.csv'
     statistics_df.to_csv(statistics_save_path)
