@@ -284,10 +284,12 @@ def run_tsne(latent_vectors_by_group, indices_info):
 #                                                 {'eyes': dict(SVM), 'mouth': dict(SVM), 'pose': dict(SVM)}
 
 # Returns:
-# - svm_classifiers              (dict(dict(SVM))) : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
-#                                                    {'eyes': dict(SVM), 'mouth': dict(SVM), 'pose': dict(SVM)}
-# - total_valid_cnt_info         (dict(int))       : 각 핵심 속성 값 별 전체 valid data 개수 정보
-# - total_valid_correct_cnt_info (dict(int))       : 각 핵심 속성 값 별 SVM 예측 (largest / smallest) 이 맞은 valid data 개수 정보
+# - svm_classifiers              (dict)      : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
+#                                              {'eyes': dict(list(SVM)),
+#                                               'mouth': dict(list(SVM)),
+#                                               'pose': dict(list(SVM))}
+# - total_valid_cnt_info         (dict(int)) : 각 핵심 속성 값 별 전체 valid data 개수 정보
+# - total_valid_correct_cnt_info (dict(int)) : 각 핵심 속성 값 별 SVM 예측 (largest / smallest) 이 맞은 valid data 개수 정보
 
 def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers):
     train_ratio = 0.8
@@ -298,6 +300,7 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
     for property_name in PROPERTY_NAMES:
         total_valid_cnt = 0
         total_valid_correct_cnt = 0
+        svm_classifiers[property_name][group_name] = []
 
         for i in range(SVMS_PER_EACH_PROPERTY):
 
@@ -334,7 +337,7 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
             total_valid_cnt += large_large + large_small + small_large + small_small
             total_valid_correct_cnt += large_large + small_small
 
-            svm_classifiers[property_name][group_name] = svm_classifier
+            svm_classifiers[property_name][group_name].append(svm_classifier)
 
         # compute accuracy of all SVMs for group
         accuracy = total_valid_correct_cnt / total_valid_cnt
@@ -348,18 +351,20 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
 
 # SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출 (최종 z vector)
 # Create Date : 2025.05.06
-# Last Update Date : 2025.05.06
-# - 각 핵심 속성 값 별 여러 개의 SVM 학습한 것을 반영
+# Last Update Date : 2025.05.08
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화
 
 # Arguments:
-# - svm_classifiers (dict(dict(SVM))) : 학습된 SVM (Support Vector Machine) 의 dict (각 그룹별)
-#                                       {'eyes': dict(SVM), 'mouth': dict(SVM), 'pose': dict(SVM)}
+# - svm_classifiers (dict) : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
+#                            {'eyes': dict(list(SVM)),
+#                             'mouth': dict(list(SVM)),
+#                             'pose': dict(list(SVM))}
 
 # Returns:
-# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector
-#                                   {'eyes_vector': NumPy array,
-#                                    'mouth_vector': NumPy array,
-#                                    'pose_vector': NumPy array}
+# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector (각 그룹 별)
+#                                   {'eyes_vector': dict(NumPy array),
+#                                    'mouth_vector': dict(NumPy array),
+#                                    'pose_vector': dict(NumPy array)}
 
 def find_property_score_vectors(svm_classifiers):
     dim = ORIGINAL_HIDDEN_DIMS_Z + ORIGINALLY_PROPERTY_DIMS_Z
@@ -367,14 +372,21 @@ def find_property_score_vectors(svm_classifiers):
     property_score_vectors = {}
 
     for property_name in PROPERTY_NAMES:
-        classifiers = svm_classifiers[property_name]
-        property_score_vectors[f'{property_name}_vector'] = []
+        property_score_vectors[f'{property_name}_vector'] = {}
 
-        for classifier in classifiers:
-            direction = classifier.coef_.reshape(1, dim).astype(np.float32)
-            direction = direction / np.linalg.norm(direction)
+        for group_name in GROUP_NAMES:
+            classifiers = svm_classifiers[property_name][group_name]
+            property_score_vectors[f'{property_name}_vector'][group_name] = []
 
-            property_score_vectors[f'{property_name}_vector'].append(direction.flatten())
+            for classifier in classifiers:
+                direction = classifier.coef_.reshape(1, dim).astype(np.float32)
+                direction = direction / np.linalg.norm(direction)
+
+                property_score_vectors[f'{property_name}_vector'][group_name].append(list(direction.flatten()))
+
+            # convert to NumPy Array
+            property_score_vectors[f'{property_name}_vector'][group_name] = (
+                np.array(property_score_vectors[f'{property_name}_vector'][group_name]))
 
     return property_score_vectors
 
@@ -384,10 +396,10 @@ def find_property_score_vectors(svm_classifiers):
 # Last Update Date : -
 
 # Arguments:
-# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector
-#                                   {'eyes_vector': NumPy array,
-#                                    'mouth_vector': NumPy array,
-#                                    'pose_vector': NumPy array}
+# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector (각 그룹 별)
+#                                   {'eyes_vector': dict(NumPy array),
+#                                    'mouth_vector': dict(NumPy array),
+#                                    'pose_vector': dict(NumPy array)}
 
 # Returns:
 # - stylegan/stylegan_vectorfind_v6/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 latent z vector 정보 저장
@@ -450,7 +462,6 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
         entire_valid_correct = entire_valid_correct_count[property_name]
         entire_accuracy = entire_valid_correct / entire_valid
         print(f'entire accuracy for {property_name} : {entire_accuracy:.4f} ({entire_valid_correct} / {entire_valid})')
-
     print(f'\nSVM training running time (s) : {time.time() - svm_train_start_at}')
 
     property_score_vectors = find_property_score_vectors(svm_classifiers)
