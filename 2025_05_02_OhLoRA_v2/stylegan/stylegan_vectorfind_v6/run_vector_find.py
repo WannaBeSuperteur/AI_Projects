@@ -135,9 +135,10 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
     return latent_vectors_by_group, property_scores
 
 
-# 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지를 각각 추출
+# 각 핵심 속성 값이 가장 큰 & 가장 작은 ratio 비율만큼의 이미지를 그룹별로 각각 추출
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.08
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화
 
 # Arguments:
 # - property_scores (dict) : sampling 된 latent z 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
@@ -148,37 +149,49 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 
 # Returns:
 # - indices_info (dict) : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
-#                         {'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                          'mouth_largest': list(int), 'mouth_smallest': list(int),
-#                          'pose_largest': list(int), 'pose_smallest': list(int)}
+#                         {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
+#                          'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
+#                          'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
-def extract_best_and_worst_k_images(property_scores, k=20):
+def extract_best_and_worst_k_images(property_scores, ratio=0.2):
+    group_names = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
+
+    eyes_largest_idxs = dict.fromkeys(group_names, [])
+    mouth_largest_idxs = dict.fromkeys(group_names, [])
+    pose_largest_idxs = dict.fromkeys(group_names, [])
+
+    eyes_smallest_idxs = dict.fromkeys(group_names, [])
+    mouth_smallest_idxs = dict.fromkeys(group_names, [])
+    pose_smallest_idxs = dict.fromkeys(group_names, [])
 
     # sort scores with index
-    eyes_cnn_scores_with_idx = []
-    for i in range(len(property_scores['eyes_cnn_score'])):
-        eyes_cnn_scores_with_idx.append([i, property_scores['eyes_cnn_score'][i]])
+    for group_name in group_names:
+        eyes_cnn_scores_with_idx = []
+        for i in range(len(property_scores['eyes_cnn_score'][group_name])):
+            eyes_cnn_scores_with_idx.append([i, property_scores['eyes_cnn_score'][group_name][i]])
 
-    mouth_cnn_scores_with_idx = []
-    for i in range(len(property_scores['mouth_cnn_score'])):
-        mouth_cnn_scores_with_idx.append([i, property_scores['mouth_cnn_score'][i]])
+        mouth_cnn_scores_with_idx = []
+        for i in range(len(property_scores['mouth_cnn_score'][group_name])):
+            mouth_cnn_scores_with_idx.append([i, property_scores['mouth_cnn_score'][group_name][i]])
 
-    pose_cnn_scores_with_idx = []
-    for i in range(len(property_scores['pose_cnn_score'])):
-        pose_cnn_scores_with_idx.append([i, property_scores['pose_cnn_score'][i]])
+        pose_cnn_scores_with_idx = []
+        for i in range(len(property_scores['pose_cnn_score'][group_name])):
+            pose_cnn_scores_with_idx.append([i, property_scores['pose_cnn_score'][group_name][i]])
 
-    eyes_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
-    mouth_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
-    pose_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
+        eyes_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
+        mouth_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
+        pose_cnn_scores_with_idx.sort(key=lambda x: x[1], reverse=True)
 
-    # generate largest/smallest score index info
-    eyes_largest_idxs = sorted([x[0] for x in eyes_cnn_scores_with_idx][:k])
-    mouth_largest_idxs = sorted([x[0] for x in mouth_cnn_scores_with_idx][:k])
-    pose_largest_idxs = sorted([x[0] for x in pose_cnn_scores_with_idx][:k])
+        # generate largest/smallest score index info
+        k = max(int(ratio * len(eyes_cnn_scores_with_idx)), 1)
 
-    eyes_smallest_idxs = sorted([x[0] for x in eyes_cnn_scores_with_idx][-k:])
-    mouth_smallest_idxs = sorted([x[0] for x in mouth_cnn_scores_with_idx][-k:])
-    pose_smallest_idxs = sorted([x[0] for x in pose_cnn_scores_with_idx][-k:])
+        eyes_largest_idxs[group_name] = sorted([x[0] for x in eyes_cnn_scores_with_idx][:k])
+        mouth_largest_idxs[group_name] = sorted([x[0] for x in mouth_cnn_scores_with_idx][:k])
+        pose_largest_idxs[group_name] = sorted([x[0] for x in pose_cnn_scores_with_idx][:k])
+
+        eyes_smallest_idxs[group_name] = sorted([x[0] for x in eyes_cnn_scores_with_idx][-k:])
+        mouth_smallest_idxs[group_name] = sorted([x[0] for x in mouth_cnn_scores_with_idx][-k:])
+        pose_smallest_idxs[group_name] = sorted([x[0] for x in pose_cnn_scores_with_idx][-k:])
 
     indices_info = {
         'eyes_largest': eyes_largest_idxs, 'eyes_smallest': eyes_smallest_idxs,
@@ -196,9 +209,9 @@ def extract_best_and_worst_k_images(property_scores, k=20):
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
 # - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
-#                                                 {'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                                                  'mouth_largest': list(int), 'mouth_smallest': list(int),
-#                                                  'pose_largest': list(int), 'pose_smallest': list(int)}
+#                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
+#                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
+#                                                  'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 # Returns:
 # - stylegan/stylegan_vectorfind_v6/tsne_result 디렉토리에 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
@@ -251,9 +264,9 @@ def run_tsne(latent_vectors_by_group, indices_info):
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
 # - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
-#                                                 {'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                                                  'eyes_largest': list(int), 'eyes_smallest': list(int),
-#                                                  'eyes_largest': list(int), 'eyes_smallest': list(int)}
+#                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
+#                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
+#                                                  'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 # Returns:
 # - svm_classifiers (dict(list)) : 학습된 SVM (Support Vector Machine) 의 list
