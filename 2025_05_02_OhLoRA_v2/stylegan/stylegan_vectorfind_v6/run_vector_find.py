@@ -72,7 +72,7 @@ def compute_medians():
 #                                                  'mouth_cnn_score': dict(list(float)),
 #                                                  'pose_cnn_score': dict(list(float))}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=100):
+def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=1000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_during_training'
     medians = compute_medians()  # returned values : -0.2709, 0.3052, 0.0742
 
@@ -126,11 +126,16 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
                 pose_cnn_scores[group_name].append(property_score_np[0][4])
 
                 latent_vector = latent_vectors[i * BATCH_SIZE + image_no]
-                latent_vectors_by_group[group_name].append(latent_vector)
+                latent_vectors_by_group[group_name].append(list(latent_vector))
 
     property_scores = {'eyes_cnn_score': eyes_cnn_scores,
                        'mouth_cnn_score': mouth_cnn_scores,
                        'pose_cnn_score': pose_cnn_scores}
+
+    group_names = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
+    for group_name in group_names:
+        latent_vectors_by_group[group_name] = np.array(latent_vectors_by_group[group_name])
+        print(f'generated images in group {group_name} : {len(latent_vectors_by_group[group_name])}')
 
     return latent_vectors_by_group, property_scores
 
@@ -156,13 +161,13 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 def extract_best_and_worst_k_images(property_scores, ratio=0.2):
     group_names = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 
-    eyes_largest_idxs = dict.fromkeys(group_names, [])
-    mouth_largest_idxs = dict.fromkeys(group_names, [])
-    pose_largest_idxs = dict.fromkeys(group_names, [])
+    eyes_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    mouth_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    pose_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
 
-    eyes_smallest_idxs = dict.fromkeys(group_names, [])
-    mouth_smallest_idxs = dict.fromkeys(group_names, [])
-    pose_smallest_idxs = dict.fromkeys(group_names, [])
+    eyes_smallest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    mouth_smallest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    pose_smallest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
 
     # sort scores with index
     for group_name in group_names:
@@ -202,9 +207,10 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.2):
     return indices_info
 
 
-# 각 핵심 속성 값 별 핵심 속성 값이 가장 큰 & 작은 k 장의 이미지에 대해 t-SNE 를 이용하여 핵심 속성 값의 시각적 분포 파악
+# 각 핵심 속성 값 별 핵심 속성 값이 가장 큰 & 작은 k 장의 이미지에 대해 t-SNE 를 이용하여, 그룹별로 핵심 속성 값의 시각적 분포 파악
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.08
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화
 
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
@@ -214,46 +220,49 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.2):
 #                                                  'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 # Returns:
-# - stylegan/stylegan_vectorfind_v6/tsne_result 디렉토리에 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
+# - stylegan/stylegan_vectorfind_v6/tsne_result 디렉토리에 그룹 별 & 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
 
 def run_tsne(latent_vectors_by_group, indices_info):
     property_names = ['eyes', 'mouth', 'pose']
+    group_names = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
+
     tsne_result_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/tsne_result'
     os.makedirs(tsne_result_path, exist_ok=True)
 
     for property_name in property_names:
-        largest_img_idxs = indices_info[f'{property_name}_largest']
-        smallest_img_idxs = indices_info[f'{property_name}_smallest']
-        idxs = largest_img_idxs + smallest_img_idxs
-        indexed_latent_vectors = latent_vectors_by_group[idxs]
+        for group_name in group_names:
+            largest_img_idxs = indices_info[f'{property_name}_largest'][group_name]
+            smallest_img_idxs = indices_info[f'{property_name}_smallest'][group_name]
+            idxs = largest_img_idxs + smallest_img_idxs
+            indexed_latent_vectors = latent_vectors_by_group[group_name][idxs]
 
-        # run t-SNE
-        print(f'running t-SNE for {property_name} ...')
-        tsne_result = TSNE(n_components=2,
-                           perplexity=50,
-                           learning_rate=100,
-                           n_iter=1000,
-                           random_state=2025).fit_transform(indexed_latent_vectors)
+            # run t-SNE
+            print(f'running t-SNE for {property_name} / {group_name} ...')
+            tsne_result = TSNE(n_components=2,
+                               perplexity=min(50, len(indexed_latent_vectors) - 1),
+                               learning_rate=100,
+                               n_iter=1000,
+                               random_state=2025).fit_transform(indexed_latent_vectors)
 
-        # save t-SNE plot result images
-        classes = ['largest'] * len(largest_img_idxs) + ['smallest'] * len(smallest_img_idxs)
+            # save t-SNE plot result images
+            classes = ['largest'] * len(largest_img_idxs) + ['smallest'] * len(smallest_img_idxs)
 
-        data_dict = {
-            'dimension_0': tsne_result[:, 0],
-            'dimension_1': tsne_result[:, 1],
-            'class': classes
-        }
-        data_df = pd.DataFrame(data_dict)
+            data_dict = {
+                'dimension_0': tsne_result[:, 0],
+                'dimension_1': tsne_result[:, 1],
+                'class': classes
+            }
+            data_df = pd.DataFrame(data_dict)
 
-        fig = px.scatter(data_df,
-                         x='dimension_0',
-                         y='dimension_1',
-                         color='class',
-                         title=f't-SNE result of property {property_name}')
+            fig = px.scatter(data_df,
+                             x='dimension_0',
+                             y='dimension_1',
+                             color='class',
+                             title=f't-SNE result of property {property_name} / {group_name}')
 
-        fig.update_layout(width=900, height=750)
-        fig.update_traces(marker=dict(size=5))
-        fig.write_image(f'{tsne_result_path}/tsne_result_{property_name}.png')
+            fig.update_layout(width=720, height=600)
+            fig.update_traces(marker=dict(size=4))
+            fig.write_image(f'{tsne_result_path}/tsne_result_{property_name}_{group_name}.png')
 
 
 # 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출하기 위한 SVM 학습
