@@ -30,6 +30,7 @@ GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
 medians = compute_medians()  # returned values : -0.2709, 0.3052, 0.0742
+kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 
 # Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환 ('hhh', 'hhl', ..., 'lll' 의 각 그룹 별)
@@ -69,6 +70,41 @@ def get_property_change_vectors():
     return eyes_vectors, mouth_vectors, pose_vectors
 
 
+# latent code (z) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhh', 'hhl', ..., 'lll') 반환
+# Create Date : 2025.05.08
+# Last Update Date : -
+
+# Arguments:
+# - code_part1 (Tensor) : latent code (z) 에 해당하는 부분 (dim: 512)
+# - code_part2 (Tensor) : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 3)
+# - save_dir   (str)    : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v6/inference_test_after_training)
+# - i          (int)    : case index
+# - vi         (int)    : n vector index
+
+# Returns:
+# - group_name (str) : 이미지의 group 이름 ('hhh', 'hhl', ..., 'lll' 중 하나)
+
+def get_group_name(code_part1, code_part2, save_dir, i, vi):
+    images = finetune_v1_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
+    images = postprocess_image(images.detach().cpu().numpy())
+    save_image(os.path.join(save_dir, f'original_case_{i:02d}_{vi:02d}.jpg'), images[0])
+
+    # input generated image to Property Score CNN -> get appropriate group of generated image
+    with torch.no_grad():
+        image = read_image(f'{save_dir}/original_case_{i:02d}_{vi:02d}.jpg')
+        image = stylegan_transform(image)
+
+        property_scores = property_score_cnn(image.unsqueeze(0).cuda())
+        property_scores_np = property_scores.detach().cpu().numpy()
+
+    hair_color_group = 'h' if property_scores_np[0][1] >= medians['hair_color'] else 'l'
+    hair_length_group = 'h' if property_scores_np[0][2] >= medians['hair_length'] else 'l'
+    background_mean_group = 'h' if property_scores_np[0][5] >= medians['background_mean'] else 'l'
+
+    group_name = hair_color_group + hair_length_group + background_mean_group
+    return group_name
+
+
 # latent vector z 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
 # Create Date : 2025.05.06
 # Last Update Date : 2025.05.08
@@ -85,7 +121,6 @@ def get_property_change_vectors():
 # - stylegan_vectorfind_v6/inference_test_after_training 디렉토리에 이미지 생성 결과 저장
 
 def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_vectors, mouth_vectors, pose_vectors):
-    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_after_training'
     os.makedirs(save_dir, exist_ok=True)
 
@@ -97,23 +132,9 @@ def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_ve
         code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
 
         for vi in range(n_vector_cnt):
-            images = finetune_v1_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
-            images = postprocess_image(images.detach().cpu().numpy())
-            save_image(os.path.join(save_dir, f'original_case_{i:02d}_{vi:02d}.jpg'), images[0])
+            group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
 
-            # input generated image to Property Score CNN -> get appropriate group of generated image
-            with torch.no_grad():
-                image = read_image(f'{save_dir}/original_case_{i:02d}_{vi:02d}.jpg')
-                image = stylegan_transform(image)
-
-                property_scores = property_score_cnn(image.unsqueeze(0).cuda())
-                property_scores_np = property_scores.detach().cpu().numpy()
-
-            hair_color_group = 'h' if property_scores_np[0][1] >= medians['hair_color'] else 'l'
-            hair_length_group = 'h' if property_scores_np[0][2] >= medians['hair_length'] else 'l'
-            background_mean_group = 'h' if property_scores_np[0][5] >= medians['background_mean'] else 'l'
-            group_name = hair_color_group + hair_length_group + background_mean_group
-
+            # run image generation test
             for property_name, vector_dict in zip(PROPERTY_NAMES, vector_dicts):
                 vector = vector_dict[group_name]
                 pms = [-2.0, -0.67, 0.67, 2.0]
