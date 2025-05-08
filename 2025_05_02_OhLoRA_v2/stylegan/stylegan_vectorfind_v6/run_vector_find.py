@@ -393,7 +393,8 @@ def find_property_score_vectors(svm_classifiers):
 
 # 핵심 속성 값의 변화를 나타내는 latent z vector 에 대한 정보 저장
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.08
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화
 
 # Arguments:
 # - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector (각 그룹 별)
@@ -405,16 +406,17 @@ def find_property_score_vectors(svm_classifiers):
 # - stylegan/stylegan_vectorfind_v6/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 latent z vector 정보 저장
 
 def save_property_score_vectors_info(property_score_vectors):
-    eyes_vector_df = pd.DataFrame(property_score_vectors['eyes_vector'])
-    mouth_vector_df = pd.DataFrame(property_score_vectors['mouth_vector'])
-    pose_vector_df = pd.DataFrame(property_score_vectors['pose_vector'])
-
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/property_score_vectors'
     os.makedirs(vector_save_dir, exist_ok=True)
 
-    eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_z_vector.csv')
-    mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_z_vector.csv')
-    pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_z_vector.csv')
+    for group_name in GROUP_NAMES:
+        eyes_vector_df = pd.DataFrame(property_score_vectors['eyes_vector'][group_name])
+        mouth_vector_df = pd.DataFrame(property_score_vectors['mouth_vector'][group_name])
+        pose_vector_df = pd.DataFrame(property_score_vectors['pose_vector'][group_name])
+
+        eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_z_vector_{group_name}.csv')
+        mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_z_vector_{group_name}.csv')
+        pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_z_vector_{group_name}.csv')
 
 
 # StyleGAN-FineTune-v1 모델을 이용한 vector find 실시
