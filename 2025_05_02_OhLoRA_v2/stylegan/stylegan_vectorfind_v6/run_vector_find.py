@@ -25,6 +25,8 @@ ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으�
 BATCH_SIZE = 20
 SVMS_PER_EACH_PROPERTY = 1      # also z-vector count for each property
 
+GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
+
 
 # Latent Vector z 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화하기 위해,
 # hair_color, hair_length, background_mean 핵심 속성 값의 중앙값 계산
@@ -102,7 +104,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
                                   label=additional_,
                                   img_name_start_idx=0,
                                   verbose=False,
-                                  save_img=True,
+                                  save_img=False,
                                   return_img=True)
 
         with torch.no_grad():
@@ -132,8 +134,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
                        'mouth_cnn_score': mouth_cnn_scores,
                        'pose_cnn_score': pose_cnn_scores}
 
-    group_names = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
-    for group_name in group_names:
+    for group_name in GROUP_NAMES:
         latent_vectors_by_group[group_name] = np.array(latent_vectors_by_group[group_name])
         print(f'generated images in group {group_name} : {len(latent_vectors_by_group[group_name])}')
 
@@ -159,8 +160,6 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 def extract_best_and_worst_k_images(property_scores, ratio=0.2):
-    group_names = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
-
     eyes_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
     mouth_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
     pose_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
@@ -170,7 +169,7 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.2):
     pose_smallest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
 
     # sort scores with index
-    for group_name in group_names:
+    for group_name in GROUP_NAMES:
         eyes_cnn_scores_with_idx = []
         for i in range(len(property_scores['eyes_cnn_score'][group_name])):
             eyes_cnn_scores_with_idx.append([i, property_scores['eyes_cnn_score'][group_name][i]])
@@ -224,13 +223,12 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.2):
 
 def run_tsne(latent_vectors_by_group, indices_info):
     property_names = ['eyes', 'mouth', 'pose']
-    group_names = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 
     tsne_result_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/tsne_result'
     os.makedirs(tsne_result_path, exist_ok=True)
 
     for property_name in property_names:
-        for group_name in group_names:
+        for group_name in GROUP_NAMES:
             largest_img_idxs = indices_info[f'{property_name}_largest'][group_name]
             smallest_img_idxs = indices_info[f'{property_name}_smallest'][group_name]
             idxs = largest_img_idxs + smallest_img_idxs
@@ -267,11 +265,12 @@ def run_tsne(latent_vectors_by_group, indices_info):
 
 # 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출하기 위한 SVM 학습
 # Create Date : 2025.05.06
-# Last Update Date : 2025.05.07
-# - SVC(kernel='linear', ...) 대신 LinearSVC(...) 사용
+# Last Update Date : 2025.05.08
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화
 
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
+# - group_name              (str)               : 머리 색, 머리 길이, 배경색 평균의 속성값 별 그룹명 ('hhh', 'hhl', ..., 'lll')
 # - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
 #                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
 #                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
@@ -281,12 +280,11 @@ def run_tsne(latent_vectors_by_group, indices_info):
 # - svm_classifiers (dict(list)) : 학습된 SVM (Support Vector Machine) 의 list
 #                                  {'eyes': list(SVM), 'mouth': list(SVM), 'pose': list(SVM)}
 
-def train_svm(latent_vectors_by_group, indices_info):
+def train_svm(latent_vectors_by_group, group_name, indices_info):
     property_names = ['eyes', 'mouth', 'pose']
     train_ratio = 0.8
     svm_classifiers = {}
 
-    # use option from original paper (higan/blob/master/utils/boundary_searcher.py GenForce GitHub)
     for property_name in property_names:
 
         print(f'\ntraining SVM for {property_name} ...')
@@ -433,10 +431,12 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
     print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
 
     # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 latent z vector 도출
+    svm_classifiers = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
     svm_train_start_at = time.time()
-    svm_classifiers = train_svm(latent_vectors_by_group, indices_info)
+
+    for group_name in GROUP_NAMES:
+        svm_classifiers[group_name] = train_svm(latent_vectors_by_group, group_name, indices_info)
     print(f'SVM training running time (s) : {time.time() - svm_train_start_at}')
 
     property_score_vectors = find_property_score_vectors(svm_classifiers)
-
     save_property_score_vectors_info(property_score_vectors)
