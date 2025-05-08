@@ -20,8 +20,8 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 20
-TEST_IMG_CASES_FOR_COMPARE_MAX = 1000
-TEST_IMG_CASES_NEEDED_PASS = 12
+TEST_IMG_CASES_FOR_COMPARE_MAX = 20
+TEST_IMG_CASES_NEEDED_PASS = 20
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
@@ -158,6 +158,7 @@ def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_ve
 # Last Update Date : 2025.05.08
 # - 정해진 PASSED (비교 테스트 합격) 케이스 개수를 채울 때까지 반복하는 메커니즘 적용
 # - 이미지 생성 도중 각 케이스에 대한 테스트 결과 출력
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화한 것을 반영
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)         : StyleGAN-FineTune-v1 의 Generator
@@ -170,9 +171,11 @@ def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_ve
 # - stylegan_vectorfind_v6/inference_test_after_training 디렉토리에 이미지 생성
 # - stylegan_vectorfind_v6/image_generation_report 디렉토리에 테스트 결과를 csv 파일로 저장
 
-def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector):
+def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, eyes_vectors, mouth_vectors,
+                                    pose_vectors):
+
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
-    n_vector_cnt = len(eyes_vector)  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
+    n_vector_cnt = len(eyes_vectors['hhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
     passed_count = 0
 
     # label: 'eyes', 'mouth', 'pose'
@@ -191,12 +194,18 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
         save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_after_training/test_{i:04d}'
         os.makedirs(save_dir, exist_ok=True)
 
-        code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)  # 512
+        code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)      # 512
         code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
         code_part1s_np[i] = code_part1[0]
         code_part2s_np[i] = code_part2[0]
 
         for vi in range(n_vector_cnt):
+            group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
+
+            eyes_vector = eyes_vectors[group_name]
+            mouth_vector = mouth_vectors[group_name]
+            pose_vector = pose_vectors[group_name]
+
             eyes_scores, mouth_scores, pose_scores = [], [], []
 
             all_data_dict['case'].append(i)
