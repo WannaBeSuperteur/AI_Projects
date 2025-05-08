@@ -17,6 +17,10 @@ from sklearn.manifold import TSNE
 from sklearnex import patch_sklearn
 patch_sklearn()
 
+# remove warnings
+import warnings
+warnings.filterwarnings('ignore')
+
 
 PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
@@ -26,6 +30,7 @@ BATCH_SIZE = 20
 SVMS_PER_EACH_PROPERTY = 1      # also z-vector count for each property
 
 GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
+PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
 
 # Latent Vector z 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화하기 위해,
@@ -154,7 +159,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                             'pose_cnn_score': dict(list(float))}
 
 # Returns:
-# - indices_info (dict) : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
+# - indices_info (dict) : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
 #                         {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
 #                          'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
 #                          'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
@@ -213,7 +218,7 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.2):
 
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
-# - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
+# - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
 #                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
 #                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
 #                                                  'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
@@ -271,30 +276,34 @@ def run_tsne(latent_vectors_by_group, indices_info):
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
 # - group_name              (str)               : 머리 색, 머리 길이, 배경색 평균의 속성값 별 그룹명 ('hhh', 'hhl', ..., 'lll')
-# - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 인덱스 정보
+# - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
 #                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
 #                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
 #                                                  'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
+# - svm_classifiers         (dict(dict(SVM)))   : 학습된 SVM (Support Vector Machine) 의 dict (각 그룹별)
+#                                                 {'eyes': dict(SVM), 'mouth': dict(SVM), 'pose': dict(SVM)}
 
 # Returns:
-# - svm_classifiers (dict(list)) : 학습된 SVM (Support Vector Machine) 의 list
-#                                  {'eyes': list(SVM), 'mouth': list(SVM), 'pose': list(SVM)}
+# - svm_classifiers              (dict(dict(SVM))) : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
+#                                                    {'eyes': dict(SVM), 'mouth': dict(SVM), 'pose': dict(SVM)}
+# - total_valid_cnt_info         (dict(int))       : 각 핵심 속성 값 별 전체 valid data 개수 정보
+# - total_valid_correct_cnt_info (dict(int))       : 각 핵심 속성 값 별 SVM 예측 (largest / smallest) 이 맞은 valid data 개수 정보
 
-def train_svm(latent_vectors_by_group, group_name, indices_info):
-    property_names = ['eyes', 'mouth', 'pose']
+def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers):
     train_ratio = 0.8
-    svm_classifiers = {}
+    total_valid_cnt_info = {}
+    total_valid_correct_cnt_info = {}
 
-    for property_name in property_names:
-
-        print(f'\ntraining SVM for {property_name} ...')
-        svm_classifiers[property_name] = []
+    print(f'\ntraining SVM for {group_name} ...')
+    for property_name in PROPERTY_NAMES:
+        total_valid_cnt = 0
+        total_valid_correct_cnt = 0
 
         for i in range(SVMS_PER_EACH_PROPERTY):
 
             # create dataset
-            largest_img_idxs = indices_info[f'{property_name}_largest']
-            smallest_img_idxs = indices_info[f'{property_name}_smallest']
+            largest_img_idxs = indices_info[f'{property_name}_largest'][group_name]
+            smallest_img_idxs = indices_info[f'{property_name}_smallest'][group_name]
             largest_img_idxs = random.sample(largest_img_idxs, len(largest_img_idxs))
             smallest_img_idxs = random.sample(smallest_img_idxs, len(smallest_img_idxs))
 
@@ -303,8 +312,8 @@ def train_svm(latent_vectors_by_group, group_name, indices_info):
 
             train_idxs = largest_img_idxs[:largest_train_count] + smallest_img_idxs[:smallest_train_count]
             valid_idxs = largest_img_idxs[largest_train_count:] + smallest_img_idxs[smallest_train_count:]
-            train_latent_vectors = latent_vectors_by_group[train_idxs]
-            valid_latent_vectors = latent_vectors_by_group[valid_idxs]
+            train_latent_vectors = latent_vectors_by_group[group_name][train_idxs]
+            valid_latent_vectors = latent_vectors_by_group[group_name][valid_idxs]
 
             train_classes = ['largest'] * largest_train_count + ['smallest'] * smallest_train_count
             valid_classes = ['largest'] * (len(largest_img_idxs) - largest_train_count) + ['smallest'] * (len(smallest_img_idxs) - smallest_train_count)
@@ -322,28 +331,19 @@ def train_svm(latent_vectors_by_group, group_name, indices_info):
             small_large = np.sum((np.array(valid_predictions) == 'smallest') & (np.array(valid_classes) == 'largest'))
             small_small = np.sum((np.array(valid_predictions) == 'smallest') & (np.array(valid_classes) == 'smallest'))
 
-            accuracy = (large_large + small_small) / (large_large + large_small + small_large + small_small)
+            total_valid_cnt += large_large + large_small + small_large + small_small
+            total_valid_correct_cnt += large_large + small_small
 
-            large_recall = large_large / (large_large + small_large)
-            large_precision = large_large / (large_large + large_small)
-            large_f1 = 2 * large_recall * large_precision / (large_recall + large_precision)
+            svm_classifiers[property_name][group_name] = svm_classifier
 
-            small_recall = small_small / (small_small + large_small)
-            small_precision = small_small / (small_small + small_large)
-            small_f1 = 2 * small_recall * small_precision / (small_recall + small_precision)
+        # compute accuracy of all SVMs for group
+        accuracy = total_valid_correct_cnt / total_valid_cnt
+        print(f'SVM accuracy of [{property_name}, {group_name}] (total valid count: {total_valid_cnt}): {accuracy:.4f}')
 
-            print(f'\n=== Support Vector Machine {i} for {property_name} ===')
-            print(f'accuracy          : {accuracy:.4f}')
-            print(f'recall    (large) : {large_recall:.4f}')
-            print(f'precision (large) : {large_precision:.4f}')
-            print(f'F1 score  (large) : {large_f1:.4f}')
-            print(f'recall    (small) : {small_recall:.4f}')
-            print(f'precision (small) : {small_precision:.4f}')
-            print(f'F1 score  (small) : {small_f1:.4f}')
+        total_valid_cnt_info[property_name] = total_valid_cnt
+        total_valid_correct_cnt_info[property_name] = total_valid_correct_cnt
 
-            svm_classifiers[property_name].append(svm_classifier)
-
-    return svm_classifiers
+    return svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info
 
 
 # SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출 (최종 z vector)
@@ -352,8 +352,8 @@ def train_svm(latent_vectors_by_group, group_name, indices_info):
 # - 각 핵심 속성 값 별 여러 개의 SVM 학습한 것을 반영
 
 # Arguments:
-# - svm_classifiers (dict(list)) : 학습된 SVM (Support Vector Machine) 의 list
-#                                  {'eyes': list(SVM), 'mouth': list(SVM), 'pose': list(SVM)}
+# - svm_classifiers (dict(dict(SVM))) : 학습된 SVM (Support Vector Machine) 의 dict (각 그룹별)
+#                                       {'eyes': dict(SVM), 'mouth': dict(SVM), 'pose': dict(SVM)}
 
 # Returns:
 # - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector
@@ -362,12 +362,11 @@ def train_svm(latent_vectors_by_group, group_name, indices_info):
 #                                    'pose_vector': NumPy array}
 
 def find_property_score_vectors(svm_classifiers):
-    property_names = ['eyes', 'mouth', 'pose']
     dim = ORIGINAL_HIDDEN_DIMS_Z + ORIGINALLY_PROPERTY_DIMS_Z
 
     property_score_vectors = {}
 
-    for property_name in property_names:
+    for property_name in PROPERTY_NAMES:
         classifiers = svm_classifiers[property_name]
         property_score_vectors[f'{property_name}_vector'] = []
 
@@ -422,7 +421,7 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
     sampling_start_at = time.time()
     latent_vectors_by_group, property_scores = sample_z_and_compute_property_scores(finetune_v1_generator,
                                                                                     property_score_cnn)
-    print(f'sampling (from latent vector z) running time (s) : {time.time() - sampling_start_at}')
+    print(f'sampling (from latent vector z) running time (s) : {time.time() - sampling_start_at}\n')
 
     indices_info = extract_best_and_worst_k_images(property_scores)
 
@@ -431,12 +430,28 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
     print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
 
     # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 latent z vector 도출
-    svm_classifiers = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    svm_classifiers = {'eyes': {}, 'mouth': {}, 'pose': {}}
+    entire_valid_count = {'eyes': 0, 'mouth': 0, 'pose': 0}
+    entire_valid_correct_count = {'eyes': 0, 'mouth': 0, 'pose': 0}
+
     svm_train_start_at = time.time()
 
     for group_name in GROUP_NAMES:
-        svm_classifiers[group_name] = train_svm(latent_vectors_by_group, group_name, indices_info)
-    print(f'SVM training running time (s) : {time.time() - svm_train_start_at}')
+        svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info =(
+            train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers))
+
+        for property_name in ['eyes', 'mouth', 'pose']:
+            entire_valid_count[property_name] += total_valid_cnt_info[property_name]
+            entire_valid_correct_count[property_name] += total_valid_correct_cnt_info[property_name]
+
+    print('\n=== ENTIRE SVM ACCURACY ===')
+    for property_name in PROPERTY_NAMES:
+        entire_valid = entire_valid_count[property_name]
+        entire_valid_correct = entire_valid_correct_count[property_name]
+        entire_accuracy = entire_valid_correct / entire_valid
+        print(f'entire accuracy for {property_name} : {entire_accuracy:.4f} ({entire_valid_correct} / {entire_valid})')
+
+    print(f'\nSVM training running time (s) : {time.time() - svm_train_start_at}')
 
     property_score_vectors = find_property_score_vectors(svm_classifiers)
     save_property_score_vectors_info(property_score_vectors)
