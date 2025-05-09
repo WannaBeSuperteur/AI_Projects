@@ -20,8 +20,8 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
-TEST_IMG_CASES_NEEDED_PASS = 60
+TEST_IMG_CASES_FOR_COMPARE_MAX = 2400
+TEST_IMG_CASES_NEEDED_PASS = 80
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
@@ -421,7 +421,8 @@ def generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth
 
 # 이미지 50장 생성 후 비교 테스트를 위한, property score label (latent z vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
 # Create Date : 2025.05.07
-# Last Update Date : -
+# Last Update Date : 2025.05.09
+# - 의도한 eyes, mouth, pose score (label) 값 리스트 변경
 
 # Arguments:
 # - 없음
