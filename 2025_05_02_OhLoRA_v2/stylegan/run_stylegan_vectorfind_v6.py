@@ -292,7 +292,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
             print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current margin: {round(pass_diff, 4)}, '
                   f'diff: {diff})')
 
-        if passed_count >= TEST_IMG_CASES_NEEDED_PASS:
+        if ohlora_z_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
             break
 
     # save all data
