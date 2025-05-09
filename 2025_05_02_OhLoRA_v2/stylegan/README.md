@@ -5,8 +5,8 @@
   * [1-2. StyleGAN-FineTune-v5 개선 방안](#1-2-stylegan-finetune-v5-개선-방안) 
 * [2. 핵심 속성 값](#2-핵심-속성-값)
 * [3. 사용 모델 설명](#3-사용-모델-설명)
-  * [3-1. Fine-Tuned StyleGAN (StyleGAN-FineTune-v5)](#3-1-fine-tuned-stylegan-stylegan-finetune-v5)
-  * [3-2. StyleGAN-FineTune-v1 에서 핵심 속성 값 변화시키는 벡터 찾기 (StyleGAN-VectorFind-v6)](#3-2-stylegan-finetune-v1-에서-핵심-속성-값-변화시키는-벡터-찾기-stylegan-vectorfind-v6)
+  * [3-1. Fine-Tuned StyleGAN (StyleGAN-FineTune-v5)](#3-1-fine-tuned-stylegan-stylegan-finetune-v5) 
+  * [3-2. StyleGAN-FineTune-v1 기반 핵심 속성값 변환 Vector 탐색 (StyleGAN-VectorFind-v6)](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-vector-탐색-stylegan-vectorfind-v6)
 * [4. 코드 실행 방법](#4-코드-실행-방법)
 
 ## 1. 개요
@@ -81,7 +81,7 @@
 | 1차 모델 | 학습이 **전혀 안 됨** | 학습이 **전혀 안 됨**     | 학습이 **거의 안 됨** |
 | 3차 모델 | 학습이 **전혀 안 됨** | 학습이 **약간 됨 (불만족)** | 학습이 **거의 안 됨** |
 
-### 3-2. StyleGAN-FineTune-v1 에서 핵심 속성 값 변화시키는 벡터 찾기 (StyleGAN-VectorFind-v6)
+### 3-2. StyleGAN-FineTune-v1 기반 핵심 속성값 변환 Vector 탐색 (StyleGAN-VectorFind-v6)
 
 ```
 OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성을 위한 모델로 "️✅ 최종 채택"
@@ -126,7 +126,13 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 TBU
 
-**5. 기타 참고 사항**
+**5. Latent vector (z) 관련**
+
+* StyleGAN-FineTune-v1 학습 시 latent z vector 512 dim 외에, **원래 label 용도로 추가된 3 dim 을 핵심 속성값 변환 Vector 탐색 목적으로 추가 활용**
+  * 즉, 512 + 3 = 총 515 dim 을 latent z vector 처럼 사용 
+  * 해당 3 dim 은 StyleGAN-FineTune-v1 에서는 **16 dim 으로 mapping** 된 후, **latent z dim 512 + 16 → 528 로 concat** 되었음 [(참고)](../../2025_04_08_OhLoRA/stylegan_and_segmentation/model_structure_pdf/stylegan_finetune_v4_generator.pdf)
+
+**6. 기타 참고 사항**
 
 * n vector 를 찾을 때 [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 을 이용하고, 속성 값이 상/하위 일정 비율인 이미지만을 SVM이 학습하는 것은 [해당 논문](https://arxiv.org/pdf/1911.09267) 의 핵심 아이디어임
 * **이미지를 8개의 그룹으로 나누고, 각 그룹별로 (최적의) n vector 를 찾아서 성능 향상을 꾀하는 것** 은 위 논문의 아이디어와 본인의 아이디어를 **융합하여 적용** 한 것임
@@ -137,3 +143,6 @@ TBU
 
 * **StyleGAN-FineTune-v5** 모델 Fine-Tuning
   * ```python stylegan/run_stylegan_finetune_v5.py```
+
+* **StyleGAN-VectorFind-v6** 모델을 실행하여 Property Score 를 바꾸는 latent z vector 탐색
+  * ```python stylegan/run_stylegan_vectorfind_v6.py```
