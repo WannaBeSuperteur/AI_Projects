@@ -20,8 +20,8 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 1000
-TEST_IMG_CASES_NEEDED_PASS = 3
+TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
+TEST_IMG_CASES_NEEDED_PASS = 60
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
@@ -168,6 +168,7 @@ def load_ohlora_z_vectors(vector_csv_path):
     try:
         ohlora_z_vectors_df = pd.read_csv(vector_csv_path)
         ohlora_z_vectors = np.array(ohlora_z_vectors_df)
+        print(f'Oh-LoRA z vector load successful!! 👱‍♀️✨')
         return ohlora_z_vectors
 
     except Exception as e:
@@ -175,11 +176,34 @@ def load_ohlora_z_vectors(vector_csv_path):
         return None
 
 
+# Oh-LoRA 이미지 생성용 latent z vector 각각에 대해, group name 정보를 먼저 불러오기 시도
+# Create Date : 2025.05.09
+# Last Update Date : -
+
+# Arguments:
+# - group_name_csv_path (str) : latent z vector 에 대한 group name 정보가 저장된 csv 파일의 경로
+
+# Returns:
+# - group_names (list(str) or None) : Oh-LoRA 이미지 생성용 latent z vector 에 대한 group name 의 list (불러오기 성공 시)
+#                                     None (불러오기 실패 시)
+
+def load_ohlora_z_group_names(group_name_csv_path):
+    try:
+        ohlora_z_vectors_df = pd.read_csv(group_name_csv_path)
+        group_names = ohlora_z_vectors_df['group_name'].tolist()
+        print(f'group names for each Oh-LoRA z vector load successful!! 👱‍♀️✨')
+        return group_names
+
+    except Exception as e:
+        print(f'group names for each Oh-LoRA z vector load failed ({e}), using Property-Score-CNN-derived group names')
+        return None
+
+
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.05.07
 # Last Update Date : 2025.05.09
 # - 이미지 생성 함수를 분리
-# - Oh-LoRA 이미지 생성용 latent z vector 가 저장된 파일을 먼저 불러오기 시도하는 메커니즘 추가
+# - Oh-LoRA 이미지 생성용 latent z vector 가 저장된 파일 및 group name 정보를 먼저 불러오기 시도하는 메커니즘 추가
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)         : StyleGAN-FineTune-v1 의 Generator
@@ -199,13 +223,15 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     passed_count = 0
 
     ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/ohlora_z_vectors.csv'
+    ohlora_z_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/ohlora_z_group_names.csv'
     ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
+    ohlora_z_group_names = load_ohlora_z_group_names(group_name_csv_path=ohlora_z_group_name_csv_path)
 
     # label: 'eyes', 'mouth', 'pose'
     eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels()
     pm_cnt = len(eyes_pm_order)
 
-    all_data_dict = {'case': [], 'vector_no': [], 'passed': [],
+    all_data_dict = {'case': [], 'vector_no': [], 'passed': [], 'group_name': [],
                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': []}
 
     if ohlora_z_vectors is not None:
@@ -235,7 +261,11 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
             code_part2s_np[i] = code_part2[0]
 
         for vi in range(n_vector_cnt):
-            group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
+            if ohlora_z_group_names is None:
+                group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
+            else:
+                n_vector_idx = i * n_vector_cnt + vi
+                group_name = ohlora_z_group_names[n_vector_idx]
 
             eyes_vector = eyes_vectors[group_name]
             mouth_vector = mouth_vectors[group_name]
@@ -245,6 +275,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
 
             all_data_dict['case'].append(i)
             all_data_dict['vector_no'].append(vi)
+            all_data_dict['group_name'].append(group_name)
 
             for pm_idx in range(pm_cnt):
                 img_file_name = f'case_{i:03d}_{vi:03d}_pm_{pm_idx:03d}.jpg'
