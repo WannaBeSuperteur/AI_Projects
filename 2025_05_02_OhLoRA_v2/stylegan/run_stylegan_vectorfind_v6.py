@@ -5,7 +5,7 @@ from stylegan_vectorfind_v6.run_vector_find import compute_medians
 from stylegan_common.visualizer import postprocess_image, save_image
 import stylegan_common.stylegan_generator as gen
 
-from common import load_existing_stylegan_finetune_v1, stylegan_transform
+from common import load_existing_stylegan_finetune_v1, load_existing_stylegan_vectorfind_v6, stylegan_transform
 from property_score_cnn import load_cnn_model as load_property_cnn_model
 
 import torch
@@ -19,7 +19,7 @@ IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
-TEST_IMG_CASES = 20
+TEST_IMG_CASES = 1
 TEST_IMG_CASES_FOR_COMPARE_MAX = 1000
 TEST_IMG_CASES_NEEDED_PASS = 3
 
@@ -417,16 +417,32 @@ def get_pm_labels():
 
 
 if __name__ == '__main__':
+    fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan/models'
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for inferencing StyleGAN-FineTune-v1 : {device}')
 
     finetune_v1_generator = gen.StyleGANGeneratorForV6(resolution=IMAGE_RESOLUTION)
-    generator_state_dict = load_existing_stylegan_finetune_v1(device)
-    print('Existing StyleGAN-FineTune-v1 Generator load successful!! 😊')
 
-    # load state dict (generator)
-    del generator_state_dict['mapping.label_weight']  # size mismatch because of modified property vector dim (7 -> 3)
-    finetune_v1_generator.load_state_dict(generator_state_dict, strict=False)
+    # try loading StyleGAN-VectorFind-v6 pre-trained model
+    try:
+        generator_state_dict = load_existing_stylegan_vectorfind_v6(device)
+        print('Existing StyleGAN-VectorFind-v6 Generator load successful!! 😊')
+
+        finetune_v1_generator.load_state_dict(generator_state_dict)
+
+    # when failed, load StyleGAN-FineTune-v1 pre-trained model
+    except Exception as e:
+        print(f'Existing StyleGAN-VectorFind-v6 Generator load failed : {e}')
+
+        generator_state_dict = load_existing_stylegan_finetune_v1(device)
+        print('Existing StyleGAN-FineTune-v1 Generator load successful!! 😊')
+
+        # load state dict (generator)
+        del generator_state_dict['mapping.label_weight']  # size mismatch due to modified property vector dim (7 -> 3)
+        finetune_v1_generator.load_state_dict(generator_state_dict, strict=False)
+
+        # save state dict
+        torch.save(finetune_v1_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v6.pth')
 
     # get property score changing vector
     try:
