@@ -72,7 +72,8 @@ def get_property_change_vectors():
 
 # latent code (z) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhh', 'hhl', ..., 'lll') 반환
 # Create Date : 2025.05.08
-# Last Update Date : -
+# Last Update Date : 2025.05.09
+# - torch.no_grad() 를 통해 CUDA OOM 해결
 
 # Arguments:
 # - code_part1 (Tensor) : latent code (z) 에 해당하는 부분 (dim: 512)
@@ -85,8 +86,11 @@ def get_property_change_vectors():
 # - group_name (str) : 이미지의 group 이름 ('hhh', 'hhl', ..., 'lll' 중 하나)
 
 def get_group_name(code_part1, code_part2, save_dir, i, vi):
-    images = finetune_v1_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
-    images = postprocess_image(images.detach().cpu().numpy())
+
+    with torch.no_grad():
+        images = finetune_v1_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
+        images = postprocess_image(images.detach().cpu().numpy())
+
     save_image(os.path.join(save_dir, f'original_case_{i:02d}_{vi:02d}.jpg'), images[0])
 
     # input generated image to Property Score CNN -> get appropriate group of generated image
