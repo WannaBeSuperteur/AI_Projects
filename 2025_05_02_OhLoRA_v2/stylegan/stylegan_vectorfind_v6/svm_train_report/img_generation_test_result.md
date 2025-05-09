@@ -1,3 +1,13 @@
+## Final Report
+
+* random z latent vector 를 **아래 결과처럼 100 개가 아닌, 이보다 훨씬 많은 개수** 로 하여 테스트
+* 결론 : **Grouping 적용 시 유의미하게 성능이 향상됨 (크게 향상되지는 않음)**
+
+| n<br>(total samples) | k<br>(top / bottom samples) | grouping<br>(8 groups) | latent vectors<br>(random z) | passed cases  | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv)                                                                                                                                                                                                                                                                                                                                                                                                |
+|----------------------|-----------------------------|------------------------|------------------------------|---------------|-----------------------|---------------------------|----------------------------|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 300.0K               | 30.0K / 30.0K               | ❌                      | 763                          | 12 (1.6%)     | 3 (0.4%)              | **0.7637**                | **0.7003**                 | 0.5616                    | [summary](https://github.com/WannaBeSuperteur/AI_Projects/blob/3a1cae36a05f195d63776f31929756906fb6d70a/2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/image_generation_report/test_statistics.csv), [detail](https://github.com/WannaBeSuperteur/AI_Projects/blob/3a1cae36a05f195d63776f31929756906fb6d70a/2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/image_generation_report/test_result.csv) |
+| 500.0K               | 75.0K / 75.0K               | ✅                      | 475                          | **25 (5.3%)** | **9 (1.9%)**          | 0.7348                    | 0.6995                     | **0.6686**                | [summary](https://github.com/WannaBeSuperteur/AI_Projects/blob/c35570cd2a942b52d33743f18bea4c68473d0c68/2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/image_generation_report/test_statistics.csv), [detail](https://github.com/WannaBeSuperteur/AI_Projects/blob/c35570cd2a942b52d33743f18bea4c68473d0c68/2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/image_generation_report/test_result.csv) |
+
 ## Image Generation Test Result
 
 * with **[sklearnex](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)** for all cases
@@ -5,6 +15,7 @@
 * performance (accuracy of ```eyes```, ```mouth``` and ```pose```) means **SVM accuracy**
 * for **mean corr-coef**,
   * each corr-coef means the corr-coef of **Intended Property Scores vs. Actual CNN-Predicted Property Scores** for 50 generated images
+  * total 100 cases (random z latent vectors)
 
 | n<br>(total samples) | k<br>(top / bottom samples) | grouping<br>(8 groups) | ```eyes``` acc.<br>(0 ~ 1) | ```mouth``` acc.<br>(0 ~ 1) | ```pose``` acc.<br>(0 ~ 1) | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef |
 |----------------------|-----------------------------|------------------------|----------------------------|-----------------------------|----------------------------|---------------------------|----------------------------|---------------------------|
