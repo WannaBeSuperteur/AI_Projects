@@ -107,12 +107,11 @@ def get_group_name(code_part1, code_part2, save_dir, i, vi):
 
 # latent vector z 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
 # Create Date : 2025.05.06
-# Last Update Date : 2025.05.08
-# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화한 것을 반영
+# Last Update Date : 2025.05.09
+# - 불필요한 property_score_cnn 인수 제거
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)         : StyleGAN-FineTune-v1 의 Generator
-# - property_score_cnn    (nn.Module)         : 핵심 속성 값을 계산하기 위한 CNN
 # - eyes_vectors          (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - mouth_vectors         (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors          (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
@@ -120,7 +119,7 @@ def get_group_name(code_part1, code_part2, save_dir, i, vi):
 # Returns:
 # - stylegan_vectorfind_v6/inference_test_after_training 디렉토리에 이미지 생성 결과 저장
 
-def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_vectors, mouth_vectors, pose_vectors):
+def run_image_generation_test(finetune_v1_generator, eyes_vectors, mouth_vectors, pose_vectors):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_after_training'
     os.makedirs(save_dir, exist_ok=True)
 
@@ -491,7 +490,6 @@ if __name__ == '__main__':
     finetune_v1_generator.to(device)
 
     run_image_generation_test(finetune_v1_generator,
-                              property_score_cnn,
                               eyes_vectors,
                               mouth_vectors,
                               pose_vectors)
