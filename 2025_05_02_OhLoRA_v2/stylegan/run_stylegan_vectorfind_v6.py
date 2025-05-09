@@ -20,8 +20,8 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
-TEST_IMG_CASES_NEEDED_PASS = 60
+TEST_IMG_CASES_FOR_COMPARE_MAX = 100
+TEST_IMG_CASES_NEEDED_PASS = 5
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
@@ -462,7 +462,7 @@ if __name__ == '__main__':
 
     # when failed, load StyleGAN-FineTune-v1 pre-trained model
     except Exception as e:
-        print(f'Existing StyleGAN-VectorFind-v6 Generator load failed : {e}')
+        print(f'StyleGAN-VectorFind-v6 Generator load failed : {e}')
 
         generator_state_dict = load_existing_stylegan_finetune_v1(device)
         print('Existing StyleGAN-FineTune-v1 Generator load successful!! 😊')
@@ -477,8 +477,10 @@ if __name__ == '__main__':
     # get property score changing vector
     try:
         eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+        print('Existing Property Score vector load successful!! 😊')
 
-    except:
+    except Exception as e:
+        print(f'Property Score vector load failed : {e}')
         stylegan_vectorfind_v6_main(finetune_v1_generator, device)
         eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
 
