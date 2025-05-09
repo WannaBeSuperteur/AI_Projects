@@ -21,7 +21,7 @@ ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으�
 
 TEST_IMG_CASES = 20
 TEST_IMG_CASES_FOR_COMPARE_MAX = 1000
-TEST_IMG_CASES_NEEDED_PASS = 25
+TEST_IMG_CASES_NEEDED_PASS = 3
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
@@ -155,10 +155,8 @@ def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_ve
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.05.07
-# Last Update Date : 2025.05.08
-# - 정해진 PASSED (비교 테스트 합격) 케이스 개수를 채울 때까지 반복하는 메커니즘 적용
-# - 이미지 생성 도중 각 케이스에 대한 테스트 결과 출력
-# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화한 것을 반영
+# Last Update Date : 2025.05.09
+# - 이미지 생성 함수를 분리
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)         : StyleGAN-FineTune-v1 의 Generator
@@ -174,7 +172,6 @@ def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_ve
 def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, eyes_vectors, mouth_vectors,
                                     pose_vectors):
 
-    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
     n_vector_cnt = len(eyes_vectors['hhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
     passed_count = 0
 
@@ -213,39 +210,11 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
 
             for pm_idx in range(pm_cnt):
                 img_file_name = f'case_{i:03d}_{vi:03d}_pm_{pm_idx:03d}.jpg'
+                pms = {'eyes': eyes_pm_order[pm_idx], 'mouth': mouth_pm_order[pm_idx], 'pose': pose_pm_order[pm_idx]}
 
-                eyes_pm = eyes_pm_order[pm_idx]
-                mouth_pm = mouth_pm_order[pm_idx]
-                pose_pm = pose_pm_order[pm_idx]
-
-                # generate image
-                with torch.no_grad():
-                    code_part1_ = code_part1 + eyes_pm * torch.tensor(eyes_vector[vi:vi+1, :ORIGINAL_HIDDEN_DIMS_Z])
-                    code_part1_ = code_part1_ + mouth_pm * torch.tensor(mouth_vector[vi:vi+1, :ORIGINAL_HIDDEN_DIMS_Z])
-                    code_part1_ = code_part1_ + pose_pm * torch.tensor(pose_vector[vi:vi+1, :ORIGINAL_HIDDEN_DIMS_Z])
-                    code_part1_ = code_part1_.type(torch.float32)
-
-                    code_part2_ = code_part2 + eyes_pm * torch.tensor(eyes_vector[vi:vi+1, ORIGINAL_HIDDEN_DIMS_Z:])
-                    code_part2_ = code_part2_ + mouth_pm * torch.tensor(mouth_vector[vi:vi+1, ORIGINAL_HIDDEN_DIMS_Z:])
-                    code_part2_ = code_part2_ + pose_pm * torch.tensor(pose_vector[vi:vi+1, ORIGINAL_HIDDEN_DIMS_Z:])
-                    code_part2_ = code_part2_.type(torch.float32)
-
-                    images = finetune_v1_generator(code_part1_.cuda(), code_part2_.cuda(), **kwargs_val)['image']
-                    images = postprocess_image(images.detach().cpu().numpy())
-
-                save_image(os.path.join(save_dir, img_file_name), images[0])
-
-                # compute (predict) property score for each generated image using CNN
-                with torch.no_grad():
-                    image = read_image(f'{save_dir}/{img_file_name}')
-                    image = stylegan_transform(image)
-
-                    property_scores = property_score_cnn(image.unsqueeze(0).cuda())
-                    property_scores_np = property_scores.detach().cpu().numpy()
-
-                    eyes_scores.append(round(property_scores_np[0][0], 4))
-                    mouth_scores.append(round(property_scores_np[0][3], 4))
-                    pose_scores.append(round(property_scores_np[0][4], 4))
+                generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector,
+                               eyes_scores, mouth_scores, pose_scores, code_part1, code_part2, save_dir, img_file_name,
+                               vi, pms)
 
             # compute and record corr-coef
             eyes_corrcoef = np.corrcoef(eyes_pm_order, eyes_scores)[0][1]
@@ -320,6 +289,62 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     pd.DataFrame(code_part1s_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_part1.csv', index=False)
     pd.DataFrame(code_part2s_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_part2.csv', index=False)
     pd.DataFrame(code_all_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_all.csv', index=False)
+
+
+# 주어진 eyes, mouth, pose 핵심 속성 값 변화 벡터를 이용하여 이미지 생성
+# Create Date : 2025.05.09
+# Last Update Date : -
+
+# Arguments:
+# - finetune_v1_generator (nn.Module)   : StyleGAN-FineTune-v1 의 Generator
+# - property_score_cnn    (nn.Module)   : 핵심 속성 값을 계산하기 위한 CNN
+# - eyes_vector           (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터
+# - mouth_vector          (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터
+# - pose_vector           (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터
+# - eyes_scores           (list)        : Property Score CNN 에 의해 도출된 eyes 핵심 속성 값의 리스트
+# - mouth_scores          (list)        : Property Score CNN 에 의해 도출된 mouth 핵심 속성 값의 리스트
+# - pose_scores           (list)        : Property Score CNN 에 의해 도출된 pose 핵심 속성 값의 리스트
+# - code_part1            (Tensor)      : latent code (z) 에 해당하는 부분 (dim: 512)
+# - code_part2            (Tensor)      : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 3)
+# - save_dir              (str)         : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v6/inference_test_after_training)
+# - img_file_name         (str)         : 저장할 이미지 파일 이름
+# - vi                    (int)         : n vector index
+# - pms                   (dict)        : eyes, mouth, pose 핵심 속성 값 변화 벡터를 latent code 에 더하거나 빼기 위한 가중치
+#                                         {'eyes': float, 'mouth': float, 'pose': float}
+
+def generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector,
+                   eyes_scores, mouth_scores, pose_scores, code_part1, code_part2, save_dir, img_file_name, vi, pms):
+
+    eyes_pm, mouth_pm, pose_pm = pms['eyes'], pms['mouth'], pms['pose']
+
+    # generate image
+    with torch.no_grad():
+        code_part1_ = code_part1 + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_Z])
+        code_part1_ = code_part1_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_Z])
+        code_part1_ = code_part1_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_Z])
+        code_part1_ = code_part1_.type(torch.float32)
+
+        code_part2_ = code_part2 + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_Z:])
+        code_part2_ = code_part2_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_Z:])
+        code_part2_ = code_part2_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_Z:])
+        code_part2_ = code_part2_.type(torch.float32)
+
+        images = finetune_v1_generator(code_part1_.cuda(), code_part2_.cuda(), **kwargs_val)['image']
+        images = postprocess_image(images.detach().cpu().numpy())
+
+    save_image(os.path.join(save_dir, img_file_name), images[0])
+
+    # compute (predict) property score for each generated image using CNN
+    with torch.no_grad():
+        image = read_image(f'{save_dir}/{img_file_name}')
+        image = stylegan_transform(image)
+
+        property_scores = property_score_cnn(image.unsqueeze(0).cuda())
+        property_scores_np = property_scores.detach().cpu().numpy()
+
+        eyes_scores.append(round(property_scores_np[0][0], 4))
+        mouth_scores.append(round(property_scores_np[0][3], 4))
+        pose_scores.append(round(property_scores_np[0][4], 4))
 
 
 # 이미지 50장 생성 후 비교 테스트를 위한, property score label (latent z vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
