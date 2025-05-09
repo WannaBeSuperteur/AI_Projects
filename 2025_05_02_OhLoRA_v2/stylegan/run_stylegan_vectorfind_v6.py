@@ -1,6 +1,7 @@
 from torchvision.io import read_image
 
 from stylegan_vectorfind_v6.main import main as stylegan_vectorfind_v6_main
+from stylegan_vectorfind_v6.run_vector_find import compute_medians
 from stylegan_common.visualizer import postprocess_image, save_image
 import stylegan_common.stylegan_generator as gen
 
@@ -20,64 +21,122 @@ ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으�
 
 TEST_IMG_CASES = 20
 TEST_IMG_CASES_FOR_COMPARE_MAX = 1000
-TEST_IMG_CASES_NEEDED_PASS = 12
+TEST_IMG_CASES_NEEDED_PASS = 25
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
 
+GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
+PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
-# Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환
+medians = compute_medians()  # returned values : -0.2709, 0.3052, 0.0742
+kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+
+
+# Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환 ('hhh', 'hhl', ..., 'lll' 의 각 그룹 별)
 # Create Date : 2025.05.06
-# Last Update Date : -
+# Last Update Date : 2025.05.08
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화한 것을 반영
 
 # Arguments:
 # - 없음
 
 # Returns:
-# - eyes_vector  (NumPy Array) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보
-# - mouth_vector (NumPy Array) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보
-# - pose_vector  (NumPy Array) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보
+# - eyes_vectors  (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - mouth_vectors (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - pose_vectors  (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 
 def get_property_change_vectors():
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/property_score_vectors'
 
-    eyes_vector = np.array(pd.read_csv(f'{vector_save_dir}/eyes_change_z_vector.csv', index_col=0))
-    mouth_vector = np.array(pd.read_csv(f'{vector_save_dir}/mouth_change_z_vector.csv', index_col=0))
-    pose_vector = np.array(pd.read_csv(f'{vector_save_dir}/pose_change_z_vector.csv', index_col=0))
+    eyes_vectors = {}
+    mouth_vectors = {}
+    pose_vectors = {}
 
-    return eyes_vector, mouth_vector, pose_vector
+    for group_name in GROUP_NAMES:
+        eyes_vector = np.array(pd.read_csv(f'{vector_save_dir}/eyes_change_z_vector_{group_name}.csv',
+                                           index_col=0))
+
+        mouth_vector = np.array(pd.read_csv(f'{vector_save_dir}/mouth_change_z_vector_{group_name}.csv',
+                                            index_col=0))
+
+        pose_vector = np.array(pd.read_csv(f'{vector_save_dir}/pose_change_z_vector_{group_name}.csv',
+                                           index_col=0))
+
+        eyes_vectors[group_name] = eyes_vector
+        mouth_vectors[group_name] = mouth_vector
+        pose_vectors[group_name] = pose_vector
+
+    return eyes_vectors, mouth_vectors, pose_vectors
+
+
+# latent code (z) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhh', 'hhl', ..., 'lll') 반환
+# Create Date : 2025.05.08
+# Last Update Date : -
+
+# Arguments:
+# - code_part1 (Tensor) : latent code (z) 에 해당하는 부분 (dim: 512)
+# - code_part2 (Tensor) : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 3)
+# - save_dir   (str)    : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v6/inference_test_after_training)
+# - i          (int)    : case index
+# - vi         (int)    : n vector index
+
+# Returns:
+# - group_name (str) : 이미지의 group 이름 ('hhh', 'hhl', ..., 'lll' 중 하나)
+
+def get_group_name(code_part1, code_part2, save_dir, i, vi):
+    images = finetune_v1_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
+    images = postprocess_image(images.detach().cpu().numpy())
+    save_image(os.path.join(save_dir, f'original_case_{i:02d}_{vi:02d}.jpg'), images[0])
+
+    # input generated image to Property Score CNN -> get appropriate group of generated image
+    with torch.no_grad():
+        image = read_image(f'{save_dir}/original_case_{i:02d}_{vi:02d}.jpg')
+        image = stylegan_transform(image)
+
+        property_scores = property_score_cnn(image.unsqueeze(0).cuda())
+        property_scores_np = property_scores.detach().cpu().numpy()
+
+    hair_color_group = 'h' if property_scores_np[0][1] >= medians['hair_color'] else 'l'
+    hair_length_group = 'h' if property_scores_np[0][2] >= medians['hair_length'] else 'l'
+    background_mean_group = 'h' if property_scores_np[0][5] >= medians['background_mean'] else 'l'
+
+    group_name = hair_color_group + hair_length_group + background_mean_group
+    return group_name
 
 
 # latent vector z 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
 # Create Date : 2025.05.06
-# Last Update Date : 2025.05.06
-# - 각 핵심 속성 값 별 여러 개의 SVM 학습한 것을 반영
+# Last Update Date : 2025.05.08
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화한 것을 반영
 
 # Arguments:
-# - finetune_v1_generator (nn.Module)   : StyleGAN-FineTune-v1 의 Generator
-# - eyes_vector           (NumPy Array) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보
-# - mouth_vector          (NumPy Array) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보
-# - pose_vector           (NumPy Array) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보
+# - finetune_v1_generator (nn.Module)         : StyleGAN-FineTune-v1 의 Generator
+# - property_score_cnn    (nn.Module)         : 핵심 속성 값을 계산하기 위한 CNN
+# - eyes_vectors          (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - mouth_vectors         (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - pose_vectors          (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 
 # Returns:
 # - stylegan_vectorfind_v6/inference_test_after_training 디렉토리에 이미지 생성 결과 저장
 
-def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, pose_vector):
-    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+def run_image_generation_test(finetune_v1_generator, property_score_cnn, eyes_vectors, mouth_vectors, pose_vectors):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_after_training'
     os.makedirs(save_dir, exist_ok=True)
 
-    n_vector_cnt = len(eyes_vector)  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
+    n_vector_cnt = len(eyes_vectors['hhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
+    vector_dicts = [eyes_vectors, mouth_vectors, pose_vectors]
 
     for i in range(TEST_IMG_CASES):
         code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)      # 512
         code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
 
-        vector_names = ['eyes', 'mouth', 'pose']
-        vectors = [eyes_vector, mouth_vector, pose_vector]
-
         for vi in range(n_vector_cnt):
-            for vector_name, vector in zip(vector_names, vectors):
+            group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
+
+            # run image generation test
+            for property_name, vector_dict in zip(PROPERTY_NAMES, vector_dicts):
+                vector = vector_dict[group_name]
                 pms = [-2.0, -0.67, 0.67, 2.0]
 
                 for pm_idx, pm in enumerate(pms):
@@ -90,7 +149,7 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
                         images = finetune_v1_generator(code_part1_.cuda(), code_part2_.cuda(), **kwargs_val)['image']
                         images = postprocess_image(images.detach().cpu().numpy())
 
-                        save_image(os.path.join(save_dir, f'case_{i:02d}_{vi:02d}_{vector_name}_pm_{pm_idx}.jpg'),
+                        save_image(os.path.join(save_dir, f'case_{i:02d}_{vi:02d}_{property_name}_pm_{pm_idx}.jpg'),
                                    images[0])
 
 
@@ -99,25 +158,25 @@ def run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, 
 # Last Update Date : 2025.05.08
 # - 정해진 PASSED (비교 테스트 합격) 케이스 개수를 채울 때까지 반복하는 메커니즘 적용
 # - 이미지 생성 도중 각 케이스에 대한 테스트 결과 출력
+# - 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화한 것을 반영
 
 # Arguments:
-# - finetune_v1_generator (nn.Module)   : StyleGAN-FineTune-v1 의 Generator
-# - eyes_vector           (NumPy Array) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보
-# - mouth_vector          (NumPy Array) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보
-# - pose_vector           (NumPy Array) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보
+# - finetune_v1_generator (nn.Module)         : StyleGAN-FineTune-v1 의 Generator
+# - property_score_cnn    (nn.Module)         : 핵심 속성 값을 계산하기 위한 CNN
+# - eyes_vectors          (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - mouth_vectors         (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - pose_vectors          (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 
 # Returns:
 # - stylegan_vectorfind_v6/inference_test_after_training 디렉토리에 이미지 생성
 # - stylegan_vectorfind_v6/image_generation_report 디렉토리에 테스트 결과를 csv 파일로 저장
 
-def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_vector, pose_vector):
-    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
-    n_vector_cnt = len(eyes_vector)  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
-    passed_count = 0
+def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, eyes_vectors, mouth_vectors,
+                                    pose_vectors):
 
-    # get Property Score CNN
-    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
-    property_score_cnn = load_property_cnn_model(property_cnn_path, device)
+    kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
+    n_vector_cnt = len(eyes_vectors['hhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
+    passed_count = 0
 
     # label: 'eyes', 'mouth', 'pose'
     eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels()
@@ -135,12 +194,18 @@ def run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_ve
         save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/inference_test_after_training/test_{i:04d}'
         os.makedirs(save_dir, exist_ok=True)
 
-        code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)  # 512
+        code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)      # 512
         code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
         code_part1s_np[i] = code_part1[0]
         code_part2s_np[i] = code_part2[0]
 
         for vi in range(n_vector_cnt):
+            group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
+
+            eyes_vector = eyes_vectors[group_name]
+            mouth_vector = mouth_vectors[group_name]
+            pose_vector = pose_vectors[group_name]
+
             eyes_scores, mouth_scores, pose_scores = [], [], []
 
             all_data_dict['case'].append(i)
@@ -302,13 +367,27 @@ if __name__ == '__main__':
 
     # get property score changing vector
     try:
-        eyes_vector, mouth_vector, pose_vector = get_property_change_vectors()
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
 
     except:
         stylegan_vectorfind_v6_main(finetune_v1_generator, device)
-        eyes_vector, mouth_vector, pose_vector = get_property_change_vectors()
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+
+    # get Property Score CNN
+    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
+    property_score_cnn = load_property_cnn_model(property_cnn_path, device)
 
     # image generation test
     finetune_v1_generator.to(device)
-    run_image_generation_test(finetune_v1_generator, eyes_vector, mouth_vector, pose_vector)
-    run_property_score_compare_test(finetune_v1_generator, eyes_vector, mouth_vector, pose_vector)
+
+    run_image_generation_test(finetune_v1_generator,
+                              property_score_cnn,
+                              eyes_vectors,
+                              mouth_vectors,
+                              pose_vectors)
+
+    run_property_score_compare_test(finetune_v1_generator,
+                                    property_score_cnn,
+                                    eyes_vectors,
+                                    mouth_vectors,
+                                    pose_vectors)
