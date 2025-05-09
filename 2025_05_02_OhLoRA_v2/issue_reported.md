@@ -17,7 +17,7 @@
 **1. 문제 상황**
 
 * **StyleGAN-FineTune-v1** [(참고)](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) 의 Pre-trained Model 을 이용하여 가상 인간 이미지 생성
-  * 이때, Fine-Tuning 대신, **Pre-trained Model 로부터** [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 을 이용하여 [핵심 속성 값 (```eyes```, ```mouth```, ```pose```) 을 변화시키는 벡터를 찾는 아이디어](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md) 를 적용 
+  * 이때, Fine-Tuning 대신, **Pre-trained Model 로부터** [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 을 이용하여 [핵심 속성 값 (```eyes```, ```mouth```, ```pose```)](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#2-핵심-속성-값) 을 [변화시키는 벡터를 찾는 아이디어](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md) 를 적용 
 * 이미지 생성 시, **latent z vector 와 핵심 속성 값 변화 벡터가 동일** 한데도, 생성할 때마다 **서로 다른 이미지** 가 생성됨
 
 **2. 문제 원인 및 해결 방법**
