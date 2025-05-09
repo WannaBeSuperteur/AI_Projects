@@ -20,8 +20,8 @@ ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 100
-TEST_IMG_CASES_NEEDED_PASS = 5
+TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
+TEST_IMG_CASES_NEEDED_PASS = 60
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v6/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
@@ -432,9 +432,9 @@ def generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth
 # - pose_pm_order  (list(float)) : pose (고개 돌림) 속성에 대한 50장 각각의 property score label
 
 def get_pm_labels():
-    eyes_pms = [-1.8, 2.4]
-    mouth_pms = [-2.8, -1.4, 0.0, 1.4, 2.8]
-    pose_pms = [-2.1, -1.4, -0.7, 0.0, 0.7]
+    eyes_pms = [-1.2, 1.8]
+    mouth_pms = [-2.4, -1.2, 0.0, 1.2, 2.4]
+    pose_pms = [-1.8, -1.2, -0.6, 0.0, 0.6]
 
     eyes_pm_order = []
     mouth_pm_order = []
@@ -481,10 +481,10 @@ if __name__ == '__main__':
     # get property score changing vector
     try:
         eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
-        print('Existing Property Score vector load successful!! 😊')
+        print('Existing "Property Score Changing Vector" info load successful!! 😊')
 
     except Exception as e:
-        print(f'Property Score vector load failed : {e}')
+        print(f'"Property Score Changing Vector" info load failed : {e}')
         stylegan_vectorfind_v6_main(finetune_v1_generator, device)
         eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
 
