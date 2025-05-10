@@ -7,7 +7,8 @@
 * [3. 사용 모델 설명](#3-사용-모델-설명)
   * [3-1. Fine-Tuned StyleGAN (StyleGAN-FineTune-v5)](#3-1-fine-tuned-stylegan-stylegan-finetune-v5) 
   * [3-2. StyleGAN-FineTune-v1 기반 핵심 속성값 변환 Vector 탐색 (StyleGAN-VectorFind-v6)](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-vector-탐색-stylegan-vectorfind-v6)
-* [4. 코드 실행 방법](#4-코드-실행-방법)
+* [4. 향후 진행하고 싶은 것](#4-향후-진행하고-싶은-것)
+* [5. 코드 실행 방법](#5-코드-실행-방법)
 
 ## 1. 개요
 
@@ -16,7 +17,7 @@
   * StyleGAN-FineTune-v1 (**Fine-Tuned** StyleGAN, **여성 이미지 생성 확률 90% 이상**) 기반
   * StyleGAN-FineTune-v1 의 latent z vector 에서, **[핵심 속성 값](#2-핵심-속성-값) 을 변화시키는 벡터** 를 찾는 아이디어
   * [오로라 1차 프로젝트](../../2025_04_08_OhLoRA) 당시 **StyleGAN-FineTune-v2** 학습 목적으로 개발한 [Property Score CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 이 사용됨
-    * StyleGAN-FineTune-v6 의 **Training Phase 및 Inference & Image Generation Test Phase 에서 모두** 사용됨
+    * StyleGAN-VectorFind-v6 의 **Training Phase 및 Inference & Image Generation Test Phase 에서 모두** 사용됨
 
 **전체 모델 파이프라인 그림**
 
@@ -141,7 +142,19 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 * n vector 를 찾을 때 [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 을 이용하고, 속성 값이 상/하위 일정 비율인 이미지만을 SVM이 학습하는 것은 [해당 논문](https://arxiv.org/pdf/1911.09267) 의 핵심 아이디어임
 * **이미지를 8개의 그룹으로 나누고, 각 그룹별로 (최적의) n vector 를 찾아서 성능 향상을 꾀하는 것** 은 위 논문의 아이디어와 본인의 아이디어를 **융합하여 적용** 한 것임
 
-## 4. 코드 실행 방법
+## 4. 향후 진행하고 싶은 것
+
+* 기존의 **고품질 & 여성** 이라는 조건 외에, **젊어 보이는 사람의** 이미지를 [필터링](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-2-cnn-model-성별-이미지-품질) 조건에 추가
+  * StyleGAN-FineTune-v1 으로 이미지를 추가 생성 후, **고품질 & 여성 & 젊어 보임** 이라는 3가지 조건으로 필터링
+    * StyleGAN-FineTune-v1 은 **고품질의 여성 이미지 생성 확률이 90% 이상** 으로 높지만 완벽하지는 않으므로 **고품질 & 여성** 조건으로도 필터링 필요
+  * **젊어 보임** 을 판단하는 CNN 을 [성별 & 이미지 품질 판단 CNN 과 동일한 방법](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-2-cnn-model-성별-이미지-품질) 으로 개발
+
+* StyleGAN-VectorFind-v6 의 **이미지 생성 테스트 합격 기준** 변경
+  * 현재 합격 기준 [(참고)](stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md#1-final-report) 보다 ```pose``` 의 cutoff 를 하향
+  * 이미지의 **품질 (고품질) & 성별 (여성) & 일관성 (나머지 속성)** 을 합격 기준에 추가
+    * 나머지 속성에 대한 **일관성** 이란, ```eyes``` ```mouth``` ```pose``` 값을 바꿔도 배경, 전반적인 얼굴 형태 등은 바뀌지 않음을 의미 
+
+## 5. 코드 실행 방법
 
 모든 코드는 ```2025_05_02_OhLoRA_v2``` (프로젝트 메인 디렉토리) 에서 실행
 
