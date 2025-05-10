@@ -116,12 +116,14 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 * 핵심 아이디어
   * **Training Phase 에서 찾은 n vector** 를 이용하여, 실제 이미지 생성 & 해당 n vector 가 핵심 속성값을 잘 변화시키는지 테스트
+  * 이미지 생성 테스트에서 **합격한 벡터 중 일부를 사람이 최종 선별** 하여, 실제 **OhLoRA-v2** 버전의 **Oh-LoRA 👱‍♀️ (오로라)** 이미지 생성 용도로 사용할 latent vector (z) 를 획득 [(실제 획득 결과)](stylegan_vectorfind_v6/final_OhLoRA_info.md)
 * Output (2가지)
   * 생성된 이미지
-  * 핵심 속성값을 잘 변화시키는지에 대한 테스트 결과 (PASS or FAIL)
+  * 핵심 속성값을 잘 변화시키는지에 대한 테스트 **(이미지 생성 테스트)** 결과 (PASS or FAIL)
 * 참고 사항 (실제 구현)
   * **latent z vector** 는 [stylegan_vectorfind_v6/ohlora_z_vectors.csv 경로](stylegan_vectorfind_v6/ohlora_z_vectors.csv) 에 관련 정보가 저장되어 있으면 해당 정보에 따라 생성하고, 그렇지 않으면 랜덤으로 생성
   * **생성된 이미지를 그룹에 할당** 할 때, [stylegan_vectorfind_v6/ohlora_z_group_names.csv 경로](stylegan_vectorfind_v6/ohlora_z_group_names.csv) 에 관련 정보가 저장되어 있으면 Property Score CNN 을 이용하는 것이 아닌, 해당 저장된 정보를 이용하여 그룹에 할당
+  * 현재 구현을 기준으로, 이미지 생성 테스트에서 합격하는 벡터는 **전체 latent vector (z) 의 약 4 ~ 5%** 정도
 
 ![image](../../images/250502_13.PNG)
 
