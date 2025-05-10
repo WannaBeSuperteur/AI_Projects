@@ -32,6 +32,8 @@
   * 생성된 이미지가 어느 그룹에 속하는지 Property Score CNN 으로 판단
   * 해당 그룹에 맞는 **눈을 뜬 정도, 입을 벌린 정도, 고개 돌림** n vector 를 이용하여 핵심 속성 값이 변동된 이미지 생성
 
+![image](../../../../images/250502_16.PNG)
+
 ## 3. Image Generation Test Result
 
 * with **[sklearnex](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)** for all cases
