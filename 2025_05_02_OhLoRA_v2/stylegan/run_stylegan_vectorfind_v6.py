@@ -323,7 +323,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
             case_data_save_path = f'{save_dir}/case_{i:03d}_{vi:03d}_result.csv'
             case_data_df.to_csv(case_data_save_path, index=False)
 
-            print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current margin: {round(pass_diff, 4)}, '
+            print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current total gap: {round(pass_diff, 4)}, '
                   f'diff: {diff})')
 
         if ohlora_z_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
