@@ -107,7 +107,7 @@
 | 📕 논문    | StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 방법 논문 탐독 ([참고 논문](https://arxiv.org/pdf/1911.09267))                                                          | 05.05 월 (1d)           |                                          |                                                                   | ✅  |
 | 🔨 모델 개선 | StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현                                                                                                            | 05.06 화 - 05.09 금 (4d) | ```P003-009-StyleGAN-VectorFind```       | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/3) | ✅  |
 | 🔨 모델 개선 | StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현 - **각 이미지 그룹 별** SVM 학습                                                                                    | 05.08 목 - 05.09 금 (2d) | ```P003-010-StyleGAN-VectorFind-Group``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/3) | ✅  |
-| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                                                 | 05.09 금 - 05.10 토 (2d) |                                          |                                                                   | 💨 |
+| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                                                 | 05.09 금 - 05.10 토 (2d) |                                          |                                                                   | ✅  |
 
 **3. LLM 을 이용한 대화 능력 향상**
 
