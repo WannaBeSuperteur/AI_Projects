@@ -183,7 +183,7 @@ def fine_tune_model():
     # get original LLM and tokenizer
     # Polyglot-Ko original model is from https://huggingface.co/EleutherAI/polyglot-ko-1.3b
     original_llm = get_original_llm()
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot-original')
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_original')
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
