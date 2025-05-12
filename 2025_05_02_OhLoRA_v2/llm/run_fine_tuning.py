@@ -1,7 +1,7 @@
-import argparse
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
+import argparse
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     # parse user arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-llm_name', help="name of LLM ('polyglot' or 'koreanlm')")
+    parser.add_argument('-llm_name', help="name of LLM ('polyglot' or 'koreanlm')", default='polyglot')
     args = parser.parse_args()
 
     llm_name = args.llm_name

@@ -2,7 +2,6 @@ import os
 import os.path as osp
 from typing import Union
 import json
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import peft
 from peft import LoraConfig
