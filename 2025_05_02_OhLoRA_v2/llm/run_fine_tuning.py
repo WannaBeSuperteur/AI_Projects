@@ -38,7 +38,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     llm_name = args.llm_name
-    assert llm_name in ['polyglot', 'koreanlm']
+    assert llm_name in ['polyglot', 'koreanlm'], "LLM name must be 'polyglot' or 'koreanlm'."
 
     # load valid dataset
     valid_user_prompts = load_valid_user_prompts(
