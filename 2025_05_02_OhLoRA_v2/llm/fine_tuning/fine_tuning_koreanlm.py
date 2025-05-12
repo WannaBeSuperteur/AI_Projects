@@ -15,6 +15,7 @@ import torch
 import pandas as pd
 
 from fine_tuning.inference import load_valid_user_prompts, run_inference, run_inference_koreanlm
+from fine_tuning.utils import get_instruction, koreanlm_tokenize
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -39,7 +40,7 @@ class Prompter(object):
         file_name = osp.join("templates", f"{PROJECT_DIR_PATH}/llm/fine_tuning/{template_name}.json")
         if not osp.exists(file_name):
             raise ValueError(f"Can't read {file_name}")
-        with open(file_name) as fp:
+        with open(file_name, 'r', encoding='UTF8') as fp:
             self.template = json.load(fp)
         if self._verbose:
             print(
@@ -75,18 +76,15 @@ class Prompter(object):
 # Modified Implementation from https://github.com/quantumaikr/KoreanLM/blob/main/finetune-lora.py
 
 def generate_and_tokenize_prompt(data_point, prompter, tokenizer, train_on_inputs=True):
-    full_prompt = prompter.generate_prompt(
-        data_point["instruction"],
-        data_point["input"],
-        data_point["output"],
-    )
-    tokenized_full_prompt = tokenize(full_prompt, tokenizer, return_tensors=None)
+    input_part = data_point['text'].split(' ### 답변: ')[0]
+    output_part = data_point['text'].split(' ### 답변: ')[1]
+
+    full_prompt = prompter.generate_prompt(get_instruction(), input_part, output_part)
+    tokenized_full_prompt = koreanlm_tokenize(full_prompt, tokenizer, return_tensors=None)
 
     if not train_on_inputs:
-        user_prompt = prompter.generate_prompt(
-            data_point["instruction"], data_point["input"]
-        )
-        tokenized_user_prompt = tokenize(user_prompt, tokenizer, return_tensors=None)
+        user_prompt = prompter.generate_prompt(get_instruction(), input_part)
+        tokenized_user_prompt = koreanlm_tokenize(user_prompt, tokenizer, return_tensors=None)
         user_prompt_len = len(tokenized_user_prompt["input_ids"])
 
         tokenized_full_prompt["labels"] = [
@@ -95,23 +93,6 @@ def generate_and_tokenize_prompt(data_point, prompter, tokenizer, train_on_input
             user_prompt_len:
         ]  # could be sped up, probably
     return tokenized_full_prompt
-
-
-# Modified Implementation from https://github.com/quantumaikr/KoreanLM/blob/main/finetune-lora.py
-
-def tokenize(prompt, tokenizer, return_tensors):
-    # there's probably a way to do this with the tokenizer settings
-    # but again, gotta move fast
-    result = tokenizer(
-        prompt,
-        truncation=True,
-        max_length=96,
-        padding=False,
-        return_tensors=return_tensors,
-    )
-
-    result["labels"] = result["input_ids"].copy()
-    return result
 
 
 class InferenceTestOnEpochEndCallback(TrainerCallback):
@@ -304,7 +285,7 @@ def fine_tune_model():
     # prepare Fine-Tuning
     prompter = Prompter('korean')
 
-    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} (답변 종료) <|endoftext|>",
+    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} ### 답변: {x['output_data']} <|endoftext|>",
                                           axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df, prompter, tokenizer)
     collator = DataCollatorForSeq2Seq(tokenizer, return_tensors="pt", padding=True)

@@ -2,7 +2,7 @@
 # - https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig
 
 from transformers import StoppingCriteria, StoppingCriteriaList, GenerationConfig
-from fine_tuning.fine_tuning_koreanlm import tokenize as koreanlm_tokenize
+from fine_tuning.utils import get_instruction, koreanlm_tokenize
 
 import pandas as pd
 import torch
@@ -127,7 +127,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark, sto
 
 def run_inference_koreanlm(fine_tuned_llm, user_prompt, tokenizer, prompter, max_trials=30):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    instruction = '당신은 AI 여성 챗봇입니다. 사용자의 대화에 답하세요.'
+    instruction = get_instruction()
 
     input_ = prompter.generate_prompt(instruction, user_prompt)
     tokenized_input = koreanlm_tokenize(input_, tokenizer, return_tensors='pt')
