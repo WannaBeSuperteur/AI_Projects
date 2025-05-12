@@ -71,6 +71,8 @@
 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/inference_test_after_training
 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/inference_test_after_training/*
 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v6/*.pth
+2025_05_02_OhLoRA_v2/llm/models
+2025_05_02_OhLoRA_v2/llm/models/*
 venv
 venv/*
 requirements_v3.10.11.txt
