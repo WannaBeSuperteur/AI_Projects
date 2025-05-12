@@ -45,6 +45,7 @@
 **1. 문제 상황**
 
 * [Quantum AI 의 KoreanLM-1.5B](https://huggingface.co/quantumaikr/KoreanLM-1.5b/tree/main) LLM 학습 시 다음 오류 발생
+  * ```RuntimeError: CUDA error: device-side assert triggered```
 
 **2. 시도한 해결 방법**
 
@@ -57,12 +58,12 @@ tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/korean
 
 * 결과
   * **동일한 오류가 여전히 발생 (즉, 근본적인 해결책 아님)**
-  * 단, ```padding_size``` 변경 전 (0~2개 데이터 학습) 과 달리 **오류 발생 전까지 평균 3~5 개의 데이터를 학습** 함 
+  * 단, ```padding_size``` 변경 전 (0-2 개 데이터 학습) 과 달리 **오류 발생 전까지 평균 3-5 개의 데이터를 학습** 함 
 
 * 오류 로그
   * ```padding_side``` 값을 ```left``` 로 바꾸기 전/후 모두 동일
 
-**기본 설정**
+**[ 기본 설정 ]**
 
 ```
   File "C:\Users\20151\Documents\AI_Projects\venv\lib\site-packages\transformers\models\llama\modeling_llama.py", line 821, in forward
@@ -82,7 +83,7 @@ Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
   0%|                                                                                                                                                                                                     | 0/7200 [00:02<?, ?it/s]
 ```
 
-**```CUDA_LAUNCH_BLOCKING=1``` 설정**
+**[ ```CUDA_LAUNCH_BLOCKING=1``` 설정 ]**
 
 ```
     return forward_call(*args, **kwargs)
