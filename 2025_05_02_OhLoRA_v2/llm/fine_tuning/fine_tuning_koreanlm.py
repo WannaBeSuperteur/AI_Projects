@@ -48,7 +48,7 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
 # - 없음
 
 # Returns:
-# - original_llm (LLM) : Original Polyglot-Ko 1.3B LLM
+# - original_llm (LLM) : Original KoreanLM 1.5B LLM
 
 def get_original_llm():
     original_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/koreanlm_original',
@@ -117,7 +117,7 @@ def get_sft_trainer(dataset, collator, training_args):
 # Last Update Date : -
 
 # Arguments:
-# - llm       (LLM) : Fine-Tuning 실시할 LLM (Polyglot-Ko 1.3B)
+# - llm       (LLM) : Fine-Tuning 실시할 LLM (KoreanLM 1.5B)
 # - lora_rank (int) : LoRA 적용 시의 Rank
 
 # Returns:
@@ -139,7 +139,7 @@ def get_lora_llm(llm, lora_rank):
     lora_llm.print_trainable_parameters()
 
 
-# Original LLM (Polyglot-Ko 1.3B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
+# Original LLM (KoreanLM 1.5B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
 # Create Date : 2025.05.12
 # Last Update Date : -
 
@@ -164,7 +164,7 @@ def generate_llm_trainable_dataset(dataset_df):
     return dataset
 
 
-# LLM (Polyglot-Ko 1.3B) Fine Tuning 실시
+# LLM (KoreanLM 1.5B) Fine-Tuning 실시
 # Create Date : 2025.05.12
 # Last Update Date : -
 
@@ -172,7 +172,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # - 없음
 
 # Returns:
-# - 2025_05_02_OhLoRA_v2/llm/models/polyglot_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - 2025_05_02_OhLoRA_v2/llm/models/koreanlm_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model():
     global lora_llm, tokenizer
