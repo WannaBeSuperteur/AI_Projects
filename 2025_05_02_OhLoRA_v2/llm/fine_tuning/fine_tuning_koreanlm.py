@@ -43,7 +43,8 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
 
 # Original LLM (KoreanLM 1.5B) 가져오기 (Fine-Tuning 실시할)
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.12
+# - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
 
 # Arguments:
 # - 없음
@@ -54,14 +55,15 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
 def get_original_llm():
     original_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/koreanlm_original',
                                                         trust_remote_code=True,
-                                                        torch_dtype=torch.bfloat16).cuda()
+                                                        torch_dtype=torch.float16).cuda()
 
     return original_llm
 
 
 # Original LLM (KoreanLM 1.5B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.12
+# - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
 
 # Arguments:
 # - 없음
@@ -79,6 +81,7 @@ def get_training_args():
         save_total_limit=3,             # max checkpoint count to save
         per_device_train_batch_size=4,  # batch size per device during training
         per_device_eval_batch_size=1,   # batch size per device during validation
+        fp16=True,
         report_to=None                  # to prevent wandb API key request at start of Fine-Tuning
     )
 
@@ -115,7 +118,8 @@ def get_sft_trainer(dataset, collator, training_args):
 
 # Original LLM (KoreanLM 1.5B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.12
+# - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
 
 # Arguments:
 # - llm       (LLM) : Fine-Tuning 실시할 LLM (KoreanLM 1.5B)
@@ -133,6 +137,7 @@ def get_lora_llm(llm, lora_rank):
         lora_dropout=0.05,                    # Dropout for LoRA
         init_lora_weights="gaussian",         # LoRA weight initialization
         target_modules=["q_proj", "v_proj"],
+        bias="none",
         task_type="CAUSAL_LM"
     )
 
@@ -167,7 +172,8 @@ def generate_llm_trainable_dataset(dataset_df):
 
 # LLM (KoreanLM 1.5B) Fine-Tuning 실시
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.12
+# - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
 
 # Arguments:
 # - 없음
@@ -183,8 +189,11 @@ def fine_tune_model():
     # get original LLM and tokenizer
     # KoreanLM original model is from https://huggingface.co/quantumaikr/KoreanLM-1.5b/tree/main
     original_llm = get_original_llm()
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/koreanlm_original')
-    original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/koreanlm_original',
+                                              padding_side='right')
+
+    # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+    original_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
     # read dataset
     dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')

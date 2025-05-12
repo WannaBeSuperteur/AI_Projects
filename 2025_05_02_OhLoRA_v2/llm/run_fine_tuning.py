@@ -15,7 +15,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # Fine-Tuning 된 LLM 로딩
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.12
+# - KoreanLM-1.5B 별도 처리
 
 # Arguments:
 # - llm_name (str) : Fine-Tuning 된 LLM 의 이름 ('polyglot' or 'koreanlm')
@@ -24,9 +25,20 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # - fine_tuned_llm (LLM) : Fine-Tuning 된 LLM
 
 def load_fine_tuned_llm(llm_name):
-    fine_tuned_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_fine_tuned',
-                                                          trust_remote_code=True,
-                                                          torch_dtype=torch.bfloat16).cuda()
+    fine_tuned_llm = None
+
+    if llm_name == 'polyglot':
+        fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
+            f'{PROJECT_DIR_PATH}/llm/models/polyglot_fine_tuned',
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).cuda()
+
+    elif llm_name == 'koreanlm':
+        fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
+            f'{PROJECT_DIR_PATH}/llm/models/koreanlm_fine_tuned',
+            trust_remote_code=True,
+            torch_dtype=torch.float16).cuda()
+
     return fine_tuned_llm
 
 
