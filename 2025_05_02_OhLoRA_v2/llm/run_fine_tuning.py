@@ -40,7 +40,8 @@ if __name__ == '__main__':
     assert llm_name in ['polyglot', 'koreanlm']
 
     # load valid dataset
-    valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning/OhLoRA_fine_tuning_25042213.csv')
+    valid_user_prompts = load_valid_user_prompts(
+        dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
 
     for user_prompt in valid_user_prompts:
         print(f'user prompt for validation : {user_prompt}')
@@ -66,6 +67,13 @@ if __name__ == '__main__':
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
+    # define stop token list for inference
+    if llm_name == 'koreanlm':
+        stop_token_list = [10234, 3082, 10904, 13]
+
+    elif llm_name == 'polyglot':
+        stop_token_list = [1477, 1078, 4833, 12]
+
     # run inference using Fine-Tuned LLM
     for user_prompt in valid_user_prompts:
         print(f'\nuser prompt :\n{user_prompt}')
@@ -79,7 +87,7 @@ if __name__ == '__main__':
             llm_answer, trial_count, output_token_cnt = run_inference(fine_tuned_llm,
                                                                       user_prompt,
                                                                       tokenizer,
-                                                                      stop_token_list=None,
+                                                                      stop_token_list=stop_token_list,
                                                                       answer_start_mark=' (답변 시작)',
                                                                       remove_token_type_ids=True)
 

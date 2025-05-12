@@ -20,7 +20,7 @@ OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_fine_tuned'
 
 lora_llm = None
 tokenizer = None
-valid_user_prompts = load_valid_user_prompts()
+valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
 
 
 class InferenceTestOnEpochEndCallback(TrainerCallback):
@@ -127,11 +127,11 @@ def get_lora_llm(llm, lora_rank):
     global lora_llm
 
     lora_config = LoraConfig(
-        r=lora_rank,                         # Rank of LoRA
+        r=lora_rank,                          # Rank of LoRA
         lora_alpha=16,
-        lora_dropout=0.05,                   # Dropout for LoRA
-        init_lora_weights="gaussian",        # LoRA weight initialization
-        target_modules=["query_key_value"],
+        lora_dropout=0.05,                    # Dropout for LoRA
+        init_lora_weights="gaussian",         # LoRA weight initialization
+        target_modules=["q_proj", "v_proj"],
         task_type="CAUSAL_LM"
     )
 
@@ -192,16 +192,15 @@ def fine_tune_model():
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=128)
 
-    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
-    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
-    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
+#    print(tokenizer.encode('### 답변:'))  # ... [20904, 14177, 3082, 30]
+#    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [12, 10234, 3082, 2211, 13, 225, 20904, 14177, 3082, 30]
+#    print(tokenizer.encode('(답변 종료)'))  # ... [12, 10234, 3082, 10904, 13]
 
     dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} (답변 종료) <|endoftext|>",
                                           axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
-    print(1 / 0)
 
-    response_template = [6, 6, 4253, 29]  # '### 답변 :'
+    response_template = [20904, 14177, 3082, 30]  # '### 답변 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args()
