@@ -125,7 +125,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark, sto
 # - trial_count      (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
 # - output_token_cnt (int) : LLM output 의 token 개수
 
-def run_inference_koreanlm(fine_tuned_llm, user_prompt, tokenizer, prompter, max_trials):
+def run_inference_koreanlm(fine_tuned_llm, user_prompt, tokenizer, prompter, max_trials=30):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     instruction = '당신은 AI 여성 챗봇입니다. 사용자의 대화에 답하세요.'
 

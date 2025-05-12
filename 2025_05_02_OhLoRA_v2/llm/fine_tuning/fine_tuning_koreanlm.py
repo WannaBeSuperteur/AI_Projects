@@ -14,7 +14,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, T
 import torch
 import pandas as pd
 
-from fine_tuning.inference import load_valid_user_prompts, run_inference
+from fine_tuning.inference import load_valid_user_prompts, run_inference, run_inference_koreanlm
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -97,6 +97,8 @@ def generate_and_tokenize_prompt(data_point, prompter, tokenizer, train_on_input
     return tokenized_full_prompt
 
 
+# Modified Implementation from https://github.com/quantumaikr/KoreanLM/blob/main/finetune-lora.py
+
 def tokenize(prompt, tokenizer, return_tensors):
     # there's probably a way to do this with the tokenizer settings
     # but again, gotta move fast
@@ -113,18 +115,21 @@ def tokenize(prompt, tokenizer, return_tensors):
 
 
 class InferenceTestOnEpochEndCallback(TrainerCallback):
+
+    def __init__(self):
+        super(InferenceTestOnEpochEndCallback, self).__init__()
+        self.prompter = Prompter('korean')
+
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         global lora_llm, tokenizer, valid_user_prompts
 
         print('=== INFERENCE TEST ===')
 
         for user_prompt in valid_user_prompts:
-            llm_answer, trial_count, output_token_cnt = run_inference(lora_llm,
-                                                                      user_prompt,
-                                                                      tokenizer,
-                                                                      stop_token_list=[10234, 3082, 10904, 13],
-                                                                      answer_start_mark=' (답변 시작)',
-                                                                      remove_token_type_ids=True)
+            llm_answer, trial_count, output_token_cnt = run_inference_koreanlm(lora_llm,
+                                                                               user_prompt,
+                                                                               tokenizer,
+                                                                               self.prompter)
 
             print(f'user prompt : {user_prompt}')
             print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}')
