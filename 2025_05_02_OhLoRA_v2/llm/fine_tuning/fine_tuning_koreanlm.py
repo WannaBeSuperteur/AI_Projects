@@ -192,13 +192,14 @@ def fine_tune_model():
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=128)
 
-#    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
-#    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
-#    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
+    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
+    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
+    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
 
     dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} (답변 종료) <|endoftext|>",
                                           axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
+    print(1 / 0)
 
     response_template = [6, 6, 4253, 29]  # '### 답변 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)

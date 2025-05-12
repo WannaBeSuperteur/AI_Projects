@@ -27,18 +27,17 @@ class StopOnTokens(StoppingCriteria):
 
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
-# Create Date : 2025.04.21
-# Last Update Date : 2025.04.22
-# - 학습 데이터 및 그 csv 파일 경로 수정에 따른 경로 업데이트
+# Create Date : 2025.05.12
+# Last Update Date : -
 
 # Arguments:
-# - 없음
+# - dataset_csv_path (str) : Valid dataset csv 파일 경로
 
 # Returns:
 # - valid_user_prompts (list(str)) : Valid Dataset 에 있는 user prompt 의 리스트
 
-def load_valid_user_prompts():
-    dataset_csv_path = f'{PROJECT_DIR_PATH}/llm/OhLoRA_fine_tuning_25042213.csv'
+def load_valid_user_prompts(dataset_csv_path):
+    dataset_csv_path = f'{PROJECT_DIR_PATH}/{dataset_csv_path}'
     dataset_df = pd.read_csv(dataset_csv_path)
     dataset_df_valid = dataset_df[dataset_df['data_type'] == 'valid']
 
@@ -46,25 +45,25 @@ def load_valid_user_prompts():
     return valid_user_prompts
 
 
-# Fine Tuning 된 LLM (gemma-2 2b) 을 이용한 inference 실시
-# Create Date : 2025.04.22
-# Last Update Date : 2025.04.22
-# - LLM 의 generate (문장 생성) 시 stopping criteria 적용
+# Fine Tuning 된 LLM 을 이용한 inference 실시
+# Create Date : 2025.05.12
+# Last Update Date : -
 
 # Arguments:
 # - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
 # - user_prompt           (str)           : LLM 에 입력할 사용자 프롬프트
 # - tokenizer             (AutoTokenizer) : LLM 의 Tokenizer
+# - answer_start_mark     (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
+# - stop_token_list       (list)          : stopping token ('(답변 종료)') 에 해당하는 token 의 list
 # - max_trials            (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
 # - remove_token_type_ids (bool)          : tokenizer 로 Encoding 된 input 의 dict 에서 'token_type_ids' 제거 여부
-# - answer_start_mark     (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
 
 # Returns:
 # - llm_answer       (str) : LLM 답변 중 user prompt 를 제외한 부분
 # - trial_count      (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
 # - output_token_cnt (int) : LLM output 의 token 개수
 
-def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
+def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark, stop_token_list,
                   max_trials=30, remove_token_type_ids=False):
 
     user_prompt_ = user_prompt + answer_start_mark
@@ -81,7 +80,7 @@ def run_inference(fine_tuned_llm, user_prompt, tokenizer, answer_start_mark,
     output_token_cnt = None
 
     # for stopping criteria
-    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(fine_tuned_llm.device)  # '(답변 종료)'
+    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # '(답변 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:

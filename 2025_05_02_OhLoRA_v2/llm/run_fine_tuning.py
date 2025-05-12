@@ -40,7 +40,7 @@ if __name__ == '__main__':
     assert llm_name in ['polyglot', 'koreanlm']
 
     # load valid dataset
-    valid_user_prompts = load_valid_user_prompts()
+    valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning/OhLoRA_fine_tuning_25042213.csv')
 
     for user_prompt in valid_user_prompts:
         print(f'user prompt for validation : {user_prompt}')
@@ -71,30 +71,21 @@ if __name__ == '__main__':
         print(f'\nuser prompt :\n{user_prompt}')
 
         # generate 4 answers for comparison
-        llm_answer_0, trial_count_0, output_token_cnt_0 = run_inference(fine_tuned_llm,
-                                                                        user_prompt,
-                                                                        tokenizer,
-                                                                        answer_start_mark=' (답변 시작)',
-                                                                        remove_token_type_ids=True)
+        llm_answers = []
+        trial_counts = []
+        output_token_cnts = []
 
-        llm_answer_1, trial_count_1, output_token_cnt_1 = run_inference(fine_tuned_llm,
-                                                                        user_prompt,
-                                                                        tokenizer,
-                                                                        answer_start_mark=' (답변 시작)',
-                                                                        remove_token_type_ids=True)
+        for _ in range(4):
+            llm_answer, trial_count, output_token_cnt = run_inference(fine_tuned_llm,
+                                                                      user_prompt,
+                                                                      tokenizer,
+                                                                      stop_token_list=None,
+                                                                      answer_start_mark=' (답변 시작)',
+                                                                      remove_token_type_ids=True)
 
-        llm_answer_2, trial_count_2, output_token_cnt_2 = run_inference(fine_tuned_llm,
-                                                                        user_prompt,
-                                                                        tokenizer,
-                                                                        answer_start_mark=' (답변 시작)',
-                                                                        remove_token_type_ids=True)
+        trial_counts_str = ','.join(trial_counts)
+        output_token_cnts_str = ','.join(output_token_cnts)
+        llm_answers_str = '\n- '.join(llm_answers)
 
-        llm_answer_3, trial_count_3, output_token_cnt_3 = run_inference(fine_tuned_llm,
-                                                                        user_prompt,
-                                                                        tokenizer,
-                                                                        answer_start_mark=' (답변 시작)',
-                                                                        remove_token_type_ids=True)
-
-        print(f'Oh-LoRA answer (trials: {trial_count_0},{trial_count_1},{trial_count_2},{trial_count_3} | '
-              f'output_tkn_cnt : {output_token_cnt_0},{output_token_cnt_1},{output_token_cnt_2},{output_token_cnt_3}) '
-              f':\n- {llm_answer_0}\n- {llm_answer_1}\n- {llm_answer_2}\n- {llm_answer_3}')
+        print(f'Oh-LoRA answer (trials: {trial_counts_str} | output_tkn_cnt : {output_token_cnts_str}) '
+              f':\n- {llm_answers_str}')
