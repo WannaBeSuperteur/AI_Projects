@@ -1,13 +1,15 @@
 import os
+import os.path as osp
+from typing import Union
+import json
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import peft
 from peft import LoraConfig
 from trl import SFTTrainer, SFTConfig
-from trl import DataCollatorForCompletionOnlyLM
 from datasets import DatasetDict, Dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, TrainingArguments, TrainerState, \
-                         TrainerControl
+    TrainerControl, DataCollatorForSeq2Seq
 
 import torch
 import pandas as pd
@@ -21,6 +23,93 @@ OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_fine_tuned'
 lora_llm = None
 tokenizer = None
 valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
+
+
+# Modified Implementation from https://github.com/quantumaikr/KoreanLM/blob/main/utils.py (License: Apache 2.0)
+# Original korean.json file (in this directory) from https://github.com/quantumaikr/KoreanLM/blob/main/templates/korean.json
+
+class Prompter(object):
+    __slots__ = ("template", "_verbose")
+
+    def __init__(self, template_name: str = "", verbose: bool = False):
+        self._verbose = verbose
+        if not template_name:
+            # Enforce the default here, so the constructor can be called with '' and will not break.
+            template_name = "korean"
+        file_name = osp.join("templates", f"{PROJECT_DIR_PATH}/llm/fine_tuning/{template_name}.json")
+        if not osp.exists(file_name):
+            raise ValueError(f"Can't read {file_name}")
+        with open(file_name) as fp:
+            self.template = json.load(fp)
+        if self._verbose:
+            print(
+                f"Using prompt template {template_name}: {self.template['description']}"
+            )
+
+    def generate_prompt(
+        self,
+        instruction: str,
+        input: Union[None, str] = None,
+        label: Union[None, str] = None,
+    ) -> str:
+        # returns the full prompt from instruction and optional input
+        # if a label (=response, =output) is provided, it's also appended.
+        if input:
+            res = self.template["prompt_input"].format(
+                instruction=instruction, input=input
+            )
+        else:
+            res = self.template["prompt_no_input"].format(
+                instruction=instruction
+            )
+        if label:
+            res = f"{res}{label}"
+        if self._verbose:
+            print(res)
+        return res
+
+    def get_response(self, output: str) -> str:
+        return output.split(self.template["response_split"])[1].strip()
+
+
+# Modified Implementation from https://github.com/quantumaikr/KoreanLM/blob/main/finetune-lora.py
+
+def generate_and_tokenize_prompt(data_point, prompter, tokenizer, train_on_inputs=True):
+    full_prompt = prompter.generate_prompt(
+        data_point["instruction"],
+        data_point["input"],
+        data_point["output"],
+    )
+    tokenized_full_prompt = tokenize(full_prompt, tokenizer, return_tensors=None)
+
+    if not train_on_inputs:
+        user_prompt = prompter.generate_prompt(
+            data_point["instruction"], data_point["input"]
+        )
+        tokenized_user_prompt = tokenize(user_prompt, tokenizer, return_tensors=None)
+        user_prompt_len = len(tokenized_user_prompt["input_ids"])
+
+        tokenized_full_prompt["labels"] = [
+            -100
+        ] * user_prompt_len + tokenized_full_prompt["labels"][
+            user_prompt_len:
+        ]  # could be sped up, probably
+    return tokenized_full_prompt
+
+
+def tokenize(prompt, tokenizer, return_tensors):
+    # there's probably a way to do this with the tokenizer settings
+    # but again, gotta move fast
+    result = tokenizer(
+        prompt,
+        truncation=True,
+        max_length=96,
+        padding=False,
+        return_tensors=return_tensors,
+    )
+
+    result["labels"] = result["input_ids"].copy()
+    return result
 
 
 class InferenceTestOnEpochEndCallback(TrainerCallback):
@@ -147,19 +236,29 @@ def get_lora_llm(llm, lora_rank):
 
 # Original LLM (KoreanLM 1.5B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.12
+# - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
 
 # Arguments:
 # - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from OhLoRA_fine_tuning_25042213.csv)
 #                                   columns = ['data_type', 'input_data', 'output_data', 'output_message', 'memory']
+# - prompter   (Prompter)         : LLM 의 사용자 prompt & 답변의 입출력 형식을 나타내는 객체
+# - tokenizer  (tokenizer)        : KoreanLM-1.5B 에 대한 tokenizer
 
 # Returns:
 # - dataset (Dataset) : LLM 학습 데이터셋
 
-def generate_llm_trainable_dataset(dataset_df):
+def generate_llm_trainable_dataset(dataset_df, prompter, tokenizer):
     dataset = DatasetDict()
     dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'train'][['text']])
+    dataset['train'] = dataset['train'].map(lambda x: generate_and_tokenize_prompt(x,
+                                                                                   prompter=prompter,
+                                                                                   tokenizer=tokenizer))
+
     dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'valid'][['text']])
+    dataset['valid'] = dataset['valid'].map(lambda x: generate_and_tokenize_prompt(x,
+                                                                                   prompter=prompter,
+                                                                                   tokenizer=tokenizer))
 
     print('\nLLM Trainable Dataset :')
     train_texts = dataset['train']['text']
@@ -191,28 +290,21 @@ def fine_tune_model():
     original_llm = get_original_llm()
     tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/koreanlm_original',
                                               padding_side='right')
-
-    # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
-    original_llm.generation_config.pad_token_id = tokenizer.pad_token_id
+    tokenizer.pad_token_id = 0  # unk
 
     # read dataset
     dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
-    get_lora_llm(llm=original_llm, lora_rank=128)
-
-#    print(tokenizer.encode('### 답변:'))  # ... [20904, 14177, 3082, 30]
-#    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [12, 10234, 3082, 2211, 13, 225, 20904, 14177, 3082, 30]
-#    print(tokenizer.encode('(답변 종료)'))  # ... [12, 10234, 3082, 10904, 13]
+    prompter = Prompter('korean')
 
     dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} (답변 종료) <|endoftext|>",
                                           axis=1)
-    dataset = generate_llm_trainable_dataset(dataset_df)
+    dataset = generate_llm_trainable_dataset(dataset_df, prompter, tokenizer)
+    collator = DataCollatorForSeq2Seq(tokenizer, return_tensors="pt", padding=True)
 
-    response_template = [20904, 14177, 3082, 30]  # '### 답변 :'
-    collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
-
+    get_lora_llm(llm=original_llm, lora_rank=128)
     training_args = get_training_args()
     trainer = get_sft_trainer(dataset, collator, training_args)
 
