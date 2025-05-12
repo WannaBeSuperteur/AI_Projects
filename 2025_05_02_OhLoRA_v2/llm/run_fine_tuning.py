@@ -6,6 +6,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from fine_tuning.fine_tuning_koreanlm import fine_tune_model as fine_tune_koreanlm
+from fine_tuning.fine_tuning_polyglot import fine_tune_model as fine_tune_polyglot
 from fine_tuning.inference import run_inference, load_valid_user_prompts
 
 
@@ -59,7 +60,7 @@ if __name__ == '__main__':
             fine_tune_koreanlm()
 
         elif llm_name == 'polyglot':
-            pass  # fine_tune_polyglot()
+            fine_tune_polyglot()
 
         fine_tuned_llm = load_fine_tuned_llm(llm_name)
         tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_fine_tuned')

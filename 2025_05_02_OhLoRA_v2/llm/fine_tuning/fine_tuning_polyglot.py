@@ -16,7 +16,7 @@ from fine_tuning.inference import load_valid_user_prompts, run_inference
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
-OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_fine_tuned'
+OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/polyglot_fine_tuned'
 
 lora_llm = None
 tokenizer = None
@@ -33,7 +33,7 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
             llm_answer, trial_count, output_token_cnt = run_inference(lora_llm,
                                                                       user_prompt,
                                                                       tokenizer,
-                                                                      stop_token_list=[10234, 3082, 10904, 13],
+                                                                      stop_token_list=[1477, 1078, 4833, 12],
                                                                       answer_start_mark=' (답변 시작)',
                                                                       remove_token_type_ids=True)
 
@@ -41,7 +41,7 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
             print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}')
 
 
-# Original LLM (KoreanLM 1.5B) 가져오기 (Fine-Tuning 실시할)
+# Original LLM (Polyglot-Ko 1.3B) 가져오기 (Fine-Tuning 실시할)
 # Create Date : 2025.05.12
 # Last Update Date : -
 
@@ -49,17 +49,17 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
 # - 없음
 
 # Returns:
-# - original_llm (LLM) : Original KoreanLM 1.5B LLM
+# - original_llm (LLM) : Original Polyglot-Ko 1.3B LLM
 
 def get_original_llm():
-    original_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/koreanlm_original',
+    original_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_original',
                                                         trust_remote_code=True,
                                                         torch_dtype=torch.bfloat16).cuda()
 
     return original_llm
 
 
-# Original LLM (KoreanLM 1.5B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
+# Original LLM (Polyglot-Ko 1.3B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
 # Create Date : 2025.05.12
 # Last Update Date : -
 
@@ -85,7 +85,7 @@ def get_training_args():
     return training_args
 
 
-# Original LLM (KoreanLM 1.5B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
+# Original LLM (Polyglot-Ko 1.3B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
 # Create Date : 2025.05.12
 # Last Update Date : -
 
@@ -113,12 +113,12 @@ def get_sft_trainer(dataset, collator, training_args):
     return trainer
 
 
-# Original LLM (KoreanLM 1.5B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
+# Original LLM (Polyglot-Ko 1.3B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
 # Create Date : 2025.05.12
 # Last Update Date : -
 
 # Arguments:
-# - llm       (LLM) : Fine-Tuning 실시할 LLM (KoreanLM 1.5B)
+# - llm       (LLM) : Fine-Tuning 실시할 LLM (Polyglot-Ko 1.3B)
 # - lora_rank (int) : LoRA 적용 시의 Rank
 
 # Returns:
@@ -132,7 +132,7 @@ def get_lora_llm(llm, lora_rank):
         lora_alpha=16,
         lora_dropout=0.05,                    # Dropout for LoRA
         init_lora_weights="gaussian",         # LoRA weight initialization
-        target_modules=["q_proj", "v_proj"],
+        target_modules=["query_key_value"],
         task_type="CAUSAL_LM"
     )
 
@@ -140,7 +140,7 @@ def get_lora_llm(llm, lora_rank):
     lora_llm.print_trainable_parameters()
 
 
-# Original LLM (KoreanLM 1.5B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
+# Original LLM (Polyglot-Ko 1.3B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
 # Create Date : 2025.05.12
 # Last Update Date : -
 
@@ -165,7 +165,7 @@ def generate_llm_trainable_dataset(dataset_df):
     return dataset
 
 
-# LLM (KoreanLM 1.5B) Fine-Tuning 실시
+# LLM (Polyglot-Ko 1.3B) Fine-Tuning 실시
 # Create Date : 2025.05.12
 # Last Update Date : -
 
@@ -173,7 +173,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # - 없음
 
 # Returns:
-# - 2025_05_02_OhLoRA_v2/llm/models/koreanlm_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - 2025_05_02_OhLoRA_v2/llm/models/polyglot_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model():
     global lora_llm, tokenizer
@@ -181,9 +181,9 @@ def fine_tune_model():
     print('Oh-LoRA LLM Fine Tuning start.')
 
     # get original LLM and tokenizer
-    # KoreanLM original model is from https://huggingface.co/quantumaikr/KoreanLM-1.5b/tree/main
+    # Polyglot-Ko original model is from https://huggingface.co/EleutherAI/polyglot-ko-1.3b
     original_llm = get_original_llm()
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/koreanlm_original')
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot-original')
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
@@ -193,15 +193,15 @@ def fine_tune_model():
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=128)
 
-#    print(tokenizer.encode('### 답변:'))  # ... [20904, 14177, 3082, 30]
-#    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [12, 10234, 3082, 2211, 13, 225, 20904, 14177, 3082, 30]
-#    print(tokenizer.encode('(답변 종료)'))  # ... [12, 10234, 3082, 10904, 13]
+#    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
+#    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
+#    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
 
     dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} (답변 종료) <|endoftext|>",
                                           axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
 
-    response_template = [20904, 14177, 3082, 30]  # '### 답변 :'
+    response_template = [6, 6, 4253, 29]  # '### 답변 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args()
