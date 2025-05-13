@@ -61,6 +61,7 @@ def get_original_llm():
 # Create Date : 2025.05.12
 # Last Update Date : 2025.05.13
 # - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영 및 총 4 개의 LLM 개별 학습
+# - LLM output column 에 따라 서로 다른 training argument 적용
 
 # Arguments:
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
@@ -70,17 +71,19 @@ def get_original_llm():
 
 def get_training_args(output_col):
     output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_{output_col}_fine_tuned'
+    num_train_epochs_dict = {'output_message': 80}
+    num_train_epochs = num_train_epochs_dict[output_col]
 
     training_args = SFTConfig(
-        learning_rate=0.0002,           # lower learning rate is recommended for Fine-Tuning
-        num_train_epochs=80,
-        logging_steps=5,                # logging frequency
+        learning_rate=0.0002,               # lower learning rate is recommended for Fine-Tuning
+        num_train_epochs=num_train_epochs,
+        logging_steps=5,                    # logging frequency
         gradient_checkpointing=False,
         output_dir=output_dir_path,
-        save_total_limit=3,             # max checkpoint count to save
-        per_device_train_batch_size=4,  # batch size per device during training
-        per_device_eval_batch_size=1,   # batch size per device during validation
-        report_to=None                  # to prevent wandb API key request at start of Fine-Tuning
+        save_total_limit=3,                 # max checkpoint count to save
+        per_device_train_batch_size=4,      # batch size per device during training
+        per_device_eval_batch_size=1,       # batch size per device during validation
+        report_to=None                      # to prevent wandb API key request at start of Fine-Tuning
     )
 
     return training_args
@@ -214,7 +217,7 @@ def fine_tune_model(output_col):
     response_template = [6, 6, 4253, 29]  # '### 답변 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
-    training_args = get_training_args()
+    training_args = get_training_args(output_col)
     trainer = get_sft_trainer(dataset, collator, training_args)
 
     # run Fine-Tuning
