@@ -109,6 +109,7 @@ if __name__ == '__main__':
                 llm_answer, trial_count, output_token_cnt = run_inference(fine_tuned_llm,
                                                                           final_input_prompt,
                                                                           tokenizer,
+                                                                          output_col,
                                                                           stop_token_list=[1477, 1078, 4833, 12],
                                                                           answer_start_mark=' (답변 시작)',
                                                                           remove_token_type_ids=True)

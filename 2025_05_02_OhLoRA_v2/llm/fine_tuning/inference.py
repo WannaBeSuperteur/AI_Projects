@@ -31,11 +31,13 @@ class StopOnTokens(StoppingCriteria):
 # Create Date : 2025.05.12
 # Last Update Date : 2025.05.13
 # - LLM 4개 개별적 학습 로직에 맞게, user_prompt -> final_input_prompt 로 변수명 수정
+# - output column name 에 따라 empty answer 필터링 여부를 다르게 결정
 
 # Arguments:
 # - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
 # - final_input_prompt    (str)           : LLM 에 최종 입력되는 프롬프트 (경우에 따라 사용자 프롬프트 + alpha)
 # - tokenizer             (AutoTokenizer) : LLM 의 Tokenizer
+# - output_col            (str)           : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 # - answer_start_mark     (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
 # - stop_token_list       (list)          : stopping token ('(답변 종료)') 에 해당하는 token 의 list
 # - max_trials            (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
@@ -46,7 +48,7 @@ class StopOnTokens(StoppingCriteria):
 # - trial_count      (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
 # - output_token_cnt (int) : LLM output 의 token 개수
 
-def run_inference(fine_tuned_llm, final_input_prompt, tokenizer, answer_start_mark, stop_token_list,
+def run_inference(fine_tuned_llm, final_input_prompt, tokenizer, output_col, answer_start_mark, stop_token_list,
                   max_trials=30, remove_token_type_ids=False):
 
     final_input_prompt_ = final_input_prompt + answer_start_mark
@@ -82,7 +84,7 @@ def run_inference(fine_tuned_llm, final_input_prompt, tokenizer, answer_start_ma
         is_bracketed = llm_answer.startswith('[') and llm_answer.endswith(']')
         is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') != ''
 
-        if is_non_empty and 'http' not in llm_answer:
+        if (is_non_empty or output_col == 'memory') and 'http' not in llm_answer:
             break
 
     # remove new-lines
