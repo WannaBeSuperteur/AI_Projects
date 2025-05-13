@@ -2,6 +2,7 @@ import os
 import os.path as osp
 from typing import Union
 import json
+import time
 
 import peft
 from peft import LoraConfig
@@ -15,7 +16,7 @@ import pandas as pd
 
 from fine_tuning.inference import run_inference_koreanlm
 from fine_tuning.utils import get_instruction, koreanlm_tokenize, load_valid_final_prompts, preview_dataset, \
-    add_train_log
+    add_train_log, add_inference_log
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -25,6 +26,9 @@ tokenizer = None
 valid_final_prompts = None
 
 train_log_dict = {'epoch': [], 'time': [], 'loss': [], 'grad_norm': [], 'learning_rate': [], 'mean_token_accuracy': []}
+inference_log_dict = {'epoch': [], 'elapsed_time (s)': [], 'prompt': [], 'llm_answer': [],
+                      'trial_cnt': [], 'output_tkn_cnt': []}
+
 log_dir_path = f'{PROJECT_DIR_PATH}/llm/fine_tuning/logs'
 os.makedirs(log_dir_path, exist_ok=True)
 
@@ -114,13 +118,22 @@ class OhLoRACustomCallback(TrainerCallback):
         print('=== INFERENCE TEST ===')
 
         for final_input_prompt in valid_final_prompts:
+            start_at = time.time()
             llm_answer, trial_count, output_token_cnt = run_inference_koreanlm(lora_llm,
                                                                                final_input_prompt,
                                                                                tokenizer,
                                                                                self.prompter)
+            elapsed_time = time.time() - start_at
 
             print(f'final input prompt : {final_input_prompt}')
             print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}')
+
+            inference_result = {'epoch': state.epoch, 'elapsed_time': elapsed_time, 'prompt': final_input_prompt,
+                                'llm_answer': llm_answer, 'trial_cnt': trial_count, 'output_tkn_cnt': output_token_cnt}
+            add_inference_log(inference_result, inference_log_dict)
+
+        inference_log_df = pd.DataFrame(inference_log_dict)
+        inference_log_df.to_csv(f'{log_dir_path}/polyglot_{self.output_col}_inference_log_dict.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         add_train_log(state, train_log_dict)
