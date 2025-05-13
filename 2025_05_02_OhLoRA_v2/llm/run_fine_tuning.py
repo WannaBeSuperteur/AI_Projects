@@ -7,7 +7,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from fine_tuning.fine_tuning_koreanlm import fine_tune_model as fine_tune_koreanlm, Prompter
 from fine_tuning.fine_tuning_polyglot import fine_tune_model as fine_tune_polyglot
-from fine_tuning.inference import run_inference, run_inference_koreanlm, load_valid_final_prompts
+from fine_tuning.inference import run_inference, run_inference_koreanlm
+from fine_tuning.utils import load_valid_final_prompts
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -66,7 +67,7 @@ if __name__ == '__main__':
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
-        fine_tuned_llm = load_fine_tuned_llm(llm_name)
+        fine_tuned_llm = load_fine_tuned_llm(llm_name, output_col)
         tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{output_col}_fine_tuned')
         print(f'Fine-Tuned LLM ({llm_name}) - Load SUCCESSFUL! 👱‍♀️')
 
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         elif llm_name == 'polyglot':
             fine_tune_polyglot(output_col=output_col)
 
-        fine_tuned_llm = load_fine_tuned_llm(llm_name)
+        fine_tuned_llm = load_fine_tuned_llm(llm_name, output_col)
         tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{output_col}_fine_tuned')
 
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.

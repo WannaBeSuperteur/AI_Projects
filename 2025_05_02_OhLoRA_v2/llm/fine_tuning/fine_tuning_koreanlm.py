@@ -13,8 +13,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, T
 import torch
 import pandas as pd
 
-from fine_tuning.inference import load_valid_final_prompts, run_inference, run_inference_koreanlm
-from fine_tuning.utils import get_instruction, koreanlm_tokenize
+from fine_tuning.inference import run_inference_koreanlm
+from fine_tuning.utils import get_instruction, koreanlm_tokenize, load_valid_final_prompts, preview_dataset
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -262,6 +262,7 @@ def generate_llm_trainable_dataset(dataset_df, prompter, tokenizer):
 # Create Date : 2025.05.12
 # Last Update Date : 2025.05.13
 # - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영 및 총 4 개의 LLM 개별 학습
+# - dataset preview 추가
 
 # Arguments:
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
@@ -298,6 +299,8 @@ def fine_tune_model(output_col):
                                               axis=1)
 
     dataset = generate_llm_trainable_dataset(dataset_df, prompter, tokenizer)
+    preview_dataset(dataset)
+
     collator = DataCollatorForSeq2Seq(tokenizer, return_tensors="pt", padding=True)
 
     get_lora_llm(llm=original_llm, lora_rank=128)
