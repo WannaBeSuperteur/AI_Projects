@@ -316,11 +316,14 @@ def fine_tune_model(output_col):
     prompter = Prompter('korean')
 
     if output_col == 'summary':
-        dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data'] + ' / ' + x['output_message']} ### 답변: {x[output_col]} <|endoftext|>",
-                                              axis=1)
+        dataset_df['text'] = dataset_df.apply(
+            lambda x: f"{x['input_data'] + ' / ' + x['output_message']} ### 답변: {x[output_col]} <|endoftext|>",
+            axis=1)
+
     else:
-        dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} ### 답변: {x[output_col]} <|endoftext|>",
-                                              axis=1)
+        dataset_df['text'] = dataset_df.apply(
+            lambda x: f"{x['input_data']} ### 답변: {x[output_col]} <|endoftext|>",
+            axis=1)
 
     dataset = generate_llm_trainable_dataset(dataset_df, prompter, tokenizer)
     preview_dataset(dataset)
