@@ -97,6 +97,8 @@ if __name__ == '__main__':
         output_token_cnts = []
 
         for _ in range(4):
+            llm_answer, trial_count, output_token_cnt = None, None, None
+
             if llm_name == 'koreanlm':
                 llm_answer, trial_count, output_token_cnt = run_inference_koreanlm(fine_tuned_llm,
                                                                                    final_input_prompt,
@@ -110,6 +112,10 @@ if __name__ == '__main__':
                                                                           stop_token_list=[1477, 1078, 4833, 12],
                                                                           answer_start_mark=' (답변 시작)',
                                                                           remove_token_type_ids=True)
+
+            llm_answers.append(llm_answer)
+            trial_counts.append(str(trial_count))
+            output_token_cnts.append(str(output_token_cnt))
 
         trial_counts_str = ','.join(trial_counts)
         output_token_cnts_str = ','.join(output_token_cnts)
