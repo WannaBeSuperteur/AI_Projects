@@ -19,7 +19,8 @@ def preview_dataset(dataset):
 
 def add_train_log(state, train_log_dict):
     last_log = state.log_history[-1]
-    is_first_log_of_epoch = (last_log['step'] == state.logging_steps)
+    batch_cnt_per_epoch = state.max_steps // state.num_train_epochs
+    is_first_log_of_epoch = (0 < last_log['step'] % batch_cnt_per_epoch <= state.logging_steps)
 
     if is_first_log_of_epoch:
         train_log_dict['time'].append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
