@@ -136,7 +136,10 @@ class OhLoRACustomCallback(TrainerCallback):
         inference_log_df.to_csv(f'{log_dir_path}/koreanlm_{self.output_col}_inference_log_dict.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-        add_train_log(state, train_log_dict)
+        try:
+            add_train_log(state, train_log_dict)
+        except Exception as e:
+            print(f'logging failed : {e}')
 
 
 # Original LLM (KoreanLM 1.5B) 가져오기 (Fine-Tuning 실시할)
