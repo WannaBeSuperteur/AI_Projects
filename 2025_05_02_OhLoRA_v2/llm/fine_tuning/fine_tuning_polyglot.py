@@ -15,7 +15,6 @@ from fine_tuning.inference import load_valid_user_prompts, run_inference
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
-OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/polyglot_fine_tuned'
 
 lora_llm = None
 tokenizer = None
@@ -60,21 +59,24 @@ def get_original_llm():
 
 # Original LLM (Polyglot-Ko 1.3B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.13
+# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영 및 총 4 개의 LLM 개별 학습
 
 # Arguments:
-# - 없음
+# - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
 # - training_args (SFTConfig) : Training Arguments
 
-def get_training_args():
+def get_training_args(output_col):
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_{output_col}_fine_tuned'
+
     training_args = SFTConfig(
         learning_rate=0.0002,           # lower learning rate is recommended for Fine-Tuning
         num_train_epochs=80,
         logging_steps=5,                # logging frequency
         gradient_checkpointing=False,
-        output_dir=OUTPUT_DIR_PATH,
+        output_dir=output_dir_path,
         save_total_limit=3,             # max checkpoint count to save
         per_device_train_batch_size=4,  # batch size per device during training
         per_device_eval_batch_size=1,   # batch size per device during validation
@@ -167,13 +169,13 @@ def generate_llm_trainable_dataset(dataset_df):
 # LLM (Polyglot-Ko 1.3B) Fine-Tuning 실시
 # Create Date : 2025.05.12
 # Last Update Date : 2025.05.13
-# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영
+# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영 및 총 4 개의 LLM 개별 학습
 
 # Arguments:
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
-# - 2025_05_02_OhLoRA_v2/llm/models/polyglot_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - 2025_05_02_OhLoRA_v2/llm/models/polyglot_{output_col}_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model(output_col):
     global lora_llm, tokenizer
@@ -211,4 +213,5 @@ def fine_tune_model(output_col):
     trainer.train()
 
     # save Fine-Tuned model
-    trainer.save_model(OUTPUT_DIR_PATH)
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_{output_col}_fine_tuned'
+    trainer.save_model(output_dir_path)

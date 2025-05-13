@@ -15,27 +15,28 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # Fine-Tuning 된 LLM 로딩
 # Create Date : 2025.05.12
-# Last Update Date : 2025.05.12
-# - KoreanLM-1.5B 별도 처리
+# Last Update Date : 2025.05.13
+# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영, 총 4 개의 LLM 학습 로직 적용
 
 # Arguments:
-# - llm_name (str) : Fine-Tuning 된 LLM 의 이름 ('polyglot' or 'koreanlm')
+# - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('polyglot' or 'koreanlm')
+# - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
 # - fine_tuned_llm (LLM) : Fine-Tuning 된 LLM
 
-def load_fine_tuned_llm(llm_name):
+def load_fine_tuned_llm(llm_name, output_col):
     fine_tuned_llm = None
 
     if llm_name == 'polyglot':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/llm/models/polyglot_fine_tuned',
+            f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
     elif llm_name == 'koreanlm':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/llm/models/koreanlm_fine_tuned',
+            f'{PROJECT_DIR_PATH}/llm/models/koreanlm_{output_col}_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.float16).cuda()
 
@@ -65,20 +66,20 @@ if __name__ == '__main__':
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
         fine_tuned_llm = load_fine_tuned_llm(llm_name)
-        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_fine_tuned')
+        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{output_col}_fine_tuned')
         print(f'Fine-Tuned LLM ({llm_name}) - Load SUCCESSFUL! 👱‍♀️')
 
     except Exception as e:
         print(f'Fine-Tuned LLM ({llm_name}) load failed : {e}')
 
         if llm_name == 'koreanlm':
-            fine_tune_koreanlm(output_col='output_message')
+            fine_tune_koreanlm(output_col=output_col)
 
         elif llm_name == 'polyglot':
-            fine_tune_polyglot(output_col='output_message')
+            fine_tune_polyglot(output_col=output_col)
 
         fine_tuned_llm = load_fine_tuned_llm(llm_name)
-        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_fine_tuned')
+        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{output_col}_fine_tuned')
 
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
