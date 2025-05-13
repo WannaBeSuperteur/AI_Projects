@@ -225,8 +225,8 @@ def get_lora_llm(llm, lora_rank):
 
 # Original LLM (KoreanLM 1.5B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
 # Create Date : 2025.05.12
-# Last Update Date : 2025.05.12
-# - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
+# Last Update Date : 2025.05.13
+# - train data preview 출력 삭제
 
 # Arguments:
 # - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv)
@@ -248,12 +248,6 @@ def generate_llm_trainable_dataset(dataset_df, prompter, tokenizer):
     dataset['valid'] = dataset['valid'].map(lambda x: generate_and_tokenize_prompt(x,
                                                                                    prompter=prompter,
                                                                                    tokenizer=tokenizer))
-
-    print('\nLLM Trainable Dataset :')
-    train_texts = dataset['train']['text']
-    for i in range(10):
-        print(f'train data {i} : {train_texts[i]}')
-    print('\n')
 
     return dataset
 

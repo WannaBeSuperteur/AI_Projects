@@ -11,7 +11,7 @@ def get_instruction():
 def preview_dataset(dataset):
     for i in range(10):
         print(f"train data {i} : {dataset['train']['text'][i]}")
-        print(f"valid data {i} : {dataset['valid']['text'][i]}")
+        print(f"valid data {i} : {dataset['valid']['text'][i].split('###')[0]}")
 
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)

@@ -147,7 +147,8 @@ def get_lora_llm(llm, lora_rank):
 
 # Original LLM (Polyglot-Ko 1.3B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.13
+# - train data preview 출력 삭제
 
 # Arguments:
 # - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv)
@@ -160,12 +161,6 @@ def generate_llm_trainable_dataset(dataset_df):
     dataset = DatasetDict()
     dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'train'][['text']])
     dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'valid'][['text']])
-
-    print('\nLLM Trainable Dataset :')
-    train_texts = dataset['train']['text']
-    for i in range(10):
-        print(f'train data {i} : {train_texts[i]}')
-    print('\n')
 
     return dataset
 
