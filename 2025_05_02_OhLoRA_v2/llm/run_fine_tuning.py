@@ -7,7 +7,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from fine_tuning.fine_tuning_koreanlm import fine_tune_model as fine_tune_koreanlm, Prompter
 from fine_tuning.fine_tuning_polyglot import fine_tune_model as fine_tune_polyglot
-from fine_tuning.inference import run_inference, run_inference_koreanlm, load_valid_user_prompts
+from fine_tuning.inference import run_inference, run_inference_koreanlm, load_valid_final_prompts
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -57,11 +57,12 @@ if __name__ == '__main__':
     assert llm_name in ['polyglot', 'koreanlm'], "LLM name must be 'polyglot' or 'koreanlm'."
 
     # load valid dataset
-    valid_user_prompts = load_valid_user_prompts(
-        dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
+    valid_final_input_prompts = load_valid_final_prompts(
+        dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv',
+        output_col=output_col)
 
-    for user_prompt in valid_user_prompts:
-        print(f'user prompt for validation : {user_prompt}')
+    for final_input_prompt in valid_final_input_prompts:
+        print(f'final input prompt for validation : {final_input_prompt}')
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
@@ -86,8 +87,8 @@ if __name__ == '__main__':
     korean_prompter = Prompter('korean')
 
     # run inference using Fine-Tuned LLM
-    for user_prompt in valid_user_prompts:
-        print(f'\nuser prompt :\n{user_prompt}')
+    for final_input_prompt in valid_final_input_prompts:
+        print(f'\nLLM input :\n{final_input_prompt}')
 
         # generate 4 answers for comparison
         llm_answers = []
@@ -97,13 +98,13 @@ if __name__ == '__main__':
         for _ in range(4):
             if llm_name == 'koreanlm':
                 llm_answer, trial_count, output_token_cnt = run_inference_koreanlm(fine_tuned_llm,
-                                                                                   user_prompt,
+                                                                                   final_input_prompt,
                                                                                    tokenizer,
                                                                                    prompter=korean_prompter)
 
             elif llm_name == 'polyglot':
                 llm_answer, trial_count, output_token_cnt = run_inference(fine_tuned_llm,
-                                                                          user_prompt,
+                                                                          final_input_prompt,
                                                                           tokenizer,
                                                                           stop_token_list=[1477, 1078, 4833, 12],
                                                                           answer_start_mark=' (답변 시작)',

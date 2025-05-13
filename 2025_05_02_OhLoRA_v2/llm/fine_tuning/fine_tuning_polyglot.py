@@ -11,31 +11,31 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, T
 import torch
 import pandas as pd
 
-from fine_tuning.inference import load_valid_user_prompts, run_inference
+from fine_tuning.inference import load_valid_final_prompts, run_inference
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 lora_llm = None
 tokenizer = None
-valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
+valid_final_prompts = None
 
 
 class InferenceTestOnEpochEndCallback(TrainerCallback):
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-        global lora_llm, tokenizer, valid_user_prompts
+        global lora_llm, tokenizer, valid_final_prompts
 
         print('=== INFERENCE TEST ===')
 
-        for user_prompt in valid_user_prompts:
+        for final_input_prompt in valid_final_prompts:
             llm_answer, trial_count, output_token_cnt = run_inference(lora_llm,
-                                                                      user_prompt,
+                                                                      final_input_prompt,
                                                                       tokenizer,
                                                                       stop_token_list=[1477, 1078, 4833, 12],
                                                                       answer_start_mark=' (답변 시작)',
                                                                       remove_token_type_ids=True)
 
-            print(f'user prompt : {user_prompt}')
+            print(f'final input prompt : {final_input_prompt}')
             print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}')
 
 
@@ -178,7 +178,9 @@ def generate_llm_trainable_dataset(dataset_df):
 # - 2025_05_02_OhLoRA_v2/llm/models/polyglot_{output_col}_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model(output_col):
-    global lora_llm, tokenizer
+    global lora_llm, tokenizer, valid_final_prompts
+    valid_final_prompts = load_valid_final_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv',
+                                                   output_col=output_col)
 
     print('Oh-LoRA LLM Fine Tuning start.')
 
@@ -199,8 +201,14 @@ def fine_tune_model(output_col):
 #    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
 #    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
 
-    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
-                                          axis=1)
+    if output_col == 'summary':
+        dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data'] + ' / ' + x['output_message']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
+                                              axis=1)
+
+    else:
+        dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
+                                              axis=1)
+
     dataset = generate_llm_trainable_dataset(dataset_df)
 
     response_template = [6, 6, 4253, 29]  # '### 답변 :'
