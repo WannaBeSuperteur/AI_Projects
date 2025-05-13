@@ -14,7 +14,8 @@ import torch
 import pandas as pd
 
 from fine_tuning.inference import run_inference_koreanlm
-from fine_tuning.utils import get_instruction, koreanlm_tokenize, load_valid_final_prompts, preview_dataset
+from fine_tuning.utils import get_instruction, koreanlm_tokenize, load_valid_final_prompts, preview_dataset, \
+    add_train_log
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -22,6 +23,10 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 lora_llm = None
 tokenizer = None
 valid_final_prompts = None
+
+train_log_dict = {'epoch': [], 'time': [], 'loss': [], 'grad_norm': [], 'learning_rate': [], 'mean_token_accuracy': []}
+log_dir_path = f'{PROJECT_DIR_PATH}/llm/fine_tuning/logs'
+os.makedirs(log_dir_path, exist_ok=True)
 
 
 # Modified Implementation from https://github.com/quantumaikr/KoreanLM/blob/main/utils.py (License: Apache 2.0)
@@ -93,14 +98,18 @@ def generate_and_tokenize_prompt(data_point, prompter, tokenizer, train_on_input
     return tokenized_full_prompt
 
 
-class InferenceTestOnEpochEndCallback(TrainerCallback):
+class OhLoRACustomCallback(TrainerCallback):
 
-    def __init__(self):
-        super(InferenceTestOnEpochEndCallback, self).__init__()
+    def __init__(self, output_col):
+        super(OhLoRACustomCallback, self).__init__()
         self.prompter = Prompter('korean')
+        self.output_col = output_col
 
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         global lora_llm, tokenizer, valid_final_prompts
+
+        train_log_df = pd.DataFrame(train_log_dict)
+        train_log_df.to_csv(f'{log_dir_path}/koreanlm_{self.output_col}_train_log.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -112,6 +121,9 @@ class InferenceTestOnEpochEndCallback(TrainerCallback):
 
             print(f'final input prompt : {final_input_prompt}')
             print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}')
+
+    def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        add_train_log(state, train_log_dict)
 
 
 # Original LLM (KoreanLM 1.5B) 가져오기 (Fine-Tuning 실시할)
@@ -153,7 +165,7 @@ def get_training_args(output_col):
     training_args = SFTConfig(
         learning_rate=0.0002,               # lower learning rate is recommended for Fine-Tuning
         num_train_epochs=num_train_epochs,
-        logging_steps=5,                    # logging frequency
+        logging_steps=10,                   # logging frequency
         gradient_checkpointing=False,
         output_dir=output_dir_path,
         save_total_limit=3,                 # max checkpoint count to save
@@ -168,17 +180,19 @@ def get_training_args(output_col):
 
 # Original LLM (KoreanLM 1.5B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.13
+# - callback 함수 이름 수정 및 인수 추가
 
 # Arguments:
 # - dataset       (Dataset)      : LLM 학습 데이터셋
 # - collator      (DataCollator) : Data Collator
 # - training_args (SFTConfig)    : Training Arguments
+# - output_col    (str)          : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
 # - trainer (SFTTrainer) : SFT (Supervised Fine-Tuning) Trainer
 
-def get_sft_trainer(dataset, collator, training_args):
+def get_sft_trainer(dataset, collator, training_args, output_col):
     global lora_llm, tokenizer
 
     trainer = SFTTrainer(
@@ -188,7 +202,7 @@ def get_sft_trainer(dataset, collator, training_args):
         processing_class=tokenizer,     # LLM tokenizer / renamed : tokenizer -> processing_class from trl 0.12.0
         args=training_args,
         data_collator=collator,
-        callbacks=[InferenceTestOnEpochEndCallback()]
+        callbacks=[OhLoRACustomCallback(output_col)]
     )
 
     return trainer
@@ -299,7 +313,7 @@ def fine_tune_model(output_col):
 
     get_lora_llm(llm=original_llm, lora_rank=128)
     training_args = get_training_args(output_col)
-    trainer = get_sft_trainer(dataset, collator, training_args)
+    trainer = get_sft_trainer(dataset, collator, training_args, output_col)
 
     # run Fine-Tuning
     trainer.train()

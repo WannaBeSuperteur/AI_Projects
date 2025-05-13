@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from datetime import datetime
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
@@ -9,9 +10,29 @@ def get_instruction():
 
 
 def preview_dataset(dataset):
+    print('\n=== DATASET PREVIEW ===')
     for i in range(10):
         print(f"train data {i} : {dataset['train']['text'][i]}")
         print(f"valid data {i} : {dataset['valid']['text'][i].split('###')[0]}")
+    print('')
+
+
+def add_train_log(state, train_log_dict):
+    print(state)
+
+    last_log = state.log_history[-1]
+    is_first_log_of_epoch = (last_log['step'] == state.logging_steps)
+
+    if is_first_log_of_epoch:
+        train_log_dict['time'].append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    else:
+        train_log_dict['time'].append('-')
+
+    train_log_dict['epoch'].append(round(last_log['epoch'], 2))
+    train_log_dict['loss'].append(round(last_log['loss'], 4))
+    train_log_dict['grad_norm'].append(round(last_log['grad_norm'], 4))
+    train_log_dict['learning_rate'].append(round(last_log['learning_rate'], 6))
+    train_log_dict['mean_token_accuracy'].append(round(last_log['mean_token_accuracy'], 4))
 
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
