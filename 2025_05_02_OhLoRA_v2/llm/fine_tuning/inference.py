@@ -4,9 +4,7 @@
 from transformers import StoppingCriteria, StoppingCriteriaList, GenerationConfig
 from fine_tuning.utils import get_instruction, koreanlm_tokenize
 
-import pandas as pd
 import torch
-
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
@@ -29,9 +27,8 @@ class StopOnTokens(StoppingCriteria):
 
 # Fine Tuning 된 LLM 을 이용한 inference 실시
 # Create Date : 2025.05.12
-# Last Update Date : 2025.05.13
-# - LLM 4개 개별적 학습 로직에 맞게, user_prompt -> final_input_prompt 로 변수명 수정
-# - output column name 에 따라 empty answer 필터링 여부를 다르게 결정
+# Last Update Date : 2025.05.14
+# - summary (user input + output -> 내용 요약) 대응, max_length 값 증가
 
 # Arguments:
 # - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
@@ -68,9 +65,14 @@ def run_inference(fine_tuned_llm, final_input_prompt, tokenizer, output_col, ans
     stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # '(답변 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
+    if output_col == 'summary':
+        max_length = 128
+    else:
+        max_length = 80
+
     while trial_count < max_trials:
         outputs = fine_tuned_llm.generate(**inputs,
-                                          max_length=80,
+                                          max_length=max_length,
                                           do_sample=True,
                                           temperature=0.6,
                                           stopping_criteria=stopping_criteria)
