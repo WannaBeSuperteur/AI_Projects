@@ -99,7 +99,7 @@ def get_original_llm():
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args(output_col):
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_{output_col}_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned'
     num_train_epochs_dict = {'output_message': 80}
     num_train_epochs = num_train_epochs_dict[output_col]
 
@@ -252,5 +252,5 @@ def fine_tune_model(output_col):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_{output_col}_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned'
     trainer.save_model(output_dir_path)

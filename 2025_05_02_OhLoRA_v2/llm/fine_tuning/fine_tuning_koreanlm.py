@@ -133,7 +133,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/polyglot_{self.output_col}_inference_log_dict.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/koreanlm_{self.output_col}_inference_log_dict.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         add_train_log(state, train_log_dict)
