@@ -63,6 +63,8 @@ def load_valid_final_prompts(dataset_csv_path, output_col):
 
     if output_col == 'summary':
         valid_final_prompts = (dataset_df_valid['input_data'] + ' / ' + dataset_df_valid['output_message']).tolist()
+    elif output_col == 'eyes_mouth_pose':
+        valid_final_prompts = dataset_df_valid['output_message'].tolist()
     else:
         valid_final_prompts = dataset_df_valid['input_data'].tolist()
 

@@ -104,7 +104,7 @@ def get_original_llm():
 
 def get_training_args(output_col):
     output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned'
-    num_train_epochs_dict = {'output_message': 60, 'memory': 20}
+    num_train_epochs_dict = {'output_message': 60, 'memory': 20, 'eyes_mouth_pose': 30}
     num_train_epochs = num_train_epochs_dict[output_col]
 
     training_args = SFTConfig(
@@ -243,6 +243,11 @@ def fine_tune_model(output_col):
     elif output_col == 'memory':
         dataset_df['text'] = dataset_df.apply(
             lambda x: f"{x['input_data']} (답변 시작) ### 답변: {'' if str(x[output_col]) == 'nan' else x[output_col]} (답변 종료) <|endoftext|>",
+            axis=1)
+
+    elif output_col == 'eyes_mouth_pose':
+        dataset_df['text'] = dataset_df.apply(
+            lambda x: f"{x['output_message']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
             axis=1)
 
     else:

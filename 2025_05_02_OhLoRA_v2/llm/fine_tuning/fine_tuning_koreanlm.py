@@ -320,6 +320,16 @@ def fine_tune_model(output_col):
             lambda x: f"{x['input_data'] + ' / ' + x['output_message']} ### 답변: {x[output_col]} <|endoftext|>",
             axis=1)
 
+    elif output_col == 'memory':
+        dataset_df['text'] = dataset_df.apply(
+            lambda x: f"{x['input_data']} ### 답변: {'' if str(x[output_col]) == 'nan' else x[output_col]} <|endoftext|>",
+            axis=1)
+
+    elif output_col == 'eyes_mouth_pose':
+        dataset_df['text'] = dataset_df.apply(
+            lambda x: f"{x['output_message']} ### 답변: {x[output_col]} <|endoftext|>",
+            axis=1)
+
     else:
         dataset_df['text'] = dataset_df.apply(
             lambda x: f"{x['input_data']} ### 답변: {x[output_col]} <|endoftext|>",
