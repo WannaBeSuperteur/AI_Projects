@@ -22,7 +22,7 @@ OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/koreanlm_fine_tuned'
 
 lora_llm = None
 tokenizer = None
-valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
+valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
 
 
 # Modified Implementation from https://github.com/quantumaikr/KoreanLM/blob/main/utils.py (License: Apache 2.0)
@@ -225,8 +225,8 @@ def get_lora_llm(llm, lora_rank):
 # - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from OhLoRA_fine_tuning_25042213.csv)
-#                                   columns = ['data_type', 'input_data', 'output_data', 'output_message', 'memory']
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv)
+#                                   columns = ['data_type', 'input_data', ...]
 # - prompter   (Prompter)         : LLM 의 사용자 prompt & 답변의 입출력 형식을 나타내는 객체
 # - tokenizer  (tokenizer)        : KoreanLM-1.5B 에 대한 tokenizer
 
@@ -256,16 +256,16 @@ def generate_llm_trainable_dataset(dataset_df, prompter, tokenizer):
 
 # LLM (KoreanLM 1.5B) Fine-Tuning 실시
 # Create Date : 2025.05.12
-# Last Update Date : 2025.05.12
-# - KoreanLM-1.5B 를 Original KoreanLM-1.5B Fine-Tuning code 를 참고하여 변경
+# Last Update Date : 2025.05.13
+# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영
 
 # Arguments:
-# - 없음
+# - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
 # - 2025_05_02_OhLoRA_v2/llm/models/koreanlm_fine_tuned 에 Fine-Tuning 된 모델 저장
 
-def fine_tune_model():
+def fine_tune_model(output_col):
     global lora_llm, tokenizer
 
     print('Oh-LoRA LLM Fine Tuning start.')
@@ -278,13 +278,13 @@ def fine_tune_model():
     tokenizer.pad_token_id = 0  # unk
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
     prompter = Prompter('korean')
 
-    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} ### 답변: {x['output_data']} <|endoftext|>",
+    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} ### 답변: {x[output_col]} <|endoftext|>",
                                           axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df, prompter, tokenizer)
     collator = DataCollatorForSeq2Seq(tokenizer, return_tensors="pt", padding=True)

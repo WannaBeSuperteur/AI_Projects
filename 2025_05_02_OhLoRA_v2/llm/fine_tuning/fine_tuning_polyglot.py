@@ -19,7 +19,7 @@ OUTPUT_DIR_PATH = f'{PROJECT_DIR_PATH}/llm/models/polyglot_fine_tuned'
 
 lora_llm = None
 tokenizer = None
-valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
+valid_user_prompts = load_valid_user_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
 
 
 class InferenceTestOnEpochEndCallback(TrainerCallback):
@@ -144,8 +144,8 @@ def get_lora_llm(llm, lora_rank):
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from OhLoRA_fine_tuning_25042213.csv)
-#                                   columns = ['data_type', 'input_data', 'output_data', 'output_message', 'memory']
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv)
+#                                   columns = ['data_type', 'input_data', ...]
 
 # Returns:
 # - dataset (Dataset) : LLM 학습 데이터셋
@@ -166,15 +166,16 @@ def generate_llm_trainable_dataset(dataset_df):
 
 # LLM (Polyglot-Ko 1.3B) Fine-Tuning 실시
 # Create Date : 2025.05.12
-# Last Update Date : -
+# Last Update Date : 2025.05.13
+# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영
 
 # Arguments:
-# - 없음
+# - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
 # - 2025_05_02_OhLoRA_v2/llm/models/polyglot_fine_tuned 에 Fine-Tuning 된 모델 저장
 
-def fine_tune_model():
+def fine_tune_model(output_col):
     global lora_llm, tokenizer
 
     print('Oh-LoRA LLM Fine Tuning start.')
@@ -186,7 +187,7 @@ def fine_tune_model():
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
@@ -196,7 +197,7 @@ def fine_tune_model():
 #    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
 #    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
 
-    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_data']} (답변 종료) <|endoftext|>",
+    dataset_df['text'] = dataset_df.apply(lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
                                           axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
 

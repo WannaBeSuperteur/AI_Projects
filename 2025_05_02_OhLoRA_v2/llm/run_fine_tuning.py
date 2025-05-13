@@ -47,14 +47,17 @@ if __name__ == '__main__':
     # parse user arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-llm_name', help="name of LLM ('polyglot' or 'koreanlm')", default='polyglot')
+    parser.add_argument('-output_col', help="output column name from dataset csv", default='output_message')
     args = parser.parse_args()
 
     llm_name = args.llm_name
+    output_col = args.output_col
+
     assert llm_name in ['polyglot', 'koreanlm'], "LLM name must be 'polyglot' or 'koreanlm'."
 
     # load valid dataset
     valid_user_prompts = load_valid_user_prompts(
-        dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_25042213.csv')
+        dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
 
     for user_prompt in valid_user_prompts:
         print(f'user prompt for validation : {user_prompt}')
@@ -69,10 +72,10 @@ if __name__ == '__main__':
         print(f'Fine-Tuned LLM ({llm_name}) load failed : {e}')
 
         if llm_name == 'koreanlm':
-            fine_tune_koreanlm()
+            fine_tune_koreanlm(output_col='output_message')
 
         elif llm_name == 'polyglot':
-            fine_tune_polyglot()
+            fine_tune_polyglot(output_col='output_message')
 
         fine_tuned_llm = load_fine_tuned_llm(llm_name)
         tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_fine_tuned')
