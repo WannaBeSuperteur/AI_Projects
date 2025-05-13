@@ -103,11 +103,11 @@ def get_original_llm():
 
 def get_training_args(output_col):
     output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned'
-    num_train_epochs_dict = {'output_message': 80}
+    num_train_epochs_dict = {'output_message': 60}
     num_train_epochs = num_train_epochs_dict[output_col]
 
     training_args = SFTConfig(
-        learning_rate=0.0002,               # lower learning rate is recommended for Fine-Tuning
+        learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
         num_train_epochs=num_train_epochs,
         logging_steps=10,                   # logging frequency
         gradient_checkpointing=False,
