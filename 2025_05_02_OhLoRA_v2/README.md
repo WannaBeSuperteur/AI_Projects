@@ -112,16 +112,16 @@
 
 **3. LLM 을 이용한 대화 능력 향상**
 
-| 구분         | 계획 내용                                                                                 | 일정                     | branch                   | issue                                                             | 상태 |
-|------------|---------------------------------------------------------------------------------------|------------------------|--------------------------|-------------------------------------------------------------------|----|
-| 🧪 모델 학습   | [KoreamLM (by QuantumAI)](https://huggingface.co/quantumaikr/KoreanLM) Fine-Tuning 시도 | 05.12 월 (1d)           | ```P003-011-KoreanLM```  | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/4) | ❌  |
-| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 증량                                                  | 05.12 월 - 05.13 화 (2d) | ```P003-012-FineTune```  | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/5) | ✅  |
-| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(1차, 모델 4개)**                                         | 05.13 화 - 05.14 수 (2d) | ```P003-012-FineTune```  | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/5) | ✅  |
-| 📝 데이터셋 작성 | S-BERT (for memory) 학습 데이터 증량 및 품질 향상                                                 | 05.14 수 (1d)           |                          |                                                                   | ⬜  |
-| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 포맷 변경                                               | 05.14 수 (1d)           | ```P003-013-FineTune```  |                                                                   | ⬜  |
-| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(2차, 모델 2개)**                                         | 05.14 수 - 05.15 목 (2d) | ```P003-013-FineTune```  |                                                                   | ⬜  |
-| 🔨 모델 개선   | S-BERT (for memory) ground-truth similarity score 계산 고도화                              | 05.14 수 (1d)           | ```P003-014-SBERT-sim``` |                                                                   | ⬜  |
-| ⚙ 기능 개선    | 답변 생성 시도 및 성공/실패 처리 메커니즘 개선                                                           | 05.15 목 (1d)           | ```P003-015-Answer```    |                                                                   | ⬜  |
+| 구분         | 계획 내용                                                                                 | 일정                     | branch                  | issue                                                             | 상태 |
+|------------|---------------------------------------------------------------------------------------|------------------------|-------------------------|-------------------------------------------------------------------|----|
+| 🧪 모델 학습   | [KoreamLM (by QuantumAI)](https://huggingface.co/quantumaikr/KoreanLM) Fine-Tuning 시도 | 05.12 월 (1d)           | ```P003-011-KoreanLM``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/4) | ❌  |
+| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 증량                                                  | 05.12 월 - 05.13 화 (2d) | ```P003-012-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/5) | ✅  |
+| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(1차, 모델 4개)**                                         | 05.13 화 - 05.14 수 (2d) | ```P003-012-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/5) | ✅  |
+| 📝 데이터셋 작성 | S-BERT (for memory) 학습 데이터 증량                                                         | 05.14 수 (1d)           | ```P003-013-SBERT```    |                                                                   | ⬜  |
+| 🔨 모델 개선   | S-BERT (for memory) ground-truth similarity score 계산 고도화                              | 05.14 수 (1d)           | ```P003-013-SBERT```    |                                                                   | ⬜  |
+| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 포맷 변경                                               | 05.14 수 (1d)           | ```P003-014-FineTune``` |                                                                   | ⬜  |
+| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(2차, 모델 2개)**                                         | 05.14 수 - 05.15 목 (2d) | ```P003-014-FineTune``` |                                                                   | ⬜  |
+| ⚙ 기능 개선    | 답변 생성 시도 및 성공/실패 처리 메커니즘 개선                                                           | 05.15 목 (1d)           | ```P003-015-Answer```   |                                                                   | ⬜  |
 
 ## 4. 프로젝트 상세 설명
 
