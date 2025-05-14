@@ -202,7 +202,7 @@ def generate_llm_trainable_dataset(dataset_df):
 
 # LLM (Polyglot-Ko 1.3B) Fine-Tuning 실시
 # Create Date : 2025.05.12
-# Last Update Date : 2025.05.13
+# Last Update Date : 2025.05.14
 # - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv, OhLoRA_fine_tuning_v2_1.csv) 반영 및 총 4 개의 LLM 개별 학습
 # - dataset preview 추가
 
