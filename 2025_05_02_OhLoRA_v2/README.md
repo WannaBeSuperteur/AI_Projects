@@ -83,7 +83,8 @@
 | 구분       | 계획 내용                                                    | 일정           | branch                 | issue | 상태 |
 |----------|----------------------------------------------------------|--------------|------------------------|-------|----|
 | 📃 문서화   | 프로젝트 개요 및 최초 일정 작성                                       | 05.02 금 (1d) |                        |       | ✅  |
-| 🔍 최종 검토 | 최종 사용자 실행용 코드 작성                                         | 05.15 목 (1d) | ```P003-018-ForUser``` |       | ⬜  |
+| 🔍 최종 검토 | 최종 사용자 실행용 코드 작성                                         | 05.15 목 (1d) | ```P003-017-ForUser``` |       | ⬜  |
+| ⚙ 기능 개선  | 최종 사용자 실행용 코드 작성 시, 답변 생성 시도 및 성공/실패 처리 메커니즘 개선          | 05.15 목 (1d) | ```P003-017-ForUser``` |       | ⬜  |
 | 🔍 최종 검토 | 최종 QA (버그 유무 검사)                                         | 05.15 목 (1d) |                        |       | ⬜  |
 | 📃 문서화   | 프로젝트 문서 정리 및 마무리                                         | 05.15 목 (1d) |                        |       | ⬜  |
 |          | buffer time **(이력서 업데이트, 과제 전형, 면접 등 취업 일정에 대비한 여유 기간)** | 05.16 금 (1d) |                        |       |    |
@@ -108,7 +109,7 @@
 | 🔨 모델 개선 | StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현                                                                                                            | 05.06 화 - 05.09 금 (4d) | ```P003-009-StyleGAN-VectorFind```       | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/3) | ✅  |
 | 🔨 모델 개선 | StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현 - **각 이미지 그룹 별** SVM 학습                                                                                    | 05.08 목 - 05.09 금 (2d) | ```P003-010-StyleGAN-VectorFind-Group``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/3) | ✅  |
 | 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                                                 | 05.09 금 - 05.10 토 (2d) |                                          |                                                                   | ✅  |
-| ⚙ 기능 개선  | 실시간 표정 변화 이미지 출력 (생성) 적용                                                                                                                           | 05.15 목 (1d)           | ```P003-016-Realtime```                  |                                                                   | ⬜  |
+| ⚙ 기능 개선  | 실시간 표정 변화 이미지 출력 (생성) 적용                                                                                                                           | 05.15 목 (1d)           | ```P003-015-Realtime```                  |                                                                   | ⬜  |
 
 **3. LLM 을 이용한 대화 능력 향상**
 
@@ -117,11 +118,10 @@
 | 🧪 모델 학습   | [KoreamLM (by QuantumAI)](https://huggingface.co/quantumaikr/KoreanLM) Fine-Tuning 시도 | 05.12 월 (1d)           | ```P003-011-KoreanLM``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/4) | ❌  |
 | 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 증량                                                  | 05.12 월 - 05.13 화 (2d) | ```P003-012-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/5) | ✅  |
 | 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(1차, 모델 4개)**                                         | 05.13 화 - 05.14 수 (2d) | ```P003-012-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/5) | ✅  |
-| 📝 데이터셋 작성 | S-BERT (for memory) 학습 데이터 증량                                                         | 05.14 수 (1d)           | ```P003-013-SBERT```    | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/6) | 💨 |
-| 🔨 모델 개선   | S-BERT (for memory) ground-truth similarity score 계산 고도화                              | 05.14 수 (1d)           | ```P003-013-SBERT```    | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/6) | 💨 |
-| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 포맷 변경                                               | 05.14 수 (1d)           | ```P003-014-FineTune``` |                                                                   | ⬜  |
-| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(2차, 모델 2개)**                                         | 05.14 수 - 05.15 목 (2d) | ```P003-014-FineTune``` |                                                                   | ⬜  |
-| ⚙ 기능 개선    | 답변 생성 시도 및 성공/실패 처리 메커니즘 개선                                                           | 05.15 목 (1d)           | ```P003-015-Answer```   |                                                                   | ⬜  |
+| 📝 데이터셋 작성 | S-BERT (for memory) 학습 데이터 증량                                                         | 05.14 수 (1d)           | ```P003-013-SBERT```    | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/6) | ✅  |
+| 🔨 모델 개선   | S-BERT (for memory) ground-truth similarity score 계산 고도화                              | 05.14 수 (1d)           | ```P003-013-SBERT```    | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/6) | ✅  |
+| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 포맷 변경                                               | 05.14 수 (1d)           | ```P003-014-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/7) | 💨 |
+| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(2차, 모델 2개)**                                         | 05.14 수 - 05.15 목 (2d) | ```P003-014-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/7) | 💨 |
 
 ## 4. 프로젝트 상세 설명
 
