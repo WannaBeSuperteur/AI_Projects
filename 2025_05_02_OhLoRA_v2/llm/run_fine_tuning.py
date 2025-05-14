@@ -65,7 +65,7 @@ def test_cuda_oom_polyglot(is_separate):
 
     for col in output_cols:
         llms[col] = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned',
+            f'{PROJECT_DIR_PATH}/llm/models/polyglot_{col}_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).to(device_mapping[col])
 
@@ -108,7 +108,8 @@ if __name__ == '__main__':
     for final_input_prompt in valid_final_input_prompts:
         print(f'final input prompt for validation : {final_input_prompt}')
 
-    # CUDA OOM test (Result : max 11271 MiB / 12288 MiB -> 2대의 GPU 에 분산 로딩 필요)
+    # CUDA OOM test (separated = False -> Result : max         11271 MiB / 12288 MiB -> 2대의 GPU 에 분산 로딩 필요)
+    #               (separated = True  -> Result : max  (6060, 5349) MiB / 12288 MiB)
 #    test_cuda_oom_polyglot(True)
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
