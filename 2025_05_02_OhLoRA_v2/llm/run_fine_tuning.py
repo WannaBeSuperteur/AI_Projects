@@ -44,6 +44,37 @@ def load_fine_tuned_llm(llm_name, output_col):
     return fine_tuned_llm
 
 
+# LLM 4개 한번에 로딩 시 OOM 발생 테스트
+# Create Date : 2025.05.14
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+def test_cuda_oom_polyglot():
+    output_cols = ['output_message', 'memory', 'eyes_mouth_pose', 'summary']
+    llms = {}
+
+    for col in output_cols:
+        llms[col] = load_fine_tuned_llm(llm_name, col)
+        llm_tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{col}_fine_tuned')
+        print(f'\nCUDA OOM test for Fine-Tuned LLM ({llm_name}) - Load SUCCESSFUL! 👱‍♀️')
+
+        llms[col].generation_config.pad_token_id = llm_tokenizer.pad_token_id
+        input_prompt = '로라야 사랑해! 요즘 잘 지내고 있어?'
+
+        llm_output, _, _ = run_inference(llms[col],
+                                         input_prompt,
+                                         llm_tokenizer,
+                                         col,
+                                         stop_token_list=[1477, 1078, 4833, 12],
+                                         answer_start_mark=' (답변 시작)',
+                                         remove_token_type_ids=True)
+
+        print(f'LLM output : {llm_output}')
+        print(f'CUDA memory until {col} model loading : {torch.cuda.memory_allocated()}')
+
+
 if __name__ == '__main__':
 
     # parse user arguments
@@ -64,6 +95,9 @@ if __name__ == '__main__':
 
     for final_input_prompt in valid_final_input_prompts:
         print(f'final input prompt for validation : {final_input_prompt}')
+
+    # CUDA OOM test (Result : max 11271 MiB / 12288 MiB -> 2대의 GPU 에 분산 로딩 필요)
+#    test_cuda_oom_polyglot()
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
