@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # remove for LLM inference only
 
 import argparse
 import torch
@@ -49,16 +49,28 @@ def load_fine_tuned_llm(llm_name, output_col):
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# - is_separate (bool) : True 이면 2 대의 GPU 분산 로딩, False 이면 1 대의 GPU 에만 로딩
 
-def test_cuda_oom_polyglot():
+def test_cuda_oom_polyglot(is_separate):
+    gpu_0 = torch.device('cuda:0')
+    gpu_1 = torch.device('cuda:1')
+
     output_cols = ['output_message', 'memory', 'eyes_mouth_pose', 'summary']
+
     llms = {}
+    if is_separate:
+        device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_1, 'summary': gpu_1}
+    else:
+        device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_0, 'summary': gpu_0}
 
     for col in output_cols:
-        llms[col] = load_fine_tuned_llm(llm_name, col)
+        llms[col] = AutoModelForCausalLM.from_pretrained(
+            f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned',
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).to(device_mapping[col])
+
         llm_tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{col}_fine_tuned')
-        print(f'\nCUDA OOM test for Fine-Tuned LLM ({llm_name}) - Load SUCCESSFUL! 👱‍♀️')
+        print(f'\nCUDA OOM test for Fine-Tuned LLM ({llm_name}, {col}) - Load SUCCESSFUL! 👱‍♀️')
 
         llms[col].generation_config.pad_token_id = llm_tokenizer.pad_token_id
         input_prompt = '로라야 사랑해! 요즘 잘 지내고 있어?'
@@ -97,7 +109,7 @@ if __name__ == '__main__':
         print(f'final input prompt for validation : {final_input_prompt}')
 
     # CUDA OOM test (Result : max 11271 MiB / 12288 MiB -> 2대의 GPU 에 분산 로딩 필요)
-#    test_cuda_oom_polyglot()
+#    test_cuda_oom_polyglot(True)
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
