@@ -28,7 +28,7 @@ class StopOnTokens(StoppingCriteria):
 # Fine Tuning 된 LLM 을 이용한 inference 실시
 # Create Date : 2025.05.12
 # Last Update Date : 2025.05.14
-# - summary (user input + output -> 내용 요약) 대응, max_length 값 증가
+# - summary (user input + output -> 내용 요약) 및 OhLoRA Fine-Tuning v2.1 데이터셋 대응, max_length 값 증가
 
 # Arguments:
 # - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
@@ -66,9 +66,9 @@ def run_inference(fine_tuned_llm, final_input_prompt, tokenizer, output_col, ans
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     if output_col == 'summary':
-        max_length = 128
+        max_length = 160
     else:
-        max_length = 80
+        max_length = 96
 
     while trial_count < max_trials:
         outputs = fine_tuned_llm.generate(**inputs,
