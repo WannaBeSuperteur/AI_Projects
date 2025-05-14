@@ -1,9 +1,12 @@
-from sentence_transformers import SentenceTransformer, models, losses
+from sentence_transformers import losses
 from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
 from sentence_transformers.readers import InputExample
 
 from torch.utils.data import Dataset, DataLoader, random_split
 import os
+
+from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
+
 
 # remove warning "UserWarning: PyTorch is not compiled with NCCL support"
 import warnings
@@ -37,35 +40,6 @@ class MemorySBERTDataset(Dataset):
         input_example = InputExample(texts=[memory_str, user_prompt],
                                      label=similarity_score)
         return input_example
-
-
-# Pre-trained (or Fine-Tuned) S-BERT Model 로딩
-# Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.05.14
-# Last Update Date : -
-
-# Arguments:
-# - model_path (str) : Pre-trained (or Fine-Tuned) S-BERT Model 의 경로
-
-# Returns:
-# - pretrained_sbert_model (S-BERT Model) : Pre-train 된 Sentence-BERT 모델
-
-def load_pretrained_sbert_model(model_path="klue/roberta-base"):
-    embedding_model = models.Transformer(
-        model_name_or_path=model_path,
-        max_seq_length=64,
-        do_lower_case=True
-    )
-
-    pooling_model = models.Pooling(
-        embedding_model.get_word_embedding_dimension(),
-        pooling_mode_mean_tokens=True,
-        pooling_mode_cls_token=False,
-        pooling_mode_max_tokens=False
-    )
-
-    pretrained_sbert_model = SentenceTransformer(modules=[embedding_model, pooling_model])
-    return pretrained_sbert_model
 
 
 # Memory Mechanism 을 위한 S-BERT (Sentence BERT) 모델 학습

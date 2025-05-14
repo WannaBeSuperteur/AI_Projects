@@ -1,7 +1,13 @@
+from load_sbert_model import load_pretrained_sbert_model
+
 import pandas as pd
+import numpy as np
 
 
-# 문장을 공백으로 split 했을 때의 단어 일치도에 따른 IoU Score 계산
+pretrained_sbert_model = load_pretrained_sbert_model()
+
+
+# S-BERT 모델을 이용하여 두 문장의 similarity score 계산
 # Create Date : 2025.05.14
 # Last Update Date : -
 
@@ -10,17 +16,19 @@ import pandas as pd
 # - sentence1 (str) : 비교할 문장 1
 
 # Returns:
-# - iou_score (float) : 두 문장을 공백으로 split 했을 때의 단어 일치도에 따른 IoU Score
+# - similarity_score (float) : 두 문장의 similarity score
 
 def compute_sentence_iou(sentence0, sentence1):
-    sentence0_split_set = set(sentence0.split(' '))
-    sentence1_split_set = set(sentence1.split(' '))
+    global pretrained_sbert_model
 
-    union_size = len(sentence0_split_set.union(sentence1_split_set))
-    intersection_size = len(sentence0_split_set.intersection(sentence1_split_set))
+    def compute_cosine_similarity(vector0, vector1):
+        return np.dot(vector0, vector1) / (np.linalg.norm(vector0) * np.linalg.norm(vector1))
 
-    iou_score = intersection_size / union_size
-    return iou_score
+    sentence0_embedding = pretrained_sbert_model.encode([sentence0])
+    sentence1_embedding = pretrained_sbert_model.encode([sentence1])
+
+    similarity_score = compute_cosine_similarity(sentence0_embedding[0], sentence1_embedding[0])
+    return similarity_score
 
 
 # Memory Mechanism (RAG 유사) 의 데이터셋 생성을 위한 조합 (combs) 텍스트 파일 해석 -> 최종 데이터셋으로 반환
@@ -51,9 +59,16 @@ def parse_combs_text(combs_lines):
                        'memory_1': [], 'user_prompt_1': [], 'similarity_score': []}
 
     for data0_idx in range(n):
+        print(f'generating dataset for idx {data0_idx} / {n} ...')
+
         for data1_idx in range(n):
             data0_memory_key = memory_list[data0_idx].split('[')[1].split(':')[0]
             data1_memory_key = memory_list[data1_idx].split('[')[1].split(':')[0]
+
+            if data0_memory_key == '상태':
+                data0_memory_key = memory_list[data0_idx].split('[')[1].split(':')[1]
+            if data1_memory_key == '상태':
+                data1_memory_key = memory_list[data1_idx].split('[')[1].split(':')[1]
 
             if data0_memory_key == data1_memory_key:
                 similarity_score = 1.0
@@ -64,9 +79,14 @@ def parse_combs_text(combs_lines):
             dataset_df_dict['user_prompt_0'].append(user_prompt_list[data0_idx])
             dataset_df_dict['memory_1'].append(memory_list[data1_idx])
             dataset_df_dict['user_prompt_1'].append(user_prompt_list[data1_idx])
-            dataset_df_dict['similarity_score'].append(round(similarity_score, 4))
+            dataset_df_dict['similarity_score'].append(similarity_score)
 
     dataset_df = pd.DataFrame(dataset_df_dict)
+
+    # Similarity Score 추가 보정 및 소수점 4째 자리에서 반올림 처리
+    dataset_df['similarity_score'] = dataset_df['similarity_score'].map(lambda x: max(2.6 * x - 1.6, 0.0))
+    dataset_df['similarity_score'] = dataset_df['similarity_score'].map(lambda x: round(x, 4))
+
     return dataset_df
 
 
