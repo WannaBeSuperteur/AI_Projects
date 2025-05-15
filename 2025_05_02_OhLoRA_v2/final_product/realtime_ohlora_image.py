@@ -1,9 +1,7 @@
 import torch
 import cv2
-from PIL import Image, ImageTk
 import numpy as np
 
-import tkinter
 import os
 import sys
 import time
@@ -46,10 +44,6 @@ def display_realtime_ohlora_image(vectorfind_v6_generator, ohlora_z_vector, eyes
         for pm in pms:
             print(f'time: {time.time()}, property: {property_name}, pm: {pm}')
 
-            root = tkinter.Tk()
-            root.title("Oh-LoRA v2 👱‍♀️✨")
-            root.geometry("256x256")
-
             eyes_pm = pm if property_name == 'eyes' else 0.0
             mouth_pm = pm if property_name == 'mouth' else 0.0
             pose_pm = pm if property_name == 'pose' else 0.0
@@ -58,13 +52,8 @@ def display_realtime_ohlora_image(vectorfind_v6_generator, ohlora_z_vector, eyes
                                                       eyes_vector, mouth_vector, pose_vector,
                                                       eyes_pm=eyes_pm, mouth_pm=mouth_pm, pose_pm=pose_pm)
 
-            ohlora_image = Image.fromarray(ohlora_image_to_display)
-            ohlora_image_tk = ImageTk.PhotoImage(image=ohlora_image)
-            label = tkinter.Label(root, image=ohlora_image_tk)
-
-            label.pack()
-            root.mainloop()
-
+            cv2.imshow("Image Sequence", ohlora_image_to_display[:, :, ::-1])
+            _ = cv2.waitKey(10)
 
 
 if __name__ == '__main__':
