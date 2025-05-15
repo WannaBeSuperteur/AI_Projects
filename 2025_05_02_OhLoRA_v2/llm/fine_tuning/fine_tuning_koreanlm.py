@@ -296,8 +296,7 @@ def generate_llm_trainable_dataset(dataset_df, prompter, tokenizer):
 
 def fine_tune_model(output_col):
     global lora_llm, tokenizer, valid_final_prompts
-    valid_final_prompts = load_valid_final_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv',
-                                                   output_col=output_col)
+    valid_final_prompts = load_valid_final_prompts(output_col=output_col)
 
     print('Oh-LoRA LLM Fine Tuning start.')
 

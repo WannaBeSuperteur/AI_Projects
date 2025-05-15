@@ -93,7 +93,7 @@ def get_original_llm():
 # Original LLM (Polyglot-Ko 1.3B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
 # Create Date : 2025.05.12
 # Last Update Date : 2025.05.13
-# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영 및 총 4 개의 LLM 개별 학습
+# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_{v2|v2_1|v2_2}.csv) 반영 및 총 4 개의 LLM 개별 학습
 # - LLM output column 에 따라 서로 다른 training argument 적용
 
 # Arguments:
@@ -185,7 +185,8 @@ def get_lora_llm(llm, lora_rank):
 # - train data preview 출력 삭제
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv)
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame
+#                                   (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_{v2|v2_1|v2_2}.csv)
 #                                   columns = ['data_type', 'input_data', ...]
 
 # Returns:
@@ -201,9 +202,8 @@ def generate_llm_trainable_dataset(dataset_df):
 
 # LLM (Polyglot-Ko 1.3B) Fine-Tuning 실시
 # Create Date : 2025.05.12
-# Last Update Date : 2025.05.13
-# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영 및 총 4 개의 LLM 개별 학습
-# - dataset preview 추가
+# Last Update Date : 2025.05.15
+# - summary LLM 학습을 위한 데이터셋 포맷 수정
 
 # Arguments:
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
@@ -213,8 +213,7 @@ def generate_llm_trainable_dataset(dataset_df):
 
 def fine_tune_model(output_col):
     global lora_llm, tokenizer, valid_final_prompts
-    valid_final_prompts = load_valid_final_prompts(dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv',
-                                                   output_col=output_col)
+    valid_final_prompts = load_valid_final_prompts(output_col=output_col)
 
     print('Oh-LoRA LLM Fine Tuning start.')
 
@@ -225,7 +224,12 @@ def fine_tune_model(output_col):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
+    if output_col == 'output_message':
+        dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_1.csv')
+    elif output_col == 'summary':
+        dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_2.csv')
+    else:
+        dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
@@ -237,7 +241,7 @@ def fine_tune_model(output_col):
 
     if output_col == 'summary':
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data'] + ' / ' + x['output_message']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
+            lambda x: f"{x['input_data'] + ' (오로라 답변) ' + x['output_message']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
             axis=1)
 
     elif output_col == 'memory':

@@ -17,7 +17,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # Fine-Tuning 된 LLM 로딩
 # Create Date : 2025.05.12
 # Last Update Date : 2025.05.13
-# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_v2.csv) 반영, 총 4 개의 LLM 학습 로직 적용
+# - 업데이트된 학습 데이터셋 (OhLoRA_fine_tuning_{v2|v2_1|v2_2}.csv) 반영, 총 4 개의 LLM 학습 로직 적용
 
 # Arguments:
 # - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('polyglot' or 'koreanlm')
@@ -101,9 +101,7 @@ if __name__ == '__main__':
     assert llm_name in ['polyglot', 'koreanlm'], "LLM name must be 'polyglot' or 'koreanlm'."
 
     # load valid dataset
-    valid_final_input_prompts = load_valid_final_prompts(
-        dataset_csv_path='llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv',
-        output_col=output_col)
+    valid_final_input_prompts = load_valid_final_prompts(output_col=output_col)
 
     for final_input_prompt in valid_final_input_prompts:
         print(f'final input prompt for validation : {final_input_prompt}')
