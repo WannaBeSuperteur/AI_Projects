@@ -1,5 +1,9 @@
-from property_score_cnn import load_cnn_model as load_property_cnn_model
-import stylegan_common.stylegan_generator_inference as infer
+try:
+    from property_score_cnn import load_cnn_model as load_property_cnn_model
+    import stylegan_common.stylegan_generator_inference as infer
+except:
+    from stylegan.property_score_cnn import load_cnn_model as load_property_cnn_model
+    import stylegan.stylegan_common.stylegan_generator_inference as infer
 
 import numpy as np
 import torch

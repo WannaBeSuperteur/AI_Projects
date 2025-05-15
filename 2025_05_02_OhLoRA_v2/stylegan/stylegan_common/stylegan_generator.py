@@ -15,7 +15,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from stylegan_common.sync_op import all_gather
+try:
+    from stylegan_common.sync_op import all_gather
+except:
+    from stylegan.stylegan_common.sync_op import all_gather
 
 
 # Resolutions allowed.

@@ -1,12 +1,22 @@
 from torchvision.io import read_image
 
-from stylegan_vectorfind_v6.main import main as stylegan_vectorfind_v6_main
-from stylegan_vectorfind_v6.run_vector_find import compute_medians
-from stylegan_common.visualizer import postprocess_image, save_image
-import stylegan_common.stylegan_generator as gen
+try:
+    from stylegan_vectorfind_v6.main import main as stylegan_vectorfind_v6_main
+    from stylegan_vectorfind_v6.run_vector_find import compute_medians
+    from stylegan_common.visualizer import postprocess_image, save_image
+    import stylegan_common.stylegan_generator as gen
 
-from common import load_existing_stylegan_finetune_v1, load_existing_stylegan_vectorfind_v6, stylegan_transform
-from property_score_cnn import load_cnn_model as load_property_cnn_model
+    from common import load_existing_stylegan_finetune_v1, load_existing_stylegan_vectorfind_v6, stylegan_transform
+    from property_score_cnn import load_cnn_model as load_property_cnn_model
+
+except:
+    from stylegan.stylegan_vectorfind_v6.main import main as stylegan_vectorfind_v6_main
+    from stylegan.stylegan_vectorfind_v6.run_vector_find import compute_medians
+    from stylegan.stylegan_common.visualizer import postprocess_image, save_image
+    import stylegan.stylegan_common.stylegan_generator as gen
+
+    from stylegan.common import load_existing_stylegan_finetune_v1, load_existing_stylegan_vectorfind_v6, stylegan_transform
+    from stylegan.property_score_cnn import load_cnn_model as load_property_cnn_model
 
 import torch
 import os
