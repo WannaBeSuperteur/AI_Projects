@@ -12,7 +12,7 @@ def get_instruction():
 def preview_dataset(dataset):
     print('\n=== DATASET PREVIEW ===')
     for i in range(10):
-        print(f"train data {i} : {dataset['train']['text'][i]}")
+        print(f"\ntrain data {i} : {dataset['train']['text'][i]}")
         print(f"valid data {i} : {dataset['valid']['text'][i].split('###')[0]}")
     print('')
 
@@ -45,8 +45,8 @@ def add_inference_log(inference_result, inference_log_dict):
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
 # Create Date : 2025.05.12
-# Last Update Date : 2025.05.14
-# - Oh-LoRA Fine-Tuning 학습 데이터셋 v2.1 (OhLoRA_fine_tuning_v2_1.csv) 반영, csv path 인수 제거
+# Last Update Date : 2025.05.15
+# - summary LLM 학습을 위한 데이터셋 포맷 수정
 
 # Arguments:
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
@@ -65,7 +65,7 @@ def load_valid_final_prompts(output_col):
     dataset_df_valid = dataset_df[dataset_df['data_type'] == 'valid']
 
     if output_col == 'summary':
-        valid_final_prompts = (dataset_df_valid['input_data'] + ' / ' + dataset_df_valid['output_message']).tolist()
+        valid_final_prompts = (dataset_df_valid['input_data'] + ' (오로라 답변) ' + dataset_df_valid['output_message']).tolist()
     elif output_col == 'eyes_mouth_pose':
         valid_final_prompts = dataset_df_valid['output_message'].tolist()
     else:
