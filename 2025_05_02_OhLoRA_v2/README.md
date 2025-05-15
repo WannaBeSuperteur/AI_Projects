@@ -123,7 +123,7 @@
 | 🔨 모델 개선   | S-BERT (for memory) ground-truth similarity score 계산 고도화                              | 05.14 수 (1d)           | ```P003-013-SBERT```    | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/6) | ✅  |
 | 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 포맷 변경                                               | 05.14 수 (1d)           | ```P003-014-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/7) | ✅  |
 | 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(2차, 모델 2개)**                                         | 05.14 수 - 05.15 목 (2d) | ```P003-014-FineTune``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/7) | ✅  |
-| 📃 문서화     | LLM 개발 내용 문서화                                                                         | 05.15 목 (1d)           |                         |                                                                   | 💨 |
+| 📃 문서화     | LLM 개발 내용 문서화                                                                         | 05.15 목 (1d)           |                         |                                                                   | ✅  |
 
 ## 4. 프로젝트 상세 설명
 
