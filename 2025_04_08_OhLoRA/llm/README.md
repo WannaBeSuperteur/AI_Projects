@@ -93,6 +93,8 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
 
 ### 3-1. 동작 원리
 
+![image](../../images/250408_28.PNG)
+
 * 사용자 입력에 대해 **가장 관련 있는 memory item** 을 [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 모델을 이용하여 탐색
 * 찾은 memory item (단, **cosine similarity $\ge$ 0.6** 이어야 함) 을 사용자 입력의 맨 앞에 추가
 * 오로라👱‍♀️ 에게 **memory item 내용이 앞에 추가된 프롬프트를 최종 전달**
@@ -100,8 +102,6 @@ To the maximum extent permitted by law, Google reserves the right to restrict (r
   * [S-BERT Training](memory_mechanism/train_sbert.py)
   * [S-BERT Inference](memory_mechanism/inference_sbert.py)
   * [Entry & Best Memory Item Choice](run_memory_mechanism.py)
-
-![image](../../images/250408_28.PNG)
 
 ### 3-2. 학습 및 테스트 데이터 & 학습 설정
 
