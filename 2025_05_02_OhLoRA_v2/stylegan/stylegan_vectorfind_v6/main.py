@@ -1,6 +1,11 @@
-import stylegan_common.stylegan_generator_inference as infer
-from stylegan_vectorfind_v6.run_vector_find import run_stylegan_vector_find
-from common import save_model_structure_pdf
+try:
+    import stylegan_common.stylegan_generator_inference as infer
+    from stylegan_vectorfind_v6.run_vector_find import run_stylegan_vector_find
+    from common import save_model_structure_pdf
+except:
+    import stylegan.stylegan_common.stylegan_generator_inference as infer
+    from stylegan.stylegan_vectorfind_v6.run_vector_find import run_stylegan_vector_find
+    from stylegan.common import save_model_structure_pdf
 
 import os
 
