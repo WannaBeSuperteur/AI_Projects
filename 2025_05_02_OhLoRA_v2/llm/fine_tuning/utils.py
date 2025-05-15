@@ -55,8 +55,10 @@ def add_inference_log(inference_result, inference_log_dict):
 # - valid_final_prompts (list(str)) : Valid Dataset 로부터 가져온 final LLM input prompt 의 리스트
 
 def load_valid_final_prompts(output_col):
-    if output_col in ['output_message', 'summary']:
+    if output_col == 'output_message':
         dataset_csv_path = 'llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_1.csv'
+    elif output_col == 'summary':
+        dataset_csv_path = 'llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_2.csv'
     else:
         dataset_csv_path = 'llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv'
 
