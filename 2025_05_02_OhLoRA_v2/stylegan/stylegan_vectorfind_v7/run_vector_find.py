@@ -76,24 +76,24 @@ def compute_medians():
 # - n                     (int)       : sampling 할 intermediate w vector 의 개수
 
 # Returns:
-# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w (각 그룹별)
-# - property_scores         (dict)              : sampling 된 intermediate w 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
-#                                                 dict 는 각 그룹의 이름 ('hhh', 'hhl', ..., 'lll') 을 key 로 함
-#                                                 {'eyes_cnn_score': dict(list(float)),
-#                                                  'mouth_cnn_score': dict(list(float)),
-#                                                  'pose_cnn_score': dict(list(float))}
+# - w_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w (각 그룹별)
+# - property_scores    (dict)              : sampling 된 intermediate w 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
+#                                            dict 는 각 그룹의 이름 ('hhh', 'hhl', ..., 'lll') 을 key 로 함
+#                                            {'eyes_cnn_score': dict(list(float)),
+#                                             'mouth_cnn_score': dict(list(float)),
+#                                             'pose_cnn_score': dict(list(float))}
 
-def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=500000):
+def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=1000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/inference_test_during_training'
     medians = compute_medians()  # returned values : -0.2709, 0.3052, 0.0742
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
+    w = np.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
     additional = np.random.normal(0, 1, size=(n, ORIGINALLY_PROPERTY_DIMS)).astype(np.float64)
-    latent_vectors = np.concatenate([z, additional], axis=1)
 
     # 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균의 CNN 도출 속성값에 따라 8개의 그룹으로 나눔
     # (그룹명 : 머리 색, 머리 길이, 배경 색 평균 순서로, h: median 보다 높음 / l: median 보다 낮음)
-    latent_vectors_by_group = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    w_vectors_by_group = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
 
     eyes_cnn_scores = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
     mouth_cnn_scores = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
@@ -106,15 +106,18 @@ def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_c
         z_ = z[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
         additional_ = additional[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
 
-        images = infer.synthesize(finetune_v1_generator,
-                                  num=BATCH_SIZE,
-                                  save_dir=save_dir,
-                                  z=z_,
-                                  label=additional_,
-                                  img_name_start_idx=0,
-                                  verbose=False,
-                                  save_img=False,
-                                  return_img=True)
+        images, ws = infer.synthesize(finetune_v1_generator,
+                                      num=BATCH_SIZE,
+                                      save_dir=save_dir,
+                                      z=z_,
+                                      label=additional_,
+                                      img_name_start_idx=0,
+                                      verbose=False,
+                                      save_img=False,
+                                      return_img=True,
+                                      return_w=True)
+
+        w[i * BATCH_SIZE : (i+1) * BATCH_SIZE] = ws
 
         with torch.no_grad():
             for image_no in range(BATCH_SIZE):
@@ -136,18 +139,18 @@ def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_c
                 mouth_cnn_scores[group_name].append(property_score_np[0][3])
                 pose_cnn_scores[group_name].append(property_score_np[0][4])
 
-                latent_vector = latent_vectors[i * BATCH_SIZE + image_no]
-                latent_vectors_by_group[group_name].append(list(latent_vector))
+                w_vector = w[i * BATCH_SIZE + image_no]
+                w_vectors_by_group[group_name].append(list(w_vector))
 
     property_scores = {'eyes_cnn_score': eyes_cnn_scores,
                        'mouth_cnn_score': mouth_cnn_scores,
                        'pose_cnn_score': pose_cnn_scores}
 
     for group_name in GROUP_NAMES:
-        latent_vectors_by_group[group_name] = np.array(latent_vectors_by_group[group_name])
-        print(f'generated images in group {group_name} : {len(latent_vectors_by_group[group_name])}')
+        w_vectors_by_group[group_name] = np.array(w_vectors_by_group[group_name])
+        print(f'generated images in group {group_name} : {len(w_vectors_by_group[group_name])}')
 
-    return latent_vectors_by_group, property_scores
+    return w_vectors_by_group, property_scores
 
 
 # 각 핵심 속성 값이 가장 큰 & 가장 작은 ratio 비율만큼의 이미지를 그룹별로 각각 추출
@@ -219,16 +222,16 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.15):
 # Last Update Date : -
 
 # Arguments:
-# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w vector (각 그룹별)
-# - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
-#                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
-#                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
-#                                                  'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
+# - w_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w vector (각 그룹별)
+# - indices_info       (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
+#                                            {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
+#                                             'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
+#                                             'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 # Returns:
 # - stylegan/stylegan_vectorfind_v7/tsne_result 디렉토리에 그룹 별 & 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
 
-def run_tsne(latent_vectors_by_group, indices_info):
+def run_tsne(w_vectors_by_group, indices_info):
     property_names = ['eyes', 'mouth', 'pose']
 
     tsne_result_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/tsne_result'
@@ -239,15 +242,15 @@ def run_tsne(latent_vectors_by_group, indices_info):
             largest_img_idxs = indices_info[f'{property_name}_largest'][group_name]
             smallest_img_idxs = indices_info[f'{property_name}_smallest'][group_name]
             idxs = largest_img_idxs + smallest_img_idxs
-            indexed_latent_vectors = latent_vectors_by_group[group_name][idxs]
+            indexed_w_vectors = w_vectors_by_group[group_name][idxs]
 
             # run t-SNE
             print(f'running t-SNE for {property_name} / {group_name} ...')
             tsne_result = TSNE(n_components=2,
-                               perplexity=min(50, len(indexed_latent_vectors) - 1),
+                               perplexity=min(50, len(indexed_w_vectors) - 1),
                                learning_rate=100,
                                n_iter=1000,
-                               random_state=2025).fit_transform(indexed_latent_vectors)
+                               random_state=2025).fit_transform(indexed_w_vectors)
 
             # save t-SNE plot result images
             classes = ['largest'] * len(largest_img_idxs) + ['smallest'] * len(smallest_img_idxs)
@@ -266,7 +269,7 @@ def run_tsne(latent_vectors_by_group, indices_info):
                              title=f't-SNE result of property {property_name} / {group_name}')
 
             fig.update_layout(width=720, height=600)
-            fig.update_traces(marker=dict(size=4))
+            fig.update_traces(marker=dict(size=2))
             fig.write_image(f'{tsne_result_path}/tsne_result_{property_name}_{group_name}.png')
 
 
@@ -367,7 +370,7 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
 #                                    'pose_vector': dict(NumPy array)}
 
 def find_property_score_vectors(svm_classifiers):
-    dim = ORIGINAL_HIDDEN_DIMS_W + ORIGINALLY_PROPERTY_DIMS
+    dim = ORIGINAL_HIDDEN_DIMS_W
 
     property_score_vectors = {}
 
@@ -431,14 +434,14 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
 
     # intermediate w vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
     sampling_start_at = time.time()
-    latent_vectors_by_group, property_scores = sample_w_and_compute_property_scores(finetune_v1_generator,
-                                                                                    property_score_cnn)
+    w_vectors_by_group, property_scores = sample_w_and_compute_property_scores(finetune_v1_generator,
+                                                                               property_score_cnn)
     print(f'sampling (from latent vector w) running time (s) : {time.time() - sampling_start_at}\n')
 
     indices_info = extract_best_and_worst_k_images(property_scores)
 
     tsne_start_at = time.time()
-    run_tsne(latent_vectors_by_group, indices_info)
+    run_tsne(w_vectors_by_group, indices_info)
     print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
 
     # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 intermediate w vector 도출
@@ -450,7 +453,7 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
 
     for group_name in GROUP_NAMES:
         svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info =(
-            train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers))
+            train_svm(w_vectors_by_group, group_name, indices_info, svm_classifiers))
 
         for property_name in ['eyes', 'mouth', 'pose']:
             entire_valid_count[property_name] += total_valid_cnt_info[property_name]
