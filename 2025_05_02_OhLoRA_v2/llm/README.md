@@ -18,7 +18,7 @@
   * 추가 구현 사항
     * ```좋아하는 아이돌``` 과 ```좋아하는 가수``` 라는 key 는 동일한 key 로 간주 
     * S-BERT 에 의해 계산된 similarity score ```x``` 의 분포를 **0 ~ 1 로 [정규화 (Normalization)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_Normalization.md)** 하기 위해 다음 수식 적용
-      * ```x``` ← max(2.6 $\times$ ```x``` - 1.6, 0)
+      * **```x``` ← max(2.6 $\times$ ```x``` - 1.6, 0)**
     * memory text 의 key 가 ```상태``` 인 경우에는 그 대신 memory text 의 'value'를 이용
       * 예: ```[상태: 오로라 만나고 싶음]``` → key 인 ```상태``` 대신 value 인 ```오로라 만나고 싶음``` 을 이용 
 
