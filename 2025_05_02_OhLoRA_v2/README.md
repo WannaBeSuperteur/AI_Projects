@@ -83,7 +83,7 @@
 | 구분       | 계획 내용                                           | 일정           | branch                  | issue | 상태 |
 |----------|-------------------------------------------------|--------------|-------------------------|-------|----|
 | 📃 문서화   | 프로젝트 개요 및 최초 일정 작성                              | 05.02 금 (1d) |                         |       | ✅  |
-| ⚙ 기능 개선  | 실시간 표정 변화 이미지 출력 (생성) 적용                        | 05.15 목 (1d) | ```P003-015-Realtime``` |       | 💨 |
+| ⚙ 기능 개선  | 실시간 표정 변화 이미지 출력 (생성) 적용                        | 05.15 목 (1d) | ```P003-015-Realtime``` |       | ✅  |
 | 🔍 최종 검토 | 최종 사용자 실행용 코드 작성                                | 05.16 금 (1d) | ```P003-017-ForUser```  |       | ⬜  |
 | ⚙ 기능 개선  | 최종 사용자 실행용 코드 작성 시, 답변 생성 시도 및 성공/실패 처리 메커니즘 개선 | 05.16 금 (1d) | ```P003-017-ForUser```  |       | ⬜  |
 | 🔍 최종 검토 | 최종 QA (버그 유무 검사)                                | 05.16 금 (1d) |                         |       | ⬜  |
@@ -109,7 +109,7 @@
 | 🔨 모델 개선 | StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현                                                                                                            | 05.06 화 - 05.09 금 (4d) | ```P003-009-StyleGAN-VectorFind```       | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/3) | ✅  |
 | 🔨 모델 개선 | StyleGAN 에서 핵심 속성 값만 변화시키는 vector 추출 구현 - **각 이미지 그룹 별** SVM 학습                                                                                    | 05.08 목 - 05.09 금 (2d) | ```P003-010-StyleGAN-VectorFind-Group``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/3) | ✅  |
 | 📃 문서화   | StyleGAN 개발 내용 문서화 **(1차)**                                                                                                                        | 05.09 금 - 05.10 토 (2d) |                                          |                                                                   | ✅  |
-| 🔨 모델 개선 | StyleGAN 핵심 속성 변화 vector 추출 위치 변경 (latent z space 대신 w space 에서)                                                                                   | 05.15 목 - 05.16 금 (2d) | ```P003-016-StyleGAN-VectorFind-w```     |                                                                   | ⬜  |
+| 🔨 모델 개선 | StyleGAN 핵심 속성 변화 vector 추출 위치 변경 (latent z space 대신 w space 에서)                                                                                   | 05.15 목 - 05.16 금 (2d) | ```P003-016-StyleGAN-VectorFind-w```     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/8) | 💨 |
 | 📃 문서화   | StyleGAN 개발 내용 문서화 **(2차)**                                                                                                                        | 05.16 금 (1d)           |                                          |                                                                   | ⬜  |
 
 **3. LLM 을 이용한 대화 능력 향상**
