@@ -29,15 +29,16 @@ warnings.filterwarnings('ignore')
 PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
-ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
+ORIGINAL_HIDDEN_DIMS_W = 512
+ORIGINALLY_PROPERTY_DIMS = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 BATCH_SIZE = 20
-SVMS_PER_EACH_PROPERTY = 1      # also z-vector count for each property
+SVMS_PER_EACH_PROPERTY = 1      # also w-vector count for each property
 
 GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
 
-# Latent Vector z 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화하기 위해,
+# intermediate w vector 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화하기 위해,
 # hair_color, hair_length, background_mean 핵심 속성 값의 중앙값 계산
 
 # Create Date : 2025.05.15
@@ -65,29 +66,29 @@ def compute_medians():
     return medians
 
 
-# Latent vector z 샘플링 및 해당 z 값으로 생성된 이미지에 대한 semantic score 계산
+# intermediate w vector 샘플링 및 해당 w 값으로 생성된 이미지에 대한 semantic score 계산
 # Create Date : 2025.05.15
 # Last Update Date : -
 
 # Arguments:
 # - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
 # - property_score_cnn    (nn.Module) : 핵심 속성 값 계산용 CNN 모델
-# - n                     (int)       : sampling 할 latent vector z 의 개수
+# - n                     (int)       : sampling 할 intermediate w vector 의 개수
 
 # Returns:
-# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
-# - property_scores         (dict)              : sampling 된 latent z 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
+# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w (각 그룹별)
+# - property_scores         (dict)              : sampling 된 intermediate w 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
 #                                                 dict 는 각 그룹의 이름 ('hhh', 'hhl', ..., 'lll') 을 key 로 함
 #                                                 {'eyes_cnn_score': dict(list(float)),
 #                                                  'mouth_cnn_score': dict(list(float)),
 #                                                  'pose_cnn_score': dict(list(float))}
 
-def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=500000):
+def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=500000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/inference_test_during_training'
     medians = compute_medians()  # returned values : -0.2709, 0.3052, 0.0742
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
-    additional = np.random.normal(0, 1, size=(n, ORIGINALLY_PROPERTY_DIMS_Z)).astype(np.float64)
+    additional = np.random.normal(0, 1, size=(n, ORIGINALLY_PROPERTY_DIMS)).astype(np.float64)
     latent_vectors = np.concatenate([z, additional], axis=1)
 
     # 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균의 CNN 도출 속성값에 따라 8개의 그룹으로 나눔
@@ -154,7 +155,7 @@ def sample_z_and_compute_property_scores(finetune_v1_generator, property_score_c
 # Last Update Date : -
 
 # Arguments:
-# - property_scores (dict) : sampling 된 latent z 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
+# - property_scores (dict) : sampling 된 intermediate w vector 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
 #                            dict 는 각 그룹의 이름 ('hhh', 'hhl', ..., 'lll') 을 key 로 함
 #                            {'eyes_cnn_score': dict(list(float)),
 #                             'mouth_cnn_score': dict(list(float)),
@@ -218,7 +219,7 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.15):
 # Last Update Date : -
 
 # Arguments:
-# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
+# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w vector (각 그룹별)
 # - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
 #                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
 #                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
@@ -269,12 +270,12 @@ def run_tsne(latent_vectors_by_group, indices_info):
             fig.write_image(f'{tsne_result_path}/tsne_result_{property_name}_{group_name}.png')
 
 
-# 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출하기 위한 SVM 학습
+# 핵심 속성 값의 변화를 나타내는 intermediate w vector 를 도출하기 위한 SVM 학습
 # Create Date : 2025.05.15
 # Last Update Date : -
 
 # Arguments:
-# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 latent z (각 그룹별)
+# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w vector (각 그룹별)
 # - group_name              (str)               : 머리 색, 머리 길이, 배경색 평균의 속성값 별 그룹명 ('hhh', 'hhl', ..., 'lll')
 # - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
 #                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
@@ -349,7 +350,7 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
     return svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info
 
 
-# SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 latent z vector 를 도출 (최종 z vector)
+# SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 intermediate w vector 를 도출 (최종 w vector)
 # Create Date : 2025.05.15
 # Last Update Date : -
 
@@ -360,13 +361,13 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
 #                             'pose': dict(list(SVM))}
 
 # Returns:
-# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector (각 그룹 별)
+# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate w vector (각 그룹 별)
 #                                   {'eyes_vector': dict(NumPy array),
 #                                    'mouth_vector': dict(NumPy array),
 #                                    'pose_vector': dict(NumPy array)}
 
 def find_property_score_vectors(svm_classifiers):
-    dim = ORIGINAL_HIDDEN_DIMS_Z + ORIGINALLY_PROPERTY_DIMS_Z
+    dim = ORIGINAL_HIDDEN_DIMS_W + ORIGINALLY_PROPERTY_DIMS
 
     property_score_vectors = {}
 
@@ -390,18 +391,18 @@ def find_property_score_vectors(svm_classifiers):
     return property_score_vectors
 
 
-# 핵심 속성 값의 변화를 나타내는 latent z vector 에 대한 정보 저장
+# 핵심 속성 값의 변화를 나타내는 intermediate w vector 에 대한 정보 저장
 # Create Date : 2025.05.15
 # Last Update Date : -
 
 # Arguments:
-# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 latent z vector (각 그룹 별)
+# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate w vector (각 그룹 별)
 #                                   {'eyes_vector': dict(NumPy array),
 #                                    'mouth_vector': dict(NumPy array),
 #                                    'pose_vector': dict(NumPy array)}
 
 # Returns:
-# - stylegan/stylegan_vectorfind_v7/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 latent z vector 정보 저장
+# - stylegan/stylegan_vectorfind_v7/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 intermediate w vector 정보 저장
 
 def save_property_score_vectors_info(property_score_vectors):
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/property_score_vectors'
@@ -412,9 +413,9 @@ def save_property_score_vectors_info(property_score_vectors):
         mouth_vector_df = pd.DataFrame(property_score_vectors['mouth_vector'][group_name])
         pose_vector_df = pd.DataFrame(property_score_vectors['pose_vector'][group_name])
 
-        eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_z_vector_{group_name}.csv')
-        mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_z_vector_{group_name}.csv')
-        pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_z_vector_{group_name}.csv')
+        eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_w_vector_{group_name}.csv')
+        mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_w_vector_{group_name}.csv')
+        pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_w_vector_{group_name}.csv')
 
 
 # StyleGAN-FineTune-v1 모델을 이용한 vector find 실시
@@ -428,11 +429,11 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
     property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
     property_score_cnn = load_property_cnn_model(property_cnn_path, device)
 
-    # latent vector z 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
+    # intermediate w vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
     sampling_start_at = time.time()
-    latent_vectors_by_group, property_scores = sample_z_and_compute_property_scores(finetune_v1_generator,
+    latent_vectors_by_group, property_scores = sample_w_and_compute_property_scores(finetune_v1_generator,
                                                                                     property_score_cnn)
-    print(f'sampling (from latent vector z) running time (s) : {time.time() - sampling_start_at}\n')
+    print(f'sampling (from latent vector w) running time (s) : {time.time() - sampling_start_at}\n')
 
     indices_info = extract_best_and_worst_k_images(property_scores)
 
@@ -440,7 +441,7 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
     run_tsne(latent_vectors_by_group, indices_info)
     print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
 
-    # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 latent z vector 도출
+    # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 intermediate w vector 도출
     svm_classifiers = {'eyes': {}, 'mouth': {}, 'pose': {}}
     entire_valid_count = {'eyes': 0, 'mouth': 0, 'pose': 0}
     entire_valid_correct_count = {'eyes': 0, 'mouth': 0, 'pose': 0}

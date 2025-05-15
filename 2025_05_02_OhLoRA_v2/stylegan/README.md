@@ -163,5 +163,8 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 * **StyleGAN-FineTune-v5** 모델 Fine-Tuning
   * ```python stylegan/run_stylegan_finetune_v5.py```
 
-* **StyleGAN-VectorFind-v6** 모델을 실행하여 Property Score 를 바꾸는 latent z vector 탐색
+* **StyleGAN-VectorFind-v6** 모델을 실행하여 Property Score 를 바꾸는 **latent z** vector 탐색
   * ```python stylegan/run_stylegan_vectorfind_v6.py```
+
+* **StyleGAN-VectorFind-v6** 모델을 실행하여 Property Score 를 바꾸는 **intermediate w** vector 탐색
+  * ```python stylegan/run_stylegan_vectorfind_v7.py```

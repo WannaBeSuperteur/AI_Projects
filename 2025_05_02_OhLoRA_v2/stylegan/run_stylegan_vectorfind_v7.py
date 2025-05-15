@@ -26,8 +26,8 @@ import pandas as pd
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_RESOLUTION = 256
 
-ORIGINAL_HIDDEN_DIMS_Z = 512
-ORIGINALLY_PROPERTY_DIMS_Z = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
+ORIGINAL_HIDDEN_DIMS_W = 512
+ORIGINALLY_PROPERTY_DIMS = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
 TEST_IMG_CASES_FOR_COMPARE_MAX = 2400
@@ -43,7 +43,7 @@ medians = compute_medians()  # returned values : -0.2709, 0.3052, 0.0742
 kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 
-# Property Score 값을 변경하기 위해 latent vector z 에 가감할 벡터 정보 반환 ('hhh', 'hhl', ..., 'lll' 의 각 그룹 별)
+# Property Score 값을 변경하기 위해 intermediate w vector 에 가감할 벡터 정보 반환 ('hhh', 'hhl', ..., 'lll' 의 각 그룹 별)
 # Create Date : 2025.05.15
 # Last Update Date : -
 
@@ -63,13 +63,13 @@ def get_property_change_vectors():
     pose_vectors = {}
 
     for group_name in GROUP_NAMES:
-        eyes_vector = np.array(pd.read_csv(f'{vector_save_dir}/eyes_change_z_vector_{group_name}.csv',
+        eyes_vector = np.array(pd.read_csv(f'{vector_save_dir}/eyes_change_w_vector_{group_name}.csv',
                                            index_col=0))
 
-        mouth_vector = np.array(pd.read_csv(f'{vector_save_dir}/mouth_change_z_vector_{group_name}.csv',
+        mouth_vector = np.array(pd.read_csv(f'{vector_save_dir}/mouth_change_w_vector_{group_name}.csv',
                                             index_col=0))
 
-        pose_vector = np.array(pd.read_csv(f'{vector_save_dir}/pose_change_z_vector_{group_name}.csv',
+        pose_vector = np.array(pd.read_csv(f'{vector_save_dir}/pose_change_w_vector_{group_name}.csv',
                                            index_col=0))
 
         eyes_vectors[group_name] = eyes_vector
@@ -79,12 +79,12 @@ def get_property_change_vectors():
     return eyes_vectors, mouth_vectors, pose_vectors
 
 
-# latent code (z) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhh', 'hhl', ..., 'lll') 반환
+# latent code (w) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhh', 'hhl', ..., 'lll') 반환
 # Create Date : 2025.05.15
 # Last Update Date : -
 
 # Arguments:
-# - code_part1 (Tensor) : latent code (z) 에 해당하는 부분 (dim: 512)
+# - code_part1 (Tensor) : latent code (w) 에 해당하는 부분 (dim: 512)
 # - code_part2 (Tensor) : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 3)
 # - save_dir   (str)    : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v7/inference_test_after_training)
 # - i          (int)    : case index
@@ -117,7 +117,7 @@ def get_group_name(code_part1, code_part2, save_dir, i, vi):
     return group_name
 
 
-# latent vector z 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
+# intermediate w vector 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
 # Create Date : 2025.05.15
 # Last Update Date : -
 
@@ -138,8 +138,8 @@ def run_image_generation_test(finetune_v1_generator, eyes_vectors, mouth_vectors
     vector_dicts = [eyes_vectors, mouth_vectors, pose_vectors]
 
     for i in range(TEST_IMG_CASES):
-        code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)      # 512
-        code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
+        code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_W)      # 512
+        code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS)  # 3
 
         for vi in range(n_vector_cnt):
             group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
@@ -151,8 +151,8 @@ def run_image_generation_test(finetune_v1_generator, eyes_vectors, mouth_vectors
 
                 for pm_idx, pm in enumerate(pms):
                     with torch.no_grad():
-                        code_part1_ = code_part1 + pm * torch.tensor(vector[vi:vi+1, :ORIGINAL_HIDDEN_DIMS_Z])  # 512
-                        code_part2_ = code_part2 + pm * torch.tensor(vector[vi:vi+1, ORIGINAL_HIDDEN_DIMS_Z:])  # 3
+                        code_part1_ = code_part1 + pm * torch.tensor(vector[vi:vi+1, :ORIGINAL_HIDDEN_DIMS_W])  # 512
+                        code_part2_ = code_part2 + pm * torch.tensor(vector[vi:vi+1, ORIGINAL_HIDDEN_DIMS_W:])  # 3
                         code_part1_ = code_part1_.type(torch.float32)
                         code_part2_ = code_part2_.type(torch.float32)
 
@@ -163,49 +163,49 @@ def run_image_generation_test(finetune_v1_generator, eyes_vectors, mouth_vectors
                                    images[0])
 
 
-# Oh-LoRA 이미지 생성용 latent z vector 가 저장된 파일을 먼저 불러오기 시도
+# Oh-LoRA 이미지 생성용 intermediate w vector 가 저장된 파일을 먼저 불러오기 시도
 # Create Date : 2025.05.15
 # Last Update Date : -
 
 # Arguments:
-# - vector_csv_path (str) : latent z vector 가 저장된 csv 파일의 경로
+# - vector_csv_path (str) : intermediate w vector 가 저장된 csv 파일의 경로
 
 # Returns:
-# - ohlora_z_vectors (NumPy array or None) : Oh-LoRA 이미지 생성용 latent z vector (불러오기 성공 시)
+# - ohlora_w_vectors (NumPy array or None) : Oh-LoRA 이미지 생성용 intermediate w vector (불러오기 성공 시)
 #                                            None (불러오기 실패 시)
 
-def load_ohlora_z_vectors(vector_csv_path):
+def load_ohlora_w_vectors(vector_csv_path):
     try:
-        ohlora_z_vectors_df = pd.read_csv(vector_csv_path)
-        ohlora_z_vectors = np.array(ohlora_z_vectors_df)
-        print(f'Oh-LoRA z vector load successful!! 👱‍♀️✨')
-        return ohlora_z_vectors
+        ohlora_w_vectors_df = pd.read_csv(vector_csv_path)
+        ohlora_w_vectors = np.array(ohlora_w_vectors_df)
+        print(f'Oh-LoRA w vector load successful!! 👱‍♀️✨')
+        return ohlora_w_vectors
 
     except Exception as e:
-        print(f'Oh-LoRA z vector load failed ({e}), using random-generated z vectors')
+        print(f'Oh-LoRA w vector load failed ({e}), using random-generated w vectors')
         return None
 
 
-# Oh-LoRA 이미지 생성용 latent z vector 각각에 대해, group name 정보를 먼저 불러오기 시도
+# Oh-LoRA 이미지 생성용 intermediate w vector 각각에 대해, group name 정보를 먼저 불러오기 시도
 # Create Date : 2025.05.15
 # Last Update Date : -
 
 # Arguments:
-# - group_name_csv_path (str) : latent z vector 에 대한 group name 정보가 저장된 csv 파일의 경로
+# - group_name_csv_path (str) : intermediate w vector 에 대한 group name 정보가 저장된 csv 파일의 경로
 
 # Returns:
-# - group_names (list(str) or None) : Oh-LoRA 이미지 생성용 latent z vector 에 대한 group name 의 list (불러오기 성공 시)
+# - group_names (list(str) or None) : Oh-LoRA 이미지 생성용 intermediate w vector 에 대한 group name 의 list (불러오기 성공 시)
 #                                     None (불러오기 실패 시)
 
-def load_ohlora_z_group_names(group_name_csv_path):
+def load_ohlora_w_group_names(group_name_csv_path):
     try:
-        ohlora_z_vectors_df = pd.read_csv(group_name_csv_path)
-        group_names = ohlora_z_vectors_df['group_name'].tolist()
-        print(f'group names for each Oh-LoRA z vector load successful!! 👱‍♀️✨')
+        ohlora_w_vectors_df = pd.read_csv(group_name_csv_path)
+        group_names = ohlora_w_vectors_df['group_name'].tolist()
+        print(f'group names for each Oh-LoRA w vector load successful!! 👱‍♀️✨')
         return group_names
 
     except Exception as e:
-        print(f'group names for each Oh-LoRA z vector load failed ({e}), using Property-Score-CNN-derived group names')
+        print(f'group names for each Oh-LoRA w vector load failed ({e}), using Property-Score-CNN-derived group names')
         return None
 
 
@@ -230,10 +230,10 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     n_vector_cnt = len(eyes_vectors['hhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
     passed_count = 0
 
-    ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
-    ohlora_z_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_group_names.csv'
-    ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
-    ohlora_z_group_names = load_ohlora_z_group_names(group_name_csv_path=ohlora_z_group_name_csv_path)
+    ohlora_w_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_vectors.csv'
+    ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
+    ohlora_w_vectors = load_ohlora_w_vectors(vector_csv_path=ohlora_w_vector_csv_path)
+    ohlora_w_group_names = load_ohlora_w_group_names(group_name_csv_path=ohlora_w_group_name_csv_path)
 
     # label: 'eyes', 'mouth', 'pose'
     eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels()
@@ -242,13 +242,13 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     all_data_dict = {'case': [], 'vector_no': [], 'passed': [], 'group_name': [],
                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': []}
 
-    if ohlora_z_vectors is not None:
-        count_to_generate = len(ohlora_z_vectors)
+    if ohlora_w_vectors is not None:
+        count_to_generate = len(ohlora_w_vectors)
     else:
         count_to_generate = TEST_IMG_CASES_FOR_COMPARE_MAX
 
-    code_part1s_np = np.zeros((count_to_generate, ORIGINAL_HIDDEN_DIMS_Z))
-    code_part2s_np = np.zeros((count_to_generate, ORIGINALLY_PROPERTY_DIMS_Z))
+    code_part1s_np = np.zeros((count_to_generate, ORIGINAL_HIDDEN_DIMS_W))
+    code_part2s_np = np.zeros((count_to_generate, ORIGINALLY_PROPERTY_DIMS))
     generated_count = 0
 
     # image generation
@@ -256,24 +256,24 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
         save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/inference_test_after_training/test_{i:04d}'
         os.makedirs(save_dir, exist_ok=True)
 
-        if ohlora_z_vectors is not None:
-            code_part1s_np[i] = ohlora_z_vectors[i][:ORIGINAL_HIDDEN_DIMS_Z]
-            code_part2s_np[i] = ohlora_z_vectors[i][ORIGINAL_HIDDEN_DIMS_Z:]
+        if ohlora_w_vectors is not None:
+            code_part1s_np[i] = ohlora_w_vectors[i][:ORIGINAL_HIDDEN_DIMS_W]
+            code_part2s_np[i] = ohlora_w_vectors[i][ORIGINAL_HIDDEN_DIMS_W:]
             code_part1 = torch.tensor(code_part1s_np[i]).unsqueeze(0).to(torch.float32)  # 512
             code_part2 = torch.tensor(code_part2s_np[i]).unsqueeze(0).to(torch.float32)  # 3
 
         else:
-            code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)      # 512
-            code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS_Z)  # 3
+            code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_W)    # 512
+            code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS)  # 3
             code_part1s_np[i] = code_part1[0]
             code_part2s_np[i] = code_part2[0]
 
         for vi in range(n_vector_cnt):
-            if ohlora_z_group_names is None:
+            if ohlora_w_group_names is None:
                 group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
             else:
                 n_vector_idx = i * n_vector_cnt + vi
-                group_name = ohlora_z_group_names[n_vector_idx]
+                group_name = ohlora_w_group_names[n_vector_idx]
 
             eyes_vector = eyes_vectors[group_name]
             mouth_vector = mouth_vectors[group_name]
@@ -331,7 +331,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
             print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current total gap: {round(pass_diff, 4)}, '
                   f'diff: {diff})')
 
-        if ohlora_z_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
+        if ohlora_w_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
             break
 
     # save all data
@@ -358,7 +358,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     statistics_save_path = f'{IMAGE_GENERATION_REPORT_PATH}/test_statistics.csv'
     statistics_df.to_csv(statistics_save_path)
 
-    # save latent codes (z)
+    # save latent codes (w)
     code_part1s_np = np.round(code_part1s_np[:generated_count], 4)
     code_part2s_np = np.round(code_part2s_np[:generated_count], 4)
     code_all_np = np.concatenate([code_part1s_np, code_part2s_np], axis=1)
@@ -381,7 +381,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
 # - eyes_scores           (list)        : Property Score CNN 에 의해 도출된 eyes 핵심 속성 값의 리스트
 # - mouth_scores          (list)        : Property Score CNN 에 의해 도출된 mouth 핵심 속성 값의 리스트
 # - pose_scores           (list)        : Property Score CNN 에 의해 도출된 pose 핵심 속성 값의 리스트
-# - code_part1            (Tensor)      : latent code (z) 에 해당하는 부분 (dim: 512)
+# - code_part1            (Tensor)      : latent code (w) 에 해당하는 부분 (dim: 512)
 # - code_part2            (Tensor)      : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 3)
 # - save_dir              (str)         : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v7/inference_test_after_training)
 # - img_file_name         (str)         : 저장할 이미지 파일 이름
@@ -396,14 +396,14 @@ def generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth
 
     # generate image
     with torch.no_grad():
-        code_part1_ = code_part1 + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_Z])
-        code_part1_ = code_part1_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_Z])
-        code_part1_ = code_part1_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_Z])
+        code_part1_ = code_part1 + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_W])
+        code_part1_ = code_part1_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_W])
+        code_part1_ = code_part1_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_W])
         code_part1_ = code_part1_.type(torch.float32)
 
-        code_part2_ = code_part2 + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_Z:])
-        code_part2_ = code_part2_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_Z:])
-        code_part2_ = code_part2_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_Z:])
+        code_part2_ = code_part2 + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_W:])
+        code_part2_ = code_part2_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_W:])
+        code_part2_ = code_part2_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, ORIGINAL_HIDDEN_DIMS_W:])
         code_part2_ = code_part2_.type(torch.float32)
 
         images = finetune_v1_generator(code_part1_.cuda(), code_part2_.cuda(), **kwargs_val)['image']
@@ -424,7 +424,7 @@ def generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth
         pose_scores.append(round(property_scores_np[0][4], 4))
 
 
-# 이미지 50장 생성 후 비교 테스트를 위한, property score label (latent z vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
+# 이미지 50장 생성 후 비교 테스트를 위한, property score label (intermediate w vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
 # Create Date : 2025.05.15
 # Last Update Date : -
 
