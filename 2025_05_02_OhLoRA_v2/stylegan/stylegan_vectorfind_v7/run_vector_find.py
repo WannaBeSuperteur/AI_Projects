@@ -170,7 +170,7 @@ def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
 #                          'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
-def extract_best_and_worst_k_images(property_scores, ratio=0.025):
+def extract_best_and_worst_k_images(property_scores, ratio=0.05):
     eyes_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
     mouth_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
     pose_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
