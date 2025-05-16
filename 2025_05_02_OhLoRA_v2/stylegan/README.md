@@ -92,6 +92,7 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 **1. 핵심 아이디어**
 
+* **[StyleGAN-FineTune-v1](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) Generator** 기준
 * **핵심 속성값을 잘 변화** 시키는, **latent vector z 에 대한 벡터 (n vector)** 찾기
   * 즉, n vector 를 랜덤하게 생성된 latent vector z 에 적절한 가중치로 가감하면, **```eyes``` ```mouth``` ```pose``` 의 핵심 속성 값이 바뀌고 나머지 속성들 (예: 배경 색, 전반적인 얼굴 형태) 은 거의 바뀌지 않은** 이미지를 생성할 수 있음
   * [참고 논문에 대한 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)
@@ -166,5 +167,5 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 * **StyleGAN-VectorFind-v6** 모델을 실행하여 Property Score 를 바꾸는 **latent z** vector 탐색
   * ```python stylegan/run_stylegan_vectorfind_v6.py```
 
-* **StyleGAN-VectorFind-v6** 모델을 실행하여 Property Score 를 바꾸는 **intermediate w** vector 탐색
+* **StyleGAN-VectorFind-v7** 모델을 실행하여 Property Score 를 바꾸는 **intermediate w** vector 탐색
   * ```python stylegan/run_stylegan_vectorfind_v7.py```
