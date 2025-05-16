@@ -238,9 +238,9 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     n_vector_cnt = len(eyes_vectors['hhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
     passed_count = 0
 
-    ohlora_w_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_vectors.csv'
+    ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
     ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
-    ohlora_w_vectors = load_ohlora_w_vectors(vector_csv_path=ohlora_w_vector_csv_path)
+    ohlora_z_vectors = load_ohlora_w_vectors(vector_csv_path=ohlora_z_vector_csv_path)
     ohlora_w_group_names = load_ohlora_w_group_names(group_name_csv_path=ohlora_w_group_name_csv_path)
 
     # label: 'eyes', 'mouth', 'pose'
@@ -250,8 +250,8 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     all_data_dict = {'case': [], 'vector_no': [], 'passed': [], 'group_name': [],
                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': []}
 
-    if ohlora_w_vectors is not None:
-        count_to_generate = len(ohlora_w_vectors)
+    if ohlora_z_vectors is not None:
+        count_to_generate = len(ohlora_z_vectors)
     else:
         count_to_generate = TEST_IMG_CASES_FOR_COMPARE_MAX
 
@@ -264,9 +264,9 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
         save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/inference_test_after_training/test_{i:04d}'
         os.makedirs(save_dir, exist_ok=True)
 
-        if ohlora_w_vectors is not None:
-            code_part1s_np[i] = ohlora_w_vectors[i][:ORIGINAL_HIDDEN_DIMS_W]
-            code_part2s_np[i] = ohlora_w_vectors[i][ORIGINAL_HIDDEN_DIMS_W:]
+        if ohlora_z_vectors is not None:
+            code_part1s_np[i] = ohlora_z_vectors[i][:ORIGINAL_HIDDEN_DIMS_W]
+            code_part2s_np[i] = ohlora_z_vectors[i][ORIGINAL_HIDDEN_DIMS_W:]
             code_part1 = torch.tensor(code_part1s_np[i]).unsqueeze(0).to(torch.float32)  # 512
             code_part2 = torch.tensor(code_part2s_np[i]).unsqueeze(0).to(torch.float32)  # 3
 
@@ -341,7 +341,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
             print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current total gap: {round(pass_diff, 4)}, '
                   f'diff: {diff})')
 
-        if ohlora_w_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
+        if ohlora_z_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
             break
 
     # save all data
