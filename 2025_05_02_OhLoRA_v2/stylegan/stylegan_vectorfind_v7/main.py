@@ -17,6 +17,7 @@ os.makedirs(MODEL_STRUCTURE_PDF_DIR_PATH, exist_ok=True)
 
 
 IMAGE_RESOLUTION = 256
+ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINAL_HIDDEN_DIMS_W = 512
 ORIGINALLY_PROPERTY_DIMS = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 PDF_BATCH_SIZE = 30
@@ -35,7 +36,7 @@ PDF_BATCH_SIZE = 30
 def create_model_structure_pdf(finetune_v1_generator):
     save_model_structure_pdf(finetune_v1_generator,
                              model_name='finetune_v1_generator_for_v7',
-                             input_size=[(PDF_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_W),
+                             input_size=[(PDF_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
                                          (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)],
                              print_frozen=False)
 

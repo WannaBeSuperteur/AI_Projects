@@ -255,7 +255,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     else:
         count_to_generate = TEST_IMG_CASES_FOR_COMPARE_MAX
 
-    code_part1s_np = np.zeros((count_to_generate, ORIGINAL_HIDDEN_DIMS_W))
+    code_part1s_np = np.zeros((count_to_generate, ORIGINAL_HIDDEN_DIMS_Z))
     code_part2s_np = np.zeros((count_to_generate, ORIGINALLY_PROPERTY_DIMS))
     generated_count = 0
 
@@ -271,7 +271,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
             code_part2 = torch.tensor(code_part2s_np[i]).unsqueeze(0).to(torch.float32)  # 3
 
         else:
-            code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_W)    # 512
+            code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)    # 512
             code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS)  # 3
             code_part1s_np[i] = code_part1[0]
             code_part2s_np[i] = code_part2[0]
