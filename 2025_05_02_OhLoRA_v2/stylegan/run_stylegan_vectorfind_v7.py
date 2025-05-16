@@ -315,10 +315,10 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
             # check passed
             generated_count += 1
 
-            passed = abs(eyes_corrcoef) >= 0.75 and abs(mouth_corrcoef) >= 0.77 and abs(pose_corrcoef) >= 0.8
-            eyes_diff = max(0.75 - abs(eyes_corrcoef), 0)
-            mouth_diff = max(0.77 - abs(mouth_corrcoef), 0)
-            pose_diff = max(0.8 - abs(pose_corrcoef), 0)
+            passed = abs(eyes_corrcoef) >= 0.92 and abs(mouth_corrcoef) >= 0.88 and abs(pose_corrcoef) >= 0.92
+            eyes_diff = max(0.92 - abs(eyes_corrcoef), 0)
+            mouth_diff = max(0.88 - abs(mouth_corrcoef), 0)
+            pose_diff = max(0.92 - abs(pose_corrcoef), 0)
 
             pass_diff = eyes_diff + mouth_diff + pose_diff
             diff = {'eyes': round(eyes_diff, 4), 'mouth': round(mouth_diff, 4), 'pose': round(pose_diff, 4)}
