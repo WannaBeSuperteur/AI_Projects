@@ -7,8 +7,8 @@
 ## 1. Final Report
 
 * 실험 설정
-* random intermediate w vector 를 **아래 결과처럼 100 개가 아닌, 이보다 훨씬 많은 개수** 로 하여 테스트
-* [grouping](#2-grouping) (8 groups) 는 **모든 case 에 대해 항상 적용**
+  * random intermediate w vector 를 **아래 결과처럼 100 개가 아닌, 이보다 훨씬 많은 개수** 로 하여 테스트
+  * [grouping](#2-grouping) (8 groups) 는 **모든 case 에 대해 항상 적용**
 
 * 결론
   * **StyleGAN-VectorFind-v7 (intermediate w vector 기준)** 은 **StyleGAN-VectorFind-v6 (latent z vector 기준)** 보다 성능이 **훨씬 좋음**
