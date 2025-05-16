@@ -429,7 +429,8 @@ def generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth
 
 # 이미지 50장 생성 후 비교 테스트를 위한, property score label (intermediate w vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
 # Create Date : 2025.05.15
-# Last Update Date : -
+# Last Update Date : 2025.05.16
+# - 테스트할 property score label 값 조정
 
 # Arguments:
 # - 없음
@@ -440,8 +441,8 @@ def generate_image(finetune_v1_generator, property_score_cnn, eyes_vector, mouth
 # - pose_pm_order  (list(float)) : pose (고개 돌림) 속성에 대한 50장 각각의 property score label
 
 def get_pm_labels():
-    eyes_pms = [-1.2, 1.8]
-    mouth_pms = [-2.4, -1.2, 0.0, 1.2, 2.4]
+    eyes_pms = [-1.2, 1.2]
+    mouth_pms = [-1.8, -0.9, 0.0, 0.9, 1.8]
     pose_pms = [-1.8, -1.2, -0.6, 0.0, 0.6]
 
     eyes_pm_order = []
