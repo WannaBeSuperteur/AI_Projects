@@ -26,10 +26,11 @@ import pandas as pd
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_RESOLUTION = 256
 
+ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINAL_HIDDEN_DIMS_W = 512
 ORIGINALLY_PROPERTY_DIMS = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
-TEST_IMG_CASES = 1
+TEST_IMG_CASES = 10
 TEST_IMG_CASES_FOR_COMPARE_MAX = 2400
 TEST_IMG_CASES_NEEDED_PASS = 80
 
@@ -87,23 +88,25 @@ def get_property_change_vectors():
     return eyes_vectors, mouth_vectors, pose_vectors
 
 
-# latent code (w) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhh', 'hhl', ..., 'lll') 반환
+# latent code (z) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhh', 'hhl', ..., 'lll') 반환
 # Create Date : 2025.05.16
 # Last Update Date : -
 
 # Arguments:
-# - code     (Tensor) : intermediate w vector
-# - save_dir (str)    : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v7/inference_test_after_training)
-# - i        (int)    : case index
-# - vi       (int)    : n vector index
+# - code_part1 (Tensor) : latent code (w) 에 해당하는 부분 (dim: 512)
+# - code_part2 (Tensor) : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 3)
+# - save_dir   (str)    : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v7/inference_test_after_training)
+# - i          (int)    : case index
+# - vi         (int)    : n vector index
 
 # Returns:
 # - group_name (str) : 이미지의 group 이름 ('hhh', 'hhl', ..., 'lll' 중 하나)
 
-def get_group_name(code, save_dir, i, vi):
+def get_group_name(code_part1, code_part2, save_dir, i, vi):
 
     with torch.no_grad():
-        images = generate_image_using_w(finetune_v1_generator, code)
+        images = finetune_v1_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
+        images = postprocess_image(images.detach().cpu().numpy())
 
     save_image(os.path.join(save_dir, f'original_case_{i:02d}_{vi:02d}.jpg'), images[0])
 
@@ -144,10 +147,14 @@ def run_image_generation_test(finetune_v1_generator, eyes_vectors, mouth_vectors
     vector_dicts = [eyes_vectors, mouth_vectors, pose_vectors]
 
     for i in range(TEST_IMG_CASES):
-        code = torch.randn(1, ORIGINAL_HIDDEN_DIMS_W)  # 512
+        code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)    # 512
+        code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS)  # 3
+
+        with torch.no_grad():
+            code_w = finetune_v1_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
 
         for vi in range(n_vector_cnt):
-            group_name = get_group_name(code, save_dir, i, vi)
+            group_name = get_group_name(code_part1, code_part2, save_dir, i, vi)
 
             # run image generation test
             for property_name, vector_dict in zip(PROPERTY_NAMES, vector_dicts):
@@ -156,9 +163,9 @@ def run_image_generation_test(finetune_v1_generator, eyes_vectors, mouth_vectors
 
                 for pm_idx, pm in enumerate(pms):
                     with torch.no_grad():
-                        code_ = code + pm * torch.tensor(vector[vi:vi+1, :])  # 512
-                        code_ = code_.type(torch.float32)
-                        images = generate_image_using_w(finetune_v1_generator, code_)
+                        code_w_ = code_w + pm * torch.tensor(vector[vi:vi+1, :])  # 512
+                        code_w_ = code_w_.type(torch.float32)
+                        images = generate_image_using_w(finetune_v1_generator, code_w_)
 
                         save_image(os.path.join(save_dir, f'case_{i:02d}_{vi:02d}_{property_name}_pm_{pm_idx}.jpg'),
                                    images[0])
