@@ -31,8 +31,8 @@ ORIGINAL_HIDDEN_DIMS_W = 512
 ORIGINALLY_PROPERTY_DIMS = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 10  # 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 100  # 2400
-TEST_IMG_CASES_NEEDED_PASS = 100  # 80
+TEST_IMG_CASES_FOR_COMPARE_MAX = 500  # 2400
+TEST_IMG_CASES_NEEDED_PASS = 500  # 80
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/image_generation_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)

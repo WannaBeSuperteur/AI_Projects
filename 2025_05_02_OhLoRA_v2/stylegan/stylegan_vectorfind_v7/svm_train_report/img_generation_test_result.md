@@ -1,6 +1,7 @@
 ## 목차
 
 * [1. Final Report](#1-final-report)
+  * [1-1. 추가 확인 필요 사항](#1-1-추가-확인-필요-사항) 
 * [2. Grouping](#2-grouping)
 * [3. Image Generation Test Result](#3-image-generation-test-result)
 
@@ -8,7 +9,6 @@
 
 * 결론
   * **StyleGAN-VectorFind-v7 (intermediate w vector 기준)** 은 **StyleGAN-VectorFind-v6 (latent z vector 기준)** 보다 성능이 **훨씬 좋음**
-  * Property Score ```eyes``` ```mouth``` ```pose``` 에 대해, **의도한 값을 잘 반영하여** Oh-LoRA 👱‍♀️ (오로라) 얼굴 이미지를 생성할수록 **(= 아래 상관계수의 절댓값이 클수록)**, 해당 각 Property Score 별 의도한 값을 바꿔서 생성할 때 **다른 속성 (예: 얼굴형, 머리 색 등) 이 잘 바뀌지 않음**
 
 * 실험 설정
   * random intermediate w vector 를 **아래 결과처럼 100 개가 아닌, 이보다 훨씬 많은 개수** 로 하여 테스트
@@ -24,6 +24,17 @@
 |----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
 |                      |                             |                              |              |                       |                           |                            |                           |                  |
 
+### 1-1. 추가 확인 필요 사항
+
+* Property Score ```eyes``` ```mouth``` ```pose``` 에 대해, **의도한 값을 잘 반영하여** Oh-LoRA 👱‍♀️ (오로라) 얼굴 이미지를 생성할수록 **(= 아래 상관계수의 절댓값이 클수록), 속성 값 조정 시 다른 속성에 대한 영향이 적음**
+  * 즉, 해당 각 Property Score 별 의도한 값을 바꿔서 생성할 때, **다른 속성 (예: 얼굴형, 머리 색 등) 이 잘 바뀌지 않음**
+  * **StyleGAN-VectorFind-v7 의 위 기준** 에 따라 passed 처리된 case 의 경우, 위와 같이 Property Score 의도한 값을 바꿔도 다른 속성이 [**StyleGAN-VectorFind-v6** 에서의 passed case 들](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) 에 비해 잘 바뀌지 않음
+
+* Sample 개수가 너무 많아서 **Property Score 를 변경하는 벡터를 SVM이 너무 정확히 학습** 하면 오히려 부자연스러워진다?
+  * 의도한 핵심 속성 값 변경 시, 핵심 속성 값에 해당하는 영역 외의 픽셀 (배경 등) 은 **부자연스러울 정도로 거의 변하지 않음**
+  * [핵심 속성 값 도출용 CNN](../../../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 이 핵심 속성 값 도출을 위해 학습하는 영역은 **각 CNN 별 지정된, 전체 이미지의 일부분** 임
+  * Sample 개수 n = 300K, k = 60K 정도가 되면 발생하는 것으로 추정
+
 ## 2. Grouping
 
 * 이미지를 random latent code (z) 로부터 생성할 때,
@@ -38,21 +49,21 @@
 
 ## 3. Image Generation Test Result
 
-* **CONCLUSION**
-  * **StyleGAN-VectorFind-v7 is MUCH BETTER than StyleGAN-VectorFind-v6**
-  * When Sample Count increases, **corr-coef shows almost NO INCREASE**
+* **결론**
+  * **StyleGAN-VectorFind-v7 의 성능이 StyleGAN-VectorFind-v6 보다 훨씬 좋음**
+  * Sample 개수가 충분히 많으면, Sample 개수를 더 늘려도 **corr-coef 는 거의 증가하지 않음**
 
-* experiment settings
-  * with both **[sklearnex](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)** and **[grouping](#2-grouping) (8 groups)** applied for all cases
-  * always used ```LinearSVC(...)``` instead of ```SVC(kernel='linear', ...)```
+* 실험 설정
+  * 모든 실험에서 **[sklearnex](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)** 및 **[grouping](#2-grouping) (8 groups)** 둘 다 적용
+  * 모든 실험에서 ```SVC(kernel='linear', ...)``` 대신 **```LinearSVC(...)``` 를 적용**
 
-* how to analyze table
-  * for **mean corr-coef**,
-    * each corr-coef means the corr-coef of **Intended Property Scores vs. Actual CNN-Predicted Property Scores** for 50 generated images
-      * **Note: Intended Property Scores** are **different** from those of **StyleGAN-VectorFind-v6**.
-    * total 100 cases (random z latent vectors) for each experiment
+* 결과 표 해석
+  * **mean corr-coef**,
+    * 각 corr-coef (상관계수) 는 **각 case 별 50 장의 생성된 이미지** 에 대해, **의도한 Property Scores vs. 실제 CNN 에 의해 도출된 Property Scores** 의 상관계수
+      * **중요: Intended Property Scores** 는 **StyleGAN-VectorFind-v6** 과는 다르게 설정됨.
+    * 각 실험 별 100 cases (random z latent vectors)
 
-* comparison
+* 비교 (🔺 표시된 부분)
   * vs. **StyleGAN-VectorFind-v6**
 
 | Sample Count             |                                 | Performance<br>(SVM accuracy)                                                                        |                                                                                                      |                                                                                                          | mean corr-coef<br>(상관계수)                                                                             |                                                                                                          |                                                                                                          |
@@ -64,3 +75,18 @@
 | 50.0K                    | 10.0K / 10.0K<br>**(20% each)** | 0.9581<br>[(🔺 0.1929)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.9863<br>[(🔺 0.2146)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.9546<br>[(🔺 0.1881)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md)     | 0.8992<br>[(🔺 0.1203)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.8626<br>[(🔺 0.1766)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md)     | 0.8071<br>[(🔺 0.1749)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md)     |
 | 100.0K                   | 15.0K / 15.0K<br>**(15% each)** | 0.9602<br>[(🔺 0.1447)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.9910<br>[(🔺 0.1735)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | **0.9717**<br>[(🔺 0.1575)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.8877<br>[(🔺 0.1664)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | **0.8695**<br>[(🔺 0.1589)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.7653<br>[(🔺 0.1858)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md)     |
 | 300.0K                   | 60.0K / 60.0K<br>**(20% each)** | **0.9708**                                                                                           | **0.9924**                                                                                           | 0.9598                                                                                                   | **0.9153**                                                                                           | 0.8679                                                                                                   | 0.7716                                                                                                   |
+
+* 100 cases 대신 **"500 cases"** (random z latent vectors) 로 실험 시 결과
+
+| n<br>(total samples) | k<br>(top / bottom samples)     | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | sum of mean corr-coef | [passed](#1-final-report) cases |
+|----------------------|---------------------------------|---------------------------|----------------------------|---------------------------|-----------------------|---------------------------------|
+| 300.0K               | 60.0K / 60.0K<br>**(20% each)** | 0.9055                    | 0.8761                     | 0.7823                    | 2.5639                | 11 / 500 (2.2 %)                |
+| 80.0K                | 2.0K / 2.0K<br>**(2.5% each)**  |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 4.0K / 4.0K<br>**(5% each)**    |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 8.0K / 8.0K<br>**(10% each)**   |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 12.0K / 12.0K<br>**(15% each)** |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 16.0K / 16.0K<br>**(20% each)** |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 20.0K / 20.0K<br>**(25% each)** |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 24.0K / 24.0K<br>**(30% each)** |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 28.0K / 28.0K<br>**(35% each)** |                           |                            |                           |                       | / 500 (%)                       |
+| 80.0K                | 32.0K / 32.0K<br>**(40% each)** |                           |                            |                           |                       | / 500 (%)                       |
