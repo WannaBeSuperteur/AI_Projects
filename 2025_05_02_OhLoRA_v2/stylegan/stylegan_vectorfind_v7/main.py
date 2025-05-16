@@ -25,7 +25,8 @@ PDF_BATCH_SIZE = 30
 
 # StyleGAN-FineTune-v1 Generator 의 구조를 PDF 파일로 저장
 # Create Date : 2025.05.15
-# Last Update Date : -
+# Last Update Date : 2025.05.16
+# - ORIGINAL_HIDDEN_DIMS_W -> ORIGINAL_HIDDEN_DIMS_Z 로 변수명 수정
 
 # Arguments:
 # - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
