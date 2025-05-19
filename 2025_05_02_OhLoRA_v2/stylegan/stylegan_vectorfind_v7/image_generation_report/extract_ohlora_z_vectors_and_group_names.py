@@ -9,7 +9,7 @@ if __name__ == '__main__':
     test_result_csv = pd.read_csv('test_result.csv')
     ohlora_z_info_cols = ['case', 'vector_no', 'group_name', 'eyes_corr', 'mouth_corr', 'pose_corr']
     ohlora_z_group_names_df = test_result_csv.iloc[ohlora_z_idxs, :][ohlora_z_info_cols]
-    ohlora_z_group_names_df.to_csv('../ohlora_z_group_names.csv', index=False)
+    ohlora_z_group_names_df.to_csv('../ohlora_w_group_names.csv', index=False)
 
     latent_code_csv = pd.read_csv('latent_codes_all.csv')
     ohlora_z_vectors_df = latent_code_csv.iloc[ohlora_z_idxs, :]
