@@ -4,6 +4,8 @@
   * [1-1. 추가 확인 필요 사항](#1-1-추가-확인-필요-사항) 
 * [2. Grouping](#2-grouping)
 * [3. Image Generation Test Result](#3-image-generation-test-result)
+  * [3-1. 500 cases 실험 결과](#3-1-500-cases-실험-결과)
+  * [3-2. 500 cases 실험 결과 시각화](#3-2-500-cases-실험-결과-시각화)
 
 ## 1. Final Report
 
@@ -76,6 +78,8 @@
 | 100.0K                   | 15.0K / 15.0K<br>**(15% each)** | 0.9602<br>[(🔺 0.1447)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.9910<br>[(🔺 0.1735)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | **0.9717**<br>[(🔺 0.1575)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.8877<br>[(🔺 0.1664)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | **0.8695**<br>[(🔺 0.1589)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) | 0.7653<br>[(🔺 0.1858)](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md)     |
 | 300.0K                   | 60.0K / 60.0K<br>**(20% each)** | **0.9708**                                                                                           | **0.9924**                                                                                           | 0.9598                                                                                                   | **0.9153**                                                                                           | 0.8679                                                                                                   | 0.7716                                                                                                   |
 
+### 3-1. 500 cases 실험 결과
+
 * 100 cases 대신 **"500 cases"** (random z latent vectors) 로 실험 시 결과
 
 | n<br>(total samples) | k<br>(top / bottom samples)     | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | sum of mean corr-coef | [passed](#1-final-report) cases |
@@ -94,7 +98,7 @@
 | 80.0K                | 36.0K / 36.0K<br>**(45% each)** | 0.9108                    | 0.8656                     | 0.7829                    | 2.5593                | 12 / 500<br>(2.4 %)             |
 | 80.0K                | 40.0K / 40.0K<br>**(50% each)** | 0.9074                    | 0.8644                     | 0.7784                    | 2.5502                | 11 / 500<br>(2.2 %)             |
 
-----
+### 3-2. 500 cases 실험 결과 시각화
 
 **[ k percentage 에 따른 corr-coef 합산 & passed 개수 ]**
 
