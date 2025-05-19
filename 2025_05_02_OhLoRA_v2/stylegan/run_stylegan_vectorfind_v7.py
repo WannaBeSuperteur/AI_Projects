@@ -35,7 +35,9 @@ TEST_IMG_CASES_FOR_COMPARE_MAX = 2400
 TEST_IMG_CASES_NEEDED_PASS = 80
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/image_generation_report'
+OHLORA_FINAL_VECTORS_TEST_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/final_vector_test_report'
 os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
+os.makedirs(OHLORA_FINAL_VECTORS_TEST_REPORT_PATH, exist_ok=True)
 
 GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
@@ -171,26 +173,27 @@ def run_image_generation_test(finetune_v1_generator, eyes_vectors, mouth_vectors
                                    images[0])
 
 
-# Oh-LoRA 이미지 생성용 intermediate w vector 가 저장된 파일을 먼저 불러오기 시도
+# Oh-LoRA 이미지 생성용 latent z vector 가 저장된 파일을 먼저 불러오기 시도
 # Create Date : 2025.05.15
-# Last Update Date : -
+# Last Update Date : 2025.05.19
+# - 함수 이름 오류 수정
 
 # Arguments:
-# - vector_csv_path (str) : intermediate w vector 가 저장된 csv 파일의 경로
+# - vector_csv_path (str) : latent z vector 가 저장된 csv 파일의 경로
 
 # Returns:
-# - ohlora_w_vectors (NumPy array or None) : Oh-LoRA 이미지 생성용 intermediate w vector (불러오기 성공 시)
+# - ohlora_z_vectors (NumPy array or None) : Oh-LoRA 이미지 생성용 latent z vector (불러오기 성공 시)
 #                                            None (불러오기 실패 시)
 
-def load_ohlora_w_vectors(vector_csv_path):
+def load_ohlora_z_vectors(vector_csv_path):
     try:
-        ohlora_w_vectors_df = pd.read_csv(vector_csv_path)
-        ohlora_w_vectors = np.array(ohlora_w_vectors_df)
-        print(f'Oh-LoRA w vector load successful!! 👱‍♀️✨')
-        return ohlora_w_vectors
+        ohlora_z_vectors_df = pd.read_csv(vector_csv_path)
+        ohlora_z_vectors = np.array(ohlora_z_vectors_df)
+        print(f'Oh-LoRA z vector load successful!! 👱‍♀️✨')
+        return ohlora_z_vectors
 
     except Exception as e:
-        print(f'Oh-LoRA w vector load failed ({e}), using random-generated w vectors')
+        print(f'Oh-LoRA z vector load failed ({e}), using random-generated z vectors')
         return None
 
 
@@ -219,7 +222,9 @@ def load_ohlora_w_group_names(group_name_csv_path):
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.05.16
-# Last Update Date : -
+# Last Update Date : 2025.05.19
+# - 함수 이름 오류 수정 (load_ohlora_w_vectors -> load_ohlora_z_vectors)
+# - ohlora_z_vector.csv 로부터 Oh-LoRA z vector 를 불러왔을 때에는 image_generation_report 가 아닌 다른 경로에 생성 결과 저장
 
 # Arguments:
 # - finetune_v1_generator (nn.Module)         : StyleGAN-FineTune-v1 의 Generator
@@ -240,7 +245,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
 
     ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
     ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
-    ohlora_z_vectors = load_ohlora_w_vectors(vector_csv_path=ohlora_z_vector_csv_path)
+    ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
     ohlora_w_group_names = load_ohlora_w_group_names(group_name_csv_path=ohlora_w_group_name_csv_path)
 
     # label: 'eyes', 'mouth', 'pose'
@@ -344,12 +349,18 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
         if ohlora_z_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
             break
 
+    if ohlora_z_vectors is not None:
+        print('Already loaded "saved z vectors info" for Oh-LoRA face image generation.')
+        image_gen_report_path = OHLORA_FINAL_VECTORS_TEST_REPORT_PATH
+    else:
+        image_gen_report_path = IMAGE_GENERATION_REPORT_PATH
+
     # save all data
     all_data_df = pd.DataFrame(all_data_dict)
     all_data_df['sum_abs_corr'] = abs(all_data_df['eyes_corr']) + abs(all_data_df['mouth_corr']) + abs(all_data_df['pose_corr'])
     all_data_df['sum_abs_corr'] = all_data_df['sum_abs_corr'].apply(lambda x: round(x, 4))
 
-    all_data_save_path = f'{IMAGE_GENERATION_REPORT_PATH}/test_result.csv'
+    all_data_save_path = f'{image_gen_report_path}/test_result.csv'
     all_data_df.to_csv(all_data_save_path, index=False)
 
     # compute statistics
@@ -365,7 +376,7 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
                                   'passed': passed_count,
                                   'passed_ratio': passed_count / (generated_count * n_vector_cnt)})
 
-    statistics_save_path = f'{IMAGE_GENERATION_REPORT_PATH}/test_statistics.csv'
+    statistics_save_path = f'{image_gen_report_path}/test_statistics.csv'
     statistics_df.to_csv(statistics_save_path)
 
     # save latent codes (w)
@@ -373,9 +384,9 @@ def run_property_score_compare_test(finetune_v1_generator, property_score_cnn, e
     code_part2s_np = np.round(code_part2s_np[:generated_count], 4)
     code_all_np = np.concatenate([code_part1s_np, code_part2s_np], axis=1)
 
-    pd.DataFrame(code_part1s_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_part1.csv', index=False)
-    pd.DataFrame(code_part2s_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_part2.csv', index=False)
-    pd.DataFrame(code_all_np).to_csv(f'{IMAGE_GENERATION_REPORT_PATH}/latent_codes_all.csv', index=False)
+    pd.DataFrame(code_part1s_np).to_csv(f'{image_gen_report_path}/latent_codes_part1.csv', index=False)
+    pd.DataFrame(code_part2s_np).to_csv(f'{image_gen_report_path}/latent_codes_part2.csv', index=False)
+    pd.DataFrame(code_all_np).to_csv(f'{image_gen_report_path}/latent_codes_all.csv', index=False)
 
 
 # 주어진 eyes, mouth, pose 핵심 속성 값 변화 벡터를 이용하여 이미지 생성
