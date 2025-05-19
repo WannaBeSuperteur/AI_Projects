@@ -94,4 +94,20 @@
 | 80.0K                | 36.0K / 36.0K<br>**(45% each)** | 0.9108                    | 0.8656                     | 0.7829                    | 2.5593                | 12 / 500<br>(2.4 %)             |
 | 80.0K                | 40.0K / 40.0K<br>**(50% each)** | 0.9074                    | 0.8644                     | 0.7784                    | 2.5502                | 11 / 500<br>(2.2 %)             |
 
-* 실험 결과 시각화 (TBU)
+----
+
+**[ k percentage 에 따른 corr-coef 합산 & passed 개수 ]**
+
+* [passed](#1-final-report) 개수를 볼 때, 약 20% 부근의 percentage 가 최적에 근접하는 것으로 보임
+
+![image](../../../../images/250502_25.PNG)
+
+**[ k percentage 에 따른 corr-coef 추이 ]**
+
+* ```eyes``` ```mouth``` 의 경우,
+  * k percentage 20% 이하에서는, k percentage 가 **클수록 corr-coef 가 높아짐**
+  * k percentage 20% 이상에서는, k percentage 가 **커져도 corr-coef 가 큰 변화 없음**
+* ```pose``` 의 경우
+  * k percentage 가 클수록 **감소 추세** 
+
+![image](../../../../images/250502_26.PNG)
