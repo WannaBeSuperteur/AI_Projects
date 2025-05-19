@@ -14,15 +14,15 @@
 ## 1. 개요
 
 * **Oh-LoRA 👱‍♀️ (오로라) 프로젝트의 v2 버전** 에서 사용하는 **가상 인간 여성 이미지 생성 알고리즘**
-* **✅ 최종 채택** 알고리즘 : [StyleGAN-VectorFind-v6](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-vector-탐색-stylegan-vectorfind-v6)
+* **✅ 최종 채택** 알고리즘 : [StyleGAN-VectorFind-v6](#3-3-stylegan-finetune-v1-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v7)
   * StyleGAN-FineTune-v1 (**Fine-Tuned** StyleGAN, **여성 이미지 생성 확률 90% 이상**) 기반
   * StyleGAN-FineTune-v1 의 latent z vector 에서, **[핵심 속성 값](#2-핵심-속성-값) 을 변화시키는 벡터** 를 찾는 아이디어
   * [오로라 1차 프로젝트](../../2025_04_08_OhLoRA) 당시 **StyleGAN-FineTune-v2** 학습 목적으로 개발한 [Property Score CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 이 사용됨
-    * StyleGAN-VectorFind-v6 의 **Training Phase 및 Inference & Image Generation Test Phase 에서 모두** 사용됨
+    * StyleGAN-VectorFind-v7 의 **Training Phase 및 Inference & Image Generation Test Phase 에서 모두** 사용됨
 
 **전체 모델 파이프라인 그림**
 
-* StyleGAN-VectorFind-v6 을 제외한 나머지 부분은 [오로라 1차 프로젝트의 해당 부분](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md) 과 동일 (해당 문서 참고)
+* StyleGAN-VectorFind-v7 을 제외한 나머지 부분은 [오로라 1차 프로젝트의 해당 부분](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md) 과 동일 (해당 문서 참고)
 
 ![image](../../images/250502_15.PNG)
 
@@ -152,7 +152,7 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 **1. 핵심 아이디어**
 
-* [StyleGAN-VectorFind-v6](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-vector-탐색-stylegan-vectorfind-v6) 기반
+* [StyleGAN-VectorFind-v6](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-latent-z-vector-탐색-stylegan-vectorfind-v6) 기반
 * **latent vector (z)** 대신 **intermediate vector (w)** 를 이용하여 핵심 속성 값을 변화
   * [참고: z vector 대신 w vector 가 **entangle, 즉 속성 (얼굴형, 피부 색, 머리 길이 등) 간 얽힘** 이 덜 되어 있음](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md#4-1-feature-%EB%A1%9C%EC%9D%98-mapping-%EB%B9%84%EA%B5%90)
 
@@ -165,20 +165,20 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 **2. Training Phase**
 
-| 구분                                                                                                                                                                                                  | [StyleGAN-VectorFind-v6](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-vector-탐색-stylegan-vectorfind-v6) | StyleGAN-VectorFind-v7    |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|---------------------------|
-| vector 추출을 위한 생성 이미지 개수                                                                                                                                                                             | 500,000 개 (= 500K)                                                                                | 80,000 개 (= 80K)          | 
-| [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 학습 대상 | **latent z** vector                                                                               | **intermediate w** vector |
+| 구분                                                                                                                                                                                                  | [StyleGAN-VectorFind-v6](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-latent-z-vector-탐색-stylegan-vectorfind-v6) | StyleGAN-VectorFind-v7    |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------|
+| vector 추출을 위한 생성 이미지 개수                                                                                                                                                                             | 500,000 개 (= 500K)                                                                                         | 80,000 개 (= 80K)          | 
+| [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 학습 대상 | **latent z** vector                                                                                        | **intermediate w** vector |
 
 ![image](../../images/250502_21.PNG)
 
 **3. Inference (Synthesize) & Image Generation Test Phase**
 
-| 구분                | [StyleGAN-VectorFind-v6](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-vector-탐색-stylegan-vectorfind-v6) | StyleGAN-VectorFind-v7                                                                                                                                                                     |
-|-------------------|---------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| n vector 정보 저장 대상 | **latent z** vector                                                                               | **intermediate w** vector                                                                                                                                                                  | 
-| 이미지 생성용 벡터 생성 방법  | - **latent z** vector 에 각 핵심 속성 값 별 (weight) $\times$ (n vector) 을 더함                             | - latent z vector 를 Fine-Tuned StyleGAN Generator 의 **mapping network** 에 입력 → **intermediate w** vector 를 출력<br>- **intermediate w** vector 각 핵심 속성 값 별 (weight) $\times$ (n vector) 을 더함 |
-| 이미지 생성 방법         | - 이미지 생성용 **latent z** vector 를 Fine-Tuned StyleGAN Generator 의 **전체 구조** 에 직접 입력 → 이미지 생성        | - 이미지 생성용 **intermediate w** vector 를 Fine-Tuned StyleGAN Generator 의 **synthesis network** 에 입력 → 이미지 생성                                                                                  |                                                                             |
+| 구분                | [StyleGAN-VectorFind-v6](#3-2-stylegan-finetune-v1-기반-핵심-속성값-변환-latent-z-vector-탐색-stylegan-vectorfind-v6) | StyleGAN-VectorFind-v7                                                                                                                                                                     |
+|-------------------|------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| n vector 정보 저장 대상 | **latent z** vector                                                                                        | **intermediate w** vector                                                                                                                                                                  | 
+| 이미지 생성용 벡터 생성 방법  | - **latent z** vector 에 각 핵심 속성 값 별 (weight) $\times$ (n vector) 을 더함                                      | - latent z vector 를 Fine-Tuned StyleGAN Generator 의 **mapping network** 에 입력 → **intermediate w** vector 를 출력<br>- **intermediate w** vector 각 핵심 속성 값 별 (weight) $\times$ (n vector) 을 더함 |
+| 이미지 생성 방법         | - 이미지 생성용 **latent z** vector 를 Fine-Tuned StyleGAN Generator 의 **전체 구조** 에 직접 입력 → 이미지 생성                 | - 이미지 생성용 **intermediate w** vector 를 Fine-Tuned StyleGAN Generator 의 **synthesis network** 에 입력 → 이미지 생성                                                                                  |                                                                             |
 
 ![image](../../images/250502_22.PNG)
 
@@ -194,7 +194,7 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
     * StyleGAN-FineTune-v1 은 **고품질의 여성 이미지 생성 확률이 90% 이상** 으로 높지만 완벽하지는 않으므로 **고품질 & 여성** 조건으로도 필터링 필요
   * **젊어 보임** 을 판단하는 CNN 을 [성별 & 이미지 품질 판단 CNN 과 동일한 방법](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-2-cnn-model-성별-이미지-품질) 으로 개발
 
-* StyleGAN-VectorFind-v6 의 **이미지 생성 테스트 합격 기준** 변경
+* StyleGAN-VectorFind-v7 의 **이미지 생성 테스트 합격 기준** 변경
   * 현재 합격 기준 [(참고)](stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md#1-final-report) 보다 ```pose``` 의 cutoff 를 하향
   * 이미지의 **품질 (고품질) & 성별 (여성) & 일관성 (나머지 속성)** 을 합격 기준에 추가
     * 나머지 속성에 대한 **일관성** 이란, ```eyes``` ```mouth``` ```pose``` 값을 바꿔도 배경, 전반적인 얼굴 형태 등은 바뀌지 않음을 의미 
