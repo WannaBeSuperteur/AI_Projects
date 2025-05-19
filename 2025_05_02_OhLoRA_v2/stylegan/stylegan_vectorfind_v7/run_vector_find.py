@@ -440,9 +440,9 @@ def run_stylegan_vector_find(finetune_v1_generator, device):
 
     indices_info = extract_best_and_worst_k_images(property_scores)
 
-#    tsne_start_at = time.time()
-#    run_tsne(w_vectors_by_group, indices_info)
-#    print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
+    tsne_start_at = time.time()
+    run_tsne(w_vectors_by_group, indices_info)
+    print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
 
     # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 intermediate w vector 도출
     svm_classifiers = {'eyes': {}, 'mouth': {}, 'pose': {}}

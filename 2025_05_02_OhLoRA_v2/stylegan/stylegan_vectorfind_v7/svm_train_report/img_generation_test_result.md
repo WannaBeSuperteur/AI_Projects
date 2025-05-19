@@ -22,9 +22,9 @@
   * ```mouth``` : 상관계수의 절댓값이 **0.88 이상** ([v6](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) : 0.77 이상)
   * ```pose``` : 상관계수의 절댓값이 **0.92 이상** ([v6](../../stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md) : 0.80 이상)
 
-| n<br>(total samples) | k<br>(top / bottom samples) | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv) |
-|----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
-|                      |                             |                              |              |                       |                           |                            |                           |                  |
+| n<br>(total samples) | k<br>(top / bottom samples)     | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv) |
+|----------------------|---------------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
+| 80.0K                | 16.0K / 16.0K<br>**(20% each)** |                              |              |                       |                           |                            |                           |                  |
 
 ### 1-1. 추가 확인 필요 사항
 
