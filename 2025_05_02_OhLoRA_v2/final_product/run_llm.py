@@ -55,8 +55,6 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         is_too_many_blanks = '     ' in llm_answer
         is_low_quality = is_unnecessary_quote or is_unnecessary_mark or is_too_many_blanks
 
-        print(trial_count, llm_answer)
-
         if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
             return llm_answer.replace('(답변 종료)', '')
 
