@@ -7,7 +7,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
 from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_memory_list, summarize_llm_answer,
-                     decide_property_scores)
+                     decide_property_score_texts, decide_property_scores)
 from run_display import generate_ohlora_image
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGeneratorForV6
@@ -120,7 +120,6 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
                                          ohlora_llm_tokenizer=ohlora_llms_tokenizer['output_message'],
                                          final_ohlora_input=final_ohlora_input)
         llm_answer_cleaned = clean_llm_answer(llm_answer)
-        print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
 
         # update memory
         memory_list = parse_memory(memory_llm=ohlora_llms['memory'],
@@ -140,11 +139,14 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
             summary = updated_summary
 
         # generate Oh-LoRA image
-        eyes_score, mouth_score, pose_score = decide_property_scores(
+        eyes_score_text, mouth_score_text, pose_score_text = decide_property_score_texts(
             eyes_mouth_pose_llm=ohlora_llms['eyes_mouth_pose'],
-            eyes_mouth_pose_llm_tokenizer=ohlora_llms_tokenizer['eyes_mouth_pose_llm_tokenizer'],
+            eyes_mouth_pose_llm_tokenizer=ohlora_llms_tokenizer['eyes_mouth_pose'],
             llm_answer_cleaned=llm_answer_cleaned)
 
+        eyes_score, mouth_score, pose_score = decide_property_scores(eyes_score_text, mouth_score_text, pose_score_text)
+
+        print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
         generate_ohlora_image(stylegan_generator, eyes_score, mouth_score, pose_score)
 
 
