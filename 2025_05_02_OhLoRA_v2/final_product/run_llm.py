@@ -204,7 +204,47 @@ def save_memory_list(memory_list):
 # - llm_summary (str) : 직전 대화 내용에 대한 요약
 
 def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input, llm_answer_cleaned):
-    raise NotImplementedError
+    trial_count = 0
+    max_trials = 5
+
+    # tokenize final Oh-LoRA input
+    final_summary_input = final_ohlora_input + ' (오로라 답변)' + llm_answer_cleaned + ' (답변 시작)'
+
+    inputs = summary_llm_tokenizer(final_summary_input, return_tensors='pt')
+    inputs = {'input_ids': inputs['input_ids'].to(summary_llm.device),
+              'attention_mask': inputs['attention_mask'].to(summary_llm.device)}
+
+    # for stopping criteria
+    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(summary_llm.device)  # '(답변 종료)'
+    stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
+
+    while trial_count < max_trials:
+        outputs = summary_llm.generate(**inputs,
+                                       max_length=192,
+                                       do_sample=True,
+                                       temperature=0.6,
+                                       stopping_criteria=stopping_criteria)
+
+        llm_answer = summary_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        llm_answer = llm_answer[len(final_summary_input):]
+        llm_answer = llm_answer.replace('\u200b', '').replace('\xa0', '')  # zwsp, nbsp (폭 없는 공백, 줄 바꿈 없는 공백) 제거
+        llm_answer = llm_answer.strip()
+
+        trial_count += 1
+
+        # check LLM answer and return or retry
+        is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
+        too_many_tokens = len(outputs[0]) >= 187
+        is_uncleaned = is_answer_end_mark or too_many_tokens
+
+        is_unnecessary_mark = '�' in llm_answer
+        is_low_quality = len(llm_answer.replace('(답변 종료)', '')) < 2 or is_unnecessary_mark
+
+        if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
+            return llm_answer.replace('(답변 종료)', '')
+
+    return None
 
 
 # Oh-LoRA (오로라) 의 답변에 따라 눈을 뜬 정도 (eyes), 입을 벌린 정도 (mouth), 고개 돌림 (pose) 점수 산출

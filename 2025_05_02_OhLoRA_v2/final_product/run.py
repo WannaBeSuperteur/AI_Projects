@@ -115,9 +115,6 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
         else:
             final_ohlora_input = best_memory_item + ' ' + user_prompt
 
-        print('best_memory_item :', best_memory_item)
-        print('final_ohlora_input :', final_ohlora_input)
-
         # generate Oh-LoRA answer and post-process
         llm_answer = generate_llm_answer(ohlora_llm=ohlora_llms['output_message'],
                                          ohlora_llm_tokenizer=ohlora_llms_tokenizer['output_message'],
@@ -134,10 +131,13 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
             save_memory_list(memory_list)
 
         # update summary
-        summary = summarize_llm_answer(summary_llm=ohlora_llms['summary'],
-                                       summary_llm_tokenizer=ohlora_llms_tokenizer['summary'],
-                                       final_ohlora_input=final_ohlora_input,
-                                       llm_answer_cleaned=llm_answer_cleaned)
+        updated_summary = summarize_llm_answer(summary_llm=ohlora_llms['summary'],
+                                               summary_llm_tokenizer=ohlora_llms_tokenizer['summary'],
+                                               final_ohlora_input=final_ohlora_input,
+                                               llm_answer_cleaned=llm_answer_cleaned)
+
+        if updated_summary is not None:
+            summary = updated_summary
 
         # generate Oh-LoRA image
         eyes_score, mouth_score, pose_score = decide_property_scores(
