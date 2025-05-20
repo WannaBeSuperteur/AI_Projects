@@ -5,14 +5,13 @@
 
 # Arguments :
 # - ohlora_llm           (LLM)       : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned)
-# - ohlora_llm_tokenizer (tokenizer) : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned) 에 대한 tokenizer
-# - llm_summary          (str)       : 직전 대화 내용에 대한 요약
+# - ohlora_llm_tokenizer (tokenizer) : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned) 에 대한 tokenizer=
 # - final_ohlora_input   (str)       : 오로라👱‍♀️ 에게 최종적으로 입력되는 메시지 (경우에 따라 summary, memory text 포함)
 
 # Returns :
 # - ohlora_answer (str) : 오로라👱‍♀️ 가 생성한 답변
 
-def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, llm_summary, final_ohlora_input):
+def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
     raise NotImplementedError
 
 
@@ -26,7 +25,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, llm_summary, final_ohl
 # Returns :
 # - llm_answer_cleaned (str) : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
 
-def clean_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
+def clean_llm_answer(ohlora_answer):
     raise NotImplementedError
 
 
@@ -70,7 +69,7 @@ def save_memory_list(memory_list):
 # Returns :
 # - llm_summary (str) : 직전 대화 내용에 대한 요약
 
-def summary_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input, llm_answer_cleaned):
+def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input, llm_answer_cleaned):
     raise NotImplementedError
 
 

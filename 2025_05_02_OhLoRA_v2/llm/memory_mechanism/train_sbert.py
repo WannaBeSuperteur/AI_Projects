@@ -5,7 +5,10 @@ from sentence_transformers.readers import InputExample
 from torch.utils.data import Dataset, DataLoader, random_split
 import os
 
-from memory_mechanism.load_sbert_model import load_pretrained_sbert_model
+try:
+    from memory_mechanism.load_sbert_model import load_pretrained_sbert_model
+except:
+    from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
 
 
 # remove warning "UserWarning: PyTorch is not compiled with NCCL support"

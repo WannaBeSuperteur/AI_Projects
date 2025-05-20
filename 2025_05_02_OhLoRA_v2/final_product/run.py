@@ -1,6 +1,10 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_memory_list, summarize_llm_answer,
+                     decide_property_scores)
+from run_display import generate_ohlora_image
+
 import os
 import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -8,6 +12,7 @@ sys.path.append(PROJECT_DIR_PATH)
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGeneratorForV6
 from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
+from llm.run_memory_mechanism import pick_best_memory_item
 
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 Generator, 4 LLMs (Polyglot-Ko 1.3B Fine-Tuned), S-BERT (RoBERTa-based)
@@ -85,8 +90,53 @@ def load_models():
 # - Oh-LoRA 답변을 parsing 하여 llm/memory_mechanism/saved_memory/ohlora_memory.txt 경로에 메모리 저장
 # - S-BERT 모델을 이용하여, RAG 와 유사한 방식으로 해당 파일에서 사용자 프롬프트에 가장 적합한 메모리 정보를 찾아서 최종 LLM 입력에 추가
 
-def run_ohlora(stylegan_generator, ohlora_llm, ohlora_llm_tokenizer, sbert_model):
-    raise NotImplementedError
+def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model):
+    summary = ''
+
+    while True:
+        user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
+        best_memory_item = pick_best_memory_item(sbert_model,
+                                                 user_prompt,
+                                                 memory_file_name='ohlora_memory.txt',
+                                                 verbose=True)
+
+        if best_memory_item == '':
+            if summary == '':
+                final_ohlora_input = user_prompt
+            else:
+                final_ohlora_input = '(오로라 답변 요약) ' + summary + ' (사용자 질문) ' + user_prompt
+        else:
+            final_ohlora_input = best_memory_item + ' ' + user_prompt
+
+        print('best_memory_item :', best_memory_item)
+        print('final_ohlora_input :', final_ohlora_input)
+
+        # generate Oh-LoRA answer and post-process
+        llm_answer = generate_llm_answer(ohlora_llm=ohlora_llms['output_message'],
+                                         ohlora_llm_tokenizer=ohlora_llms_tokenizer['output_message'],
+                                         final_ohlora_input=final_ohlora_input)
+        llm_answer_cleaned = clean_llm_answer(llm_answer)
+        print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
+
+        # update memory
+        memory_list = parse_memory(memory_llm=ohlora_llms['memory'],
+                                   memory_llm_tokenizer=ohlora_llms_tokenizer['memory'],
+                                   final_ohlora_input=final_ohlora_input)
+        save_memory_list(memory_list)
+
+        # update summary
+        summary = summarize_llm_answer(summary_llm=ohlora_llms['summary'],
+                                       summary_llm_tokenizer=ohlora_llms_tokenizer['summary'],
+                                       final_ohlora_input=final_ohlora_input,
+                                       llm_answer_cleaned=llm_answer_cleaned)
+
+        # generate Oh-LoRA image
+        eyes_score, mouth_score, pose_score = decide_property_scores(
+            eyes_mouth_pose_llm=ohlora_llms['eyes_mouth_pose'],
+            eyes_mouth_pose_llm_tokenizer=ohlora_llms_tokenizer['eyes_mouth_pose_llm_tokenizer'],
+            llm_answer_cleaned=llm_answer_cleaned)
+
+        generate_ohlora_image(stylegan_generator, eyes_score, mouth_score, pose_score)
 
 
 if __name__ == '__main__':
