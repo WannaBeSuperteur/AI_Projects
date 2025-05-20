@@ -4,6 +4,7 @@ from transformers import StoppingCriteriaList
 from llm.fine_tuning.inference import StopOnTokens
 
 import os
+import random
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
@@ -318,9 +319,48 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
 # - pose_score_text  (str) : 고개 돌림 (pose) 을 나타내는 텍스트
 
 # Returns :
-# - eyes_score_score  (float) : 눈을 뜬 정도 (eyes) 를 나타내는 점수 (w vector 에 eyes change vector 를 더할 가중치)
-# - mouth_score_score (float) : 입을 벌린 정도 (mouth) 를 나타내는 점수 (w vector 에 mouth change vector 를 더할 가중치)
-# - pose_score_score  (float) : 고개 돌림 (pose) 을 나타내는 점수 (w vector 에 pose change vector 를 더할 가중치)
+# - eyes_score  (float) : 눈을 뜬 정도 (eyes) 를 나타내는 점수 (w vector 에 eyes change vector 를 더할 가중치)
+# - mouth_score (float) : 입을 벌린 정도 (mouth) 를 나타내는 점수 (w vector 에 mouth change vector 를 더할 가중치)
+# - pose_score  (float) : 고개 돌림 (pose) 을 나타내는 점수 (w vector 에 pose change vector 를 더할 가중치)
 
 def decide_property_scores(eyes_score_text, mouth_score_text, pose_score_text):
-    raise NotImplementedError
+
+    # eyes score mapping
+    if eyes_score_text == '작게':
+        eyes_score = -0.2 + 0.3 * random.random()
+
+    elif eyes_score_text == '보통':
+        eyes_score = 0.3 + 0.3 * random.random()
+
+    elif eyes_score_text == '크게':
+        eyes_score = 0.8 + 0.3 * random.random()
+
+    else:  # 아주 크게
+        eyes_score = 1.1 + 0.1 * random.random()
+
+    # mouth score mapping
+    if mouth_score_text == '보통':
+        mouth_score = 0.4 + 0.4 * random.random()
+
+    elif mouth_score_text == '크게':
+        mouth_score = 1.0 + 0.4 * random.random()
+
+    else:  # 아주 크게
+        mouth_score = 1.4 + 0.2 * random.random()
+
+    # pose score mapping
+    if pose_score_text == '없음':
+        pose_score = -0.6 + 0.9 * random.random()
+
+    elif mouth_score_text == '보통':
+        pose_score = 0.8 + 0.7 * random.random()
+
+    else:  # 많이
+        pose_score = 1.5 + 0.3 * random.random()
+
+    # 실제 w vector 에 더해지는 가중치는 "값이 작을수록 (음수 등)" 눈을 크게 뜨고, 입을 크게 벌리고, 고개를 많이 돌림
+    eyes_score = (-1.0) * eyes_score
+    mouth_score = (-1.0) * mouth_score
+    pose_score = (-1.0) * pose_score
+
+    return eyes_score, mouth_score, pose_score
