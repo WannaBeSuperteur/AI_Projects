@@ -1,6 +1,8 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+import argparse
+import random
 import os
 import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -8,11 +10,22 @@ sys.path.append(PROJECT_DIR_PATH)
 
 from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_memory_list, summarize_llm_answer,
                      decide_property_score_texts, decide_property_scores)
-from run_display import generate_ohlora_image
+from run_display import generate_and_show_ohlora_image
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGeneratorForV6
+from stylegan.run_stylegan_vectorfind_v7 import (load_ohlora_z_vectors,
+                                                 load_ohlora_w_group_names,
+                                                 get_property_change_vectors)
+
 from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
 from llm.run_memory_mechanism import pick_best_memory_item
+
+
+ohlora_z_vector = None
+eyes_vector, mouth_vector, pose_vector = None, None, None
+passed_ohlora_nos = [127, 672, 709, 931, 1017, 1073, 1162, 1211, 1277, 1351,
+                     1359, 1409, 1591, 1646, 1782, 1788, 1819, 1836, 1905, 1918,
+                     2054, 2089, 2100, 2111, 2137, 2185, 2240]
 
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 Generator, 4 LLMs (Polyglot-Ko 1.3B Fine-Tuned), S-BERT (RoBERTa-based)
@@ -91,6 +104,7 @@ def load_models():
 # - S-BERT 모델을 이용하여, RAG 와 유사한 방식으로 해당 파일에서 사용자 프롬프트에 가장 적합한 메모리 정보를 찾아서 최종 LLM 입력에 추가
 
 def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model):
+    global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     summary = ''
 
     while True:
@@ -147,14 +161,79 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
         eyes_score, mouth_score, pose_score = decide_property_scores(eyes_score_text, mouth_score_text, pose_score_text)
 
         print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
-        generate_ohlora_image(stylegan_generator, eyes_score, mouth_score, pose_score)
+        generate_and_show_ohlora_image(stylegan_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector,
+                                       eyes_score, mouth_score, pose_score)
+
+
+# Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
+# Create Date : 2025.05.20
+# Last Update Date : -
+
+# Arguments:
+# - ohlora_no (int or None) : 오로라 얼굴 생성용 latent z vector 의 번호 (index, case No.)
+#                             참고: 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md 파일
+
+# Returns:
+# - ohlora_z_vector (NumPy array) : Oh-LoRA 이미지 생성용 latent z vector, dim = (512 + 3,)
+# - eyes_vector     (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터, dim = (512,)
+# - mouth_vector    (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터, dim = (512,)
+# - pose_vector     (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터, dim = (512,)
+
+def get_vectors(ohlora_no):
+    global passed_ohlora_nos
+
+    # find index of Oh-LoRA vectors
+    ohlora_idx = None
+
+    if ohlora_no is not None:
+        for idx, passed_ohlora_no in enumerate(passed_ohlora_nos):
+            if ohlora_no == passed_ohlora_no:
+                ohlora_idx = idx
+                break
+
+    if ohlora_idx is None:
+        ohlora_idx = random.randint(0, len(passed_ohlora_nos) - 1)
+        print(f'Oh-LoRA face vector selected randomly : case No. {passed_ohlora_nos[ohlora_idx]}')
+
+    # get Oh-LoRA vectors
+    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+
+    ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
+    ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
+    ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
+    ohlora_w_group_names = load_ohlora_w_group_names(group_name_csv_path=ohlora_w_group_name_csv_path)
+
+    ohlora_z_vector = ohlora_z_vectors[ohlora_idx]
+    ohlora_w_group_name = ohlora_w_group_names[ohlora_idx]
+
+    eyes_vector = eyes_vectors[ohlora_w_group_name][0]
+    mouth_vector = mouth_vectors[ohlora_w_group_name][0]
+    pose_vector = pose_vectors[ohlora_w_group_name][0]
+
+    return ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
 
 
 if __name__ == '__main__':
 
+    # parse user arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-ohlora_no',
+                        help="latent z vector ID for Oh-LoRA face image generation (index, case No.)",
+                        default='none')
+    args = parser.parse_args()
+
+    ohlora_no = args.ohlora_no
+    try:
+        ohlora_no = int(ohlora_no)
+    except:
+        ohlora_no = None
+
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device : {device}')
+
+    # get Oh-LoRA vectors
+    ohlora_z_vector, eyes_vector, mouth_vector, pose_vector = get_vectors(ohlora_no)
 
     # load model
     stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model = load_models()
