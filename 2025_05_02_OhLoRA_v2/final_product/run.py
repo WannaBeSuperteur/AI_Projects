@@ -3,11 +3,13 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 import random
 import math
+import numpy as np
 
 import argparse
 import threading
 import os
 import sys
+import time
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
@@ -29,7 +31,10 @@ EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE = 0.2, 1.0, 0.0
 
 ohlora_z_vector = None
 eyes_vector, mouth_vector, pose_vector = None, None, None
-status = 'running'
+eyes_current_score, mouth_current_score, pose_current_score = EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE
+
+status = 'waiting'
+last_eyes_close, last_pose_right, last_answer_generate = None, None, time.time()
 
 passed_ohlora_nos = [127, 672, 709, 931, 1017, 1073, 1162, 1211, 1277, 1351,
                      1359, 1409, 1591, 1646, 1782, 1788, 1819, 1836, 1905, 1918,
@@ -106,29 +111,84 @@ def load_models():
 # Create Date : 2025.05.20
 # Last Update Date : -
 
+# Arguments:
+# - eyes_score  (float) : 눈을 뜬 정도 (eyes) 의 속성 값 점수 (= 속성 값 변화 벡터를 더하는 가중치)
+# - mouth_score (float) : 입을 벌린 정도 (mouth) 의 속성 값 점수 (= 속성 값 변화 벡터를 더하는 가중치)
+# - pose_score  (float) : 고개 돌림 (pose) 의 속성 값 점수 (= 속성 값 변화 벡터를 더하는 가중치)
+
 def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
     global eyes_vector_queue, mouth_vector_queue, pose_vector_queue
+    global eyes_current_score, mouth_current_score, pose_current_score
 
     for cosine_line_value in cosine_line_values:
-        eyes_vector_queue.append(EYES_BASE_SCORE + (eyes_score - EYES_BASE_SCORE) * cosine_line_value)
-        mouth_vector_queue.append(MOUTH_BASE_SCORE + (mouth_score - MOUTH_BASE_SCORE) * cosine_line_value)
-        pose_vector_queue.append(POSE_BASE_SCORE + (pose_score - POSE_BASE_SCORE) * cosine_line_value)
+        eyes_vector_queue.append(eyes_current_score + (eyes_score - eyes_current_score) * cosine_line_value)
+        mouth_vector_queue.append(mouth_current_score + (mouth_score - mouth_current_score) * cosine_line_value)
+        pose_vector_queue.append(pose_current_score + (pose_score - pose_current_score) * cosine_line_value)
 
 
 # Oh-LoRA (오로라) 실시간 이미지 생성 핸들링
 # Create Date : 2025.05.20
 # Last Update Date : -
 
+# Arguments:
+# - 없음
+
 def realtime_ohlora_generate():
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     global eyes_vector_queue, mouth_vector_queue, pose_vector_queue
-    global status
+    global eyes_current_score, mouth_current_score, pose_current_score
+    global status, last_eyes_close, last_pose_right, last_answer_generate
 
-    while status == 'running':
-        eyes_score = eyes_vector_queue.pop(-1) if len(eyes_vector_queue) > 0 else EYES_BASE_SCORE
-        mouth_score = mouth_vector_queue.pop(-1) if len(mouth_vector_queue) > 0 else MOUTH_BASE_SCORE
-        pose_score = pose_vector_queue.pop(-1) if len(pose_vector_queue) > 0 else POSE_BASE_SCORE
+    while status == 'waiting' or status == 'generating':
+        eyes_score = eyes_vector_queue.pop(-1) if len(eyes_vector_queue) > 0 else eyes_current_score
+        mouth_score = mouth_vector_queue.pop(-1) if len(mouth_vector_queue) > 0 else mouth_current_score
+        pose_score = pose_vector_queue.pop(-1) if len(pose_vector_queue) > 0 else pose_current_score
 
+        # random very-small eyes, mouth, pose change
+        eyes_current_score = eyes_current_score + 0.07 * random.random() - 0.035
+        eyes_current_score = np.clip(eyes_current_score, EYES_BASE_SCORE - 0.25, EYES_BASE_SCORE + 0.25)
+
+        mouth_current_score = mouth_current_score + 0.05 * random.random() - 0.025
+        mouth_current_score = np.clip(mouth_current_score, MOUTH_BASE_SCORE - 0.15, MOUTH_BASE_SCORE + 0.15)
+
+        pose_current_score = pose_current_score + 0.09 * random.random() - 0.045
+        pose_current_score = np.clip(pose_current_score, POSE_BASE_SCORE - 0.4, POSE_BASE_SCORE + 0.4)
+
+        # random eyes close & pose change
+        if (time.time() - last_answer_generate >= 5.0 and
+                (last_eyes_close is None or time.time() - last_eyes_close >= 1.0)):
+
+            if random.random() < 0.025:
+                eyes_magnitude = 1.1 + random.random() * 0.4
+                r = random.random()
+
+                if r < 0.4:
+                    eyes_change_np = np.array([0.4, 0.6, 0.8, 0.8, 0.6, 0.4]) * eyes_magnitude
+                elif r < 0.7:
+                    eyes_change_np = np.array([0.4, 0.6, 0.8, 0.6, 0.4]) * eyes_magnitude
+                else:
+                    eyes_change_np = np.array([0.4, 0.7, 0.7, 0.4]) * eyes_magnitude
+
+                eyes_change_list = list(eyes_change_np)
+                eyes_vector_queue += eyes_change_list
+
+                last_eyes_close = time.time()
+
+#        if ((status == 'waiting' and time.time() - last_answer_generate >= 10.0) and
+#                (last_pose_right is None or time.time() - last_pose_right >= 4.0)):
+#
+#            if random.random() < 0.02:
+#                pose_magnitude = 1.1 + random.random() * 0.6
+#                pose_change_np = np.array([-0.3, -0.45, -0.6, -0.7, -0.8, -0.85,
+#                                           -0.9, -0.95, -1.0, -1.04, -1.07, -1.08,
+#                                           -1.08, -1.07, -1.04, -1.0, -0.95, -0.9,
+#                                           -0.85, -0.8, -0.7, -0.6, -0.45, -0.3]) * pose_magnitude
+#                pose_change_list = list(pose_change_np)
+#                pose_vector_queue += pose_change_list
+#
+#                last_pose_right = time.time()
+
+        # generate Oh-LoRA image
         generate_and_show_ohlora_image(stylegan_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector,
                                        eyes_score, mouth_score, pose_score)
 
@@ -153,6 +213,7 @@ def realtime_ohlora_generate():
 
 def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
+    global status, last_answer_generate
 
     summary = ''
 
@@ -161,6 +222,7 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
 
     while True:
         user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
+        status = 'generating'
 
         # check user prompt length
         encoded_user_prompt = ohlora_llms_tokenizer['output_message'].encode(user_prompt)
@@ -214,6 +276,8 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
 
         print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
         handle_ohlora_answered(eyes_score, mouth_score, pose_score)
+        status = 'waiting'
+        last_answer_generate = time.time()
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
@@ -293,6 +357,11 @@ if __name__ == '__main__':
     # run Oh-LoRA (오로라)
     try:
         run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model)
+
     except KeyboardInterrupt:
-        print('Oh-LoRA Finished. Good bye! 👱‍♀️👋')
+        print('[SYSTEM MESSAGE] 오로라와의 대화가 끝났습니다. 👱‍♀️👋 다음에도 오로라와 함께해 주실 거죠?')
+        status = 'finished'
+
+    except Exception as e:
+        print(f'error : {e}')
         status = 'finished'
