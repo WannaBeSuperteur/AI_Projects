@@ -129,7 +129,9 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
         memory_list = parse_memory(memory_llm=ohlora_llms['memory'],
                                    memory_llm_tokenizer=ohlora_llms_tokenizer['memory'],
                                    final_ohlora_input=final_ohlora_input)
-        save_memory_list(memory_list)
+
+        if memory_list is not None:
+            save_memory_list(memory_list)
 
         # update summary
         summary = summarize_llm_answer(summary_llm=ohlora_llms['summary'],
