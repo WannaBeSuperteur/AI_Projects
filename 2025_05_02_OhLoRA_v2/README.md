@@ -85,7 +85,7 @@
 | 📃 문서화   | 프로젝트 개요 및 최초 일정 작성                              | 05.02 금 (1d)           |                         |                                                                   | ✅  |
 | ⚙ 기능 개선  | 실시간 표정 변화 이미지 출력 (생성) 적용                        | 05.15 목 (1d)           | ```P003-015-Realtime``` |                                                                   | ✅  |
 | 🔍 최종 검토 | 최종 사용자 실행용 코드 작성                                | 05.20 화 (1d)           | ```P003-017-ForUser```  | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/9) | 💨 |
-| ⚙ 기능 개선  | 최종 사용자 실행용 코드 작성 시, 답변 생성 시도 및 성공/실패 처리 메커니즘 개선 | 05.20 화 (1d)           | ```P003-017-ForUser```  | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/9) | 💨 |
+| ⚙ 기능 개선  | 최종 사용자 실행용 코드 작성 시, 답변 생성 시도 및 성공/실패 처리 메커니즘 개선 | 05.20 화 (1d)           | ```P003-017-ForUser```  | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/9) | ✅  |
 | 🔍 최종 검토 | 최종 QA (버그 유무 검사)                                | 05.20 화 (1d)           |                         |                                                                   | ⬜  |
 | 📃 문서화   | 데이터셋 및 모델 HuggingFace 에 등록                      | 05.20 화 - 05.21 수 (2d) |                         |                                                                   | ⬜  |
 | 📃 문서화   | 프로젝트 문서 정리 및 마무리                                | 05.20 화 - 05.21 수 (2d) |                         |                                                                   | ⬜  |
