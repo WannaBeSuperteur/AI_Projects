@@ -22,7 +22,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
     trial_count = 0
-    max_trials = 30
+    max_trials = 20
 
     # tokenize final Oh-LoRA input
     final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
@@ -45,6 +45,10 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         llm_answer = ohlora_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
         llm_answer = llm_answer[len(final_ohlora_input_):]
         llm_answer = llm_answer.replace('\u200b', '').replace('\xa0', '')  # zwsp, nbsp (폭 없는 공백, 줄 바꿈 없는 공백) 제거
+
+        if '[' in llm_answer and ']' in llm_answer:
+            llm_answer = llm_answer.split(']')[1]
+
         trial_count += 1
 
         # check LLM answer and return or retry
@@ -103,7 +107,7 @@ def clean_llm_answer(ohlora_answer):
 
 def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
     trial_count = 0
-    max_trials = 5
+    max_trials = 3
 
     # tokenize final Oh-LoRA input
     final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
@@ -264,7 +268,7 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
 
 def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokenizer, llm_answer_cleaned):
     trial_count = 0
-    max_trials = 5
+    max_trials = 3
 
     # tokenize final Oh-LoRA input
     llm_answer_cleaned_ = llm_answer_cleaned + ' (답변 시작)'
