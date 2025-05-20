@@ -126,7 +126,7 @@ def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
         pose_vector_queue.append(pose_current_score + (pose_score - pose_current_score) * cosine_line_value)
 
 
-# Oh-LoRA (오로라) 실시간 이미지 생성 핸들링
+# Oh-LoRA (오로라) 실시간 이미지 생성 핸들링 (+ 장시간 waiting 시 강제 종료 처리)
 # Create Date : 2025.05.20
 # Last Update Date : -
 
@@ -154,7 +154,7 @@ def realtime_ohlora_generate():
         pose_current_score = pose_current_score + 0.09 * random.random() - 0.045
         pose_current_score = np.clip(pose_current_score, POSE_BASE_SCORE - 0.4, POSE_BASE_SCORE + 0.4)
 
-        # random eyes close & pose change
+        # random eyes open/close change
         if (time.time() - last_answer_generate >= 5.0 and
                 (last_eyes_close is None or time.time() - last_eyes_close >= 1.0)):
 
@@ -174,19 +174,15 @@ def realtime_ohlora_generate():
 
                 last_eyes_close = time.time()
 
-#        if ((status == 'waiting' and time.time() - last_answer_generate >= 10.0) and
-#                (last_pose_right is None or time.time() - last_pose_right >= 4.0)):
-#
-#            if random.random() < 0.02:
-#                pose_magnitude = 1.1 + random.random() * 0.6
-#                pose_change_np = np.array([-0.3, -0.45, -0.6, -0.7, -0.8, -0.85,
-#                                           -0.9, -0.95, -1.0, -1.04, -1.07, -1.08,
-#                                           -1.08, -1.07, -1.04, -1.0, -0.95, -0.9,
-#                                           -0.85, -0.8, -0.7, -0.6, -0.45, -0.3]) * pose_magnitude
-#                pose_change_list = list(pose_change_np)
-#                pose_vector_queue += pose_change_list
-#
-#                last_pose_right = time.time()
+        # handling long time waiting
+        if status == 'waiting' and time.time() - last_answer_generate >= 60.0:
+            if random.random() < 0.002:
+                status = 'finished'
+
+                ohlora_waiting_time = time.time() - last_answer_generate
+                print(f'[SYSTEM MESSAGE] 오로라👱‍♀️ 의 마지막 답변 후 {int(ohlora_waiting_time)} 초 동안 '
+                      f'사용자 메시지 입력이 없어서, 오로라👱‍♀️ 가 대화를 강제 종료했습니다.')
+                raise Exception('finished_by_ohlora')
 
         # generate Oh-LoRA image
         generate_and_show_ohlora_image(stylegan_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector,
@@ -216,6 +212,7 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
     global status, last_answer_generate
 
     summary = ''
+    last_answer_generate = time.time()
 
     thread = threading.Thread(target=realtime_ohlora_generate)
     thread.start()
