@@ -104,7 +104,7 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
         best_memory_item = pick_best_memory_item(sbert_model,
                                                  user_prompt,
                                                  memory_file_name='ohlora_memory.txt',
-                                                 verbose=True)
+                                                 verbose=False)
 
         if best_memory_item == '':
             if summary == '':

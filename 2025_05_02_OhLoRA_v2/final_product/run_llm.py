@@ -72,7 +72,17 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
 # - llm_answer_cleaned (str) : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
 
 def clean_llm_answer(ohlora_answer):
-    return ohlora_answer  # cleaning not needed
+    llm_answer = ohlora_answer
+
+    if llm_answer.startswith(' - ') or llm_answer.startswith('- '):
+        llm_answer = llm_answer[2:]
+
+    arrow_marks = ['➤', '⊙', '➥', '⇨', '➯', '⑤', '⑥']
+    for arrow_mark in arrow_marks:
+        llm_answer = llm_answer.replace(arrow_mark, '')
+
+    llm_answer_cleaned = llm_answer
+    return llm_answer_cleaned
 
 
 # Oh-LoRA (오로라) 의 생성된 답변으로부터 memory 정보를 parsing
