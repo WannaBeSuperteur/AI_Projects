@@ -95,10 +95,11 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
 
     while True:
         user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
-        encoded_user_prompt = ohlora_llms_tokenizer['output_message'].encode(user_prompt)
 
+        # check user prompt length
+        encoded_user_prompt = ohlora_llms_tokenizer['output_message'].encode(user_prompt)
         if len(encoded_user_prompt) > 48:
-            print('[SYSTEM MESSAGE] 너무 긴 질문은 오로라👱‍♀️ 에게 부담 돼요! 😢')
+            print('[SYSTEM MESSAGE] 너무 긴 질문은 오로라👱‍♀️ 에게 부담 돼요! 그런 질문은 오로라의 절친 혜나 🌹 (LLM Hyena) 에게 해 주세요! 😢')
             continue
 
         best_memory_item = pick_best_memory_item(sbert_model,
