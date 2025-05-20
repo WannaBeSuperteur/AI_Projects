@@ -10,7 +10,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # Oh-LoRA (오로라) 의 답변 생성
 # Create Date : 2025.05.20
-# Last Update Date : -
+# Last Update Date : 2025.05.20
+# - '(사용자 답변 요약)' 과 같은 메시지가 답변에 포함 시 실패 처리
 
 # Arguments :
 # - ohlora_llm           (LLM)       : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -54,9 +55,12 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         # check LLM answer and return or retry
         is_empty = llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') == ''
         is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
+        is_other_mark = '(사용자' in llm_answer.replace(' ', '') or '요약)' in llm_answer.replace(' ', '')
+        is_polluted = is_answer_end_mark or is_other_mark
+
         starts_with_nonblank_in_early_try = trial_count < 3 and not llm_answer.startswith(' ')
         too_many_tokens = len(outputs[0]) >= 91
-        is_uncleaned = is_empty or is_answer_end_mark or starts_with_nonblank_in_early_try or too_many_tokens
+        is_uncleaned = is_empty or is_polluted or starts_with_nonblank_in_early_try or too_many_tokens
 
         is_unnecessary_quote = '"' in llm_answer or '”' in llm_answer or '“' in llm_answer or '’' in llm_answer
         is_unnecessary_mark = '�' in llm_answer
@@ -95,7 +99,8 @@ def clean_llm_answer(ohlora_answer):
 
 # Oh-LoRA (오로라) 의 생성된 답변으로부터 memory 정보를 parsing
 # Create Date : 2025.05.20
-# Last Update Date : -
+# Last Update Date : 2025.05.20
+# - memory 정보 parsing 시, key 또는 value 가 공백인 경우 실패 처리
 
 # Arguments :
 # - memory_llm           (LLM)       : memory LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -147,9 +152,18 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
         # check LLM answer and return or retry
         is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
         too_many_tokens = len(outputs[0]) >= 91
+
         is_in_format = llm_answer[0] == '[' and llm_answer[-1] == ']' and ': ' in llm_answer
         is_in_format_cnts = llm_answer.count('[') == 1 and llm_answer.count(']') == 1 and llm_answer.count(':') == 1
-        is_uncleaned = is_answer_end_mark or too_many_tokens or not (is_in_format and is_in_format_cnts)
+
+        if is_in_format and is_in_format_cnts:
+            is_key_nonempty = len(llm_answer.split('[')[1].split(':')[0].replace(' ', '')) >= 1
+            is_value_nonempty = len(llm_answer.split(':')[1].split(']')[0].replace(' ', '')) >= 1
+            is_format_correct = is_key_nonempty and is_value_nonempty
+        else:
+            is_format_correct = False
+
+        is_uncleaned = is_answer_end_mark or too_many_tokens or not is_format_correct
 
         is_unnecessary_mark = '�' in llm_answer
         is_too_many_blanks = '     ' in llm_answer
