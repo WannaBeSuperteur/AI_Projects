@@ -29,9 +29,9 @@ IMAGE_RESOLUTION = 256
 # Arguments:
 # - vectorfind_v7_generator (nn.Module)   : StyleGAN-VectorFind-v7 의 Generator
 # - ohlora_z_vector         (NumPy array) : Oh-LoRA 이미지 생성용 latent z vector, dim = (512 + 3,)
-# - eyes_vector             (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터, dim = (512 + 3,)
-# - mouth_vector            (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터, dim = (512 + 3,)
-# - pose_vector             (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터, dim = (512 + 3,)
+# - eyes_vector             (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터, dim = (512,)
+# - mouth_vector            (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터, dim = (512,)
+# - pose_vector             (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터, dim = (512,)
 
 def display_realtime_ohlora_image(vectorfind_v7_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector):
     eyes_pms = np.linspace(-1.2, 1.2, 20)
@@ -53,7 +53,7 @@ def display_realtime_ohlora_image(vectorfind_v7_generator, ohlora_z_vector, eyes
                                                       eyes_vector, mouth_vector, pose_vector,
                                                       eyes_pm=eyes_pm, mouth_pm=mouth_pm, pose_pm=pose_pm)
 
-            cv2.imshow("Image Sequence", ohlora_image_to_display[:, :, ::-1])
+            cv2.imshow('Oh-LoRA', ohlora_image_to_display[:, :, ::-1])
             _ = cv2.waitKey(10)
 
 

@@ -2,7 +2,11 @@
 # - https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig
 
 from transformers import StoppingCriteria, StoppingCriteriaList, GenerationConfig
-from fine_tuning.utils import get_instruction, koreanlm_tokenize
+
+try:
+    from fine_tuning.utils import get_instruction, koreanlm_tokenize
+except:
+    from llm.fine_tuning.utils import get_instruction, koreanlm_tokenize
 
 import torch
 import os
