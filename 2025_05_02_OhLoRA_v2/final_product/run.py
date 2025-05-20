@@ -1,8 +1,11 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-import argparse
 import random
+import math
+
+import argparse
+import threading
 import os
 import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -21,11 +24,26 @@ from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
 from llm.run_memory_mechanism import pick_best_memory_item
 
 
+EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE = 0.2, 1.0, 0.0
+
+
 ohlora_z_vector = None
 eyes_vector, mouth_vector, pose_vector = None, None, None
+status = 'running'
+
 passed_ohlora_nos = [127, 672, 709, 931, 1017, 1073, 1162, 1211, 1277, 1351,
                      1359, 1409, 1591, 1646, 1782, 1788, 1819, 1836, 1905, 1918,
                      2054, 2089, 2100, 2111, 2137, 2185, 2240]
+
+eyes_vector_queue = []
+mouth_vector_queue = []
+pose_vector_queue = []
+
+# 0 --> 1 --> 1 --> 0 cosine line values
+cosine_line_values_up = [math.cos((1.0 + (x / 30.0)) * math.pi) for x in range(30)]
+cosine_line_values_down = [math.cos((2.0 + (x / 30.0)) * math.pi) for x in range(30)]
+cosine_line_values = cosine_line_values_up + [1.0 for _ in range(10)] + cosine_line_values_down
+cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]
 
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 Generator, 4 LLMs (Polyglot-Ko 1.3B Fine-Tuned), S-BERT (RoBERTa-based)
@@ -84,12 +102,42 @@ def load_models():
     return stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model
 
 
+# Oh-LoRA (오로라) 답변 직후 이미지 생성
+# Create Date : 2025.05.20
+# Last Update Date : -
+
+def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
+    global eyes_vector_queue, mouth_vector_queue, pose_vector_queue
+
+    for cosine_line_value in cosine_line_values:
+        eyes_vector_queue.append(EYES_BASE_SCORE + (eyes_score - EYES_BASE_SCORE) * cosine_line_value)
+        mouth_vector_queue.append(MOUTH_BASE_SCORE + (mouth_score - MOUTH_BASE_SCORE) * cosine_line_value)
+        pose_vector_queue.append(POSE_BASE_SCORE + (pose_score - POSE_BASE_SCORE) * cosine_line_value)
+
+
+# Oh-LoRA (오로라) 실시간 이미지 생성 핸들링
+# Create Date : 2025.05.20
+# Last Update Date : -
+
+def realtime_ohlora_generate():
+    global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
+    global eyes_vector_queue, mouth_vector_queue, pose_vector_queue
+    global status
+
+    while status == 'running':
+        eyes_score = eyes_vector_queue.pop(-1) if len(eyes_vector_queue) > 0 else EYES_BASE_SCORE
+        mouth_score = mouth_vector_queue.pop(-1) if len(mouth_vector_queue) > 0 else MOUTH_BASE_SCORE
+        pose_score = pose_vector_queue.pop(-1) if len(pose_vector_queue) > 0 else POSE_BASE_SCORE
+
+        generate_and_show_ohlora_image(stylegan_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector,
+                                       eyes_score, mouth_score, pose_score)
+
+
 # Oh-LoRA (오로라) 실행
 # Create Date : 2025.05.20
 # Last Update Date : -
 
 # Arguments:
-# - stylegan_generator    (nn.Module)       : StyleGAN-VectorFind-v7 generator
 # - ohlora_llms           (dict(LLM))       : LLM (Polyglot-Ko 1.3B Fine-Tuned)
 #                                             {'output_message': LLM, 'memory': LLM, 'summary': LLM,
 #                                              'eyes_mouth_pose': LLM}
@@ -103,9 +151,13 @@ def load_models():
 # - Oh-LoRA 답변을 parsing 하여 llm/memory_mechanism/saved_memory/ohlora_memory.txt 경로에 메모리 저장
 # - S-BERT 모델을 이용하여, RAG 와 유사한 방식으로 해당 파일에서 사용자 프롬프트에 가장 적합한 메모리 정보를 찾아서 최종 LLM 입력에 추가
 
-def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model):
+def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
+
     summary = ''
+
+    thread = threading.Thread(target=realtime_ohlora_generate)
+    thread.start()
 
     while True:
         user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
@@ -161,8 +213,7 @@ def run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_mod
         eyes_score, mouth_score, pose_score = decide_property_scores(eyes_score_text, mouth_score_text, pose_score_text)
 
         print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
-        generate_and_show_ohlora_image(stylegan_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector,
-                                       eyes_score, mouth_score, pose_score)
+        handle_ohlora_answered(eyes_score, mouth_score, pose_score)
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
@@ -240,4 +291,8 @@ if __name__ == '__main__':
     print('ALL MODELS for Oh-LoRA (오로라) load successful!! 👱‍♀️')
 
     # run Oh-LoRA (오로라)
-    run_ohlora(stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model)
+    try:
+        run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model)
+    except KeyboardInterrupt:
+        print('Oh-LoRA Finished. Good bye! 👱‍♀️👋')
+        status = 'finished'
