@@ -1,3 +1,8 @@
+import torch
+from transformers import StoppingCriteriaList
+
+from llm.fine_tuning.inference import StopOnTokens
+
 
 # Oh-LoRA (오로라) 의 답변 생성
 # Create Date : 2025.05.20
@@ -5,14 +10,57 @@
 
 # Arguments :
 # - ohlora_llm           (LLM)       : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned)
-# - ohlora_llm_tokenizer (tokenizer) : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned) 에 대한 tokenizer=
+# - ohlora_llm_tokenizer (tokenizer) : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned) 에 대한 tokenizer
 # - final_ohlora_input   (str)       : 오로라👱‍♀️ 에게 최종적으로 입력되는 메시지 (경우에 따라 summary, memory text 포함)
 
 # Returns :
 # - ohlora_answer (str) : 오로라👱‍♀️ 가 생성한 답변
 
 def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
-    raise NotImplementedError
+    trial_count = 0
+    max_trials = 30
+
+    # tokenize final Oh-LoRA input
+    final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
+
+    inputs = ohlora_llm_tokenizer(final_ohlora_input_, return_tensors='pt')
+    inputs = {'input_ids': inputs['input_ids'].to(ohlora_llm.device),
+              'attention_mask': inputs['attention_mask'].to(ohlora_llm.device)}
+
+    # for stopping criteria
+    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(ohlora_llm.device)  # '(답변 종료)'
+    stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
+
+    while trial_count < max_trials:
+        outputs = ohlora_llm.generate(**inputs,
+                                      max_length=96,
+                                      do_sample=True,
+                                      temperature=0.6,
+                                      stopping_criteria=stopping_criteria)
+
+        llm_answer = ohlora_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
+        llm_answer = llm_answer[len(final_ohlora_input_):]
+        llm_answer = llm_answer.replace('\u200b', '').replace('\xa0', '')  # zwsp, nbsp (폭 없는 공백, 줄 바꿈 없는 공백) 제거
+        trial_count += 1
+
+        # check LLM answer and return or retry
+        is_empty = llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') == ''
+        is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
+        starts_with_nonblank_in_early_try = trial_count < 3 and not llm_answer.startswith(' ')
+        too_many_tokens = len(outputs[0]) >= 91
+        is_uncleaned = is_empty or is_answer_end_mark or starts_with_nonblank_in_early_try or too_many_tokens
+
+        is_unnecessary_quote = '"' in llm_answer or '”' in llm_answer or '“' in llm_answer or '’' in llm_answer
+        is_unnecessary_mark = '�' in llm_answer
+        is_too_many_blanks = '     ' in llm_answer
+        is_low_quality = is_unnecessary_quote or is_unnecessary_mark or is_too_many_blanks
+
+        print(trial_count, llm_answer)
+
+        if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
+            return llm_answer.replace('(답변 종료)', '')
+
+    return '(읽씹)'
 
 
 # Oh-LoRA (오로라) 의 답변을 clean 처리
@@ -26,7 +74,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
 # - llm_answer_cleaned (str) : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
 
 def clean_llm_answer(ohlora_answer):
-    raise NotImplementedError
+    return ohlora_answer  # cleaning not needed
 
 
 # Oh-LoRA (오로라) 의 생성된 답변으로부터 memory 정보를 parsing

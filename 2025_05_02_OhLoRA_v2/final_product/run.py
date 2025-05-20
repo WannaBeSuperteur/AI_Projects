@@ -1,14 +1,14 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_memory_list, summarize_llm_answer,
-                     decide_property_scores)
-from run_display import generate_ohlora_image
-
 import os
 import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
+
+from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_memory_list, summarize_llm_answer,
+                     decide_property_scores)
+from run_display import generate_ohlora_image
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGeneratorForV6
 from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
