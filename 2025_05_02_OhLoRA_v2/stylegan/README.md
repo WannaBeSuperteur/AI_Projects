@@ -10,6 +10,7 @@
   * [3-3. StyleGAN-FineTune-v1 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v7)](#3-3-stylegan-finetune-v1-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v7) 
 * [4. 향후 진행하고 싶은 것](#4-향후-진행하고-싶은-것)
 * [5. 코드 실행 방법](#5-코드-실행-방법)
+  * [5-1. 모델 다운로드 경로](#5-1-모델-다운로드-경로)
 
 ## 1. 개요
 
@@ -201,13 +202,36 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 ## 5. 코드 실행 방법
 
-모든 코드는 ```2025_05_02_OhLoRA_v2``` (프로젝트 메인 디렉토리) 에서 실행
+모든 코드는 **먼저 [아래 다운로드 경로 안내](#5-1-모델-다운로드-경로) 및 해당 각 HuggingFace 링크에 있는 Model Card 에 나타난 저장 경로 (Save Path) 정보를 참고하여 모델 다운로드 후,** ```2025_05_02_OhLoRA_v2``` (프로젝트 메인 디렉토리) 에서 실행
+
+* **StyleGAN-VectorFind-v7** 모델 **(✅ 최종 채택)** 을 실행하여 Property Score 를 바꾸는 **intermediate w** vector 탐색
+  * ```python stylegan/run_stylegan_vectorfind_v7.py```
+
+<details><summary>다른 모델 실행 방법 [ 펼치기 / 접기 ]</summary>
 
 * **StyleGAN-FineTune-v5** 모델 Fine-Tuning
+  * **모델 미 제공 (코드 실행 시 직접 학습됨)** 
   * ```python stylegan/run_stylegan_finetune_v5.py```
 
 * **StyleGAN-VectorFind-v6** 모델을 실행하여 Property Score 를 바꾸는 **latent z** vector 탐색
   * ```python stylegan/run_stylegan_vectorfind_v6.py```
 
-* **StyleGAN-VectorFind-v7** 모델을 실행하여 Property Score 를 바꾸는 **intermediate w** vector 탐색
-  * ```python stylegan/run_stylegan_vectorfind_v7.py```
+</details>
+
+### 5-1. 모델 다운로드 경로
+
+* 기본 모델
+
+| 모델 이름                        | Fine-Tuned LLM<br>(for OhLoRA-v2 👱‍♀️)                                                                                       | Save Path for OhLoRA-v2 | StyleGAN-VectorFind-v7 실행에 필요 |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------------------|-------------------------|-------------------------------|
+| ```StyleGAN-VectorFind-v6``` | [HuggingFace](https://huggingface.co/daebakgazua/250502_OhLoRA_StyleGAN_FineTuned) > ```stylegan_gen_vector_find_v6.pth```    | ```stylegan/models```   | X                             |
+| ```StyleGAN-VectorFind-v7``` | [HuggingFace](https://huggingface.co/daebakgazua/250502_OhLoRA_StyleGAN_FineTuned) > ```stylegan_gen_vector_find_v7.pth```    | ```stylegan/models```   | **O**                         |
+| Property Score CNN           | [HuggingFace](https://huggingface.co/daebakgazua/250502_OhLoRA_StyleGAN_FineTuned) > ```stylegan_gen_fine_tuned_v2_cnn.pth``` | ```stylegan/models```   | **O**                         |
+
+* 추가 모델
+
+| 모델 이름                                    | Fine-Tuned LLM<br>(for OhLoRA-v2 👱‍♀️)                                                                                   | Save Path for OhLoRA-v2                                         | StyleGAN-VectorFind-v7 실행에 필요 |
+|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|-------------------------------|
+| Gender Score CNN                         | [HuggingFace](https://huggingface.co/daebakgazua/250408_OhLoRA_CNNs) > ```gender_model_0.pt```                            | ```stylegan/models```<br>```gender_model_0.pth``` 로 이름 변경하여 저장) | X                             |
+| ```StyleGAN-FineTune-v1``` Generator     | [HuggingFace](https://huggingface.co/daebakgazua/250408_OhLoRA_StyleGAN_FineTuned) > ```stylegan_gen_fine_tuned_v1.pth``` | ```stylegan/models```                                           | X                             |
+| ```StyleGAN-FineTune-v1``` Discriminator | [HuggingFace](https://huggingface.co/daebakgazua/250408_OhLoRA_StyleGAN_FineTuned) > ```stylegan_dis_fine_tuned_v1.pth``` | ```stylegan/models```                                           | X                             |
