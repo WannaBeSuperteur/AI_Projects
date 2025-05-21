@@ -2,11 +2,14 @@
 ## 목차
 
 * [1. 프로젝트 개요](#1-프로젝트-개요)
+  * [1-1. 실행 스크린샷](#1-1-실행-스크린샷) 
 * [2. 기술 분야 및 사용 기술](#2-기술-분야-및-사용-기술)
   * [2-1. 관련 논문](#2-1-관련-논문)
   * [2-2. 사용한 Python 라이브러리 및 시스템 환경](#2-2-사용한-python-라이브러리-및-시스템-환경)
 * [3. 프로젝트 일정](#3-프로젝트-일정)
 * [4. 프로젝트 상세 설명](#4-프로젝트-상세-설명)
+  * [4-1. StyleGAN 을 이용한 이미지 생성](#4-1-stylegan-을-이용한-이미지-생성)
+  * [4-2. LLM Fine-Tuning 을 이용한 사용자 대화 구현](#4-2-llm-fine-tuning-을-이용한-사용자-대화-구현)
 * [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
 * [6. 사용자 가이드](#6-사용자-가이드)
 
@@ -18,8 +21,9 @@
 
 **2. Oh-LoRA 👱‍♀️ (오로라) 이미지 생성 기술**
 
-* Conditional GAN 이용
-  * 기존의 [StyleGAN 의 Generator 를 Conditional VAE 의 Decoder 로 사용하는 방법](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) 은 한계가 있다고 판단
+* 기존의 [StyleGAN 의 Generator 를 Conditional VAE 의 Decoder 로 사용하는 방법](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) 은 한계가 있다고 판단
+* 핵심 속성 값 (눈을 뜬 정도, 입을 벌린 정도, 고개 돌림 정도) 을 조정하는 벡터를 찾는 방법 사용
+  * [참고 논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md) 
 
 **3. LLM 관련 기술**
 
@@ -29,6 +33,22 @@
   * 현재 대화하고 있는 내용이 무엇인지를 파악
   * 메모리 메커니즘을 위한 [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 의 학습 데이터 증량 및 품질 향상
 
+### 1-1. 실행 스크린샷
+
+![image](../images/250502_28.PNG)
+
+<details><summary>스크린샷 더보기 (4장) [ 펼치기 / 접기 ] </summary>
+
+![image](../images/250502_29.PNG)
+
+![image](../images/250502_30.PNG)
+
+![image](../images/250502_31.PNG)
+
+![image](../images/250502_32.PNG)
+
+</details>
+
 ## 2. 기술 분야 및 사용 기술
 
 * 기술 분야
@@ -36,12 +56,13 @@
   * LLM (Large Language Model)
 * 사용 기술
 
-| 기술 분야            | 사용 기술                                                                                                                                                                                    | 설명                                                                                                                                                                                                    |
-|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Image Generation | StyleGAN **(+ Conditional + Fine Tuning)**                                                                                                                                               | 가상 인간 이미지 생성                                                                                                                                                                                          |
-| LLM              | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)                                | 가상 인간이 인물 설정에 맞게 사용자와 대화할 수 있게 하는 기술                                                                                                                                                                  |
-| LLM              | [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)                             | 가상 인간의 LLM 을 효율적으로 Fine-Tuning 하는 기술                                                                                                                                                                  |
-| LLM              | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) | 가상 인간이 사용자와의 대화 내용을 기억하는 메모리 역할<br>- [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 메커니즘 |
+| 기술 분야            | 사용 기술                                                                                                                                                                                         | 설명                                                                                                                                                                                                    |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Image Generation | StyleGAN **(+ Condition Vector Finding)**                                                                                                                                                     | 가상 인간 이미지 생성                                                                                                                                                                                          |
+| Image Generation | [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) | 핵심 속성 값을 변화시키는 벡터를 탐색하기 위한 머신러닝 모델                                                                                                                                                                    |
+| LLM              | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)                                     | 가상 인간이 인물 설정에 맞게 사용자와 대화할 수 있게 하는 기술                                                                                                                                                                  |
+| LLM              | [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)                                  | 가상 인간의 LLM 을 효율적으로 Fine-Tuning 하는 기술                                                                                                                                                                  |
+| LLM              | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8)      | 가상 인간이 사용자와의 대화 내용을 기억하는 메모리 역할<br>- [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 메커니즘 |
 
 ### 2-1. 관련 논문
 
@@ -72,6 +93,7 @@
   * CPU : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
   * GPU : 2 x **Quadro M6000** (12 GB each)
   * **CUDA 12.4** (NVIDIA-SMI 551.61)
+* [시스템 환경 상세 정보](system_info_and_user_guide.md#1-시스템-환경)
 
 ## 3. 프로젝트 일정
 
@@ -128,7 +150,28 @@
 
 ## 4. 프로젝트 상세 설명
 
-TBU
+* 사용자의 질문에 대해 **가상 인간 여성 Oh-LoRA 👱‍♀️ (오로라)** 가 답변 생성
+  * 이때 주변 환경 및 사용자에 대한 정보 (예: ```[오늘 날씨: 맑음]``` ```[내일 일정: 친구랑 카페 방문]```) 를 Oh-LoRA 의 메모리에 저장
+  * Oh-LoRA 는 메모리에 있는 내용 중 가장 관련된 내용을 참고하여 답변
+  * 가장 관련된 내용이 없을 경우, **직전 대화 turn 의 요약된 내용을 기억** 하고, 그 요약 정보를 참고하여 답변
+* Oh-LoRA 의 답변 내용에 따라 가상 인간 여성 이미지 생성
+  * **"눈을 뜬 정도, 입을 벌린 정도, 고개 돌림" 의 3가지 속성 값** 을, LLM 의 답변에 기반하여 LLM 으로 생성한 표정 정보 (자연어) 에 따라 적절히 결정
+
+### 4-1. StyleGAN 을 이용한 이미지 생성
+
+* StyleGAN 의 핵심 속성 값을 변화시키는 벡터를 찾고, 해당 벡터를 이용하는 방법 적용
+* [참고 논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)
+* [상세 정보](stylegan/README.md)
+
+![images](../images/250502_15.PNG)
+
+### 4-2. LLM Fine-Tuning 을 이용한 사용자 대화 구현
+
+* Polyglot-Ko 1.3B 모델을 456 rows 규모의 학습 데이터셋으로 Fine-Tuning
+* 아래와 같이 [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 컨셉으로 LLM 의 memory 구현
+* [상세 정보](llm/README.md)
+
+![images](../images/250502_20.PNG)
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
@@ -136,4 +179,4 @@ TBU
 
 ## 6. 사용자 가이드
 
-TBU
+* [해당 문서](system_info_and_user_guide.md#2-사용자-가이드) 참고.
