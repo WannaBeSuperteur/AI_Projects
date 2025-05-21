@@ -128,7 +128,8 @@ def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
 
 # Oh-LoRA (오로라) 실시간 이미지 생성 핸들링 (+ 장시간 waiting 시 강제 종료 처리)
 # Create Date : 2025.05.20
-# Last Update Date : -
+# Last Update Date : 2025.05.21
+# - 사용자 입력 없을 시 오로라가 대화를 강제 종료하는 조건 수정
 
 # Arguments:
 # - 없음
@@ -175,8 +176,8 @@ def realtime_ohlora_generate():
                 last_eyes_close = time.time()
 
         # handling long time waiting
-        if status == 'waiting' and time.time() - last_answer_generate >= 60.0:
-            if random.random() < 0.002:
+        if status == 'waiting' and time.time() - last_answer_generate >= 120.0:
+            if random.random() < 0.001:
                 status = 'finished'
 
                 ohlora_waiting_time = time.time() - last_answer_generate
@@ -191,7 +192,9 @@ def realtime_ohlora_generate():
 
 # Oh-LoRA (오로라) 실행
 # Create Date : 2025.05.20
-# Last Update Date : -
+# Last Update Date : 2025.05.21
+# - summary 업데이트 결과가 None (7회 시도 시에도 summary LLM 답변이 형식에 맞지 않음) 일 시, summary 를 공백으로 초기화
+# - S-BERT memory 항목 불러오기 위한 corr-coef threshold 0.6 -> 0.95 로 상향
 
 # Arguments:
 # - ohlora_llms           (dict(LLM))       : LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -230,7 +233,8 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
         best_memory_item = pick_best_memory_item(sbert_model,
                                                  user_prompt,
                                                  memory_file_name='ohlora_memory.txt',
-                                                 verbose=False)
+                                                 threshold=0.95,
+                                                 verbose=True)
 
         if best_memory_item == '':
             if summary == '':
@@ -262,6 +266,8 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
 
         if updated_summary is not None:
             summary = updated_summary
+        else:
+            summary = ''
 
         # generate Oh-LoRA image
         eyes_score_text, mouth_score_text, pose_score_text = decide_property_score_texts(

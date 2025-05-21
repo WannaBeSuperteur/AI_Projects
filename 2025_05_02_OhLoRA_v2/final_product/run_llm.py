@@ -10,8 +10,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # Oh-LoRA (오로라) 의 답변 생성
 # Create Date : 2025.05.20
-# Last Update Date : 2025.05.20
-# - '(사용자 답변 요약)' 과 같은 메시지가 답변에 포함 시 실패 처리
+# Last Update Date : 2025.05.21
+# - 최대 trial count & 맨 첫 글자가 공백이 아닌 답변 (맥락에 맞지 않는 답변 우려 있음) 의 생성을 허용하는 최소 trial count 조정
 
 # Arguments :
 # - ohlora_llm           (LLM)       : output_message LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -23,7 +23,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
     trial_count = 0
-    max_trials = 20
+    max_trials = 15
 
     # tokenize final Oh-LoRA input
     final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
@@ -58,7 +58,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         is_other_mark = '(사용자' in llm_answer.replace(' ', '') or '요약)' in llm_answer.replace(' ', '')
         is_polluted = is_answer_end_mark or is_other_mark
 
-        starts_with_nonblank_in_early_try = trial_count < 3 and not llm_answer.startswith(' ')
+        starts_with_nonblank_in_early_try = trial_count < 2 and not llm_answer.startswith(' ')
         too_many_tokens = len(outputs[0]) >= 91
         is_uncleaned = is_empty or is_polluted or starts_with_nonblank_in_early_try or too_many_tokens
 
@@ -99,8 +99,11 @@ def clean_llm_answer(ohlora_answer):
 
 # Oh-LoRA (오로라) 의 생성된 답변으로부터 memory 정보를 parsing
 # Create Date : 2025.05.20
-# Last Update Date : 2025.05.20
-# - memory 정보 parsing 시, key 또는 value 가 공백인 경우 실패 처리
+# Last Update Date : 2025.05.21
+# - memory 정보의 최대 생성 토큰 수 96 -> (입력 token 수) + 24 로 조정
+# - memory 정보의 최대 생성 횟수 3 -> 5 회로 조정
+# - empty answer 도 정상적인 답변으로 간주
+# - LLM 답변 parsing 버그 수정
 
 # Arguments :
 # - memory_llm           (LLM)       : memory LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -112,7 +115,7 @@ def clean_llm_answer(ohlora_answer):
 
 def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
     trial_count = 0
-    max_trials = 3
+    max_trials = 5
 
     # tokenize final Oh-LoRA input
     final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
@@ -127,50 +130,59 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
 
     while trial_count < max_trials:
         outputs = memory_llm.generate(**inputs,
-                                      max_length=96,
+                                      max_new_tokens=24,
                                       do_sample=True,
                                       temperature=0.6,
                                       stopping_criteria=stopping_criteria)
 
         llm_answer = memory_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
+        llm_answer = llm_answer.replace('(답변 종료)', '')
 
+        # post-process memory LLM answer
         llm_answer = llm_answer[len(final_ohlora_input_):]
-        llm_answer = llm_answer.replace('\u200b', '').replace('\xa0', '')  # zwsp, nbsp (폭 없는 공백, 줄 바꿈 없는 공백) 제거
-        llm_answer = llm_answer.replace('(', '[').replace(')', ']')        # (...) -> [...]
-        llm_answer = llm_answer.replace('{', '[').replace('}', ']')        # {...} -> [...]
-        llm_answer = llm_answer.replace(' : ', ': ')                       # [key : value] -> [key: value]
-        llm_answer = llm_answer.split('[')[1].split(']')[0]                # blahblah [key: value] blah -> [key: value]
+        llm_answer = llm_answer.replace('\u200b', '').replace('\xa0', '')    # zwsp, nbsp (폭 / 줄 바꿈 없는 공백) 제거
+        llm_answer = llm_answer.replace('(', '[').replace(')', ']')          # (...) -> [...]
+        llm_answer = llm_answer.replace('{', '[').replace('}', ']')          # {...} -> [...]
+        llm_answer = llm_answer.replace(' : ', ': ')                         # [key : value] -> [key: value]
+
+        if '[' in llm_answer and ']' in llm_answer:
+            llm_answer = '[' + llm_answer.split('[')[1].split(']')[0] + ']'  # blah [key: value] blah -> [key: value]
 
         if ': ' not in llm_answer:
-            llm_answer = llm_answer.replace(':', ': ')                     # [key:value] -> [key: value]
+            llm_answer = llm_answer.replace(':', ': ')           # [key:value] -> [key: value]
 
         if '[' not in llm_answer and ']' not in llm_answer and ': ' in llm_answer:
-            llm_answer = '[' + llm_answer + ']'                            # key: value -> [key: value]
+            llm_answer = '[' + llm_answer + ']'                              # key: value -> [key: value]
 
         trial_count += 1
 
         # check LLM answer and return or retry
-        is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
-        too_many_tokens = len(outputs[0]) >= 91
+        is_answer_end_mark = '답변 종료' in llm_answer or '답변종료' in llm_answer
+        too_many_tokens = len(outputs[0]) - len(inputs['input_ids'][0]) == 24
 
         is_in_format = llm_answer[0] == '[' and llm_answer[-1] == ']' and ': ' in llm_answer
         is_in_format_cnts = llm_answer.count('[') == 1 and llm_answer.count(']') == 1 and llm_answer.count(':') == 1
 
-        if is_in_format and is_in_format_cnts:
+        # empty answer -> format is CORRECT
+        if llm_answer.replace(' ', '') == '':
+            is_format_correct = True
+
+        # for non-empty answer
+        elif is_in_format and is_in_format_cnts:
             is_key_nonempty = len(llm_answer.split('[')[1].split(':')[0].replace(' ', '')) >= 1
             is_value_nonempty = len(llm_answer.split(':')[1].split(']')[0].replace(' ', '')) >= 1
             is_format_correct = is_key_nonempty and is_value_nonempty
         else:
             is_format_correct = False
 
-        is_uncleaned = is_answer_end_mark or too_many_tokens or not is_format_correct
+        is_uncleaned = (is_answer_end_mark or too_many_tokens) or not is_format_correct
 
         is_unnecessary_mark = '�' in llm_answer
         is_too_many_blanks = '     ' in llm_answer
         is_low_quality = is_unnecessary_mark or is_too_many_blanks
 
         if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
-            return [llm_answer.replace('(답변 종료)', '')]
+            return [llm_answer]
 
     return None
 
@@ -211,7 +223,9 @@ def save_memory_list(memory_list):
 
 # Oh-LoRA (오로라) 의 답변 요약
 # Create Date : 2025.05.20
-# Last Update Date : -
+# Last Update Date : 2025.05.21
+# - summary 정보의 최대 생성 토큰 수 192 -> (입력 token 수) + 48 로 조정
+# - summary 정보의 최대 생성 횟수 5 -> 3 회로 조정
 
 # Arguments :
 # - summary_llm           (LLM)       : summary LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -224,7 +238,7 @@ def save_memory_list(memory_list):
 
 def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input, llm_answer_cleaned):
     trial_count = 0
-    max_trials = 5
+    max_trials = 3
 
     # tokenize final Oh-LoRA input
     final_summary_input = final_ohlora_input + ' (오로라 답변)' + llm_answer_cleaned + ' (답변 시작)'
@@ -239,7 +253,7 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
 
     while trial_count < max_trials:
         outputs = summary_llm.generate(**inputs,
-                                       max_length=192,
+                                       max_new_tokens=48,
                                        do_sample=True,
                                        temperature=0.6,
                                        stopping_criteria=stopping_criteria)
@@ -254,7 +268,7 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
 
         # check LLM answer and return or retry
         is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
-        too_many_tokens = len(outputs[0]) >= 187
+        too_many_tokens = len(outputs[0]) - len(inputs['input_ids'][0]) >= 44
         is_uncleaned = is_answer_end_mark or too_many_tokens
 
         is_unnecessary_mark = '�' in llm_answer
@@ -268,7 +282,8 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
 
 # Oh-LoRA (오로라) 의 답변에 따라 눈을 뜬 정도 (eyes), 입을 벌린 정도 (mouth), 고개 돌림 (pose) 텍스트 산출
 # Create Date : 2025.05.20
-# Last Update Date : -
+# Last Update Date : 2025.05.21
+# - eyes, mouth, pose 텍스트 정보의 최대 생성 토큰 수 96 -> (입력 token 수) + 32 로 조정
 
 # Arguments :
 # - eyes_mouth_pose_llm           (LLM)       : eyes_mouth_pose LLM (Polyglot-Ko 1.3B Fine-Tuned)
@@ -297,7 +312,7 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
 
     while trial_count < max_trials:
         outputs = eyes_mouth_pose_llm.generate(**inputs,
-                                               max_length=96,
+                                               max_new_tokens=32,
                                                do_sample=True,
                                                temperature=1.5,
                                                stopping_criteria=stopping_criteria)

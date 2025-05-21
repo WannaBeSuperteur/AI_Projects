@@ -13,7 +13,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # Memory Mechanism 학습된 모델을 이용하여, saved memory 중 가장 적절한 1개의 메모리를 반환 (단, Cos-similarity >= 0.6 인 것들만)
 # Create Date : 2025.05.14
-# Last Update Date : -
+# Last Update Date : 2025.05.21
+# - 길이가 3 미만인 메모리 -> "공백을 제외한" 길이가 3 미만인 메모리는 best memory 로 반환하지 않도록 설정
 
 # Arguments:
 # - sbert_model      (S-BERT Model) : 학습된 Sentence BERT 모델
@@ -35,7 +36,7 @@ def pick_best_memory_item(sbert_model, user_prompt, memory_file_name='test.txt',
 
     # compute similarity scores for each memory item
     for line_idx, line in enumerate(memory_file_lines):
-        if len(line) < 3:
+        if len(line.replace(' ', '')) < 3:
             continue
 
         memory_text = line.split('\n')[0]
