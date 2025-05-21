@@ -18,18 +18,18 @@
 * **✅ 최종 채택** 알고리즘 : [StyleGAN-VectorFind-v6](#3-3-stylegan-finetune-v1-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v7)
   * StyleGAN-FineTune-v1 (**Fine-Tuned** StyleGAN, **여성 이미지 생성 확률 90% 이상**) 기반
   * StyleGAN-FineTune-v1 의 latent z vector 에서, **[핵심 속성 값](#2-핵심-속성-값) 을 변화시키는 벡터** 를 찾는 아이디어
-  * [오로라 1차 프로젝트](../../2025_04_08_OhLoRA) 당시 **StyleGAN-FineTune-v2** 학습 목적으로 개발한 [Property Score CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 이 사용됨
+  * [오로라 v1 ](../../2025_04_08_OhLoRA) 당시 **StyleGAN-FineTune-v2** 학습 목적으로 개발한 [Property Score CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 이 사용됨
     * StyleGAN-VectorFind-v7 의 **Training Phase 및 Inference & Image Generation Test Phase 에서 모두** 사용됨
 
 **전체 모델 파이프라인 그림**
 
-* StyleGAN-VectorFind-v7 을 제외한 나머지 부분은 [오로라 1차 프로젝트의 해당 부분](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md) 과 동일 (해당 문서 참고)
+* StyleGAN-VectorFind-v7 을 제외한 나머지 부분은 [오로라 v1 의 해당 부분](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md) 과 동일 (해당 문서 참고)
 
 ![image](../../images/250502_15.PNG)
 
 ### 1-1. 기존 StyleGAN-FineTune-v4 성능 향상 어려운 원인
 
-[참고: Oh-LoRA (오로라) 1차 프로젝트 문서](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan)
+[참고: Oh-LoRA (오로라) v1 문서](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan)
 
 * 문제 상황
   * 기존 **StyleGAN-FineTune-v4** 의 경우 **StyleGAN-FineTune-v5** 와 마찬가지로 **StyleGAN-FineTune-v1** 을 핵심 속성 값을 이용하여 추가 Fine-Tuning
@@ -45,14 +45,14 @@
 
 ### 1-2. StyleGAN-FineTune-v5 개선 방안
 
-* Discriminator 구조를 [오로라 1차 프로젝트](../../2025_04_08_OhLoRA/README.md) 의 [Property Score 계산용 CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 의 구조로 바꾼다.
+* Discriminator 구조를 [오로라 v1](../../2025_04_08_OhLoRA/README.md) 의 [Property Score 계산용 CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-3-cnn-model-나머지-핵심-속성-값-7개) 의 구조로 바꾼다.
   * 해당 CNN의 가중치를 먼저 Discriminator 에 주입시킨 후 학습한다.
 * Generator 와 Discriminator 의 모든 layer 를 **trainable (학습 가능) 상태** 로 만든다.
 
 ## 2. 핵심 속성 값
 
 * 눈을 뜬 정도 ```eyes```, 입을 벌린 정도 ```mouth```, 고개 돌림 정도 ```pose``` 의 3가지 사용
-* 상세 정보는 [오로라 1차 프로젝트 문서의 해당 부분](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#2-핵심-속성-값) 참고.
+* 상세 정보는 [오로라 v1 문서의 해당 부분](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#2-핵심-속성-값) 참고.
   * 여기서는 핵심 속성 값 계산 알고리즘으로 위 문서에서 언급된 알고리즘 중 [2차 알고리즘](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#2-2-핵심-속성-값-계산-알고리즘-2차-알고리즘-for-stylegan-finetune-v2-v3-v4) 사용
 
 ## 3. 사용 모델 설명
@@ -196,7 +196,7 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
   * **젊어 보임** 을 판단하는 CNN 을 [성별 & 이미지 품질 판단 CNN 과 동일한 방법](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-2-cnn-model-성별-이미지-품질) 으로 개발
 
 * StyleGAN-VectorFind-v7 의 **이미지 생성 테스트 합격 기준** 변경
-  * 현재 합격 기준 [(참고)](stylegan_vectorfind_v6/svm_train_report/img_generation_test_result.md#1-final-report) 보다 ```pose``` 의 cutoff 를 하향
+  * 현재 합격 기준 [(참고)](stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md#1-final-report) 보다 ```pose``` 의 cutoff 를 하향
   * 이미지의 **품질 (고품질) & 성별 (여성) & 일관성 (나머지 속성)** 을 합격 기준에 추가
     * 나머지 속성에 대한 **일관성** 이란, ```eyes``` ```mouth``` ```pose``` 값을 바꿔도 배경, 전반적인 얼굴 형태 등은 바뀌지 않음을 의미 
 

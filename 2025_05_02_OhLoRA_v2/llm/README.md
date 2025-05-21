@@ -8,6 +8,7 @@
 * [3. OhLoRA-v2 LLM Fine-Tuning](#3-ohlora-v2-llm-fine-tuning)
 * [4. 코드 실행 방법](#4-코드-실행-방법)
   * [4-1. 모델 다운로드 경로](#4-1-모델-다운로드-경로)
+* [5. 향후 진행하고 싶은 것](#5-향후-진행하고-싶은-것)
 
 ## 1. OhLoRA-v2 LLM 전체 메커니즘
 
@@ -27,7 +28,7 @@
 ![image](../../images/250408_28.PNG)
 
 * 동작 원리
-  * [오로라 1차 프로젝트의 LLM Memory 구현](../../2025_04_08_OhLoRA/llm/README.md#3-llm-memory-rag-like-concept) 과 동일
+  * [오로라 v1 의 LLM Memory 구현](../../2025_04_08_OhLoRA/llm/README.md#3-llm-memory-rag-like-concept) 과 동일
 * 구현 코드
   * [S-BERT Training](memory_mechanism/train_sbert.py)
   * [S-BERT Inference](memory_mechanism/inference_sbert.py)
@@ -64,7 +65,7 @@
   * 10 epochs
 
 * 참고
-  * [오로라 1차 프로젝트의 LLM Memory 용 S-BERT 모델 학습](../../2025_04_08_OhLoRA/llm/README.md#3-2-학습-및-테스트-데이터--학습-설정) 
+  * [오로라 v1 의 LLM Memory 용 S-BERT 모델 학습](../../2025_04_08_OhLoRA/llm/README.md#3-2-학습-및-테스트-데이터--학습-설정) 
   * [블로그 포스팅](https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC%EB%A5%BC-%ED%99%9C%EC%9A%A9%ED%95%9C-SBERT-%ED%95%99%EC%8A%B5-%EB%B0%A9%EB%B2%95)
 
 ### 1-3. LLM Memory 메커니즘 테스트 결과
@@ -75,17 +76,17 @@
 
 * MSE, MAE & Corr-coef (테스트 데이터셋)
 
-| Fine-Tuned S-BERT 모델                                            | [MSE](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-1-mean-squared-error-mse) | [MAE](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-3-mean-absolute-error-mae) | Corr-coef (상관계수) |
-|-----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
-| 현재 버전                                                           | **0.0355**                                                                                                                                                                                    | **0.1280**                                                                                                                                                                                     | **0.7449**       |
-| [오로라 1차 프로젝트](../../2025_04_08_OhLoRA/llm/README.md#3-3-테스트-결과) | 0.0880                                                                                                                                                                                        | 0.1681                                                                                                                                                                                         | 0.6259           |
-| 비교                                                              | 🔽 **59.7 %**                                                                                                                                                                                 | 🔽 **23.9 %**                                                                                                                                                                                  | 🔼 **11.9 %p**   |
+| Fine-Tuned S-BERT 모델                                       | [MSE](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-1-mean-squared-error-mse) | [MAE](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-3-mean-absolute-error-mae) | Corr-coef (상관계수) |
+|------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
+| 현재 버전                                                      | **0.0355**                                                                                                                                                                                    | **0.1280**                                                                                                                                                                                     | **0.7449**       |
+| [오로라 v1](../../2025_04_08_OhLoRA/llm/README.md#3-3-테스트-결과) | 0.0880                                                                                                                                                                                        | 0.1681                                                                                                                                                                                         | 0.6259           |
+| 비교                                                         | 🔽 **59.7 %**                                                                                                                                                                                 | 🔽 **23.9 %**                                                                                                                                                                                  | 🔼 **11.9 %p**   |
 
 ## 2. OhLoRA-v2 LLM Final Selection
 
 * **Polyglot-Ko 1.3B (1.43 B params)**
   * [HuggingFace](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)
-* [오로라 1차 프로젝트](../../2025_04_08_OhLoRA/llm/README.md#1-llm-final-selection) 와 완전히 동일
+* [오로라 v1](../../2025_04_08_OhLoRA/llm/README.md#1-llm-final-selection) 와 완전히 동일
 
 ## 3. OhLoRA-v2 LLM Fine-Tuning
 
@@ -107,7 +108,7 @@
 | summary (하고 있는 대화 요약) ```summary```    | dataset **v2.2** [(link)](fine_tuning_dataset/OhLoRA_fine_tuning_v2_2.csv) |
 
 * 참고
-  * [오로라 1차 프로젝트에서의 LLM Fine-Tuning 방법](../../2025_04_08_OhLoRA/llm/README.md#2-how-to-run-fine-tuning) 
+  * [오로라 v1 에서의 LLM Fine-Tuning 방법](../../2025_04_08_OhLoRA/llm/README.md#2-how-to-run-fine-tuning) 
 
 ## 4. 코드 실행 방법
 
@@ -134,3 +135,21 @@
 | ```Polyglot-Ko 1.3B```      | [EleutherAI HuggingFace](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)         | - [```output_message``` (HuggingFace)](https://huggingface.co/daebakgazua/250502_OhLoRA_LLM_output_message)<br>- [```memory``` (HuggingFace)](https://huggingface.co/daebakgazua/250502_OhLoRA_LLM_memory)<br>- [```summary``` (HuggingFace)](https://huggingface.co/daebakgazua/250502_OhLoRA_LLM_summary)<br>- [```eyes_mouth_pose``` (HuggingFace)](https://huggingface.co/daebakgazua/250502_OhLoRA_LLM_eyes_mouth_pose) |
 | ```KoreanLM 1.5B```         | [Quantum AI HuggingFace](https://huggingface.co/quantumaikr/KoreanLM-1.5b/tree/main) | ❌ 학습 실패 [(참고)](../issue_reported.md#2-2-koreanlm-15b-llm-학습-불가-해결-보류)                                                                                                                                                                                                                                                                                                                                                        |
 | ```S-BERT (roberta-base)``` | [HuggingFace](https://huggingface.co/klue/roberta-base)                              | - [HuggingFace](https://huggingface.co/daebakgazua/250502_OhLoRA_LLM_SBERT)                                                                                                                                                                                                                                                                                                                                                  |
+
+## 5. 향후 진행하고 싶은 것
+
+* **1. 답변 품질 향상**
+  * 날짜, 시간, 요일 정보 고려
+    * **지금이 몇 시인지, 오늘이 무슨 날인지를 모르기 때문에** 발생하는 [환각 현상](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_%ED%99%98%EA%B0%81_%ED%98%84%EC%83%81.md) 방지
+    * 날짜, 시간, 요일 정보가 포함된 데이터셋을 추가하여 Fine-Tuning
+    * 날짜, 시간, 요일 정보가 필요한지 **Rule-based** 로 판단 (LLM 추가 사용 시 응답 시간 크게 증가)
+  * 기존 학습 데이터셋에 사용된 ```(답변 시작)``` ```(답변 종료)``` 등의 지시어 수정
+    * 대화 요약 LLM 의 경우, 대신 ```(요약 시작)``` ```(요약 종료)``` 등의 지시어를 사용
+  * 학습 데이터에 2025년 최신 SNS 유행 음식인 ```치킨 아이스크림``` 과 관련된 내용 추가
+
+* **2. 대화 요약 정보 활용 및 [메모리 메커니즘](#1-1-llm-memory-rag-like-concept) 고도화**
+  * 사용자 질문에 따라, 대화 요약 정보 사용 여부 결정
+    * 화제 전환 (예: ```그런데 너 오늘 뭐 할 거야?```) 인지 **S-BERT** 로 파악 (LLM 추가 사용 시 응답 시간 크게 증가)
+    * 화제 전환인 경우, 대화 요약 정보 미 사용
+  * 메모리 메커니즘 고도화 
+    * ```roberta-base``` 대신 다른 S-BERT 모델 연구

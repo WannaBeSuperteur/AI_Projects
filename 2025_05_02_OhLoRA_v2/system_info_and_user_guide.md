@@ -239,6 +239,18 @@ zipp==3.17.0
 
 ### 2-1. Python 환경 설정
 
+* System Requirements
+  * 각각 **8 GB** 이상의 **GPU 2 대 이상**
+  * **16 GB** 이상의 **GPU 가 1 대만** 있는 경우, ```.../2025_05_02_OhLoRA_v2/final_product/run.py``` 의 ```load_models``` 함수의 **line 71 - 76** 을 다음과 같이 수정하여 사용
+
+```python
+def load_models():
+    gpu_0 = torch.device('cuda:0')
+
+    output_types = ['output_message', 'memory', 'eyes_mouth_pose', 'summary']
+    device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_0, 'summary': gpu_0}
+```
+
 * Mandatory
   * Python 3.10.11 을 설치합니다.
   * ```pip install -r requirements.txt``` 명령어를 통해 [주요 라이브러리](#1-1-주요-python-라이브러리) 를 설치합니다.
@@ -247,7 +259,7 @@ zipp==3.17.0
 
 ### 2-2. 모델 다운로드 및 준비
 
-[해당 문서](MODEL_AND_DATASET_INFO.md), 를 참고하여, HuggingFace 에서 **필요한 모델을 다운로드하여 지정된 경로에 추가** 합니다.
+[해당 문서](MODEL_AND_DATASET_INFO.md) 를 참고하여, HuggingFace 에서 **필요한 모델을 다운로드하여 지정된 경로에 추가** 합니다.
 
 ### 2-3. run.py 실행
 
