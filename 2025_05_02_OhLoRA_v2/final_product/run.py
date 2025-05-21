@@ -234,7 +234,7 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
                                                  user_prompt,
                                                  memory_file_name='ohlora_memory.txt',
                                                  threshold=0.95,
-                                                 verbose=True)
+                                                 verbose=False)
 
         if best_memory_item == '':
             if summary == '':
