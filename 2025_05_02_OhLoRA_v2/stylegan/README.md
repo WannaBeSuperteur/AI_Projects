@@ -183,6 +183,10 @@ OhLoRA-v2 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 ![image](../../images/250502_22.PNG)
 
+* 참고 사항 (실제 구현)
+  * **latent z vector** 는 [stylegan_vectorfind_v7/ohlora_z_vectors.csv 경로](stylegan_vectorfind_v7/ohlora_z_vectors.csv) 에 관련 정보가 저장되어 있으면 해당 정보에 따라 생성하고, 그렇지 않으면 랜덤으로 생성
+  * **생성된 이미지를 그룹에 할당** 할 때, [stylegan_vectorfind_v7/ohlora_w_group_names.csv 경로](stylegan_vectorfind_v7/ohlora_w_group_names.csv) 에 관련 정보가 저장되어 있으면 Property Score CNN 을 이용하는 것이 아닌, 해당 저장된 정보를 이용하여 그룹에 할당
+
 **4. 성능 보고서**
 
 * [이미지 생성 테스트 결과](stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md)
