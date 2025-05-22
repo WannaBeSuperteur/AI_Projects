@@ -43,7 +43,24 @@
 
 ### 2-1. 관련 논문
 
+본 프로젝트에서 사용할 기술에 대한 **탄탄한 기초가 중요하다** 는 판단 아래 작성한, 관련 논문에 관한 스터디 자료이다.
+
+* **EffiSegNet** (Segmentation Model) 논문
+  * [논문 : EffiSegNet: Gastrointestinal Polyp Segmentation through a Pre-Trained EfficientNet-based Network with a Simplified Decoder (2024.07)](https://arxiv.org/pdf/2407.16298v1)
+  * 스터디 자료 (TBU)
+
 ### 2-2. 사용한 Python 라이브러리 및 시스템 환경
+
+* Python
+  * Python : **Python 3.10.11**
+  * Dev Tool : PyCharm 2024.1 Community Edition
+* Python Libraries
+  * 주요 파이썬 라이브러리 (TBU)
+  * 실험 환경의 전체 파이썬 라이브러리 목록 (TBU)
+* OS & GPU
+  * OS : **Windows 10**
+  * GPU : 2 x **Quadro M6000** (12 GB each)
+  * **CUDA 12.4** (NVIDIA-SMI 551.61)
 
 ## 3. 프로젝트 일정
 
