@@ -13,7 +13,7 @@
 
 ## 1. 프로젝트 개요
 
-* **Kvasir-SEG** 데이터셋에서 우수한 성능을 거둔 모델 중 하나로 **EffiSegNet** 이 있다. ([PapersWithCode 참고](https://paperswithcode.com/sota/medical-image-segmentation-on-kvasir-seg))
+* **Medical Segmentation** 데이터셋 중 하나인 **Kvasir-SEG (gastrointestinal polyp, 위장관 용종)** 데이터셋에서 우수한 성능을 거둔 모델 중 하나로 **EffiSegNet** 이 있다. ([PapersWithCode 참고](https://paperswithcode.com/sota/medical-image-segmentation-on-kvasir-seg))
   * [Kvasir-SEG 데이터셋](https://datasets.simula.no/kvasir-seg/) (상업적 사용을 위해서는 별도 허가 필요)
   * [EffiSegNet Official Code (PyTorch)](https://github.com/ivezakis/effisegnet)
 
