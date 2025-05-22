@@ -47,7 +47,7 @@
 
 * **EffiSegNet** (Segmentation Model) 논문
   * [논문 : EffiSegNet: Gastrointestinal Polyp Segmentation through a Pre-Trained EfficientNet-based Network with a Simplified Decoder (2024.07)](https://arxiv.org/pdf/2407.16298v1)
-  * 스터디 자료 (TBU)
+  * [논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.22%5D%20EffiSegNet%20-%20Gastrointestinal%20Polyp%20Segmentation%20through%20a%20Pre-Trained%20EfficientNet-based%20Network%20with%20a%20Simplified%20Decoder.md)
 
 ### 2-2. 사용한 Python 라이브러리 및 시스템 환경
 
@@ -70,7 +70,7 @@
 | 구분       | 계획 내용                                 | 일정                     | branch                    | issue | 상태 |
 |----------|---------------------------------------|------------------------|---------------------------|-------|----|
 | 📃 문서화   | 프로젝트 개요 및 최초 일정 작성                    | 05.22 목 (1d)           |                           |       | ✅  |
-| 📕 논문    | 논문 탐독 (EffiSegNet)                    | 05.22 목 (1d)           |                           |       | ⬜  |
+| 📕 논문    | 논문 탐독 (EffiSegNet)                    | 05.22 목 (1d)           |                           |       | ✅  |
 | 🔨 모델 구현 | EffiSegNet 구현                         | 05.23 금 (1d)           | ```P004-001-EffiSegNet``` |       | ⬜  |
 | 🧪 모델 학습 | EffiSegNet 학습 **1차** (원본 구현)          | 05.23 금 - 05.24 토 (2d) | ```P004-001-EffiSegNet``` |       | ⬜  |
 | 🔬 탐구    | EffiSegNet 의 '오답'이 발생하는 부분 탐구         | 05.24 토 (1d)           |                           |       | ⬜  |
