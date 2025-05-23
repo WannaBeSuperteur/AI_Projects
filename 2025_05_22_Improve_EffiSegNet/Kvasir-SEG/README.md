@@ -14,3 +14,35 @@
                organization={Springer}
 }
 ```
+
+## How to prepare dataset
+
+* 1. Download dataset from [here](https://github.com/ivezakis/effisegnet/tree/main/Kvasir-SEG).
+* 2. Copy & Paste images and mask files as the structure below:
+
+```
+2025_05_22_Improve_EffiSegNet
+- Kvasir-SEG
+  - train
+    - images
+      - 0.jpg
+      - ...
+    - masks
+      - 0.jpg
+      - ...
+  - validation
+    - images
+      - 0.jpg
+      - ...
+    - masks
+      - 0.jpg
+      - ...
+  - test
+    - images
+      - 0.jpg
+      - ...
+    - masks
+      - 0.jpg
+      - ...
+- ...
+```
