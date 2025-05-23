@@ -229,19 +229,16 @@ class Net(L.LightningModule):
             y_item_ = convert_to_numpy_img(y_item, imagenet_normalize=False)
             pred_ = convert_to_numpy_img(pred, imagenet_normalize=False)
 
-            overlay_x_y = 0.55 * x_item_ + 0.45 * y_item_
-            overlay_x_pred = 0.55 * x_item_ + 0.45 * pred_
-
             y_item_1channel = y_item_[:, :, :1]
-            pred_1channel = pred_[:, :, :1]
+            pred_1channel = 0.8 * pred_[:, :, :1]
             overlay_y_pred = np.concatenate(
                 [y_item_1channel, pred_1channel, np.zeros((self.img_size, self.img_size, 1))],
                 axis=2)
+            overlay_x_y_pred = 0.55 * x_item_ + 0.45 * overlay_y_pred
 
             img_no = batch_idx * self.batch_size + idx
 
             write_img(x_item_, f'{visualize_path}/img_{img_no:04d}_original_x.jpg')
-            write_img(overlay_x_y, f'{visualize_path}/img_{img_no:04d}_overlay_x_y.jpg')
-            write_img(overlay_x_pred, f'{visualize_path}/img_{img_no:04d}_overlay_x_pred.jpg')
             write_img(overlay_y_pred, f'{visualize_path}/img_{img_no:04d}_overlay_y_pred.jpg')
+            write_img(overlay_x_y_pred, f'{visualize_path}/img_{img_no:04d}_overlay_x_y_pred.jpg')
 
