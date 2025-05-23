@@ -212,7 +212,7 @@ class Net(L.LightningModule):
         def write_img(image, save_path):
             result, image_arr = cv2.imencode(ext='.jpg',
                                              img=image,
-                                             params=[cv2.IMWRITE_JPEG_QUALITY, 92])
+                                             params=[cv2.IMWRITE_JPEG_QUALITY, 95])
 
             if result:
                 with open(save_path, mode='w+b') as f:
@@ -234,8 +234,8 @@ class Net(L.LightningModule):
 
             img_no = batch_idx * self.batch_size + idx
 
-            write_img(x_item_, f'{visualize_path}/img_{img_no:04d}_original_x.png')
-            write_img(overlay_x_y, f'{visualize_path}/img_{img_no:04d}_overlay_x_y.png')
-            write_img(overlay_x_pred, f'{visualize_path}/img_{img_no:04d}_overlay_x_pred.png')
-            write_img(overlay_y_pred, f'{visualize_path}/img_{img_no:04d}_overlay_y_pred.png')
+            write_img(x_item_, f'{visualize_path}/img_{img_no:04d}_original_x.jpg')
+            write_img(overlay_x_y, f'{visualize_path}/img_{img_no:04d}_overlay_x_y.jpg')
+            write_img(overlay_x_pred, f'{visualize_path}/img_{img_no:04d}_overlay_x_pred.jpg')
+            write_img(overlay_y_pred, f'{visualize_path}/img_{img_no:04d}_overlay_y_pred.jpg')
 
