@@ -13,7 +13,7 @@ import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
-from common.datamodule import KvasirSEGDataset
+from common.datamodule import KvasirSEGDatasetForImprovedModel
 from common.utils import save_model_structure_pdf
 from network_module import Net
 
@@ -40,7 +40,7 @@ def main(cfg):
     else:
         img_size = cfg.img_size
 
-    dataset = KvasirSEGDataset(batch_size=cfg.batch_size, img_size=img_size)
+    dataset = KvasirSEGDatasetForImprovedModel(batch_size=cfg.batch_size, img_size=img_size)
 
     net = Net(
         model=model,
