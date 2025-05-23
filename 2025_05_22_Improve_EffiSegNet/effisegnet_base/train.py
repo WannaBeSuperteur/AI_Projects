@@ -8,10 +8,18 @@ from lightning.pytorch import loggers
 from lightning.pytorch.tuner import Tuner
 from monai.networks.nets.efficientnet import get_efficientnet_image_size
 
-from datamodule import KvasirSEGDataset
+import os
+import sys
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_DIR_PATH)
+
+from common.datamodule import KvasirSEGDataset
 from network_module import Net
 
 L.seed_everything(42, workers=True)
+
+os.environ["HYDRA_FULL_ERROR"] = "1"  # for hydra debugging
+
 
 torch.set_float32_matmul_precision("medium")
 

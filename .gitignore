@@ -88,6 +88,8 @@
 2025_05_22_Improve_EffiSegNet/Kvasir-SEG/validation/*
 2025_05_22_Improve_EffiSegNet/Kvasir-SEG/test
 2025_05_22_Improve_EffiSegNet/Kvasir-SEG/test/*
+2025_05_22_Improve_EffiSegNet/outputs
+2025_05_22_Improve_EffiSegNet/outputs/*
 venv
 venv/*
 requirements_v3.10.11.txt
