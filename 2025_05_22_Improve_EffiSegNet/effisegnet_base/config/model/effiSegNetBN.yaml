@@ -1,6 +1,6 @@
 name: effiSegNetBN
 object:
-  _target_: models.effisegnet.EffiSegNetBN
+  _target_: effisegnet_base.effisegnet.EffiSegNetBN
   ch: ${ch}
   pretrained: ${pretrained}
   freeze_encoder: ${freeze_encoder}

@@ -19,9 +19,14 @@ from network_module import Net
 L.seed_everything(42, workers=True)
 
 os.environ["HYDRA_FULL_ERROR"] = "1"  # for hydra debugging
-
+os.environ["USE_LIBUV"] = "0"         # to prevent "use_libuv was requested but PyTorch was build without libuv support"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 torch.set_float32_matmul_precision("medium")
+
+# remove warnings
+import warnings
+warnings.filterwarnings('ignore')
 
 
 @hydra.main(config_path="config", config_name="config", version_base=None)
