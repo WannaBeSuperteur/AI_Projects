@@ -46,6 +46,8 @@ def main(cfg):
         criterion=instantiate(cfg.criterion),
         optimizer=cfg.optimizer,
         lr=cfg.lr,
+        batch_size=cfg.batch_size,
+        img_size=img_size,
         scheduler=cfg.scheduler,
     )
 

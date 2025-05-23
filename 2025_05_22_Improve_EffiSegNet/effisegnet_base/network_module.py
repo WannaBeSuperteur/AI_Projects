@@ -7,6 +7,8 @@ import lightning as L
 import torch
 import numpy as np
 import pandas as pd
+import cv2
+
 from hydra.utils import instantiate
 from monai import metrics as mm
 
@@ -16,10 +18,12 @@ log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'p
             'train transform time (s)': [], 'inference transform time (s)': []}
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
 
 
 class Net(L.LightningModule):
-    def __init__(self, model, criterion, optimizer, lr, scheduler=None):
+    def __init__(self, model, criterion, optimizer, lr, batch_size, img_size, scheduler=None):
         super().__init__()
         self.model = model
         self.epoch_no = 0
@@ -39,6 +43,8 @@ class Net(L.LightningModule):
 
         self.criterion = criterion
         self.optimizer = optimizer
+        self.batch_size = batch_size
+        self.img_size = img_size
         self.scheduler = scheduler
         self.lr = lr
 
@@ -98,6 +104,8 @@ class Net(L.LightningModule):
         self.get_recall(preds, y)
         self.get_precision(preds, y)
 
+        self.visualize_inference_result(x, y, preds, batch_idx=batch_idx, tvt_type='valid')
+
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -119,6 +127,8 @@ class Net(L.LightningModule):
         self.get_iou(preds, y)
         self.get_recall(preds, y)
         self.get_precision(preds, y)
+
+        self.visualize_inference_result(x, y, preds, batch_idx=batch_idx, tvt_type='test')
 
         return loss
 
@@ -182,3 +192,50 @@ class Net(L.LightningModule):
         self.inference_time_sec = 0.0
         self.train_transform_time_sec = 0.0
         self.inference_transform_time_sec = 0.0
+
+    def visualize_inference_result(self, x, y, preds, batch_idx, tvt_type):
+        visualize_path = f'{PROJECT_DIR_PATH}/effisegnet_base/inference_result/{tvt_type}/{self.epoch_no}'
+        os.makedirs(visualize_path, exist_ok=True)
+
+        def convert_to_numpy_img(item, imagenet_normalize):
+            item_ = item.detach().cpu().unsqueeze(dim=0)
+            item_ = np.array(item_[0])
+            item_ = np.transpose(item_, (1, 2, 0))
+
+            if imagenet_normalize:
+                item_ = item_ * IMAGENET_STD + IMAGENET_MEAN  # de-normalize
+
+            item_ = item_ * 255.0
+            item_ = item_[:, :, ::-1]
+            return item_
+
+        def write_img(image, save_path):
+            result, image_arr = cv2.imencode(ext='.jpg',
+                                             img=image,
+                                             params=[cv2.IMWRITE_JPEG_QUALITY, 92])
+
+            if result:
+                with open(save_path, mode='w+b') as f:
+                    image_arr.tofile(f)
+
+        for idx, (x_item, y_item, pred) in enumerate(zip(x, y, preds)):
+            x_item_ = convert_to_numpy_img(x_item, imagenet_normalize=True)
+            y_item_ = convert_to_numpy_img(y_item, imagenet_normalize=False)
+            pred_ = convert_to_numpy_img(pred, imagenet_normalize=False)
+
+            overlay_x_y = 0.55 * x_item_ + 0.45 * y_item_
+            overlay_x_pred = 0.55 * x_item_ + 0.45 * pred_
+
+            y_item_1channel = y_item_[:, :, :1]
+            pred_1channel = pred_[:, :, :1]
+            overlay_y_pred = np.concatenate(
+                [y_item_1channel, pred_1channel, np.zeros((self.img_size, self.img_size, 1))],
+                axis=2)
+
+            img_no = batch_idx * self.batch_size + idx
+
+            write_img(x_item_, f'{visualize_path}/img_{img_no:04d}_original_x.png')
+            write_img(overlay_x_y, f'{visualize_path}/img_{img_no:04d}_overlay_x_y.png')
+            write_img(overlay_x_pred, f'{visualize_path}/img_{img_no:04d}_overlay_x_pred.png')
+            write_img(overlay_y_pred, f'{visualize_path}/img_{img_no:04d}_overlay_y_pred.png')
+
