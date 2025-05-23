@@ -1,15 +1,23 @@
-# Original Implementation from https://github.com/ivezakis/effisegnet/blob/main/network_module.py
+# Modified Implementation from https://github.com/ivezakis/effisegnet/blob/main/network_module.py
 
+import os
 import lightning as L
 import torch
+import pandas as pd
 from hydra.utils import instantiate
 from monai import metrics as mm
+
+global log_dict
+log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'precision': []}
+
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
 class Net(L.LightningModule):
     def __init__(self, model, criterion, optimizer, lr, scheduler=None):
         super().__init__()
         self.model = model
+        self.epoch_no = 0
 
         self.get_dice = mm.DiceMetric(include_background=False)
         self.get_iou = mm.MeanIoU(include_background=False)
@@ -105,11 +113,14 @@ class Net(L.LightningModule):
         self.log("val_recall", recall)
         self.log("val_precision", precision)
         self.log("val_f1", 2 * (precision * recall) / (precision + recall + 1e-8))
+        self.log_csv(dice, iou, recall, precision, tvt_type='valid')
 
         self.get_dice.reset()
         self.get_iou.reset()
         self.get_recall.reset()
         self.get_precision.reset()
+
+        self.epoch_no += 1
 
     def on_test_epoch_end(self):
         dice = self.get_dice.aggregate().item()
@@ -122,8 +133,23 @@ class Net(L.LightningModule):
         self.log("test_recall", recall)
         self.log("test_precision", precision)
         self.log("test_f1", 2 * (precision * recall) / (precision + recall + 1e-8))
+        self.log_csv(dice, iou, recall, precision, tvt_type='test')
 
         self.get_dice.reset()
         self.get_iou.reset()
         self.get_recall.reset()
         self.get_precision.reset()
+
+    def log_csv(self, dice, iou, recall, precision, tvt_type):
+        global log_dict
+
+        log_dict['tvt_type'].append(tvt_type)
+        log_dict['epoch'].append(self.epoch_no)
+        log_dict['dice'].append(round(dice, 4))
+        log_dict['iou'].append(round(iou, 4))
+        log_dict['recall'].append(round(recall, 4))
+        log_dict['precision'].append(round(precision, 4))
+
+        log_csv_path = f'{PROJECT_DIR_PATH}/effisegnet_base/train_log.csv'
+        log_df = pd.DataFrame(log_dict)
+        log_df.to_csv(log_csv_path)
