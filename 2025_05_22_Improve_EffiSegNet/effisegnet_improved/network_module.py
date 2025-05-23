@@ -190,7 +190,7 @@ class Net(L.LightningModule):
         log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
         log_dict['inference transform time (s)'].append(round(self.inference_transform_time_sec, 4))
 
-        log_csv_path = f'{PROJECT_DIR_PATH}/effisegnet_base/train_log.csv'
+        log_csv_path = f'{PROJECT_DIR_PATH}/effisegnet_improved/train_log.csv'
         log_df = pd.DataFrame(log_dict)
         log_df.to_csv(log_csv_path)
 
@@ -200,7 +200,7 @@ class Net(L.LightningModule):
         self.inference_transform_time_sec = 0.0
 
     def visualize_inference_result(self, x, y, preds, batch_idx, tvt_type):
-        visualize_path = f'{PROJECT_DIR_PATH}/effisegnet_base/inference_result/{tvt_type}/{self.epoch_no}'
+        visualize_path = f'{PROJECT_DIR_PATH}/effisegnet_improved/inference_result/{tvt_type}/{self.epoch_no}'
         os.makedirs(visualize_path, exist_ok=True)
 
         def convert_to_numpy_img(item, imagenet_normalize):

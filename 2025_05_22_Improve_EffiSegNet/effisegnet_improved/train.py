@@ -51,7 +51,7 @@ def main(cfg):
         img_size=img_size,
         scheduler=cfg.scheduler,
     )
-    save_model_structure_pdf(net, 'EffiSegNet_original', input_size=(cfg.batch_size, 3, 380, 380))
+    save_model_structure_pdf(net, 'EffiSegNet_improved', input_size=(cfg.batch_size, 3, 380, 380))
 
     trainer = instantiate(cfg.trainer, logger=logger)
 
