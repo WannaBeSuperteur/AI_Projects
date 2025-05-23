@@ -241,7 +241,7 @@ zipp==3.17.0
 
 * System Requirements
   * 각각 **8 GB** 이상의 **GPU 2 대 이상**
-  * **16 GB** 이상의 **GPU 가 1 대만** 있는 경우, ```.../2025_05_02_OhLoRA_v2/final_product/run.py``` 의 ```load_models``` 함수의 **line 71 - 76** 을 다음과 같이 수정하여 사용
+  * **16 GB** 이상의 **GPU 가 1 대만** 있는 경우, [```.../2025_05_02_OhLoRA_v2/final_product/run.py```](final_product/run.py) 의 ```load_models``` 함수의 **line 71 - 76** 을 다음과 같이 수정하여 사용
 
 ```python
 def load_models():
