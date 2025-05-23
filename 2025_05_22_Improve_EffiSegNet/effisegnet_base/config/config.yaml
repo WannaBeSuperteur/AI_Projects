@@ -22,7 +22,7 @@ ch: 32
 pretrained: True
 freeze_encoder: False
 deep_supervision: False
-model_name: efficientnet-b0
+model_name: efficientnet-b4
 img_size: derived
 batch_size: 8
 lr: 1e-4
