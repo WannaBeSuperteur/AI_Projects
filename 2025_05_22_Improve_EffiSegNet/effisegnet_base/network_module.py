@@ -1,14 +1,19 @@
 # Modified Implementation from https://github.com/ivezakis/effisegnet/blob/main/network_module.py
 
 import os
+import time
+
 import lightning as L
 import torch
+import numpy as np
 import pandas as pd
 from hydra.utils import instantiate
 from monai import metrics as mm
 
 global log_dict
-log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'precision': []}
+log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'precision': [],
+            'train time (s)': [], 'inference time (s)': [],
+            'train transform time (s)': [], 'inference transform time (s)': []}
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
@@ -18,6 +23,10 @@ class Net(L.LightningModule):
         super().__init__()
         self.model = model
         self.epoch_no = 0
+        self.train_time_sec = 0.0
+        self.inference_time_sec = 0.0            # for both valid & test
+        self.train_transform_time_sec = 0.0
+        self.inference_transform_time_sec = 0.0  # for both valid & test
 
         self.get_dice = mm.DiceMetric(include_background=False)
         self.get_iou = mm.MeanIoU(include_background=False)
@@ -47,30 +56,38 @@ class Net(L.LightningModule):
         return optimizer
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, transform_time = batch
+        self.train_transform_time_sec += np.sum(transform_time.detach().cpu().numpy())
 
+        train_step_start = time.time()
         if self.model.deep_supervision:
             logits, logits_aux = self(x)
 
             aux_loss = sum(self.criterion(z, y) for z in logits_aux)
             loss = (self.criterion(logits, y) + aux_loss) / (1 + len(logits_aux))
+            self.train_time_sec += time.time() - train_step_start
 
             self.log("train_loss", loss)
             return loss
 
         logits = self(x)
         loss = self.criterion(logits, y)
+        self.train_time_sec += time.time() - train_step_start
+
         self.log("train_loss", loss)
 
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, transform_time = batch
+        self.inference_transform_time_sec += np.sum(transform_time.detach().cpu().numpy())
 
+        validation_step_start = time.time()
         if self.model.deep_supervision:
             logits, _ = self(x)
         else:
             logits = self(x)
+        self.inference_time_sec += time.time() - validation_step_start
 
         loss = self.criterion(logits, y)
         self.log("val_loss", loss)
@@ -84,12 +101,15 @@ class Net(L.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, transform_time = batch
+        self.inference_transform_time_sec += np.sum(transform_time.detach().cpu().numpy())
 
+        test_step_start = time.time()
         if self.model.deep_supervision:
             logits, _ = self(x)
         else:
             logits = self(x)
+        self.inference_time_sec += time.time() - test_step_start
 
         loss = self.criterion(logits, y)
         self.log("test_loss", loss)
@@ -149,7 +169,16 @@ class Net(L.LightningModule):
         log_dict['iou'].append(round(iou, 4))
         log_dict['recall'].append(round(recall, 4))
         log_dict['precision'].append(round(precision, 4))
+        log_dict['train time (s)'].append(round(self.train_time_sec, 4))
+        log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
+        log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
+        log_dict['inference transform time (s)'].append(round(self.inference_transform_time_sec, 4))
 
         log_csv_path = f'{PROJECT_DIR_PATH}/effisegnet_base/train_log.csv'
         log_df = pd.DataFrame(log_dict)
         log_df.to_csv(log_csv_path)
+
+        self.train_time_sec = 0.0
+        self.inference_time_sec = 0.0
+        self.train_transform_time_sec = 0.0
+        self.inference_transform_time_sec = 0.0

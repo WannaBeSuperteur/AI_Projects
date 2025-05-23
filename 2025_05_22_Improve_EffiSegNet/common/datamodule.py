@@ -1,6 +1,7 @@
 # Original Implementation from https://github.com/ivezakis/effisegnet/blob/main/datamodule.py
 
 import os
+import time
 
 import albumentations as A
 import cv2
@@ -24,11 +25,15 @@ class KvasirSEGDatagen(Dataset):
         mask = cv2.threshold(mask, 127, 1, cv2.THRESH_BINARY)[1]
 
         if self.transform is not None:
+            transform_start = time.time()
             transformed = self.transform(image=image, mask=mask)
             image = transformed["image"]
             mask = transformed["mask"]
+            transform_time = time.time() - transform_start
+        else:
+            transform_time = 0.0
 
-        return image, mask.long().unsqueeze(0)
+        return image, mask.long().unsqueeze(0), transform_time
 
 
 class KvasirSEGDataset(L.LightningDataModule):
