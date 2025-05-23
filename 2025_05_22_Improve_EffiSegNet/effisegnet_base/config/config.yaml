@@ -9,7 +9,7 @@ run_name: ${model.object.model_name}_${model.object.ch}
 trainer:
   _target_: lightning.pytorch.Trainer
   accelerator: auto
-  max_epochs: 50  # temp (originally 300)
+  max_epochs: 300
   log_every_n_steps: 8
   deterministic: warn
 
