@@ -94,6 +94,8 @@
 2025_05_22_Improve_EffiSegNet/logs/*
 2025_05_22_Improve_EffiSegNet/effisegnet_base/inference_result
 2025_05_22_Improve_EffiSegNet/effisegnet_base/inference_result/*
+2025_05_22_Improve_EffiSegNet/effisegnet_base/inference_result*
+2025_05_22_Improve_EffiSegNet/effisegnet_base/inference_result*/*
 venv
 venv/*
 requirements_v3.10.11.txt
