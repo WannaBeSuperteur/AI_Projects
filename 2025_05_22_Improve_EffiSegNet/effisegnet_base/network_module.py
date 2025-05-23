@@ -13,7 +13,7 @@ from hydra.utils import instantiate
 from monai import metrics as mm
 
 global log_dict
-log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'precision': [],
+log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'precision': [], 'f1_score': [],
             'train time (s)': [], 'inference time (s)': [],
             'train transform time (s)': [], 'inference transform time (s)': []}
 
@@ -143,6 +143,7 @@ class Net(L.LightningModule):
         self.log("val_recall", recall)
         self.log("val_precision", precision)
         self.log("val_f1", 2 * (precision * recall) / (precision + recall + 1e-8))
+
         self.log_csv(dice, iou, recall, precision, tvt_type='valid')
 
         self.get_dice.reset()
@@ -163,6 +164,7 @@ class Net(L.LightningModule):
         self.log("test_recall", recall)
         self.log("test_precision", precision)
         self.log("test_f1", 2 * (precision * recall) / (precision + recall + 1e-8))
+
         self.log_csv(dice, iou, recall, precision, tvt_type='test')
 
         self.get_dice.reset()
@@ -179,6 +181,10 @@ class Net(L.LightningModule):
         log_dict['iou'].append(round(iou, 4))
         log_dict['recall'].append(round(recall, 4))
         log_dict['precision'].append(round(precision, 4))
+
+        f1 = 2 * (precision * recall) / (precision + recall + 1e-8)
+        log_dict['f1_score'].append(round(f1, 4))
+
         log_dict['train time (s)'].append(round(self.train_time_sec, 4))
         log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
         log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
