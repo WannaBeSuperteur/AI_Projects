@@ -213,6 +213,7 @@ class KvasirSEGDatasetForImprovedModel(L.LightningDataModule):
                     rotate=90,
                     interpolation=cv2.INTER_LANCZOS4,
                 ),
+                A.ElasticTransform(p=0.5, interpolation=cv2.INTER_LANCZOS4),
                 A.Normalize(
                     mean=(0.485, 0.456, 0.406),
                     std=(0.229, 0.224, 0.225),
