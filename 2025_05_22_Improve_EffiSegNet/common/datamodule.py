@@ -204,10 +204,10 @@ class KvasirSEGDatasetForImprovedModel(L.LightningDataModule):
                 A.HorizontalFlip(p=0.5),
                 A.VerticalFlip(p=0.5),
                 A.ColorJitter(
-                    p=0.5, brightness=(0.6, 1.6), contrast=0.2, saturation=0.1, hue=0.01
+                    p=0.8, brightness=(0.8, 1.4), contrast=0.15, saturation=0.075, hue=0.01
                 ),
                 A.Affine(
-                    p=0.5,
+                    p=0.8,
                     scale=(0.5, 1.5),
                     translate_percent=0.125,
                     rotate=90,
