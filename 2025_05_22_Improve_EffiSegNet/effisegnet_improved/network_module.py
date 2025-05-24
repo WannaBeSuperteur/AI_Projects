@@ -228,7 +228,7 @@ class Net(L.LightningModule):
         f1 = 2 * (precision * recall) / (precision + recall + 1e-8)
         log_dict['f1_score'].append(round(f1, 4))
 
-        if tvt_type == 'valid_best_value':
+        if tvt_type != 'valid_best_value':
             log_dict['train time (s)'].append(round(self.train_time_sec, 4))
             log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
             log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
