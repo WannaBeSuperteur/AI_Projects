@@ -165,6 +165,7 @@ class Net(L.LightningModule):
         self.log("test_precision", precision)
         self.log("test_f1", 2 * (precision * recall) / (precision + recall + 1e-8))
 
+        self.log_csv(max(log_dict['dice']), max(log_dict['iou']), 0.0, 0.0, tvt_type='valid_best_value')
         self.log_csv(dice, iou, recall, precision, tvt_type='test')
 
         self.get_dice.reset()
