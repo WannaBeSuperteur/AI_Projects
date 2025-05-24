@@ -7,7 +7,28 @@ import albumentations as A
 import cv2
 import lightning as L
 from albumentations.pytorch import ToTensorV2
-from torch.utils.data import DataLoader, Dataset, random_split
+from albumentations.core.transforms_interface import DualTransform
+from torch.utils.data import DataLoader, Dataset
+
+
+class AddBlackRectangleAtTopLeft(DualTransform):  # ImageOnlyTransform 이면 image 에만 적용되고 mask 에는 적용 안됨
+    def __init__(self, fill_value, p=0.5):
+        super(AddBlackRectangleAtTopLeft, self).__init__(always_apply=False, p=p)
+        self.fill_value = fill_value
+
+    def apply(self, img, **params):
+        height, width = img.shape[:2]
+        rect_h_ratio, rect_w_ratio = 0.3, 0.3
+        rect_h = int(rect_h_ratio * height)
+        rect_w = int(rect_w_ratio * width)
+
+        img_ = img.copy()
+
+        if len(img.shape) == 2:  # Grayscale or mask
+            img_[:rect_h, :rect_w] = self.fill_value
+        else:  # Color Image
+            img_[:rect_h, :rect_w, :] = self.fill_value
+        return img_
 
 
 class KvasirSEGDatagen(Dataset):
@@ -201,18 +222,20 @@ class KvasirSEGDatasetForImprovedModel(L.LightningDataModule):
         return A.Compose(
             [
                 A.Resize(*(self.img_size, self.img_size), interpolation=cv2.INTER_LANCZOS4),
+                AddBlackRectangleAtTopLeft(p=0.5, fill_value=0),
                 A.HorizontalFlip(p=0.5),
                 A.VerticalFlip(p=0.5),
                 A.ColorJitter(
-                    p=0.8, brightness=(0.8, 1.4), contrast=0.15, saturation=0.075, hue=0.01
+                    p=0.5, brightness=(0.6, 1.6), contrast=0.2, saturation=0.1, hue=0.01
                 ),
                 A.Affine(
-                    p=0.8,
+                    p=0.5,
                     scale=(0.5, 1.5),
                     translate_percent=0.125,
                     rotate=90,
                     interpolation=cv2.INTER_LANCZOS4,
                 ),
+                A.ElasticTransform(p=0.5, interpolation=cv2.INTER_LANCZOS4),
                 A.Normalize(
                     mean=(0.485, 0.456, 0.406),
                     std=(0.229, 0.224, 0.225),

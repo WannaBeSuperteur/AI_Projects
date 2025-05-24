@@ -22,6 +22,48 @@ IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
 
+# 이미지를 NumPy image 로 변환
+# Create Date: 2025.05.24
+# Last Update Date: -
+
+# Arguments:
+# - item               (Tensor) : Tensor 형태의 이미지, dim = (1, 3, H, W)
+# - imagenet_normalize (bool)   : ImageNet normalization 적용 여부
+
+# Returns:
+# - item_ (NumPy array) : NumPy array 형태로 변환된 이미지, dim = (H, W, 3)
+
+def convert_to_numpy_img(item, imagenet_normalize):
+    item_ = item.detach().cpu().unsqueeze(dim=0)
+    item_ = np.array(item_[0])
+    item_ = np.transpose(item_, (1, 2, 0))
+
+    if imagenet_normalize:
+        item_ = item_ * IMAGENET_STD + IMAGENET_MEAN  # de-normalize
+
+    item_ = item_ * 255.0
+    item_ = item_[:, :, ::-1]
+    return item_
+
+
+# NumPy image 로 변환된 이미지를 파일로 저장
+# Create Date: 2025.05.24
+# Last Update Date: -
+
+# Arguments:
+# - image     (NumPy array) : NumPy array 형태로 변환된 이미지, dim = (H, W, 3)
+# - save_path (str)         : 이미지 파일로 저장할 경로
+
+def write_img(image, save_path):
+    result, image_arr = cv2.imencode(ext='.jpg',
+                                     img=image,
+                                     params=[cv2.IMWRITE_JPEG_QUALITY, 95])
+
+    if result:
+        with open(save_path, mode='w+b') as f:
+            image_arr.tofile(f)
+
+
 class Net(L.LightningModule):
     def __init__(self, model, criterion, optimizer, lr, batch_size, img_size, scheduler=None):
         super().__init__()
@@ -186,44 +228,30 @@ class Net(L.LightningModule):
         f1 = 2 * (precision * recall) / (precision + recall + 1e-8)
         log_dict['f1_score'].append(round(f1, 4))
 
-        log_dict['train time (s)'].append(round(self.train_time_sec, 4))
-        log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
-        log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
-        log_dict['inference transform time (s)'].append(round(self.inference_transform_time_sec, 4))
+        if tvt_type == 'valid_best_value':
+            log_dict['train time (s)'].append(round(self.train_time_sec, 4))
+            log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
+            log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
+            log_dict['inference transform time (s)'].append(round(self.inference_transform_time_sec, 4))
+        else:
+            log_dict['train time (s)'].append(0.0)
+            log_dict['inference time (s)'].append(0.0)
+            log_dict['train transform time (s)'].append(0.0)
+            log_dict['inference transform time (s)'].append(0.0)
 
         log_csv_path = f'{PROJECT_DIR_PATH}/effisegnet_improved/train_log.csv'
         log_df = pd.DataFrame(log_dict)
         log_df.to_csv(log_csv_path)
 
-        self.train_time_sec = 0.0
-        self.inference_time_sec = 0.0
-        self.train_transform_time_sec = 0.0
-        self.inference_transform_time_sec = 0.0
+        if tvt_type != 'valid_best_value':
+            self.train_time_sec = 0.0
+            self.inference_time_sec = 0.0
+            self.train_transform_time_sec = 0.0
+            self.inference_transform_time_sec = 0.0
 
     def visualize_inference_result(self, x, y, preds, batch_idx, tvt_type):
         visualize_path = f'{PROJECT_DIR_PATH}/effisegnet_improved/inference_result/{tvt_type}/{self.epoch_no}'
         os.makedirs(visualize_path, exist_ok=True)
-
-        def convert_to_numpy_img(item, imagenet_normalize):
-            item_ = item.detach().cpu().unsqueeze(dim=0)
-            item_ = np.array(item_[0])
-            item_ = np.transpose(item_, (1, 2, 0))
-
-            if imagenet_normalize:
-                item_ = item_ * IMAGENET_STD + IMAGENET_MEAN  # de-normalize
-
-            item_ = item_ * 255.0
-            item_ = item_[:, :, ::-1]
-            return item_
-
-        def write_img(image, save_path):
-            result, image_arr = cv2.imencode(ext='.jpg',
-                                             img=image,
-                                             params=[cv2.IMWRITE_JPEG_QUALITY, 95])
-
-            if result:
-                with open(save_path, mode='w+b') as f:
-                    image_arr.tofile(f)
 
         for idx, (x_item, y_item, pred) in enumerate(zip(x, y, preds)):
             x_item_ = convert_to_numpy_img(x_item, imagenet_normalize=True)
