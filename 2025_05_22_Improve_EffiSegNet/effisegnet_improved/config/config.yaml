@@ -14,7 +14,7 @@ trainer:
   deterministic: warn
 
 criterion:
-  _target_: monai.losses.DiceCELoss
+  _target_: effisegnet_improved.improved_dice_ce_loss.ImprovedDiceCELoss
   include_background: False
   sigmoid: True
 
