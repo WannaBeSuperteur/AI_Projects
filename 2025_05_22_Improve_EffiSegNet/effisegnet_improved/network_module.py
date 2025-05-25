@@ -14,13 +14,42 @@ from monai import metrics as mm
 
 global log_dict
 log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'precision': [], 'f1_score': [],
+            'loss_dice': [], 'loss_ce': [], 'loss_input_diff': [],
             'train time (s)': [], 'inference time (s)': [],
             'train transform time (s)': [], 'inference transform time (s)': []}
+loss_sum_dict = {'dice': 0.0, 'ce': 0.0, 'input_diff': 0.0}
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
-THRESHOLD = 1.0 / (1.0 + np.exp(-0.5))  # = sigmoid(0.5)
+
+
+# loss_sum_dict 의 각 value 에 계산된 loss 값을 합산
+# Create Date: 2025.05.25
+# Last Update Date: -
+
+# Arguments:
+# - loss_dict (dict) : {'dice': dice_loss, 'ce': ce_loss, 'input_diff': input_diff_loss}
+
+def add_to_loss_sum_dict(loss_dict):
+    global loss_sum_dict
+
+    loss_sum_dict['dice'] += loss_dict['dice']
+    loss_sum_dict['ce'] += loss_dict['ce']
+    loss_sum_dict['input_diff'] += loss_dict['input_diff']
+
+
+# loss_sum_dict 초기화
+# Create Date: 2025.05.25
+# Last Update Date: -
+
+# Arguments:
+# - 없음
+
+def reinit_loss_sum_dict():
+    global loss_sum_dict
+
+    loss_sum_dict = {'dice': 0.0, 'ce': 0.0, 'input_diff': 0.0}
 
 
 # 이미지를 NumPy image 로 변환
@@ -112,15 +141,15 @@ class Net(L.LightningModule):
         if self.model.deep_supervision:
             logits, logits_aux = self(x)
 
-            aux_loss = sum(self.criterion(z, y) for z in logits_aux)
-            loss = (self.criterion(logits, y) + aux_loss) / (1 + len(logits_aux))
+            aux_loss, _ = sum(self.criterion(z, y) for z in logits_aux)
+            loss, _ = (self.criterion(logits, y) + aux_loss) / (1 + len(logits_aux))
             self.train_time_sec += time.time() - train_step_start
 
             self.log("train_loss", loss)
             return loss
 
         logits = self(x)
-        loss = self.criterion(logits, y)
+        loss, _ = self.criterion(logits, y)
         self.train_time_sec += time.time() - train_step_start
 
         self.log("train_loss", loss)
@@ -138,10 +167,11 @@ class Net(L.LightningModule):
             logits = self(x)
         self.inference_time_sec += time.time() - validation_step_start
 
-        loss = self.criterion(logits, y)
+        loss, loss_dict = self.criterion(logits, y)
+        add_to_loss_sum_dict(loss_dict)
         self.log("val_loss", loss)
 
-        preds = (torch.sigmoid(logits) > THRESHOLD).long()
+        preds = (torch.sigmoid(logits) > 0.5).long()
         self.get_dice(preds, y)
         self.get_iou(preds, y)
         self.get_recall(preds, y)
@@ -162,10 +192,11 @@ class Net(L.LightningModule):
             logits = self(x)
         self.inference_time_sec += time.time() - test_step_start
 
-        loss = self.criterion(logits, y)
+        loss, loss_dict = self.criterion(logits, y)
+        add_to_loss_sum_dict(loss_dict)
         self.log("test_loss", loss)
 
-        preds = (torch.sigmoid(logits) > THRESHOLD).long()
+        preds = (torch.sigmoid(logits) > 0.5).long()
         self.get_dice(preds, y)
         self.get_iou(preds, y)
         self.get_recall(preds, y)
@@ -217,7 +248,7 @@ class Net(L.LightningModule):
         self.get_precision.reset()
 
     def log_csv(self, dice, iou, recall, precision, tvt_type):
-        global log_dict
+        global log_dict, loss_sum_dict
 
         log_dict['tvt_type'].append(tvt_type)
         log_dict['epoch'].append(self.epoch_no)
@@ -230,11 +261,20 @@ class Net(L.LightningModule):
         log_dict['f1_score'].append(round(f1, 4))
 
         if tvt_type != 'valid_best_value':
+            log_dict['loss_dice'].append(round(loss_sum_dict['dice'], 4))
+            log_dict['loss_ce'].append(round(loss_sum_dict['ce'], 4))
+            log_dict['loss_input_diff'].append(round(loss_sum_dict['input_diff'], 4))
+
             log_dict['train time (s)'].append(round(self.train_time_sec, 4))
             log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
             log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
             log_dict['inference transform time (s)'].append(round(self.inference_transform_time_sec, 4))
+
         else:
+            log_dict['loss_dice'].append(0.0)
+            log_dict['loss_ce'].append(0.0)
+            log_dict['loss_input_diff'].append(0.0)
+
             log_dict['train time (s)'].append(0.0)
             log_dict['inference time (s)'].append(0.0)
             log_dict['train transform time (s)'].append(0.0)
@@ -249,6 +289,8 @@ class Net(L.LightningModule):
             self.inference_time_sec = 0.0
             self.train_transform_time_sec = 0.0
             self.inference_transform_time_sec = 0.0
+
+            reinit_loss_sum_dict()
 
     def visualize_inference_result(self, x, y, preds, batch_idx, tvt_type):
         visualize_path = f'{PROJECT_DIR_PATH}/effisegnet_improved/inference_result/{tvt_type}/{self.epoch_no}'

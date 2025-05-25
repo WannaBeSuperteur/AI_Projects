@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.loss import _Loss
 
+from typing import Tuple
 from collections.abc import Callable, Sequence
 
 from monai.networks import one_hot
@@ -248,6 +249,7 @@ class ImprovedDiceCELoss(_Loss):
         weight: torch.Tensor | None = None,
         lambda_dice: float = 1.0,
         lambda_ce: float = 1.0,
+        lambda_input_diffs: float = 0.01,
         label_smoothing: float = 0.0,
     ) -> None:
         """
@@ -287,6 +289,8 @@ class ImprovedDiceCELoss(_Loss):
                 Defaults to 1.0.
             lambda_ce: the trade-off weight value for cross entropy loss. The value should be no less than 0.0.
                 Defaults to 1.0.
+            lambda_input_diffs: the trade-off weight value for near-pixels-difference loss. The value should be no less than 0.0.
+                Defaults to 0.01.
             label_smoothing: a value in [0, 1] range. If > 0, the labels are smoothed
                 by the given factor to reduce overfitting.
                 Defaults to 0.0.
@@ -324,8 +328,11 @@ class ImprovedDiceCELoss(_Loss):
             raise ValueError("lambda_dice should be no less than 0.0.")
         if lambda_ce < 0.0:
             raise ValueError("lambda_ce should be no less than 0.0.")
+        if lambda_input_diffs < 0.0:
+            raise ValueError("lambda_input_diffs should be no less than 0.0.")
         self.lambda_dice = lambda_dice
         self.lambda_ce = lambda_ce
+        self.lambda_input_diffs = lambda_input_diffs
         self.old_pt_ver = not pytorch_after(1, 10)
 
     def ce(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -360,7 +367,17 @@ class ImprovedDiceCELoss(_Loss):
 
         return self.binary_cross_entropy(input, target)  # type: ignore[no-any-return]
 
-    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    def input_near_px_diff(self, input: torch.Tensor) -> torch.Tensor:
+        batch_size = input.shape[0]
+
+        horizontal_square_diff = torch.mean(torch.square(input[:, :, :, 4:] - input[:, :, :, :-4]))
+        vertical_square_diff = torch.mean(torch.square(input[:, :, 4:, :] - input[:, :, :-4, :]))
+        diag1_square_diff = torch.mean(torch.square(input[:, :, 4:, 4:] - input[:, :, :-4, :-4]))
+        diag2_square_diff = torch.mean(torch.square(input[:, :, 4:, :-4] - input[:, :, :-4, 4:]))
+
+        return batch_size * (horizontal_square_diff + vertical_square_diff + diag1_square_diff + diag2_square_diff)
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, dict]:
         """
         Args:
             input: the shape should be BNH[WD].
@@ -372,6 +389,7 @@ class ImprovedDiceCELoss(_Loss):
 
         Returns:
             torch.Tensor: value of the loss.
+            dict: values of each loss type, {'dice': dice_loss, 'ce': ce_loss, 'input_diff': input_diff_loss}
 
         """
         if input.dim() != target.dim():
@@ -389,6 +407,14 @@ class ImprovedDiceCELoss(_Loss):
 
         dice_loss = self.dice(input, target)
         ce_loss = self.ce(input, target) if input.shape[1] != 1 else self.bce(input, target)
-        total_loss: torch.Tensor = self.lambda_dice * dice_loss + self.lambda_ce * ce_loss
+        input_diff_loss = self.input_near_px_diff(input)
 
-        return total_loss
+        total_loss: torch.Tensor = (self.lambda_dice * dice_loss +
+                                    self.lambda_ce * ce_loss +
+                                    self.lambda_input_diffs * input_diff_loss)
+
+        loss_dict = {'dice': float(dice_loss.detach().cpu().numpy()),
+                     'ce': float(ce_loss.detach().cpu().numpy()),
+                     'input_diff': float(input_diff_loss.detach().cpu().numpy())}
+
+        return total_loss, loss_dict
