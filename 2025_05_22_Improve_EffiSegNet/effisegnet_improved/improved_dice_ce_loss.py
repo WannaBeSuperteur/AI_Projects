@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn.modules.loss import _Loss
@@ -15,6 +16,9 @@ sys.path.append(PROJECT_DIR_PATH)
 # remove warnings
 import warnings
 warnings.filterwarnings('ignore')
+
+np.set_printoptions(linewidth=160, suppress=True)
+torch.set_printoptions(linewidth=160, sci_mode=False)
 
 
 # Original Implementation from:

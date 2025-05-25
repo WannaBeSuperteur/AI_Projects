@@ -20,6 +20,7 @@ log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'p
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
+THRESHOLD = 1.0 / (1.0 + np.exp(-0.5))  # = sigmoid(0.5)
 
 
 # 이미지를 NumPy image 로 변환
@@ -140,7 +141,7 @@ class Net(L.LightningModule):
         loss = self.criterion(logits, y)
         self.log("val_loss", loss)
 
-        preds = (torch.sigmoid(logits) > 0.5).long()
+        preds = (torch.sigmoid(logits) > THRESHOLD).long()
         self.get_dice(preds, y)
         self.get_iou(preds, y)
         self.get_recall(preds, y)
@@ -164,7 +165,7 @@ class Net(L.LightningModule):
         loss = self.criterion(logits, y)
         self.log("test_loss", loss)
 
-        preds = (torch.sigmoid(logits) > 0.5).long()
+        preds = (torch.sigmoid(logits) > THRESHOLD).long()
         self.get_dice(preds, y)
         self.get_iou(preds, y)
         self.get_recall(preds, y)
