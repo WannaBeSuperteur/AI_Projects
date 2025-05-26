@@ -231,7 +231,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
 
     # set max learning rate for property
     if property_name in ['gender', 'quality']:
-        max_lr = 0.00002  # fine-tuning pre-trained models -> lower learning rate
+        max_lr = 0.000005  # fine-tuning pre-trained models -> lower learning rate
     else:
         max_lr = 0.00005
 
