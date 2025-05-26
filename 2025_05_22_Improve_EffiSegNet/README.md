@@ -74,11 +74,10 @@
 | 🔨 모델 구현 | EffiSegNet 구현                         | 05.23 금 (1d)           | ```P004-001-EffiSegNet``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/11) | ✅  |
 | 🧪 모델 학습 | EffiSegNet 학습 **1차** (원본 구현)          | 05.23 금 - 05.24 토 (2d) | ```P004-001-EffiSegNet``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/11) | ✅  |
 | 🔬 탐구    | EffiSegNet 의 '오답'이 발생하는 부분 탐구         | 05.24 토 (1d)           |                           | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/12) | ✅  |
-| 🔨 모델 개선 | EffiSegNet 개선                         | 05.24 토 (1d)           | ```P004-002-EffiSegNet``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/13) | 💨 |
-| 🧪 모델 학습 | EffiSegNet 학습 **2차** (개선된 모델)         | 05.24 토 - 05.25 일 (1d) | ```P004-002-EffiSegNet``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/13) | ⬜  |
-| 📃 문서화   | EffiSegNet 원본 vs 개선 모델 성능 비교 및 보고서 작성 | 05.25 일 (1d)           |                           |                                                                    | ⬜  |
-| 📃 문서화   | EffiSegNet 개선 모델 HuggingFace 에 등록     | 05.25 일 (1d)           |                           |                                                                    | ⬜  |
-| 📃 문서화   | 프로젝트 문서 정리 및 마무리                      | 05.25 일 - 05.26 월 (2d) |                           |                                                                    | ⬜  |
+| 🔨 모델 개선 | EffiSegNet 개선                         | 05.24 토 - 05.25 일 (2d) | ```P004-002-EffiSegNet``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/13) | ✅  |
+| 🧪 모델 학습 | EffiSegNet 학습 **2차** (개선된 모델)         | 05.24 토 - 05.25 일 (2d) | ```P004-002-EffiSegNet``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/13) | ✅  |
+| 📃 문서화   | EffiSegNet 원본 vs 개선 모델 성능 비교 및 보고서 작성 | 05.26 월 (1d)           |                           |                                                                    | 💨 |
+| 📃 문서화   | 프로젝트 문서 정리 및 마무리                      | 05.26 월 (1d)           |                           |                                                                    | ⬜  |
 
 ## 4. 프로젝트 상세 설명
 
