@@ -28,7 +28,24 @@
 
 ### 1-1. 성능 향상 방법
 
+* Augmentation 조정
+  * ColorJitter & Affine 변환에 대한 실시 확률 각각 **50% → 80%** 로 증가 [(필요성)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Image%20Processing/Basics_Image_Augmentation_Methods.md#2-torchvision-%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-augmentation) [(details)](effisegnet_improved/README.md#2-1--colorjitter--affine-prob-상향) 
+  * ColorJitter Augmentation 강도 약화 [(details)](effisegnet_improved/README.md#2-3--weaken-colorjitter)
+* 이미지 좌측 상단에 검은색 직사각형 추가
+  * Kvasir-SEG 데이터셋에 특화된 Augmentation [(details)](effisegnet_improved/README.md#2-5--black-rectangle-추가)
+* Near-Pixel-Diff Loss Term 추가
+  * Segmentation Map 의 noise 에 의해 정답과 오차가 생기는 현상 해결 [(details)](effisegnet_improved/README.md#2-6--near-pixel-diff-loss-term-추가)
+
 ### 1-2. 성능 향상 결과
+
+![image](../images/250522_2.png)
+
+| 구분                                              | Test Dice Score       | Test IoU Score        | Test Recall           | 
+|-------------------------------------------------|-----------------------|-----------------------|-----------------------|
+| **Original Model**                              | 0.9310                | 0.8803                | 0.9363                |
+| Augmentation 조정 적용 모델<br>- 4차 수정 (05.24)        | **0.9421 (▲ 0.0111)** | **0.8944 (▲ 0.0141)** | 0.9385 (▲ 0.0022)     |
+| 이미지 좌측 상단 검은색 직사각형 추가<br>- 5차 수정 (05.25)        | 0.9370 (▲ 0.0060)     | 0.8879 (▲ 0.0076)     | 0.9378 (▲ 0.015)      |
+| Near-Pixel-Diff Loss Term 추가<br>- 7차 수정 (05.25) | 0.9347 (▲ 0.0037)     | **0.8824 (▲ 0.0021)** | **0.9528 (▲ 0.0165)** |
 
 ## 2. 기술 분야 및 사용 기술
 
@@ -81,7 +98,25 @@
 
 ## 4. 프로젝트 상세 설명
 
-* 
+* EffiSegNet baseline 모델 구현
+  * [상세 정보](effisegnet_base/README.md)
+
+| 구분                                    | Dice Score | IoU Score  | 
+|---------------------------------------|------------|------------|
+| Original Paper                        | 0.9483     | 0.9056     |
+| **test (50 epochs)**                  | **0.9445** | **0.8980** |
+| test (300 epochs = Original Paper 조건) | 0.9413     | 0.8965     |
+
+* EffiSegNet improved 모델 구현
+  * [상세 정보](effisegnet_improved/README.md) 
+  * 암 (Positive) 인데 암이 아니라고 예측 (Negative) 하는 오류는 **비교적 심각한 문제** 이므로, 이를 고려한 성능지표인 Recall 이 중요
+  * **코드는 분명 동일한데, 50 epoch test 시 결과가 현저히 차이 나는 이유는 불명**
+
+| 구분                                                  | Dice Score            | IoU Score             | Recall                | 
+|-----------------------------------------------------|-----------------------|-----------------------|-----------------------|
+| **Original Model test (50 epochs)**                 | 0.9310                | 0.8803                | 0.9363                |
+| Best Improved Model (Dice & IoU)<br>- 4차 수정 (05.24) | **0.9421 (▲ 0.0111)** | **0.8944 (▲ 0.0141)** | 0.9385 (▲ 0.0022)     |
+| Best Improved Model (Recall)<br>- 7차 수정 (05.25)     | 0.9347 (▲ 0.0037)     | **0.8824 (▲ 0.0021)** | **0.9528 (▲ 0.0165)** |
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
