@@ -274,7 +274,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
     elif property_name == 'quality':
         val_loss_threshold, pos_neg_threshold = 0.13, 0.90
     elif property_name == 'age':
-        val_loss_threshold, pos_neg_threshold = 0.14, 0.10
+        val_loss_threshold, pos_neg_threshold = 0.15, 0.10
     elif property_name == 'glass':
         val_loss_threshold, pos_neg_threshold = 0.06, 0.10
     else:

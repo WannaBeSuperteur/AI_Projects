@@ -59,7 +59,7 @@ class AgeCNN(nn.Module):
 
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(256 * 12 * 4, 512),
+            nn.Linear(256 * 12 * 6, 512),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -69,25 +69,25 @@ class AgeCNN(nn.Module):
         )
 
     def forward(self, x):
-        x = x[:, :, : IMAGE_RESOLUTION // 2, :]
+        x = x[:, :, : 5 * IMAGE_RESOLUTION // 8, :]
 
         # Conv
-        x = self.conv1(x)  # 254 x 126
-        x = self.conv2(x)  # 252 x 124
-        x = self.pool1(x)  # 126 x 62
+        x = self.conv1(x)  # 254 x 158
+        x = self.conv2(x)  # 252 x 156
+        x = self.pool1(x)  # 126 x 78
 
-        x = self.conv3(x)  # 124 x 60
-        x = self.pool2(x)  # 62 x 30
+        x = self.conv3(x)  # 124 x 76
+        x = self.pool2(x)  # 62 x 38
 
-        x = self.conv4(x)  # 60 x 28
-        x = self.pool3(x)  # 30 x 14
+        x = self.conv4(x)  # 60 x 36
+        x = self.pool3(x)  # 30 x 18
 
-        x = self.conv5(x)  # 28 x 12
-        x = self.pool4(x)  # 14 x 6
+        x = self.conv5(x)  # 28 x 16
+        x = self.pool4(x)  # 14 x 8
 
-        x = self.conv6(x)  # 12 x 4
+        x = self.conv6(x)  # 12 x 6
 
-        x = x.view(-1, 256 * 12 * 4)
+        x = x.view(-1, 256 * 12 * 6)
 
         # Fully Connected
         x = self.fc1(x)
