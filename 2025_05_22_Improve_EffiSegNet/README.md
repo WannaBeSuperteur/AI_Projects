@@ -63,8 +63,7 @@
 ## 2. 기술 분야 및 사용 기술
 
 * 기술 분야
-  * Computer Vision
-  * LLM (optional)
+  * Computer Vision (Segmentation)
 * 사용 기술
 
 | 기술 분야           | 사용 기술      | 설명                         |
