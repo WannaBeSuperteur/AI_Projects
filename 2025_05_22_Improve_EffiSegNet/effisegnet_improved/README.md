@@ -90,6 +90,8 @@
 ![image](../../images/250522_4.png)
 
 * **본 데이터셋 (Kvasir-SEG) 특화** Augmentation
+  * 따라서 다양한 데이터셋에 대한 일반화는 어려움
+  * 본 Augmentation 방법은, 모델의 Augmentation 알고리즘 개량을 통해 **자사 또는 고객사에서 요구하는 특정 데이터셋에 적합하게 적용** 하는 컨셉에 가까움
 * 적용 배경
   * 본 데이터셋의 경우, 상당수의 이미지가 좌측 하단에 검은 직사각형이 있음
   * 이로 인해 **종양에 해당하는 영역을 정확히 탐지하는 데 지장** 이 생길 수 있음
@@ -108,6 +110,7 @@
   * 이로 인해 모델 예측의 정확도가 다소 떨어짐
   * 이를 해결하기 위해, **가로/세로/대각선으로 일정 거리만큼 떨어진 픽셀의 Segmentation score 의 차이의 제곱** 을 Loss Term 으로 추가
 * 상세 적용 사항
+  * **해당 Loss Term 추가를 위해, monai 라이브러리의 [```DiceCELoss``` 코드](https://github.com/Project-MONAI/MONAI/blob/46a5272196a6c2590ca2589029eed8e4d56ff008/monai/losses/dice.py#L639-L808) 를 개량 적용함**  
   * Loss 계산 방법
     * 위 그림과 같이, **각 픽셀 별 가로/세로/대각선으로 4 픽셀 떨어진 픽셀과의 Segmentation score 값 차이의 제곱** 의 합의 평균을 이용  
   * 기존 Loss

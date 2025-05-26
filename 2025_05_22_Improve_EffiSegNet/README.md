@@ -114,6 +114,7 @@
 
 * EffiSegNet baseline 모델 구현
   * [상세 정보](effisegnet_base/README.md)
+  * 50 epochs 보다 300 epochs 에서의 성능이 낮은 이유는 [Overfitting](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Overfitting_Dropout.md#2-%EB%94%A5%EB%9F%AC%EB%8B%9D%EC%97%90%EC%84%9C%EC%9D%98-%EC%98%A4%EB%B2%84%ED%94%BC%ED%8C%85-overfitting) 으로 추정
 
 | 구분                                    | Dice Score | IoU Score  | 
 |---------------------------------------|------------|------------|
