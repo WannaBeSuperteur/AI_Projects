@@ -15,9 +15,9 @@ kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 # Arguments:
 # - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator]
-# - n                     (int)       : 생성할 이미지의 개수 (default : 10,000)
+# - n                     (int)       : 생성할 이미지의 개수 (default : 15,000)
 
-def generate_face_images(finetune_v1_generator, n=10000):
+def generate_face_images(finetune_v1_generator, n=15000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/generated_face_images'
     os.makedirs(save_dir, exist_ok=True)
 
