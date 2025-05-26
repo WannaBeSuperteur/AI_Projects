@@ -121,6 +121,8 @@
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
+* [해당 문서](issue_reported.md) 참고.
+
 ## 6. inference 실행 가이드
 
 * **1. Kvasir-SEG 데이터셋 다운로드**
