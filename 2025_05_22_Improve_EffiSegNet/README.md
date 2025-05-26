@@ -81,7 +81,30 @@
 
 ## 4. 프로젝트 상세 설명
 
+* 
+
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
 ## 6. inference 실행 가이드
- 
+
+* **1. Kvasir-SEG 데이터셋 다운로드**
+  * from [EffiSegNet Official GitHub](https://github.com/ivezakis/effisegnet/tree/main/Kvasir-SEG)
+
+* **2. 실험 차수 checkout**
+  * 먼저, 아래에서 원하는 실험 차수의 revision 으로 checkout
+
+| 실험 차수               | Test Dice  | Test IoU   | Test Recall | checkout 할 revision                                                                                         |
+|---------------------|------------|------------|-------------|-------------------------------------------------------------------------------------------------------------|
+| Original EffiSegNet | 0.9310     | 0.8803     | 0.9363      | 최신 버전                                                                                                       |
+| 1차 수정 (05.24)       | 0.9406     | 0.8913     | 0.9259      | [eb0766bd](https://github.com/WannaBeSuperteur/AI_Projects/commit/eb0766bd36015ab3de3ac58f5d47f4c1771bcfdf) |
+| 2차 수정 (05.24)       | 0.9363     | 0.8860     | 0.9295      | [14339e3a](https://github.com/WannaBeSuperteur/AI_Projects/commit/14339e3a03419c04178a6ddcda18008ae2c7c516) |
+| 3차 수정 (05.24)       | 0.9386     | 0.8904     | 0.9389      | [c3fd8c03](https://github.com/WannaBeSuperteur/AI_Projects/commit/c3fd8c03a50c72f92b89433802fab96cf045ec91) |
+| 4차 수정 (05.24)       | **0.9421** | **0.8944** | 0.9385      | [9954c2b6](https://github.com/WannaBeSuperteur/AI_Projects/commit/9954c2b659b492d2250fec394acfed48d3c73b76) |
+| 5차 수정 (05.24)       | 0.9370     | 0.8879     | 0.9378      | [9ef7b411](https://github.com/WannaBeSuperteur/AI_Projects/commit/9ef7b411b4f653e65977349b5c2410cdd499bcf1) |
+| 6차 수정 (05.25)       | 0.9304     | 0.8790     | 0.9295      | [1378c41a](https://github.com/WannaBeSuperteur/AI_Projects/commit/1378c41a972931a6e3b31e04cf5964e47ac3f773) |
+| 7차 수정 (05.25)       | 0.9347     | 0.8824     | **0.9528**  | [63a1183f](https://github.com/WannaBeSuperteur/AI_Projects/commit/63a1183fcad8820ccd002fb2ffa5ff95829a19dc) |
+| 8차 수정 (05.25)       | 0.9315     | 0.8772     | 0.9501      | [5737351c](https://github.com/WannaBeSuperteur/AI_Projects/commit/5737351c5a70bf024380997f7af4b75a89fab8c5) |
+
+* **3. 학습 및 inference 코드 실행**
+  * ```python effisegnet_improved/train.py```
+  * Quadro M6000 12GB 기준 **train & final test (inference)** 까지 **약 1h 40m 소요**
