@@ -87,7 +87,8 @@ def postprocess_all_data():
 
 # 최종 필터링된 이미지를 학습 데이터셋 디렉토리에 복사 (score threshold 는 epoch 별 detail 의 성능지표 계산 시와 다를 수 있음)
 # Create Date : 2025.05.26
-# Last Update Date : -
+# Last Update Date : 2025.05.27
+# - age threshold 0.4 -> 0.05 로 조정
 
 # Arguments:
 # - final_df (Pandas DataFrame) : Gender, Quality 값을 모두 취합한 Pandas DataFrame
@@ -98,7 +99,7 @@ def postprocess_all_data():
 def copy_to_training_data(final_df):
     gender_thrsh = 0.7
     quality_thrsh = 0.9
-    age_thrsh = 0.4
+    age_thrsh = 0.05
     glass_thrsh = 0.05
 
     filtered_df = final_df[(final_df['gender_score'] >= gender_thrsh) & (final_df['quality_score'] >= quality_thrsh) &
