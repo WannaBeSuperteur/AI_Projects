@@ -110,10 +110,10 @@ def create_train_dataset_df():
     labeled_data_path = f'{PROJECT_DIR_PATH}/stylegan/generate_dataset/scores_labeled_first_2k.csv'
     labeled_df = pd.read_csv(labeled_data_path)
 
-    labeled_df['img_no'] = labeled_df['img_name']
-    labeled_df['img_path'] = labeled_df['img_name'].apply(lambda x: f'{IMAGE_DATA_DIR_PATH}/{x:06d}.jpg')
+    labeled_df['img_no'] = labeled_df['idx']
+    labeled_df['img_path'] = labeled_df['idx'].apply(lambda x: f'{IMAGE_DATA_DIR_PATH}/{x:06d}.jpg')
 
-    labeled_df.drop(columns=['img_name'], inplace=True)
+    labeled_df.drop(columns=['idx'], inplace=True)
 
     return labeled_df
 
@@ -202,6 +202,7 @@ def define_cnn_model(cnn_model_class, device):
 def load_pretrained_weights(cnn_model, property_name, device):
     pretrained_model_path = f'{PROJECT_DIR_PATH}/stylegan/models/{property_name}_model_0.pt'
     cnn_model.load_state_dict(torch.load(pretrained_model_path, map_location=device, weights_only=True))
+    print(f'Pre-trained model load successful!! ({property_name}) 😊')
 
 
 # 모델 학습 실시 (K-Fold / Stratified K-Fold Cross Validation)
@@ -263,7 +264,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
     elif property_name == 'age':
         val_loss_threshold, pos_neg_threshold = 0.45, 0.50
     elif property_name == 'glass':
-        val_loss_threshold, pos_neg_threshold = 0.45, 0.10
+        val_loss_threshold, pos_neg_threshold = 0.06, 0.10
     else:
         raise Exception("property_name must be one of ['gender', 'quality', 'age', 'glass'].")
 

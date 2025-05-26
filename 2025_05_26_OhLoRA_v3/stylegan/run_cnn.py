@@ -98,7 +98,7 @@ def postprocess_all_data():
 def copy_to_training_data(final_df):
     gender_thrsh = 0.7
     quality_thrsh = 0.9
-    age_thrsh = 0.7
+    age_thrsh = 0.4
     glass_thrsh = 0.05
 
     filtered_df = final_df[(final_df['gender_score'] >= gender_thrsh) & (final_df['quality_score'] >= quality_thrsh) &
