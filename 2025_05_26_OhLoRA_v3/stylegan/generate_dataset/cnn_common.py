@@ -210,6 +210,7 @@ def load_pretrained_weights(cnn_model, property_name, device):
 # Create Date : 2025.05.26
 # Last Update Date : 2025.05.27
 # - age CNN 에 대한 max_lr 0.00005 -> 0.000025 로 수정 및 pass threshold & pos/neg threshold 조정
+# - glass pass threshold 조정
 
 # Arguments:
 # - data_loader     (DataLoader)      : 2,000 장의 데이터를 train data 로 하는 DataLoader
@@ -276,7 +277,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
     elif property_name == 'age':
         val_loss_threshold, pos_neg_threshold = 0.15, 0.10
     elif property_name == 'glass':
-        val_loss_threshold, pos_neg_threshold = 0.06, 0.10
+        val_loss_threshold, pos_neg_threshold = 0.10, 0.10
     else:
         raise Exception("property_name must be one of ['gender', 'quality', 'age', 'glass'].")
 
