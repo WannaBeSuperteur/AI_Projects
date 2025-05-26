@@ -72,12 +72,13 @@
   * Python : **Python 3.10.11**
   * Dev Tool : PyCharm 2024.1 Community Edition
 * Python Libraries
-  * 주요 파이썬 라이브러리 (TBU)
-  * 실험 환경의 전체 파이썬 라이브러리 목록 (TBU)
+  * [주요 파이썬 라이브러리](system_info.md#1-1-주요-python-라이브러리)
+  * [실험 환경의 전체 파이썬 라이브러리 목록](system_info.md#1-2-시스템에-설치된-전체-python-라이브러리)
 * OS & GPU
   * OS : **Windows 10**
   * GPU : 2 x **Quadro M6000** (12 GB each)
   * **CUDA 12.4** (NVIDIA-SMI 551.61)
+* [시스템 환경 상세 정보](system_info.md)
 
 ## 3. 프로젝트 일정
 
