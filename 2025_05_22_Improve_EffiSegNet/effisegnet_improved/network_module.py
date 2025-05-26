@@ -14,12 +14,84 @@ from monai import metrics as mm
 
 global log_dict
 log_dict = {'tvt_type': [], 'epoch': [], 'dice': [], 'iou': [], 'recall': [], 'precision': [], 'f1_score': [],
+            'loss_dice': [], 'loss_ce': [], 'loss_input_diff': [],
             'train time (s)': [], 'inference time (s)': [],
             'train transform time (s)': [], 'inference transform time (s)': []}
+loss_sum_dict = {'dice': 0.0, 'ce': 0.0, 'input_diff': 0.0}
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
+
+
+# loss_sum_dict 의 각 value 에 계산된 loss 값을 합산
+# Create Date: 2025.05.25
+# Last Update Date: -
+
+# Arguments:
+# - loss_dict (dict) : {'dice': dice_loss, 'ce': ce_loss, 'input_diff': input_diff_loss}
+
+def add_to_loss_sum_dict(loss_dict):
+    global loss_sum_dict
+
+    loss_sum_dict['dice'] += loss_dict['dice']
+    loss_sum_dict['ce'] += loss_dict['ce']
+    loss_sum_dict['input_diff'] += loss_dict['input_diff']
+
+
+# loss_sum_dict 초기화
+# Create Date: 2025.05.25
+# Last Update Date: -
+
+# Arguments:
+# - 없음
+
+def reinit_loss_sum_dict():
+    global loss_sum_dict
+
+    loss_sum_dict = {'dice': 0.0, 'ce': 0.0, 'input_diff': 0.0}
+
+
+# 이미지를 NumPy image 로 변환
+# Create Date: 2025.05.24
+# Last Update Date: -
+
+# Arguments:
+# - item               (Tensor) : Tensor 형태의 이미지, dim = (1, 3, H, W)
+# - imagenet_normalize (bool)   : ImageNet normalization 적용 여부
+
+# Returns:
+# - item_ (NumPy array) : NumPy array 형태로 변환된 이미지, dim = (H, W, 3)
+
+def convert_to_numpy_img(item, imagenet_normalize):
+    item_ = item.detach().cpu().unsqueeze(dim=0)
+    item_ = np.array(item_[0])
+    item_ = np.transpose(item_, (1, 2, 0))
+
+    if imagenet_normalize:
+        item_ = item_ * IMAGENET_STD + IMAGENET_MEAN  # de-normalize
+
+    item_ = item_ * 255.0
+    item_ = item_[:, :, ::-1]
+    return item_
+
+
+# NumPy image 로 변환된 이미지를 파일로 저장
+# Create Date: 2025.05.24
+# Last Update Date: -
+
+# Arguments:
+# - image     (NumPy array) : NumPy array 형태로 변환된 이미지, dim = (H, W, 3)
+# - save_path (str)         : 이미지 파일로 저장할 경로
+
+def write_img(image, save_path):
+    result, image_arr = cv2.imencode(ext='.jpg',
+                                     img=image,
+                                     params=[cv2.IMWRITE_JPEG_QUALITY, 95])
+
+    if result:
+        with open(save_path, mode='w+b') as f:
+            image_arr.tofile(f)
 
 
 class Net(L.LightningModule):
@@ -69,15 +141,15 @@ class Net(L.LightningModule):
         if self.model.deep_supervision:
             logits, logits_aux = self(x)
 
-            aux_loss = sum(self.criterion(z, y) for z in logits_aux)
-            loss = (self.criterion(logits, y) + aux_loss) / (1 + len(logits_aux))
+            aux_loss, _ = sum(self.criterion(z, y) for z in logits_aux)
+            loss, _ = (self.criterion(logits, y) + aux_loss) / (1 + len(logits_aux))
             self.train_time_sec += time.time() - train_step_start
 
             self.log("train_loss", loss)
             return loss
 
         logits = self(x)
-        loss = self.criterion(logits, y)
+        loss, _ = self.criterion(logits, y)
         self.train_time_sec += time.time() - train_step_start
 
         self.log("train_loss", loss)
@@ -95,7 +167,8 @@ class Net(L.LightningModule):
             logits = self(x)
         self.inference_time_sec += time.time() - validation_step_start
 
-        loss = self.criterion(logits, y)
+        loss, loss_dict = self.criterion(logits, y)
+        add_to_loss_sum_dict(loss_dict)
         self.log("val_loss", loss)
 
         preds = (torch.sigmoid(logits) > 0.5).long()
@@ -119,7 +192,8 @@ class Net(L.LightningModule):
             logits = self(x)
         self.inference_time_sec += time.time() - test_step_start
 
-        loss = self.criterion(logits, y)
+        loss, loss_dict = self.criterion(logits, y)
+        add_to_loss_sum_dict(loss_dict)
         self.log("test_loss", loss)
 
         preds = (torch.sigmoid(logits) > 0.5).long()
@@ -174,7 +248,7 @@ class Net(L.LightningModule):
         self.get_precision.reset()
 
     def log_csv(self, dice, iou, recall, precision, tvt_type):
-        global log_dict
+        global log_dict, loss_sum_dict
 
         log_dict['tvt_type'].append(tvt_type)
         log_dict['epoch'].append(self.epoch_no)
@@ -186,44 +260,41 @@ class Net(L.LightningModule):
         f1 = 2 * (precision * recall) / (precision + recall + 1e-8)
         log_dict['f1_score'].append(round(f1, 4))
 
-        log_dict['train time (s)'].append(round(self.train_time_sec, 4))
-        log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
-        log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
-        log_dict['inference transform time (s)'].append(round(self.inference_transform_time_sec, 4))
+        if tvt_type != 'valid_best_value':
+            log_dict['loss_dice'].append(round(loss_sum_dict['dice'], 4))
+            log_dict['loss_ce'].append(round(loss_sum_dict['ce'], 4))
+            log_dict['loss_input_diff'].append(round(loss_sum_dict['input_diff'], 4))
 
-        log_csv_path = f'{PROJECT_DIR_PATH}/effisegnet_base/train_log.csv'
+            log_dict['train time (s)'].append(round(self.train_time_sec, 4))
+            log_dict['inference time (s)'].append(round(self.inference_time_sec, 4))
+            log_dict['train transform time (s)'].append(round(self.train_transform_time_sec, 4))
+            log_dict['inference transform time (s)'].append(round(self.inference_transform_time_sec, 4))
+
+        else:
+            log_dict['loss_dice'].append(0.0)
+            log_dict['loss_ce'].append(0.0)
+            log_dict['loss_input_diff'].append(0.0)
+
+            log_dict['train time (s)'].append(0.0)
+            log_dict['inference time (s)'].append(0.0)
+            log_dict['train transform time (s)'].append(0.0)
+            log_dict['inference transform time (s)'].append(0.0)
+
+        log_csv_path = f'{PROJECT_DIR_PATH}/effisegnet_improved/train_log.csv'
         log_df = pd.DataFrame(log_dict)
         log_df.to_csv(log_csv_path)
 
-        self.train_time_sec = 0.0
-        self.inference_time_sec = 0.0
-        self.train_transform_time_sec = 0.0
-        self.inference_transform_time_sec = 0.0
+        if tvt_type != 'valid_best_value':
+            self.train_time_sec = 0.0
+            self.inference_time_sec = 0.0
+            self.train_transform_time_sec = 0.0
+            self.inference_transform_time_sec = 0.0
+
+            reinit_loss_sum_dict()
 
     def visualize_inference_result(self, x, y, preds, batch_idx, tvt_type):
-        visualize_path = f'{PROJECT_DIR_PATH}/effisegnet_base/inference_result/{tvt_type}/{self.epoch_no}'
+        visualize_path = f'{PROJECT_DIR_PATH}/effisegnet_improved/inference_result/{tvt_type}/{self.epoch_no}'
         os.makedirs(visualize_path, exist_ok=True)
-
-        def convert_to_numpy_img(item, imagenet_normalize):
-            item_ = item.detach().cpu().unsqueeze(dim=0)
-            item_ = np.array(item_[0])
-            item_ = np.transpose(item_, (1, 2, 0))
-
-            if imagenet_normalize:
-                item_ = item_ * IMAGENET_STD + IMAGENET_MEAN  # de-normalize
-
-            item_ = item_ * 255.0
-            item_ = item_[:, :, ::-1]
-            return item_
-
-        def write_img(image, save_path):
-            result, image_arr = cv2.imencode(ext='.jpg',
-                                             img=image,
-                                             params=[cv2.IMWRITE_JPEG_QUALITY, 95])
-
-            if result:
-                with open(save_path, mode='w+b') as f:
-                    image_arr.tofile(f)
 
         for idx, (x_item, y_item, pred) in enumerate(zip(x, y, preds)):
             x_item_ = convert_to_numpy_img(x_item, imagenet_normalize=True)
