@@ -26,6 +26,19 @@
   * **'오답'이 발생하는 부분** 을 찾고,
   * 그 오답의 원인과 해결 방법을 탐색 및 적용하여 성능을 향상시키는 것을 목표로 한다.
 
+* **Kvasir-SEG 데이터셋 citation**
+
+```
+@inproceedings{jha2020kvasir,
+               title={Kvasir-seg: A segmented polyp dataset},
+               author={Jha, Debesh and Smedsrud, Pia H and Riegler, Michael A and Halvorsen, P{\aa}l and de Lange, Thomas and Johansen, Dag and Johansen, H{\aa}vard D},
+               booktitle={International Conference on Multimedia Modeling},
+               pages={451--462},
+               year={2020},
+               organization={Springer}
+}
+```
+
 ### 1-1. 성능 향상 방법
 
 * Augmentation 조정

@@ -15,7 +15,7 @@
 
 ## 1. TEST RESULT
 
-* dataset : **Kvasir-SEG**
+* dataset : **Kvasir-SEG** [(Official Website)](https://datasets.simula.no/kvasir-seg/)
 * with **EffiSegNet-B4 (Pre-trained) & 50 epochs** option (instead of 300 epochs option of original paper)
 * [Test Result Details](https://github.com/WannaBeSuperteur/AI_Projects/issues/13)
 

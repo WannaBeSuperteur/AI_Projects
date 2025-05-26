@@ -3,6 +3,7 @@
 
 ## TEST RESULT
 
+* dataset : **Kvasir-SEG** [(Official Website)](https://datasets.simula.no/kvasir-seg/)
 * with **EffiSegNet-B4 (Pre-trained)**
   * **50 epochs** 로 테스트 시, Original Paper 와 전반적으로 **큰 차이 없음 (테스트 결과 정상 판단)** 
 
