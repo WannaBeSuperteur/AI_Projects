@@ -173,13 +173,14 @@ def load_remaining_images_dataset(property_name):
 # Arguments:
 # - cnn_model_class (nn.Module class) : 학습할 CNN 모델의 Class
 # - device          (device)          : CNN 모델을 mapping 시킬 device (GPU 등)
+# - max_lr          (float)           : max learning rate
 
 # Returns:
 # - cnn_model (nn.Module) : 학습할 CNN 모델
 
-def define_cnn_model(cnn_model_class, device):
+def define_cnn_model(cnn_model_class, device, max_lr):
     cnn_model = cnn_model_class()
-    cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.00005)
+    cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=max_lr)
     cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
                                                                      T_max=10,
                                                                      eta_min=0)
@@ -228,13 +229,21 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
     if 'cuda' in str(device):
         print(f'cuda is available with device {torch.cuda.get_device_name()}')
 
+    # set max learning rate for property
+    if property_name in ['gender', 'quality']:
+        max_lr = 0.00002  # fine-tuning pre-trained models -> lower learning rate
+    else:
+        max_lr = 0.00005
+
     # create models
     cnn_models = []
 
     for i in range(K_FOLDS):
-        cnn_model = define_cnn_model(cnn_model_class=cnn_model_class, device=device)
-        if property_name in ['gender', 'quality']:
+        cnn_model = define_cnn_model(cnn_model_class=cnn_model_class, device=device, max_lr=max_lr)
+
+        if property_name in ['gender', 'quality']:  # load pre-trained model -> fine-tuning
             load_pretrained_weights(cnn_model, property_name, device)
+
         cnn_models.append(cnn_model)
 
     summary(cnn_models[0], input_size=(TRAIN_BATCH_SIZE, 3, IMG_HEIGHT, IMG_WIDTH))
@@ -314,7 +323,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
             # train failed -> train new model
             else:
                 print('train failed, retry ...')
-                cnn_models[fold] = define_cnn_model(cnn_model_class, device)
+                cnn_models[fold] = define_cnn_model(cnn_model_class, device, max_lr=max_lr)
 
     return cnn_models
 
