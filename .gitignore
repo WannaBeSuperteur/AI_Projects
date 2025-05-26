@@ -100,9 +100,12 @@
 2025_05_22_Improve_EffiSegNet/effisegnet_improved/inference_result/*
 2025_05_22_Improve_EffiSegNet/effisegnet_improved/inference_result*
 2025_05_22_Improve_EffiSegNet/effisegnet_improved/inference_result*/*
+2025_05_26_OhLoRA_v3/stylegan/models/*.pt
 2025_05_26_OhLoRA_v3/stylegan/models/*.pth
 2025_05_26_OhLoRA_v3/stylegan/generated_face_images
 2025_05_26_OhLoRA_v3/stylegan/generated_face_images/*
+2025_05_26_OhLoRA_v3/stylegan/generated_face_images_filtered
+2025_05_26_OhLoRA_v3/stylegan/generated_face_images_filtered/*
 2025_05_26_OhLoRA_v3/stylegan/model_structure_pdf/*.gv
 venv
 venv/*
