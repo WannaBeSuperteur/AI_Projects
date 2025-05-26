@@ -249,7 +249,7 @@ class ImprovedDiceCELoss(_Loss):
         weight: torch.Tensor | None = None,
         lambda_dice: float = 1.0,
         lambda_ce: float = 1.0,
-        lambda_input_diffs: float = 0.01,
+        lambda_input_diffs: float = 0.0,
         label_smoothing: float = 0.0,
     ) -> None:
         """

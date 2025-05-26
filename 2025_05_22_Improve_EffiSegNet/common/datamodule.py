@@ -222,7 +222,6 @@ class KvasirSEGDatasetForImprovedModel(L.LightningDataModule):
         return A.Compose(
             [
                 A.Resize(*(self.img_size, self.img_size), interpolation=cv2.INTER_LANCZOS4),
-                AddBlackRectangleAtTopLeft(p=0.5, fill_value=0),
                 A.HorizontalFlip(p=0.5),
                 A.VerticalFlip(p=0.5),
                 A.ColorJitter(
