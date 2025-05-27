@@ -102,11 +102,10 @@ class HairstyleScoreCNN(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
-        self.pool5 = nn.MaxPool2d(2, 2)
 
         # Fully Connected Layers
         self.fc1 = nn.Sequential(
-            nn.Linear(128 * 6 * 6, 256),
+            nn.Linear(128 * 12 * 4, 256),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -116,23 +115,22 @@ class HairstyleScoreCNN(nn.Module):
         x = x[:, :, IMG_RESOLUTION // 2:, :]  # use bottom half
 
         # Conv
-        x = self.conv1(x)  # 254 x 254
-        x = self.conv2(x)  # 252 x 252
-        x = self.pool1(x)  # 126 x 126
+        x = self.conv1(x)  # 254 x 126
+        x = self.conv2(x)  # 252 x 124
+        x = self.pool1(x)  # 126 x 62
 
-        x = self.conv3(x)  # 124 x 124
-        x = self.pool2(x)  # 62 x 62
+        x = self.conv3(x)  # 124 x 60
+        x = self.pool2(x)  # 62 x 30
 
-        x = self.conv4(x)  # 60 x 60
-        x = self.pool3(x)  # 30 x 30
+        x = self.conv4(x)  # 60 x 28
+        x = self.pool3(x)  # 30 x 14
 
-        x = self.conv5(x)  # 28 x 28
-        x = self.pool4(x)  # 14 x 14
+        x = self.conv5(x)  # 28 x 12
+        x = self.pool4(x)  # 14 x 6
 
-        x = self.conv6(x)  # 12 x 12
-        x = self.pool5(x)  # 6 x 6
+        x = self.conv6(x)  # 12 x 4
 
-        x = x.view(-1, 128 * 6 * 6)
+        x = x.view(-1, 128 * 12 * 4)
 
         # Fully Connected
         x = self.fc1(x)
