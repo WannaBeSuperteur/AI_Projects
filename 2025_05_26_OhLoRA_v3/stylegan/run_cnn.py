@@ -19,7 +19,8 @@ TOTAL_IMAGES = 15000
 
 # 모든 이미지 (15,000 장) 에 대한 Gender, Quality 값 (원래 labeling 이 안 된 13,000 장은 그 예측값) 을 모두 취합한 DataFrame 반환
 # Create Date : 2025.05.26
-# Last Update Date : -
+# Last Update Date : 2025.05.27
+# - 오타 수정
 
 # Files to load:
 # - stylegan/generate_dataset/scores_labeled_first_2k.csv      : 첫 2,000 장의 labeling 정보
@@ -65,8 +66,8 @@ def postprocess_all_data():
 
     remaining_quality = remaining_quality_scores_df['property_quality_final_score'].tolist()
     remaining_gender = remaining_gender_scores_df['property_gender_final_score'].tolist()
-    remaining_age = remaining_gender_scores_df['property_age_final_score'].tolist()
-    remaining_glass = remaining_gender_scores_df['property_glass_final_score'].tolist()
+    remaining_age = remaining_age_scores_df['property_age_final_score'].tolist()
+    remaining_glass = remaining_glass_scores_df['property_glass_final_score'].tolist()
 
     all_quality = labeled_quality + remaining_quality
     all_gender = labeled_gender + remaining_gender
@@ -88,7 +89,7 @@ def postprocess_all_data():
 # 최종 필터링된 이미지를 학습 데이터셋 디렉토리에 복사 (score threshold 는 epoch 별 detail 의 성능지표 계산 시와 다를 수 있음)
 # Create Date : 2025.05.26
 # Last Update Date : 2025.05.27
-# - age threshold 0.4 -> 0.05 로 조정
+# - gender threshold 0.7 -> 0.9 로 조정 + age threshold 0.4 -> 0.01 로 조정 + 오타 수정
 
 # Arguments:
 # - final_df (Pandas DataFrame) : Gender, Quality 값을 모두 취합한 Pandas DataFrame
@@ -97,13 +98,13 @@ def postprocess_all_data():
 # - 없음
 
 def copy_to_training_data(final_df):
-    gender_thrsh = 0.7
+    gender_thrsh = 0.9
     quality_thrsh = 0.9
-    age_thrsh = 0.05
+    age_thrsh = 0.01
     glass_thrsh = 0.05
 
     filtered_df = final_df[(final_df['gender_score'] >= gender_thrsh) & (final_df['quality_score'] >= quality_thrsh) &
-                           (final_df['age_score'] <= age_thrsh) & (final_df['glass_sore'] <= glass_thrsh)]
+                           (final_df['age_score'] <= age_thrsh) & (final_df['glass_score'] <= glass_thrsh)]
 
     print('FILTERED DATA :')
     print(filtered_df)
