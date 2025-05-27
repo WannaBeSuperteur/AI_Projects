@@ -15,6 +15,7 @@ COPIED_IMAGE_PATH = f'{PROJECT_DIR_PATH}/stylegan/generated_face_images_filtered
 os.makedirs(COPIED_IMAGE_PATH, exist_ok=True)
 
 TOTAL_IMAGES = 15000
+LABELED_IMAGES = 2000  # first 2K labeled images
 
 
 # 모든 이미지 (15,000 장) 에 대한 Gender, Quality 값 (원래 labeling 이 안 된 13,000 장은 그 예측값) 을 모두 취합한 DataFrame 반환
@@ -89,7 +90,8 @@ def postprocess_all_data():
 # 최종 필터링된 이미지를 학습 데이터셋 디렉토리에 복사 (score threshold 는 epoch 별 detail 의 성능지표 계산 시와 다를 수 있음)
 # Create Date : 2025.05.26
 # Last Update Date : 2025.05.27
-# - gender threshold 0.7 -> 0.9 로 조정 + age threshold 0.4 -> 0.01 로 조정 + 오타 수정
+# - gender,age,glass threshold 각각 0.7 -> 0.92, 0.4 -> 0.008, 0.05 -> 0.01 로 조정 + 오타 수정
+# - 라벨링된 처음 2,000 장 이미지는 복사 안함
 
 # Arguments:
 # - final_df (Pandas DataFrame) : Gender, Quality 값을 모두 취합한 Pandas DataFrame
@@ -98,10 +100,10 @@ def postprocess_all_data():
 # - 없음
 
 def copy_to_training_data(final_df):
-    gender_thrsh = 0.9
+    gender_thrsh = 0.92
     quality_thrsh = 0.9
-    age_thrsh = 0.01
-    glass_thrsh = 0.05
+    age_thrsh = 0.008
+    glass_thrsh = 0.01
 
     filtered_df = final_df[(final_df['gender_score'] >= gender_thrsh) & (final_df['quality_score'] >= quality_thrsh) &
                            (final_df['age_score'] <= age_thrsh) & (final_df['glass_score'] <= glass_thrsh)]
@@ -113,6 +115,11 @@ def copy_to_training_data(final_df):
     filtered_nos = filtered_df['img_no'].tolist()
 
     for original_img_no, original_img_path in zip(filtered_nos, filtered_paths):
+
+        # do not copy labeled first 2K images
+        if original_img_no < LABELED_IMAGES:
+            continue
+
         dest_path = f'{COPIED_IMAGE_PATH}/{original_img_no:06d}.jpg'
         shutil.copy(original_img_path, dest_path)
 
