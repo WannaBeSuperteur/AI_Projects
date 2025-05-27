@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import random_split, DataLoader
+import torchvision.transforms as transforms
+
+from torch.utils.data import random_split, DataLoader, Dataset
 from torchinfo import summary
+from torchvision.io import read_image
 
 import pandas as pd
 import numpy as np
@@ -20,6 +23,39 @@ cnn_valid_log = {'epoch': [], 'img_path': [], 'hairstyle_score_output': [], 'hai
 
 train_log_dir_path = f'{PROJECT_DIR_PATH}/property_score_cnn/train_logs'
 os.makedirs(train_log_dir_path, exist_ok=True)
+
+stylegan_transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
+])
+
+
+# Image Dataset with Property Scores
+class PropertyScoreImageDataset(Dataset):
+    def __init__(self, dataset_df, transform):
+        self.img_paths = dataset_df['img_path'].tolist()
+        self.transform = transform
+
+        self.hairstyle_scores = dataset_df['hairstyle_score'].tolist()
+
+    def __len__(self):
+        return len(self.img_paths)
+
+    def __getitem__(self, idx):
+        img_path = self.img_paths[idx]
+        image = read_image(img_path)
+
+        hairstyle_score = self.hairstyle_scores[idx]
+        property_scores = {'hairstyle': hairstyle_score}
+
+        # normalize
+        image = self.transform(image)
+
+        # return simplified image path
+        simplified_img_path = '/'.join(img_path.split('/')[-2:])
+
+        return {'image': image, 'label': property_scores, 'img_path': simplified_img_path}
 
 
 # Hairstyle Score CNN (곱슬머리 vs. 직모)
@@ -375,7 +411,14 @@ def train_cnn_model(device, fine_tuning_dataloader):
 # - hairstyle_score_dataloader (DataLoader) : hairstyle scores 데이터셋의 Data Loader
 
 def get_stylegan_fine_tuning_dataloader():
-    raise NotImplementedError
+    all_scores_dir_path = f'{PROJECT_DIR_PATH}/property_score_cnn/segmentation/property_score_results'
+    property_score_csv_path = f'{all_scores_dir_path}/all_scores_ohlora_v3.csv'
+    property_score_df = pd.read_csv(property_score_csv_path)
+
+    stylegan_ft_dataset = PropertyScoreImageDataset(dataset_df=property_score_df, transform=stylegan_transform)
+    stylegan_ft_loader = DataLoader(stylegan_ft_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+
+    return stylegan_ft_loader
 
 
 if __name__ == '__main__':
