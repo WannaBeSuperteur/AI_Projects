@@ -270,12 +270,16 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
                  'elapsed_time (s)': [], 'val_loss_list': []}
 
     # threshold for train success check & detailed performance report per epoch
+
+    # age (0: 93.6%, 1: 6.4%)
+    # -> when valid output converged to mean = 0.064, BCE loss is -ln(1-0.064) * 0.936 + -ln(0.064) * 0.064 = 0.2378
+
     if property_name == 'gender':
         val_loss_threshold, pos_neg_threshold = 0.35, 0.50
     elif property_name == 'quality':
         val_loss_threshold, pos_neg_threshold = 0.13, 0.90
     elif property_name == 'age':
-        val_loss_threshold, pos_neg_threshold = 0.18, 0.10
+        val_loss_threshold, pos_neg_threshold = 0.23, 0.10
     elif property_name == 'glass':
         val_loss_threshold, pos_neg_threshold = 0.10, 0.10
     else:
