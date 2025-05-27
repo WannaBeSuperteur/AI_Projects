@@ -15,7 +15,7 @@ IMG_RESOLUTION = 256
 
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
-EARLY_STOPPING_ROUNDS = 45
+EARLY_STOPPING_ROUNDS = 1
 VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH = 30
 
 cnn_loss_func = nn.MSELoss(reduction='mean')
@@ -222,7 +222,8 @@ def train_cnn_train_step(cnn_model, cnn_train_dataloader):
 
 # CNN 모델의 Valid Step
 # Create Date : 2025.05.27
-# Last Update Date : -
+# Last Update Date : 2025.05.27
+# - current_epoch 의 값이 음수이면 로깅하지 않는 로직 추가
 
 # Arguments:
 # - cnn_model            (nn.Module)  : 학습 중인 CNN 모델
@@ -282,7 +283,8 @@ def train_cnn_valid_step(cnn_model, cnn_valid_dataloader, current_epoch):
     valid_log['hairstyle_score_corr'] = np.corrcoef(np.array(outputs_list)[:, 0], np.array(labels_list)[:, 0])[0][1]
 
     # save output list and labels list (for first 30 samples in valid dataset)
-    save_valid_output_and_labels(outputs_list, labels_list, img_path_list, current_epoch)
+    if current_epoch >= 0:
+        save_valid_output_and_labels(outputs_list, labels_list, img_path_list, current_epoch)
 
     return valid_log
 
@@ -338,24 +340,27 @@ def compute_detailed_valid_results(outputs, labels, valid_log):
 
 # CNN 모델 학습 (Property Score 계산용)
 # Create Date : 2025.05.27
-# Last Update Date : -
+# Last Update Date : 2025.05.27
+# - 인수 이름 변경
+# - best epoch CNN 정상 loading 확인을 위해 valid dataloader 반환
 
 # Arguments:
-# - device                 (device)     : CNN 모델을 mapping 시킬 device (GPU 등)
-# - fine_tuning_dataloader (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
+# - device                     (device)     : CNN 모델을 mapping 시킬 device (GPU 등)
+# - hairstyle_score_dataloader (DataLoader) : 데이터셋의 Data Loader
 
 # Returns:
-# - best_epoch_model (nn.Module) : 학습된 CNN 모델 (valid loss 가 가장 작은 best epoch)
+# - best_epoch_model (nn.Module)  : 학습된 CNN 모델 (valid loss 가 가장 작은 best epoch)
+# - valid_loader     (DataLoader) : 데이터셋의 Valid Data Loader
 
-def train_cnn_model(device, fine_tuning_dataloader):
+def train_cnn_model(device, hairstyle_score_dataloader):
     cnn_model = define_cnn_model(device)
 
     # split dataset
-    dataset_size = len(fine_tuning_dataloader.dataset)
+    dataset_size = len(hairstyle_score_dataloader.dataset)
     train_size = int(dataset_size * 0.9)
     valid_size = dataset_size - train_size
 
-    train_dataset, valid_dataset = random_split(fine_tuning_dataloader.dataset, [train_size, valid_size])
+    train_dataset, valid_dataset = random_split(hairstyle_score_dataloader.dataset, [train_size, valid_size])
     train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
 
@@ -410,12 +415,13 @@ def train_cnn_model(device, fine_tuning_dataloader):
 
         current_epoch += 1
 
-    return best_epoch_model
+    return best_epoch_model, valid_loader
 
 
 # 데이터셋 (CNN 에 의해 계산된 hairstyle property scores) 의 Data Loader 로딩
 # Create Date : 2025.05.27
-# Last Update Date : -
+# Last Update Date : 2025.05.27
+# - 함수 이름 변경
 
 # Arguments:
 # - 없음
@@ -423,15 +429,32 @@ def train_cnn_model(device, fine_tuning_dataloader):
 # Returns:
 # - hairstyle_score_dataloader (DataLoader) : hairstyle scores 데이터셋의 Data Loader
 
-def get_stylegan_fine_tuning_dataloader():
+def get_dataloader():
     all_scores_dir_path = f'{PROJECT_DIR_PATH}/property_score_cnn/segmentation/property_score_results'
     property_score_csv_path = f'{all_scores_dir_path}/all_scores_ohlora_v3.csv'
     property_score_df = pd.read_csv(property_score_csv_path)
 
-    stylegan_ft_dataset = PropertyScoreImageDataset(dataset_df=property_score_df, transform=stylegan_transform)
-    stylegan_ft_loader = DataLoader(stylegan_ft_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    dataset = PropertyScoreImageDataset(dataset_df=property_score_df, transform=stylegan_transform)
+    hairstyle_score_dataloader = DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
 
-    return stylegan_ft_loader
+    return hairstyle_score_dataloader
+
+
+# best epoch (with min val loss) CNN model 이 바르게 loading 되었는지 체크
+# Create Date: 2025.05.27
+# Last Update Date: -
+
+# Arguments:
+# - cnn_model    (nn.Module)  : 학습된 CNN 모델
+# - valid_loader (DataLoader) : 데이터셋의 Valid Data Loader
+
+def check_best_epoch_model_correctly_loaded(cnn_model, valid_loader):
+    valid_log = train_cnn_valid_step(cnn_model=cnn_model,
+                                     cnn_valid_dataloader=valid_loader,
+                                     current_epoch=-1)
+
+    val_loss = valid_log['valid_loss']
+    print(f'checked valid loss : {val_loss}')
 
 
 if __name__ == '__main__':
@@ -442,8 +465,15 @@ if __name__ == '__main__':
     print(f'device for training Property Score CNN : {device}')
 
     # load DataLoader
-    fine_tuning_dataloader = get_stylegan_fine_tuning_dataloader()
+    hairstyle_score_dataloader = get_dataloader()
 
     # train Property Score (hairstyle) CNN
-    cnn_model = train_cnn_model(device, fine_tuning_dataloader)
+    cnn_model, valid_loader = train_cnn_model(device, hairstyle_score_dataloader)
+
+    # check best epoch model correctly loaded
+    cnn_model.device = device
+    cnn_model.to(device)
+    check_best_epoch_model_correctly_loaded(cnn_model, valid_loader)
+
+    # save model
     torch.save(cnn_model.state_dict(), cnn_save_path)
