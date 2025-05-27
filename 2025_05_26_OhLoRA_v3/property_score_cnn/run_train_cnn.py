@@ -113,6 +113,8 @@ class HairstyleScoreCNN(nn.Module):
         self.fc_final = nn.Linear(256, 1)
 
     def forward(self, x):
+        x = x[:, :, IMG_RESOLUTION // 2:, :]  # use bottom half
+
         # Conv
         x = self.conv1(x)  # 254 x 254
         x = self.conv2(x)  # 252 x 252
