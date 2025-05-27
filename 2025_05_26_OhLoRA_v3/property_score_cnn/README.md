@@ -19,3 +19,6 @@
 
 * **StyleGAN-FineTune-v8** 의 Fine-Tuning 데이터셋에 대한 Face Segmentation 결과 생성
   * ```python property_score_cnn/run_segmentation.py``` 
+
+* hairstyle score 계산
+  * ```python property_score_cnn/run_compute_hairstyle_score.py``` 
