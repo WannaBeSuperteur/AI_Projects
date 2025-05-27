@@ -59,9 +59,10 @@ class PropertyScoreImageDataset(Dataset):
 
 
 # Hairstyle Score CNN (곱슬머리 vs. 직모)
-class HairstyleScoreCNN(nn.Module):
+
+class HairstyleScorePartCNN(nn.Module):
     def __init__(self):
-        super(HairstyleScoreCNN, self).__init__()
+        super(HairstyleScorePartCNN, self).__init__()
 
         # Conv Layers
         self.conv1 = nn.Sequential(
@@ -95,48 +96,61 @@ class HairstyleScoreCNN(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
-        self.pool4 = nn.MaxPool2d(2, 2)
-
         self.conv6 = nn.Sequential(
             nn.Conv2d(128, 128, kernel_size=3),
             nn.LeakyReLU(),
             nn.Dropout2d(0.05)
         )
 
-        # Fully Connected Layers
-        self.fc1 = nn.Sequential(
-            nn.Linear(128 * 12 * 4, 256),
-            nn.Tanh(),
-            nn.Dropout(0.45)
-        )
-        self.fc_final = nn.Linear(256, 1)
-
     def forward(self, x):
-        x = x[:, :, IMG_RESOLUTION // 2:, :]  # use bottom half
 
         # Conv
-        x = self.conv1(x)  # 254 x 126
-        x = self.conv2(x)  # 252 x 124
-        x = self.pool1(x)  # 126 x 62
+        x = self.conv1(x)  # 94 x 126
+        x = self.conv2(x)  # 92 x 124
+        x = self.pool1(x)  # 46 x 62
 
-        x = self.conv3(x)  # 124 x 60
-        x = self.pool2(x)  # 62 x 30
+        x = self.conv3(x)  # 46 x 60
+        x = self.pool2(x)  # 22 x 30
 
-        x = self.conv4(x)  # 60 x 28
-        x = self.pool3(x)  # 30 x 14
+        x = self.conv4(x)  # 20 x 28
+        x = self.pool3(x)  # 10 x 14
 
-        x = self.conv5(x)  # 28 x 12
-        x = self.pool4(x)  # 14 x 6
+        x = self.conv5(x)  # 8 x 12
+        x = self.conv6(x)  # 6 x 10
 
-        x = self.conv6(x)  # 12 x 4
+        x = x.view(-1, 128 * 6 * 10)
+        return x
 
-        x = x.view(-1, 128 * 12 * 4)
+
+class HairstyleScoreCNN(nn.Module):
+    def __init__(self):
+        super(HairstyleScoreCNN, self).__init__()
+
+        # Conv Layers
+        self.bottom_left_cnn = HairstyleScorePartCNN()
+        self.bottom_right_cnn = HairstyleScorePartCNN()
+
+        # Fully Connected Layers
+        self.fc1 = nn.Sequential(
+            nn.Linear(2 * (128 * 6 * 10), 512),
+            nn.Tanh(),
+            nn.Dropout(0.25)
+        )
+        self.fc_final = nn.Linear(512, 1)
+
+    def forward(self, x):
+        x_bottom_left = x[:, :, IMG_RESOLUTION // 2:, :3 * IMG_RESOLUTION // 8]
+        x_bottom_right = x[:, :, IMG_RESOLUTION // 2:, 5 * IMG_RESOLUTION // 8:]
+
+        x_bottom_left = self.bottom_left_cnn(x_bottom_left)
+        x_bottom_right = self.bottom_right_cnn(x_bottom_right)
 
         # Fully Connected
-        x = self.fc1(x)
-        x = self.fc_final(x)
+        final_x = torch.concat([x_bottom_left, x_bottom_right], dim=1)
+        final_x = self.fc1(final_x)
+        final_x = self.fc_final(final_x)
 
-        return x
+        return final_x
 
 
 # Hairstyle (곱슬머리 vs. 직모) CNN 모델 정의
