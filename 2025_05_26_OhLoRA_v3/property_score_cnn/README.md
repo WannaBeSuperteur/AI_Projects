@@ -22,3 +22,6 @@
 
 * hairstyle score 계산
   * ```python property_score_cnn/run_compute_hairstyle_score.py``` 
+
+* Property Score CNN 학습
+  * ```python property_score_cnn/run_train_cnn.py``` 

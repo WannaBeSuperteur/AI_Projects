@@ -15,7 +15,7 @@ IMG_RESOLUTION = 256
 
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
-EARLY_STOPPING_ROUNDS = 20
+EARLY_STOPPING_ROUNDS = 45
 VALID_OUTPUT_LABEL_LOG_CNT_PER_EPOCH = 30
 
 cnn_loss_func = nn.MSELoss(reduction='mean')
@@ -155,7 +155,8 @@ class HairstyleScoreCNN(nn.Module):
 
 # Hairstyle (곱슬머리 vs. 직모) CNN 모델 정의
 # Create Date : 2025.05.27
-# Last Update Date : -
+# Last Update Date : 2025.05.27
+# - Optimizer 를 Cosine Annealing 에서 Exponential 로 변경
 
 # Arguments:
 # - device (device) : CNN 모델을 mapping 시킬 device (GPU 등)
@@ -166,9 +167,7 @@ class HairstyleScoreCNN(nn.Module):
 def define_cnn_model(device):
     cnn_model = HairstyleScoreCNN()
     cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(), lr=0.00005)
-    cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
-                                                                     T_max=10,
-                                                                     eta_min=0)
+    cnn_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=cnn_model.optimizer, gamma=0.95)
 
     cnn_model.to(device)
     cnn_model.device = device
