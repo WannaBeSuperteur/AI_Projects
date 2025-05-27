@@ -20,7 +20,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # - segmentation/segmentation_results 디렉토리에 Face Segmentation 결과 저장
 
 def run_segmentation_with_model(img_paths, model_path):
-    result_path = f'{PROJECT_DIR_PATH}/segmentation/segmentation_results'
+    result_path = f'{PROJECT_DIR_PATH}/property_score_cnn/segmentation/segmentation_results'
     os.makedirs(result_path, exist_ok=True)
 
     # check device
