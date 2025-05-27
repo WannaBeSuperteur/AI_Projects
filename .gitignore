@@ -111,6 +111,7 @@
 2025_05_26_OhLoRA_v3/property_score_cnn/models/*.pth
 2025_05_26_OhLoRA_v3/property_score_cnn/segmentation/segmentation_results
 2025_05_26_OhLoRA_v3/property_score_cnn/segmentation/segmentation_results/*
+2025_05_26_OhLoRA_v3/property_score_cnn/model_structure_pdf/*.gv
 venv
 venv/*
 requirements_v3.10.11.txt
