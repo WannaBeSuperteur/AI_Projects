@@ -197,7 +197,8 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
 
     while current_epoch < TOTAL_EPOCHS:
         for idx, raw_data in enumerate(stylegan_ft_loader):
-            labels = torch.zeros((TRAIN_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS))
+            current_batch_size = len(raw_data['image'])
+            labels = torch.zeros((current_batch_size, ORIGINALLY_PROPERTY_DIMS))
             labels = labels.to(torch.float32)
 
             data = {
