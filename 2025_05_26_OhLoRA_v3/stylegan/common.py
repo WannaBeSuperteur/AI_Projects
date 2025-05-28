@@ -55,7 +55,7 @@ def save_model_structure_pdf(model, model_name, input_size, print_layer_details=
     print_summary(model, model_name, input_size, print_layer_details=print_layer_details, print_frozen=print_frozen)
 
 
-# 기존 Oh-LoRA Project 에서 Pre-train 된 StyleGAN (StyleGAN-FineTune-v1) 모델 로딩 (Generator 의 state dict 만)
+# 기존 Oh-LoRA v1 Project 에서 Pre-train 된 StyleGAN (StyleGAN-FineTune-v1) 모델 로딩 (Generator 의 state dict 만)
 # Create Date : 2025.05.26
 # Last Update Date : -
 
@@ -72,3 +72,25 @@ def load_existing_stylegan_finetune_v1(device):
     generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
 
     return generator_state_dict
+
+
+# 기존 Oh-LoRA v1 Project 에서 Pre-train 된 StyleGAN (StyleGAN-FineTune-v1) 모델 로딩 (Discriminator 까지 포함)
+# Create Date : 2025.05.28
+# Last Update Date : -
+
+# Arguments:
+# - device (Device) : CUDA or CPU device
+
+# Returns:
+# - generator_state_dict     (OrderedDict) : StyleGAN-FineTune-v1 모델의 Generator 의 state_dict
+# - discriminator_state_dict (OrderedDict) : StyleGAN-FineTune-v1 모델의 Discriminator 의 state_dict
+
+def load_existing_stylegan_finetune_v1_all(device):
+    generator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v1.pth'
+    discriminator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_dis_fine_tuned_v1.pth'
+
+    # load generator state dict
+    generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
+    discriminator_state_dict = torch.load(discriminator_path, map_location=device, weights_only=True)
+
+    return generator_state_dict, discriminator_state_dict

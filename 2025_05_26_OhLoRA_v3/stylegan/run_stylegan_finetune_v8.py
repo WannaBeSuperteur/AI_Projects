@@ -1,6 +1,6 @@
 import stylegan_common.stylegan_generator as gen
-from common import load_existing_stylegan_finetune_v1, save_model_structure_pdf
-from generate_dataset.generate import generate_face_images
+import stylegan_common.stylegan_discriminator as dis
+from common import load_existing_stylegan_finetune_v1_all, save_model_structure_pdf
 
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
@@ -12,7 +12,7 @@ import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 IMAGE_RESOLUTION = 256
-PDF_BATCH_SIZE = 30
+PDF_BATCH_SIZE = 16
 TRAIN_BATCH_SIZE = 8
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINALLY_PROPERTY_DIMS = 7
@@ -68,17 +68,28 @@ if __name__ == '__main__':
     print(f'device for fine-tuning StyleGAN-FineTune-v1 : {device}')
 
     finetune_v1_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)
+    finetune_v1_discriminator = dis.StyleGANDiscriminator(resolution=IMAGE_RESOLUTION)
 
-    # try loading StyleGAN-VectorFind-v7 pre-trained model
-    generator_state_dict = load_existing_stylegan_finetune_v1(device)
+    # load StyleGAN-VectorFind-v1 pre-trained model
+    generator_state_dict, discriminator_state_dict = load_existing_stylegan_finetune_v1_all(device)
+
     finetune_v1_generator.load_state_dict(generator_state_dict)
     print('Existing StyleGAN-VectorFind-v1 Generator load successful!! 😊')
+
+    finetune_v1_discriminator.load_state_dict(discriminator_state_dict)
+    print('Existing StyleGAN-VectorFind-v1 Discriminator load successful!! 😊')
 
     # create model structure PDF and save
     finetune_v1_generator.to(device)
     save_model_structure_pdf(finetune_v1_generator,
                              model_name='finetune_v8_generator',
                              input_size=[(PDF_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
+                                         (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)])
+
+    finetune_v1_discriminator.to(device)
+    save_model_structure_pdf(finetune_v1_discriminator,
+                             model_name='finetune_v8_discriminator',
+                             input_size=[(PDF_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
                                          (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)])
 
     # get dataloader
