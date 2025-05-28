@@ -65,6 +65,30 @@
 
 ### 2-2. 직모 vs. 곱슬머리 속성 값 계산 알고리즘
 
+![image](../../images/250526_5.PNG)
+
+* **1.** Segmentation Result 로부터 **hair 에 해당하는 pixel 의 R,G,B 성분의 평균값** 을 **각 픽셀별로** 계산한다.
+
+* **2.** Segmentation Result 의 아래쪽 절반 영역으로부터 **다음 모든 영역의 모든 픽셀이 hair pixel 에 속하는** 모든 case (K 개) 를 추출한다.
+  * 특정 4 x 4 영역 (위 그림 빨간색) 의 16 개 pixel 이 모두 hair pixel
+  * 해당 영역으로부터 아래, 왼쪽, 오른쪽으로 8 pixel 떨어진 3개의 영역 (위 그림 각각 노란색, 파란색, 녹색) 의 16 개 pixel 이 모두 hair pixel
+
+* **3.** K 개의 case 각각에 대해 **Diff Ratio** 를 구한다.
+  * Diff Ratio 의 컨셉
+    * **세로 방향 이동 시의 색 차이** 가 **가로 방향 이동 시의 색 차이** 와 비교했을 때 작을수록, 직모에 가깝다.
+    * Diff Ratio = (세로 방향 이동 시의 색 차이) / ((가로 방향 이동 시의 색 차이) + alpha) 의 컨셉으로, **Diff Ratio 가 작을수록 직모, 클수록 곱슬머리** 에 가깝다.
+  * Diff Ratio 계산식
+    * (Horizontal Diff) = (좌/우 8 pixel 떨어진 4 x 4 영역의 16개 pixel 과의 "RGB 평균값" 의 평균값 차이 중 더 큰 값) 
+    * (Vertical Diff) = (아래로 8 pixel 떨어진 4 x 4 영역의 16개 pixel 과의 "RGB 평균값" 의 평균값 차이)
+    * (Diff Ratio) = (Vertical Diff) / ((Horizontal Diff) + 5)
+
+* **4.** 모든 K 개의 case 에 대한 **Diff Ratio 값의 평균** 을 **최종 Hairstyle score (직모 vs. 곱슬머리 속성 값)** 으로 한다.
+  * Diff Ratio 가 클수록 곱슬머리에 가까우므로, **최종 Hairstyle score 가 클수록 곱슬머리에 가깝다.**
+  * 최종 Hairstyle score 가 작을수록 직모에 가깝다.
+  * K = 0 으로 평균값 구하기가 불가능한 경우, 최종 Hairstyle score = 0.45 로 한다.
+
+* [알고리즘 구현 코드](../property_score_cnn/run_compute_hairstyle_score.py)
+
 ## 코드 실행 방법
 
 모든 코드는 ```2025_05_26_OhLoRA_v3``` (프로젝트 메인 디렉토리) 에서 실행
