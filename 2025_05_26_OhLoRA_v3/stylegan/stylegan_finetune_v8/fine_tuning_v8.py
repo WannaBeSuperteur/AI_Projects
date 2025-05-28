@@ -11,11 +11,19 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 import cv2
 import torch
 import torch.nn.functional as F
+import torchvision.transforms as transforms
+from torchvision.io import read_image
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 import stylegan_common.stylegan_generator_inference as modified_inf
+from generate_dataset.cnn_common import load_cnn_model
+from generate_dataset.cnn_gender import GenderCNN
+from generate_dataset.cnn_quality import QualityCNN
+from generate_dataset.cnn_age import AgeCNN
+from generate_dataset.cnn_glass import GlassCNN
 
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -23,6 +31,15 @@ ORIGINALLY_PROPERTY_DIMS = 7
 TRAIN_BATCH_SIZE = 8
 TOTAL_EPOCHS = 500
 IMGS_PER_TEST_PROPERTY_SET = 100
+CNN_MODELS_FOR_EACH_OF_GENDER_QUALITY_AGE_GLASS = 5
+
+gender_cnn_models = load_cnn_model(property_name='gender', cnn_model_class=GenderCNN)
+quality_cnn_models = load_cnn_model(property_name='quality', cnn_model_class=QualityCNN)
+age_cnn_models = load_cnn_model(property_name='age', cnn_model_class=AgeCNN)
+glass_cnn_models = load_cnn_model(property_name='glass', cnn_model_class=GlassCNN)
+
+base_transform = transforms.Compose([transforms.ToPILImage(),
+                                     transforms.ToTensor()])
 
 
 def compute_grad_penalty(images, scores):
@@ -129,7 +146,7 @@ def train_step(generator, discriminator, data, gen_train_args, dis_train_args, r
     # Update discriminator.
     set_model_requires_grad(discriminator, 'discriminator', True)
     set_model_requires_grad(generator, 'generator', False)
-#    check_model_trainable_status(0, generator, discriminator)
+#    check_model_trainable_status(0, generator, discriminator) (GEN/DIS layer frozen/trainable 상태 정상 확인 완료)
 
     d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
                                                                                  gen_train_args, dis_train_args,
@@ -143,7 +160,7 @@ def train_step(generator, discriminator, data, gen_train_args, dis_train_args, r
     # Update generator.
     set_model_requires_grad(discriminator, 'discriminator', False)
     set_model_requires_grad(generator, 'generator', True)
-#    check_model_trainable_status(1, generator, discriminator)
+#    check_model_trainable_status(1, generator, discriminator) (GEN/DIS layer frozen/trainable 상태 정상 확인 완료)
 
     g_train_count = 0
     g_loss_float = None
@@ -169,7 +186,8 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
     print('Start training.')
 
     train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'g_train_count': [],
-                      'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': []}
+                      'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': [],
+                      'mean_gender_score': [], 'mean_quality_score': [], 'mean_age_score': [], 'mean_glass_score': []}
 
     current_epoch = 0
 
@@ -210,6 +228,13 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
                 train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
                 train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
                 train_log_dict['real_fake_auroc'].append(round(real_fake_auroc, 4))
+
+                import time
+                print(time.time())
+                log_gender_quality_age_glass_predicted_score(current_epoch,
+                                                             batch_idx=idx,
+                                                             train_log_dict=train_log_dict)
+                print(time.time())
 
                 pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
 
@@ -267,6 +292,69 @@ def run_inference_test_during_finetuning(finetune_v1_generator, current_epoch, b
                             label=label_like,
                             img_name_start_idx=0,
                             verbose=False)
+
+
+# Inference Test 에서 Property Score CNN 의 gender & quality & age & glass 속성 예측값 로깅
+# Create Date : 2025.05.28
+# Last Update Date : -
+
+# Arguments:
+# - current_epoch  (int)  : Fine-Tuning 중 현재 epoch 번호
+# - batch_idx      (int)  : Fine-Tuning 중 현재 epoch 에서의 batch index 번호
+# - train_log_dict (dict) : 전체 학습 과정 로깅용 dict
+
+def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train_log_dict):
+    global gender_cnn_models, quality_cnn_models, age_cnn_models, glass_cnn_models
+
+    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v8/inference_test_during_finetuning'
+    img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
+
+    # prepare inference test result dict
+    inference_test_result = {
+        'img_no': list(range(IMGS_PER_TEST_PROPERTY_SET)),
+        'gender_score': [], 'quality_score': [], 'age_score': [], 'glass_score': []
+    }
+    for cnn_no in range(CNN_MODELS_FOR_EACH_OF_GENDER_QUALITY_AGE_GLASS):
+        inference_test_result[f'gender_score_cnn_{cnn_no}'] = []
+        inference_test_result[f'quality_score_cnn_{cnn_no}'] = []
+        inference_test_result[f'age_score_cnn_{cnn_no}'] = []
+        inference_test_result[f'glass_score_cnn_{cnn_no}'] = []
+
+    # run inference test
+    with torch.no_grad():
+        for img_no in range(IMGS_PER_TEST_PROPERTY_SET):
+            image_path = f'{img_save_dir}/{img_no:06d}.jpg'
+            image = read_image(image_path)
+            image = base_transform(image)
+            image = image.unsqueeze(0)
+
+            for cnn_no in range(CNN_MODELS_FOR_EACH_OF_GENDER_QUALITY_AGE_GLASS):
+                output_score_gender = gender_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
+                output_score_quality = quality_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
+                output_score_age = age_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
+                output_score_glass = glass_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
+
+                inference_test_result[f'gender_score_cnn_{cnn_no}'].append(round(output_score_gender[0][0], 4))
+                inference_test_result[f'quality_score_cnn_{cnn_no}'].append(round(output_score_quality[0][0], 4))
+                inference_test_result[f'age_score_cnn_{cnn_no}'].append(round(output_score_age[0][0], 4))
+                inference_test_result[f'glass_score_cnn_{cnn_no}'].append(round(output_score_glass[0][0], 4))
+
+            for property_name in ['gender', 'quality', 'age', 'glass']:
+                property_score_sum = 0.0
+                for cnn_no in range(CNN_MODELS_FOR_EACH_OF_GENDER_QUALITY_AGE_GLASS):
+                    property_score_sum += inference_test_result[f'{property_name}_score_cnn_{cnn_no}'][-1]
+                property_score_sum /= CNN_MODELS_FOR_EACH_OF_GENDER_QUALITY_AGE_GLASS
+
+                inference_test_result[f'{property_name}_score'].append(round(property_score_sum, 4))
+
+    # save inference test result
+    inference_test_result_path = f'{img_save_dir}/inference_test_result.csv'
+    inference_test_df = pd.DataFrame(inference_test_result)
+    inference_test_df.to_csv(inference_test_result_path)
+
+    # update train log dict
+    for property_name in ['gender', 'quality', 'age', 'glass']:
+        train_log_dict[f'mean_{property_name}_score'].append(inference_test_df[f'{property_name}_score'].mean())
 
 
 # StyleGAN Fine Tuning 에서 Discriminator 테스트용으로 real, fake 이미지 저장
