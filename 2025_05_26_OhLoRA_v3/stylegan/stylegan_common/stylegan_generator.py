@@ -79,7 +79,7 @@ class StyleGANGenerator(nn.Module):
                  resolution,
                  z_space_dim=512,       # 512 in Original code
                  w_space_dim=512,       # 512 in Original code
-                 label_size=7,          # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property
+                 label_size=7,          # originally (eyes, hair_color, hair_length, mouth, ..., back_std) property
                  mapping_layers=8,
                  mapping_fmaps=512,
                  mapping_lr_mul=0.01,
@@ -185,7 +185,7 @@ class StyleGANGenerator(nn.Module):
 
     def forward(self,
                 z,
-                label,  # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property score
+                label,  # originally (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property score
                 lod=None,
                 w_moving_decay=0.995,
                 style_mixing_prob=0.0,
@@ -230,7 +230,7 @@ class MappingModule(nn.Module):
                  hidden_space_dim=512,
                  final_space_dim=512,
                  label_convert_dim=16,
-                 label_size=7,  # (eyes, hair_color, hair_length, mouth, pose, back_mean, back_std) property score
+                 label_size=7,  # originally (eyes, hair_color, hair_length, mouth, ..., back_std) property score
                  num_layers=8,
                  normalize_input=True,
                  use_wscale=True,
