@@ -1,3 +1,17 @@
+## 목차
+
+* [1. 개요](#1-개요)
+  * [1-1. 모델 구조](#1-1-모델-구조) 
+* [2. 핵심 속성 값](#2-핵심-속성-값)
+  * [2-1. 핵심 속성 값 계산 알고리즘](#2-1-핵심-속성-값-계산-알고리즘)
+  * [2-2. 직모 vs. 곱슬머리 속성 값 계산 알고리즘](#2-2-직모-vs-곱슬머리-속성-값-계산-알고리즘)
+* [3. 사용 모델 설명](#3-사용-모델-설명)
+  * [3-1. Fine-Tuned StyleGAN (StyleGAN-FineTune-v1)](#3-1-fine-tuned-stylegan-stylegan-finetune-v1)
+  * [3-2. Fine-Tuned StyleGAN (StyleGAN-FineTune-v8)](#3-2-fine-tuned-stylegan-stylegan-finetune-v8)
+  * [3-3. StyleGAN-FineTune-v8 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v8)](#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8)
+  * [3-4. Gender, Quality, Age, Glass Score CNN (StyleGAN-FineTune-v8 학습 데이터 필터링용)](#3-4-gender-quality-age-glass-score-cnn-stylegan-finetune-v8-학습-데이터-필터링용)
+* [4. 코드 실행 방법](#4-코드-실행-방법)
+
 ## 1. 개요
 
 * 핵심 요약
@@ -58,7 +72,7 @@
 
 | 핵심 속성 값 이름                                                                                                                   | 계산 알고리즘                                                                                                                                               |
 |------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| - 성별 ```gender```<br>- 이미지 품질 ```quality```<br>- 나이 ```age```<br>- 안경 여부 ```glass```                                         |                                                                                                                                                       |
+| - 성별 ```gender```<br>- 이미지 품질 ```quality```<br>- 나이 ```age```<br>- 안경 여부 ```glass```                                         | [별도 CNN 모델을 이용하여 해당 핵심 속성 값 도출](#3-4-gender-quality-age-glass-score-cnn-stylegan-finetune-v8-학습-데이터-필터링용)                                             |
 | - 눈을 뜬 정도 ```eyes```<br>- 머리 색 ```hair_color```<br>- 머리 길이 ```hair_length```<br>- 입을 벌린 정도 ```mouth```<br>- 고개 돌림 ```pose``` | [계산 알고리즘 설명 (오로라 v1 프로젝트 문서)](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#2-2-핵심-속성-값-계산-알고리즘-2차-알고리즘-for-stylegan-finetune-v2-v3-v4) |
 | - 배경색 평균 ```background_mean```                                                                                               | [계산 알고리즘 설명 (오로라 v1 프로젝트 문서)](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#2-1-핵심-속성-값-계산-알고리즘-1차-알고리즘-for-stylegan-finetune-v1)       |
 | - 직모 vs. 곱슬머리 ```hairstyle```                                                                                                | [계산 알고리즘 설명](#2-2-직모-vs-곱슬머리-속성-값-계산-알고리즘)                                                                                                            |
@@ -111,6 +125,8 @@
 ![image](../../images/250526_3.PNG)
 
 ### 3-3. StyleGAN-FineTune-v8 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v8)
+
+### 3-4. Gender, Quality, Age, Glass Score CNN (StyleGAN-FineTune-v8 학습 데이터 필터링용)
 
 ## 4. 코드 실행 방법
 
