@@ -578,7 +578,7 @@ def load_merged_property_cnn_model(device, inference_test=False):
 
     # load state dict
     merged_property_cnn_model.load_state_dict(existing_cnn_state_dict, strict=False)
-    merged_property_cnn_model.load_state_dict(hairstyle_cnn_state_dict, strict=False)
+    merged_property_cnn_model.hairstyle_score_cnn.load_state_dict(hairstyle_cnn_state_dict, strict=True)
 
     # inference test after loading state dict
     if inference_test:
