@@ -11,7 +11,7 @@ MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/model_str
 # Last Update Date : -
 
 # Arguments:
-# - model               (nn.Module) : 기존 Pre-train 된 StyleGAN 모델의 Generator 또는 Discriminator
+# - model               (nn.Module) : 모델의 Generator 또는 Discriminator
 # - model_name          (str)       : 모델을 나타내는 이름
 # - input_size          (tuple)     : 모델에 입력될 데이터의 입력 크기
 # - print_layer_details (bool)      : 각 레이어 별 detailed info 출력 여부

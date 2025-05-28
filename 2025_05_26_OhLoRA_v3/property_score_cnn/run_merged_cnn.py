@@ -1,18 +1,23 @@
 
 import torch
 import torch.nn as nn
+from torch.utils.data import random_split, DataLoader
+
+import pandas as pd
 import os
 
-from run_train_cnn import HairstyleScoreCNN
+from run_train_cnn import HairstyleScoreCNN, get_dataloader
 from common import save_model_structure_pdf
 
 IMG_RESOLUTION = 256
 EXAMPLE_BATCH_SIZE = 30
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+VALID_BATCH_SIZE = 4
 
 EXISTING_PROPERTY_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/stylegan_gen_fine_tuned_v2_cnn.pth'
 HAIRSTYLE_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/ohlora_v3_hairstyle_property_cnn.pth'
 MERGED_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/ohlora_v3_merged_property_cnn.pth'
+TRAIN_LOG_DIR_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/train_logs'
 
 
 # Eyes Score part of CNN
@@ -478,24 +483,82 @@ class MergedPropertyScoreCNN(nn.Module):
         x_hairstyle = self.hairstyle_score_cnn(x)
 
         # Final Concatenate (SAME as all_scores_v2.csv column order :
-        #                    eyes, hair-color, hair-length, mouth, pose, back-mean, back-std)
+        #                    eyes, hair-color, hair-length, mouth, pose, back-mean, back-std, hairstyle)
         x_final = torch.concat([x_eyes, x_entire, x_bottom_half, x_mouth, x_pose, x_upper_half, x_hairstyle],
                                dim=1)
 
         return x_final
 
 
-# Pre-trained weight 이 로딩된 Merged Property Score CNN 모델 불러오기
-# Create Date : 2025.05.27
+# Inference Test 실시
+# Create Date : 2025.05.28
 # Last Update Date : -
 
 # Arguments:
-# - device (device) : CNN 모델을 mapping 시킬 device (GPU 등)
+# - merged_property_cnn_model (nn.Module) : Pre-trained weight 이 로딩된 Merged Property Score CNN 모델
+# - before_after              (str)       : weight load 이전/이후 여부를 나타내는 값
+
+# File Outputs:
+# - train_logs/merged_cnn_inference_test_before_weight_load.csv : weight load 이전 inference test 결과
+# - train_logs/merged_cnn_inference_test_after_weight_load.csv  : weight load 이후 inference test 결과
+
+def run_inference_test(cnn_model, before_after):
+
+    # load dataloader and split dataset
+    hairstyle_score_dataloader = get_dataloader()
+
+    dataset_size = len(hairstyle_score_dataloader.dataset)
+    train_size = int(dataset_size * 0.99)
+    valid_size = dataset_size - train_size
+
+    _, valid_dataset = random_split(hairstyle_score_dataloader.dataset, [train_size, valid_size])
+    valid_loader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
+
+    # prepare inference test result dict
+    inference_test_result = {
+        'img_path': [],
+        'eyes_score': [], 'hair_color_score': [], 'hair_length_score': [], 'mouth_score': [],
+        'pose_score': [], 'background_mean_score': [], 'background_std_score': [], 'hairstyle_score': []
+    }
+
+    # run inference test
+    with torch.no_grad():
+        for idx, raw_data in enumerate(valid_loader):
+            image_paths = raw_data['img_path']
+            images = raw_data['image'].to(cnn_model.device)
+            outputs = cnn_model(images).to(torch.float32).detach().cpu().numpy()
+
+            inference_test_result['img_path'] += image_paths
+
+            current_batch_size = len(image_paths)
+            for i in range(current_batch_size):
+                inference_test_result['eyes_score'].append(round(outputs[i][0], 4))
+                inference_test_result['hair_color_score'].append(round(outputs[i][1], 4))
+                inference_test_result['hair_length_score'].append(round(outputs[i][2], 4))
+                inference_test_result['mouth_score'].append(round(outputs[i][3], 4))
+                inference_test_result['pose_score'].append(round(outputs[i][4], 4))
+                inference_test_result['background_mean_score'].append(round(outputs[i][5], 4))
+                inference_test_result['background_std_score'].append(round(outputs[i][6], 4))
+                inference_test_result['hairstyle_score'].append(round(outputs[i][7], 4))
+
+    # save inference test result
+    inference_test_result_path = f'{TRAIN_LOG_DIR_PATH}/merged_cnn_inference_test_{before_after}_weight_load.csv'
+    inference_test_df = pd.DataFrame(inference_test_result)
+    inference_test_df.to_csv(inference_test_result_path)
+
+
+# Pre-trained weight 이 로딩된 Merged Property Score CNN 모델 불러오기
+# Create Date : 2025.05.28
+# Last Update Date : -
+
+# Arguments:
+# - device         (device) : CNN 모델을 mapping 시킬 device (GPU 등)
+# - inference_test (bool)   : state dict 로딩 전후 inference test 실시 여부
 
 # Returns:
 # - merged_property_cnn_model (nn.Module) : Pre-trained weight 이 로딩된 Merged Property Score CNN 모델
 
-def load_merged_property_cnn_model(device):
+def load_merged_property_cnn_model(device, inference_test=False):
     merged_property_cnn_model = MergedPropertyScoreCNN()
 
     existing_cnn_state_dict = torch.load(EXISTING_PROPERTY_SCORE_CNN_PATH, map_location=device, weights_only=False)
@@ -505,8 +568,21 @@ def load_merged_property_cnn_model(device):
                              model_name='merged_property_cnn',
                              input_size=(EXAMPLE_BATCH_SIZE, 3, IMG_RESOLUTION, IMG_RESOLUTION))
 
+    # device mapping
     merged_property_cnn_model.to(device)
     merged_property_cnn_model.device = device
+
+    # inference test before loading state dict
+    if inference_test:
+        run_inference_test(merged_property_cnn_model, before_after='before')
+
+    # load state dict
+    merged_property_cnn_model.load_state_dict(existing_cnn_state_dict, strict=False)
+    merged_property_cnn_model.load_state_dict(hairstyle_cnn_state_dict, strict=False)
+
+    # inference test after loading state dict
+    if inference_test:
+        run_inference_test(merged_property_cnn_model, before_after='after')
 
     return merged_property_cnn_model
 
@@ -515,5 +591,5 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for merged CNN loading : {device}')
 
-    merged_property_cnn_model = load_merged_property_cnn_model(device)
+    merged_property_cnn_model = load_merged_property_cnn_model(device, inference_test=True)
     torch.save(merged_property_cnn_model.state_dict(), MERGED_SCORE_CNN_PATH)
