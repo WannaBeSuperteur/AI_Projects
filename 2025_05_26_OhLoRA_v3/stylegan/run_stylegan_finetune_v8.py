@@ -1,6 +1,7 @@
 import stylegan_common.stylegan_generator as gen
 import stylegan_common.stylegan_discriminator as dis
 from common import load_existing_stylegan_finetune_v1_all, save_model_structure_pdf
+from stylegan_finetune_v8.fine_tuning_v8 import run_fine_tuning
 
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
@@ -97,4 +98,12 @@ if __name__ == '__main__':
     print(stylegan_ft_loader)
 
     # run StyleGAN-FineTune-v8 Fine Tuning
-    # TODO implementation
+    fine_tuned_generator, fine_tuned_discriminator = run_fine_tuning(finetune_v1_generator,
+                                                                     finetune_v1_discriminator,
+                                                                     stylegan_ft_loader)
+
+    fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan/models'
+    os.makedirs(fine_tuned_model_path, exist_ok=True)
+
+    torch.save(fine_tuned_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v8.pth')
+    torch.save(fine_tuned_discriminator.state_dict(), f'{fine_tuned_model_path}/stylegan_dis_fine_tuned_v8.pth')
