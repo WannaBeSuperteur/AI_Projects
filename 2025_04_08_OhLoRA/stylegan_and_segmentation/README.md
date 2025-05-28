@@ -205,12 +205,14 @@
 
 * Overview (How to run Fine-Tuning)
   * **핵심 속성 값 (Property) 에 해당하는 size 7 의 Tensor** 를 Generator 의 입력 부분 및 Discriminator 의 Final Dense Layer 부분에 추가
-  * Generator 와 Discriminator 의 **Conv. Layer 를 Freeze 시키고, Dense Layer 들만 추가 학습**
+  * Generator 와 Discriminator 의 **대부분의 Conv. Layer 를 Freeze 시키고, Dense Layer 들만 추가 학습**
   * Generator Loss 가 Discriminator Loss 의 2배 이상이면, Discriminator 를 한번 학습할 때 **Generator 를 최대 4번까지 연속 학습** 하는 메커니즘 적용 
 * Generator
   * ```stylegan_modified/stylegan_generator.py```
+  * 처음의 Z → W mapping 외의 모든 layer 를 freeze
 * Discriminator
   * ```stylegan_modified/stylegan_discriminator.py```
+  * 마지막 3개의 레이어인 ```layer12``` ```layer13``` ```layer14``` 를 제외하고 모두 freeze
 * Model Save Path
   * ```stylegan_modified/stylegan_gen_fine_tuned_v1.pth``` (**Generator** of **Modified Fine-Tuned** StyleGAN)
   * ```stylegan_modified/stylegan_dis_fine_tuned_v1.pth``` (**Discriminator** of **Modified Fine-Tuned** StyleGAN)
