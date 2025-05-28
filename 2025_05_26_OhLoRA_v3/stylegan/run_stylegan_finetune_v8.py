@@ -63,6 +63,37 @@ def get_stylegan_fine_tuning_dataloader():
     return stylegan_ft_loader
 
 
+# StyleGAN Fine-Tuning 을 위한 Generator Layer Freezing
+# Create Date : 2025.05.28
+# Last Update Date : -
+
+# Arguments:
+# - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
+
+def freeze_generator_layers(finetune_v1_generator):
+    trainable_synthesis_layers = ['layer0', 'layer1', 'output0']
+
+    # freeze 범위 : Z -> W mapping & synthesize network 의 4 x 4 를 제외한 모든 레이어
+    for name, param in finetune_v1_generator.named_parameters():
+        if name.split('.')[0] == 'synthesis' and name.split('.')[1] not in trainable_synthesis_layers:
+            param.requires_grad = False
+
+
+# StyleGAN Fine-Tuning 을 위한 Discriminator Layer Freezing
+# Create Date : 2025.05.28
+# Last Update Date : -
+
+# Arguments:
+# - finetune_v1_discriminator (nn.Module) : StyleGAN-FineTune-v1 의 Discriminator
+
+def freeze_discriminator_layers(finetune_v1_discriminator):
+
+    # freeze 범위 : Last Conv. Layer & Final Fully-Connected Layer 를 제외한 모든 레이어
+    for name, param in finetune_v1_discriminator.named_parameters():
+        if name.split('.')[0] not in ['layer12', 'layer13', 'layer14']:
+            param.requires_grad = False
+
+
 if __name__ == '__main__':
     fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan/models'
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -80,18 +111,26 @@ if __name__ == '__main__':
     finetune_v1_discriminator.load_state_dict(discriminator_state_dict)
     print('Existing StyleGAN-VectorFind-v1 Discriminator load successful!! 😊')
 
+    # freeze layers
+    freeze_generator_layers(finetune_v1_generator)
+    freeze_discriminator_layers(finetune_v1_discriminator)
+
     # create model structure PDF and save
     finetune_v1_generator.to(device)
     save_model_structure_pdf(finetune_v1_generator,
                              model_name='finetune_v8_generator',
                              input_size=[(PDF_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
-                                         (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)])
+                                         (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)],
+                             print_layer_details=False,
+                             print_frozen=True)
 
     finetune_v1_discriminator.to(device)
     save_model_structure_pdf(finetune_v1_discriminator,
                              model_name='finetune_v8_discriminator',
                              input_size=[(PDF_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
-                                         (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)])
+                                         (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)],
+                             print_layer_details=False,
+                             print_frozen=True)
 
     # get dataloader
     stylegan_ft_loader = get_stylegan_fine_tuning_dataloader()

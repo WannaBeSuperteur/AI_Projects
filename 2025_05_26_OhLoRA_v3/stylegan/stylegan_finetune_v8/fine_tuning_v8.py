@@ -94,9 +94,12 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     return g_loss
 
 
-# TODO trainable until 8x8 Conv for generator
-# generator     -> layers_to_train = ['mapping']
-# discriminator -> layers_to_train = ['layer12', 'layer13', 'layer14']
+# generator     -> Z -> W mapping & synthesis layer 의 4 x 4 output 까지 학습 가능
+#                  layers_to_train = ['mapping', 'synthesis.layer0', 'synthesis.layer1', 'synthesis.output0']
+
+# discriminator -> 대부분의 Conv. Layer 를 Freeze
+#                  layers_to_train = ['layer12', 'layer13', 'layer14']
+
 def set_model_requires_grad(model, model_name, requires_grad):
     """Sets the `requires_grad` configuration for a particular model."""
 
@@ -106,7 +109,11 @@ def set_model_requires_grad(model, model_name, requires_grad):
 
         if requires_grad:  # requires_grad == True
             if model_name == 'generator':
+                trainable_synthesis_layers = ['layer0', 'layer1', 'output0']
+
                 if name.split('.')[0] == 'mapping':
+                    param.requires_grad = True
+                elif name.split('.')[0] == 'synthesis' and name.split('.')[1] in trainable_synthesis_layers:
                     param.requires_grad = True
 
             elif model_name == 'discriminator':
@@ -180,7 +187,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
                 'label': labels.cuda()
             }
 
-            print_result_and_save_image = (idx % 10 == 0 or (current_epoch == 0 and idx < 10))
+            print_result_and_save_image = (idx % 20 == 0 or (current_epoch == 0 and idx < 20))
 
             d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
                 train_step(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma,
