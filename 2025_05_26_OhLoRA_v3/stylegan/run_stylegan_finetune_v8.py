@@ -60,6 +60,9 @@ def get_stylegan_fine_tuning_dataloader():
 
     stylegan_ft_dataset = StyleGANFineTuneV8TrainDataset(dataset_df, transform=stylegan_transform)
     stylegan_ft_loader = DataLoader(stylegan_ft_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+
+    print(f'StyleGAN-FineTune-v8 dataset size : {len(stylegan_ft_dataset)}')
+
     return stylegan_ft_loader
 
 

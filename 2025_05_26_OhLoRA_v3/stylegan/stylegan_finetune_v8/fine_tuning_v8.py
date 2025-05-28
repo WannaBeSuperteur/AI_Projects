@@ -205,18 +205,15 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
                 'label': labels.cuda()
             }
 
-            print_result_and_save_image = (idx % 20 == 0 or (current_epoch == 0 and idx < 20))
+            print_result_and_save_image = (idx % 50 == 0 or
+                                           (current_epoch == 0 and idx % 25 == 0) or
+                                           (current_epoch == 0 and idx < 10))
 
             d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
                 train_step(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma,
                            save_image=print_result_and_save_image))
 
             if print_result_and_save_image:
-                print(f'epoch={current_epoch}, idx={idx}, '
-                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}, '
-                      f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
-                      f'real_fake_auroc={real_fake_auroc:.4f}')
-
                 run_inference_test_during_finetuning(generator, current_epoch=current_epoch, batch_idx=idx)
 
                 # save train log
@@ -229,12 +226,14 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
                 train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
                 train_log_dict['real_fake_auroc'].append(round(real_fake_auroc, 4))
 
-                import time
-                print(time.time())
-                log_gender_quality_age_glass_predicted_score(current_epoch,
-                                                             batch_idx=idx,
-                                                             train_log_dict=train_log_dict)
-                print(time.time())
+                score_mean_dict = log_gender_quality_age_glass_predicted_score(current_epoch,
+                                                                               batch_idx=idx,
+                                                                               train_log_dict=train_log_dict)
+
+                print(f'epoch={current_epoch}, idx={idx}, '
+                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}, '
+                      f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
+                      f'real_fake_auroc={real_fake_auroc:.4f}, inference_result={score_mean_dict}')
 
                 pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
 
@@ -303,6 +302,9 @@ def run_inference_test_during_finetuning(finetune_v1_generator, current_epoch, b
 # - batch_idx      (int)  : Fine-Tuning 중 현재 epoch 에서의 batch index 번호
 # - train_log_dict (dict) : 전체 학습 과정 로깅용 dict
 
+# Returns:
+# - score_mean_dict (dict) : Inference 대상 이미지에 대한, gender, quality, age, glass score 의 평균값 dict
+
 def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train_log_dict):
     global gender_cnn_models, quality_cnn_models, age_cnn_models, glass_cnn_models
 
@@ -353,8 +355,14 @@ def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train
     inference_test_df.to_csv(inference_test_result_path)
 
     # update train log dict
+    score_mean_dict = {}
+
     for property_name in ['gender', 'quality', 'age', 'glass']:
-        train_log_dict[f'mean_{property_name}_score'].append(inference_test_df[f'{property_name}_score'].mean())
+        score_mean = inference_test_df[f'{property_name}_score'].mean()
+        train_log_dict[f'mean_{property_name}_score'].append(round(score_mean, 4))
+        score_mean_dict[property_name] = score_mean
+
+    return score_mean_dict
 
 
 # StyleGAN Fine Tuning 에서 Discriminator 테스트용으로 real, fake 이미지 저장
