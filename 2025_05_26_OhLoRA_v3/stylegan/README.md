@@ -89,7 +89,30 @@
 
 * [알고리즘 구현 코드](../property_score_cnn/run_compute_hairstyle_score.py)
 
-## 코드 실행 방법
+## 3. 사용 모델 설명
+
+| 모델                                                                                                               | 최종 채택 | 핵심 아이디어                                                                                                                                                                                                                                                                                                                                                                                                                                                               | 성능 보고서 |
+|------------------------------------------------------------------------------------------------------------------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
+| [StyleGAN-FineTune-v8](#3-2-fine-tuned-stylegan-stylegan-finetune-v8)                                            | ✅     | - StyleGAN-FineTune-v1 을 **Oh-LoRA 컨셉에 맞는 이미지** 로 추가 Fine-Tuning 하여, **Oh-LoRA 컨셉에 맞는 이미지 생성 확률 향상**<br>- 즉, 안경을 쓰지 않은, 고품질의 젊은 여성 이미지 생성 확률 향상                                                                                                                                                                                                                                                                                                                       |        |
+| [StyleGAN-VectorFind-v8](#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) | ✅     | - **핵심 속성값을 잘 변화** 시키는, intermediate vector w 에 대한 **벡터 찾기** [(논문 스터디 자료)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)<br>- 이때, 이미지를 머리 색 ```hair_color```, 머리 길이 ```hair_length```, 배경색 밝기 평균 ```background_mean```, 직모 vs. 곱슬머리 ```hairstyle```, 에 기반하여 $2^4 = 16$ 그룹으로 나누고, **각 그룹별로 해당 벡터 찾기** |        |                                                    
+
+* 전체 모델 구조
+
+![image](../../images/250526_4.PNG)
+
+### 3-1. Fine-Tuned StyleGAN (StyleGAN-FineTune-v1)
+
+![image](../../images/250526_1.PNG)
+
+* [상세 정보 (오로라 v1 프로젝트 문서)](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan)
+
+### 3-2. Fine-Tuned StyleGAN (StyleGAN-FineTune-v8)
+
+![image](../../images/250526_3.PNG)
+
+### 3-3. StyleGAN-FineTune-v8 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v8)
+
+## 4. 코드 실행 방법
 
 모든 코드는 ```2025_05_26_OhLoRA_v3``` (프로젝트 메인 디렉토리) 에서 실행
 
