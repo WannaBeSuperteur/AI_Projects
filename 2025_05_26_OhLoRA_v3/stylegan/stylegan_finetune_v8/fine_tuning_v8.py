@@ -360,7 +360,7 @@ def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train
     for property_name in ['gender', 'quality', 'age', 'glass']:
         score_mean = inference_test_df[f'{property_name}_score'].mean()
         train_log_dict[f'mean_{property_name}_score'].append(round(score_mean, 4))
-        score_mean_dict[property_name] = score_mean
+        score_mean_dict[property_name] = round(score_mean, 4)
 
     return score_mean_dict
 
