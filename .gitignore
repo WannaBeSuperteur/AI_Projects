@@ -107,6 +107,10 @@
 2025_05_26_OhLoRA_v3/stylegan/generated_face_images_filtered
 2025_05_26_OhLoRA_v3/stylegan/generated_face_images_filtered/*
 2025_05_26_OhLoRA_v3/stylegan/model_structure_pdf/*.gv
+2025_05_26_OhLoRA_v3/stylegan/stylegan_finetune_v8/inference_test_during_finetuning
+2025_05_26_OhLoRA_v3/stylegan/stylegan_finetune_v8/inference_test_during_finetuning/*
+2025_05_26_OhLoRA_v3/stylegan/stylegan_finetune_v8/inference_test_real_fake
+2025_05_26_OhLoRA_v3/stylegan/stylegan_finetune_v8/inference_test_real_fake/*
 2025_05_26_OhLoRA_v3/property_score_cnn/models/*.pt
 2025_05_26_OhLoRA_v3/property_score_cnn/models/*.pth
 2025_05_26_OhLoRA_v3/property_score_cnn/segmentation/segmentation_results
