@@ -63,6 +63,28 @@ def get_stylegan_fine_tuning_dataloader():
     return stylegan_ft_loader
 
 
+# StyleGAN-FineTune-v1 Generator, Discriminator 의 Optimizer & Scheduler 설정
+# Create Date : 2025.05.28
+# Last Update Date : -
+
+# Arguments:
+# - finetune_v1_generator     (nn.Module) : StyleGAN-FineTune-v1 의 Generator
+# - finetune_v1_discriminator (nn.Module) : StyleGAN-FineTune-v1 의 Discriminator
+
+def set_optimizer(finetune_v1_generator, finetune_v1_discriminator):
+    finetune_v1_generator.optimizer = torch.optim.AdamW(finetune_v1_generator.parameters(), lr=0.0001)
+    finetune_v1_generator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer=finetune_v1_generator.optimizer,
+        T_max=10,
+        eta_min=0)
+
+    finetune_v1_discriminator.optimizer = torch.optim.AdamW(finetune_v1_discriminator.parameters(), lr=0.0001)
+    finetune_v1_discriminator.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer=finetune_v1_discriminator.optimizer,
+        T_max=10,
+        eta_min=0)
+
+
 # StyleGAN Fine-Tuning 을 위한 Generator Layer Freezing
 # Create Date : 2025.05.28
 # Last Update Date : -
@@ -115,6 +137,9 @@ if __name__ == '__main__':
     freeze_generator_layers(finetune_v1_generator)
     freeze_discriminator_layers(finetune_v1_discriminator)
 
+    # set optimizer
+    set_optimizer(finetune_v1_generator, finetune_v1_discriminator)
+
     # create model structure PDF and save
     finetune_v1_generator.to(device)
     save_model_structure_pdf(finetune_v1_generator,
@@ -134,7 +159,6 @@ if __name__ == '__main__':
 
     # get dataloader
     stylegan_ft_loader = get_stylegan_fine_tuning_dataloader()
-    print(stylegan_ft_loader)
 
     # run StyleGAN-FineTune-v8 Fine Tuning
     fine_tuned_generator, fine_tuned_discriminator = run_fine_tuning(finetune_v1_generator,
