@@ -56,12 +56,12 @@ PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 #                           {'hair_color': float, 'hair_length': float, 'background_mean': float, 'hairstyle': float}
 
 def get_medians():
-    mean_and_median_csv_path = f'{PROJECT_DIR_PATH}/v8_property_scores/property_score_mean_and_median.csv'
+    mean_and_median_csv_path = f'{PROJECT_DIR_PATH}/v8_property_scores/property_scores_mean_and_median.csv'
     mean_and_median_df = pd.read_csv(mean_and_median_csv_path)
 
     hair_color_median = mean_and_median_df['hair_color'][1]
     hair_length_median = mean_and_median_df['hair_length'][1]
-    background_mean_median = mean_and_median_df['background_mean'][1]
+    background_mean_median = mean_and_median_df['background_score'][1]
     hairstyle_median = mean_and_median_df['hairstyle'][1]
 
     medians = {'hair_color': hair_color_median,
@@ -91,7 +91,7 @@ def get_medians():
 #                                             'mouth_cnn_score': dict(list(float)),
 #                                             'pose_cnn_score': dict(list(float))}
 
-def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_cnn, n=80000):
+def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_cnn, n=800):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/inference_test_during_training'
     medians = get_medians()  # returned values : -0.4574, 0.5734, 0.7618, -0.0167
 

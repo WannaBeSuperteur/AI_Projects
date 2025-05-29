@@ -1,6 +1,7 @@
 
 from torchinfo import summary
 from torchview import draw_graph
+import torchvision.transforms as transforms
 
 import torch
 import os
@@ -13,6 +14,12 @@ from property_score_cnn.run_merged_cnn import MergedPropertyScoreCNN
 
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan/model_structure_pdf'
 MERGED_PROPERTY_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/ohlora_v3_merged_property_cnn.pth'
+
+stylegan_transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
+])
 
 
 # Model Summary (모델 구조) 출력

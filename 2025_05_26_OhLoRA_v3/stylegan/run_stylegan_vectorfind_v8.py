@@ -130,8 +130,9 @@ def get_group_name(finetune_v8_generator, code_part1, code_part2, save_dir, i, v
     hair_color_group = 'h' if property_scores_np[0][1] >= medians['hair_color'] else 'l'
     hair_length_group = 'h' if property_scores_np[0][2] >= medians['hair_length'] else 'l'
     background_mean_group = 'h' if property_scores_np[0][5] >= medians['background_mean'] else 'l'
+    hairstyle_group = 'h' if property_scores_np[0][7] >= medians['hairstyle'] else 'l'
 
-    group_name = hair_color_group + hair_length_group + background_mean_group
+    group_name = hair_color_group + hair_length_group + background_mean_group + hairstyle_group
     return group_name
 
 
