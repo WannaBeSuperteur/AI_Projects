@@ -169,6 +169,9 @@
   * [```age``` 속성 값 학습 CNN 모델](generate_dataset/cnn_age.py)
   * [```glass``` 속성 값 학습 CNN 모델](generate_dataset/cnn_glass.py)
 
+* 참고 사항
+  * ```gender``` ```quality``` 의 경우, [오로라 v1 프로젝트의 Gender, Quality Score CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-2-cnn-model-성별-이미지-품질) 을 Pre-trained CNN 으로 하여 Fine-Tuning 실시
+
 ## 4. 코드 실행 방법
 
 모든 코드는 ```2025_05_26_OhLoRA_v3``` (프로젝트 메인 디렉토리) 에서 실행
