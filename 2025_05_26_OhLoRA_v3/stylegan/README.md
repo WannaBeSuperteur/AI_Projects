@@ -140,7 +140,7 @@
 
 * Hand-labeling 된 이미지 제외 사유
   * 사람이 직접 labeling 하다 보니 간혹 **잘못 labeling 된 이미지** 가 있을 수 있음
-  * CNN 으로 labeling 한 이미지는 **CNN의 학습을 통해 이러한 잘못된 labeling 을 보정** 하는 효과 + **threshold 기준이 엄격** 하므로, 잘못 labeling 되어 위 기준을 만족시키는 이미지의 발생을 더욱 줄일 수 있음
+  * CNN 으로 labeling 한 이미지는 **CNN의 학습을 통해 이러한 잘못된 labeling 을 보정** 하는 효과 + **threshold 기준이 엄격** 하므로, "잘못 labeling 되어 위 기준을 만족시키는 이미지"의 발생을 더욱 줄일 수 있음
 
 ### 3-3. StyleGAN-FineTune-v8 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v8)
 
