@@ -132,7 +132,7 @@
 * 필터링 조건
   * Hand-labeling 된 2,000 장을 제외한, **[CNN](#3-4-gender-quality-age-glass-score-cnn-stylegan-finetune-v8-학습-데이터-필터링용) 에 의해 라벨링 된 13,000 장** 이미지 대상
   * 아래 4가지 [핵심 속성 값](#2-핵심-속성-값) 조건을 모두 만족
-  * [필터링 조건 구현 코드](run_cnn.py)
+  * [필터링 조건 구현 코드](run_cnn.py) (해당 파일의 ```copy_to_training_data``` 함수)
 
 | ```gender``` 속성 값 | ```quality``` 속성 값 | ```age``` 속성 값 | ```glass``` 속성 값 |
 |-------------------|--------------------|----------------|------------------|
@@ -145,6 +145,29 @@
 ### 3-3. StyleGAN-FineTune-v8 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v8)
 
 ### 3-4. Gender, Quality, Age, Glass Score CNN (StyleGAN-FineTune-v8 학습 데이터 필터링용)
+
+![image](../../images/250526_2.PNG)
+
+* 개요
+  * StyleGAN-FineTune-v1 으로 생성된 15,000 장의 이미지 중 **Oh-LoRA 👱‍♀️ (오로라) 의 컨셉** 에 맞는, **안경을 쓰지 않은 고품질의 젊은 여성 이미지** 4,903 장을 필터링하기 위한 CNN
+
+* 학습 방법
+  * ```gender``` ```quality``` ```age``` ```glass``` 의 각 핵심 속성 값별 **5 개의 CNN 을 [Stratified K-fold](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%B0%A9%EB%B2%95%EB%A1%A0_Cross_Validation.md#4-stratified-k-fold-cross-validation) 로 학습** 
+  * 각 CNN 은 2,000 장의 hand-labeling 된 label 로 학습하며, 나머지 13,000 장에 대해서 핵심 속성 값 예측
+  * 각 CNN 에 의해 도출된 핵심 속성 값의 평균을 최종 적용 ([Soft Voting](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_Ensemble.md#2-1-voting) 과 유사)
+  * [오로라 v1 프로젝트의 Gender, Quality Score CNN](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-2-cnn-model-성별-이미지-품질) 과 **근본적으로 유사한 방법** 적용
+
+* Stratified K-fold 적용 이유
+  * ```gender``` ```quality``` ```age``` ```glass``` 모두 [데이터 불균형](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Data%20Science%20Basics/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_%EA%B8%B0%EC%B4%88_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EB%B6%88%EA%B7%A0%ED%98%95.md) 이 심한 편임
+    * **StyleGAN-FineTune-v1** 이 생성하는 이미지는 대부분 **고품질의 여성 이미지** 임
+    * 젊은 여성 이미지 & 안경 미착용 이미지의 비중이 매우 높음
+
+* CNN 구현 코드
+  * [CNN 학습 코드 (공통)](generate_dataset/cnn_common.py) 
+  * [```gender``` 속성 값 학습 CNN 모델](generate_dataset/cnn_gender.py)
+  * [```quality``` 속성 값 학습 CNN 모델](generate_dataset/cnn_quality.py)
+  * [```age``` 속성 값 학습 CNN 모델](generate_dataset/cnn_age.py)
+  * [```glass``` 속성 값 학습 CNN 모델](generate_dataset/cnn_glass.py)
 
 ## 4. 코드 실행 방법
 
