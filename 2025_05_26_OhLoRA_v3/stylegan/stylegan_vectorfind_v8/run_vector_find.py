@@ -1,21 +1,24 @@
-try:
-    from property_score_cnn import load_cnn_model as load_property_cnn_model
-    import stylegan_common.stylegan_generator_inference as infer
-except:
-    from stylegan.property_score_cnn import load_cnn_model as load_property_cnn_model
-    import stylegan.stylegan_common.stylegan_generator_inference as infer
-
 import numpy as np
 import torch
 import pandas as pd
 import plotly.express as px
-
-import os
-import random
-import time
+from property_score_cnn.run_merged_cnn import MergedPropertyScoreCNN
 
 from sklearn import svm
 from sklearn.manifold import TSNE
+
+import random
+import time
+import os
+import sys
+
+PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+sys.path.append(PROJECT_DIR_PATH)
+
+try:
+    import stylegan_common.stylegan_generator_inference as infer
+except:
+    import stylegan.stylegan_common.stylegan_generator_inference as infer
 
 # use sklearnex (scikit-learn-intelex) library for speedup SVM training
 from sklearnex import patch_sklearn
@@ -26,78 +29,123 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+MERGED_PROPERTY_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/ohlora_v3_merged_property_cnn.pth'
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINAL_HIDDEN_DIMS_W = 512
-ORIGINALLY_PROPERTY_DIMS = 3  # 원래 property (eyes, mouth, pose) 목적으로 사용된 dimension 값
+ORIGINALLY_PROPERTY_DIMS = 7    # 원래 property (eyes, hair_color, hair_length, mouth, pose,
+                                #               background_mean, background_std) 목적으로 사용된 dimension 값
 BATCH_SIZE = 20
 SVMS_PER_EACH_PROPERTY = 1      # also w-vector count for each property
 
-GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
+GROUP_NAMES = ['hhhh', 'hhhl', 'hhlh', 'hhll', 'hlhh', 'hlhl', 'hllh', 'hlll',
+               'lhhh', 'lhhl', 'lhlh', 'lhll', 'llhh', 'llhl', 'lllh', 'llll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
 
-# intermediate w vector 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균에 따라 그룹화하기 위해,
-# hair_color, hair_length, background_mean 핵심 속성 값의 중앙값 계산
+# Merged Property Score CNN (hairstyle 포함한 핵심 속성 값 계산용 CNN) 로딩
+# Create Date : 2025.05.29
+# Last Update Date : -
 
-# Create Date : 2025.05.15
+# Arguments:
+# - device (Device) : CUDA or CPU device
+
+# Returns:
+# - merged_property_score_cnn (nn.Module) : Merged Property Score CNN (핵심 속성 값 계산용 CNN)
+
+def load_merged_property_score_cnn(device):
+    merged_property_cnn_model = MergedPropertyScoreCNN()
+    merged_property_cnn_state_dict = torch.load(MERGED_PROPERTY_SCORE_CNN_PATH,
+                                                map_location=device,
+                                                weights_only=False)
+    merged_property_cnn_model.load_state_dict(merged_property_cnn_state_dict)
+
+    merged_property_cnn_model.to(device)
+    merged_property_cnn_model.device = device
+    print('Existing Merged Property CNN load successful!! 😊')
+
+    return merged_property_cnn_model
+
+
+# intermediate w vector 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬 (hairstyle)" 에 따라 그룹화하기 위해,
+# hair_color, hair_length, background_mean, hairstyle 핵심 속성 값의 중앙값 얻기
+
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
 # - 없음
 
 # Returns:
-# - medians (dict(float)) : hair_color, hair_length, background_mean 핵심 속성 값의 중앙값
-#                           {'hair_color': float, 'hair_length': float, 'background_mean': float}
+# - medians (dict(float)) : hair_color, hair_length, background_mean, hairstyle 핵심 속성 값의 중앙값
+#                           {'hair_color': float, 'hair_length': float, 'background_mean': float, 'hairstyle': float}
 
-def compute_medians():
-    all_scores_csv_path = f'{PROJECT_DIR_PATH}/stylegan/all_scores_v2_cnn.csv'
-    all_score_df = pd.read_csv(all_scores_csv_path)
+def get_medians():
+    mean_and_median_csv_path = f'{PROJECT_DIR_PATH}/v8_property_scores/property_score_mean_and_median.csv'
+    mean_and_median_df = pd.read_csv(mean_and_median_csv_path)
 
-    hair_color_median = np.median(all_score_df['hair_color_score'])
-    hair_length_median = np.median(all_score_df['hair_length_score'])
-    background_mean_median = np.median(all_score_df['background_mean_score'])
+    hair_color_median = mean_and_median_df['hair_color'][1]
+    hair_length_median = mean_and_median_df['hair_length'][1]
+    background_mean_median = mean_and_median_df['background_mean'][1]
+    hairstyle_median = mean_and_median_df['hairstyle'][1]
 
     medians = {'hair_color': hair_color_median,
                'hair_length': hair_length_median,
-               'background_mean': background_mean_median}
+               'background_mean': background_mean_median,
+               'hairstyle': hairstyle_median}
+
+    print(f'medians = {medians}')
+    print(1 / 0)
 
     return medians
 
 
 # intermediate w vector 샘플링 및 해당 w 값으로 생성된 이미지에 대한 semantic score 계산
-# Create Date : 2025.05.15
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
-# - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
+# - finetune_v8_generator (nn.Module) : StyleGAN-FineTune-v8 의 Generator
 # - property_score_cnn    (nn.Module) : 핵심 속성 값 계산용 CNN 모델
 # - n                     (int)       : sampling 할 intermediate w vector 의 개수
 
 # Returns:
 # - w_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w (각 그룹별)
 # - property_scores    (dict)              : sampling 된 intermediate w 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
-#                                            dict 는 각 그룹의 이름 ('hhh', 'hhl', ..., 'lll') 을 key 로 함
+#                                            dict 는 각 그룹의 이름 ('hhhh', 'hhhl', ..., 'llll') 을 key 로 함
 #                                            {'eyes_cnn_score': dict(list(float)),
 #                                             'mouth_cnn_score': dict(list(float)),
 #                                             'pose_cnn_score': dict(list(float))}
 
-def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_cnn, n=80000):
-    save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/inference_test_during_training'
-    medians = compute_medians()  # returned values : -0.2709, 0.3052, 0.0742
+def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_cnn, n=80000):
+    save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/inference_test_during_training'
+    medians = get_medians()  # returned values : -0.4574, 0.5734, 0.7618, -0.0167
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
     w = np.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
     additional = np.random.normal(0, 1, size=(n, ORIGINALLY_PROPERTY_DIMS)).astype(np.float64)
 
-    # 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균의 CNN 도출 속성값에 따라 8개의 그룹으로 나눔
-    # (그룹명 : 머리 색, 머리 길이, 배경 색 평균 순서로, h: median 보다 높음 / l: median 보다 낮음)
-    w_vectors_by_group = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    # 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬" 평균의 CNN 도출 속성값에 따라 MBTI 처럼 16 개의 그룹으로 나눔
+    # (그룹명 : 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬" 값 순서로, h: median 보다 높음 / l: median 보다 낮음)
+    w_vectors_by_group = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                          'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                          'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                          'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
 
-    eyes_cnn_scores = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
-    mouth_cnn_scores = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
-    pose_cnn_scores = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    eyes_cnn_scores = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                       'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                       'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                       'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+
+    mouth_cnn_scores = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                        'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                        'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                        'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+
+    pose_cnn_scores = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                       'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                       'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                       'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
 
     for i in range(n // BATCH_SIZE):
         if i % 10 == 0:
@@ -106,16 +154,13 @@ def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_c
         z_ = z[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
         additional_ = additional[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
 
-        images, ws = infer.synthesize(finetune_v1_generator,
+        images, ws = infer.synthesize(finetune_v8_generator,
                                       num=BATCH_SIZE,
                                       save_dir=save_dir,
                                       z=z_,
                                       label=additional_,
                                       img_name_start_idx=0,
-                                      verbose=False,
-                                      save_img=False,
-                                      return_img=True,
-                                      return_w=True)
+                                      verbose=False, save_img=False, return_img=True, return_w=True)
 
         w[i * BATCH_SIZE : (i+1) * BATCH_SIZE] = ws
 
@@ -133,7 +178,8 @@ def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_c
                 hair_color_group = 'h' if property_score_np[0][1] >= medians['hair_color'] else 'l'
                 hair_length_group = 'h' if property_score_np[0][2] >= medians['hair_length'] else 'l'
                 background_mean_group = 'h' if property_score_np[0][5] >= medians['background_mean'] else 'l'
-                group_name = hair_color_group + hair_length_group + background_mean_group
+                hairstyle_group = 'h' if property_score_np[0][7] >= medians['hairstyle'] else 'l'
+                group_name = hair_color_group + hair_length_group + background_mean_group + hairstyle_group
 
                 eyes_cnn_scores[group_name].append(property_score_np[0][0])
                 mouth_cnn_scores[group_name].append(property_score_np[0][3])
@@ -154,12 +200,12 @@ def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_c
 
 
 # 각 핵심 속성 값이 가장 큰 & 가장 작은 ratio 비율만큼의 이미지를 그룹별로 각각 추출
-# Create Date : 2025.05.15
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
 # - property_scores (dict) : sampling 된 intermediate w vector 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
-#                            dict 는 각 그룹의 이름 ('hhh', 'hhl', ..., 'lll') 을 key 로 함
+#                            dict 는 각 그룹의 이름 ('hhhh', 'hhhl', ..., 'llll') 을 key 로 함
 #                            {'eyes_cnn_score': dict(list(float)),
 #                             'mouth_cnn_score': dict(list(float)),
 #                             'pose_cnn_score': dict(list(float))}
@@ -171,13 +217,32 @@ def sample_w_and_compute_property_scores(finetune_v1_generator, property_score_c
 #                          'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 def extract_best_and_worst_k_images(property_scores, ratio=0.15):
-    eyes_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
-    mouth_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
-    pose_largest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
 
-    eyes_smallest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
-    mouth_smallest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
-    pose_smallest_idxs = {'hhh': [], 'hhl': [], 'hlh': [], 'hll': [], 'lhh': [], 'lhl': [], 'llh': [], 'lll': []}
+    eyes_largest_idxs = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                         'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                         'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                         'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+    mouth_largest_idxs = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                          'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                          'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                          'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+    pose_largest_idxs = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                         'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                         'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                         'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+
+    eyes_smallest_idxs = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                          'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                          'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                          'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+    mouth_smallest_idxs = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                           'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                           'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                           'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+    pose_smallest_idxs = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                          'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                          'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                          'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
 
     # sort scores with index
     for group_name in GROUP_NAMES:
@@ -218,7 +283,7 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.15):
 
 
 # 각 핵심 속성 값 별 핵심 속성 값이 가장 큰 & 작은 k 장의 이미지에 대해 t-SNE 를 이용하여, 그룹별로 핵심 속성 값의 시각적 분포 파악
-# Create Date : 2025.05.15
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
@@ -229,12 +294,12 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.15):
 #                                             'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 # Returns:
-# - stylegan/stylegan_vectorfind_v7/tsne_result 디렉토리에 그룹 별 & 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
+# - stylegan/stylegan_vectorfind_v8/tsne_result 디렉토리에 그룹 별 & 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
 
 def run_tsne(w_vectors_by_group, indices_info):
     property_names = ['eyes', 'mouth', 'pose']
 
-    tsne_result_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/tsne_result'
+    tsne_result_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/tsne_result'
     os.makedirs(tsne_result_path, exist_ok=True)
 
     for property_name in property_names:
@@ -274,12 +339,13 @@ def run_tsne(w_vectors_by_group, indices_info):
 
 
 # 핵심 속성 값의 변화를 나타내는 intermediate w vector 를 도출하기 위한 SVM 학습
-# Create Date : 2025.05.15
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w vector (각 그룹별)
-# - group_name              (str)               : 머리 색, 머리 길이, 배경색 평균의 속성값 별 그룹명 ('hhh', 'hhl', ..., 'lll')
+# - group_name              (str)               : 머리 색, 머리 길이, 배경색 평균의 속성값 별 그룹명
+#                                                 ('hhhh', 'hhhl', ..., 'llll')
 # - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
 #                                                 {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
 #                                                  'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
@@ -354,7 +420,7 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
 
 
 # SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 intermediate w vector 를 도출 (최종 w vector)
-# Create Date : 2025.05.15
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
@@ -395,7 +461,7 @@ def find_property_score_vectors(svm_classifiers):
 
 
 # 핵심 속성 값의 변화를 나타내는 intermediate w vector 에 대한 정보 저장
-# Create Date : 2025.05.15
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
@@ -405,10 +471,10 @@ def find_property_score_vectors(svm_classifiers):
 #                                    'pose_vector': dict(NumPy array)}
 
 # Returns:
-# - stylegan/stylegan_vectorfind_v7/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 intermediate w vector 정보 저장
+# - stylegan/stylegan_vectorfind_v8/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 intermediate w vector 정보 저장
 
 def save_property_score_vectors_info(property_score_vectors):
-    vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/property_score_vectors'
+    vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/property_score_vectors'
     os.makedirs(vector_save_dir, exist_ok=True)
 
     for group_name in GROUP_NAMES:
@@ -421,20 +487,19 @@ def save_property_score_vectors_info(property_score_vectors):
         pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_w_vector_{group_name}.csv')
 
 
-# StyleGAN-FineTune-v1 모델을 이용한 vector find 실시
-# Create Date : 2025.05.15
+# StyleGAN-FineTune-v8 모델을 이용한 vector find 실시
+# Create Date : 2025.05.29
 # Last Update Date : -
 
 # Arguments:
-# - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
+# - finetune_v8_generator (nn.Module) : StyleGAN-FineTune-v8 의 Generator
 
-def run_stylegan_vector_find(finetune_v1_generator, device):
-    property_cnn_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v2_cnn.pth'
-    property_score_cnn = load_property_cnn_model(property_cnn_path, device)
+def run_stylegan_vector_find(finetune_v8_generator, device):
+    property_score_cnn = load_merged_property_score_cnn(device)
 
     # intermediate w vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
     sampling_start_at = time.time()
-    w_vectors_by_group, property_scores = sample_w_and_compute_property_scores(finetune_v1_generator,
+    w_vectors_by_group, property_scores = sample_w_and_compute_property_scores(finetune_v8_generator,
                                                                                property_score_cnn)
     print(f'sampling (from latent vector w) running time (s) : {time.time() - sampling_start_at}\n')
 
