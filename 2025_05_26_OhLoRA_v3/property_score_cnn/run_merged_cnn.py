@@ -6,8 +6,13 @@ from torch.utils.data import random_split, DataLoader
 import pandas as pd
 import os
 
-from run_train_cnn import HairstyleScoreCNN, get_dataloader
-from common import save_model_structure_pdf
+try:
+    from run_train_cnn import HairstyleScoreCNN, get_dataloader
+    from common import save_model_structure_pdf
+except:
+    from property_score_cnn.run_train_cnn import HairstyleScoreCNN, get_dataloader
+    from property_score_cnn.common import save_model_structure_pdf
+
 
 IMG_RESOLUTION = 256
 EXAMPLE_BATCH_SIZE = 30
