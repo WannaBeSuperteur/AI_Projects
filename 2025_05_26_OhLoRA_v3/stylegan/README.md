@@ -184,5 +184,19 @@
 
 모든 코드는 ```2025_05_26_OhLoRA_v3``` (프로젝트 메인 디렉토리) 에서 실행
 
+* **StyleGAN-VectorFind-v8** 모델 **(✅ 최종 채택)** 을 실행하여 Property Score 를 바꾸는 **intermediate w** vector 탐색
+  * ```python stylegan/run_stylegan_vectorfind_v8.py```
+
+<details><summary>다른 모델 실행 방법 [ 펼치기 / 접기 ]</summary>
+
 * **StyleGAN-FineTune-v8** 의 Fine-Tuning 에 필요한 15,000 장의 사람 얼굴 이미지 생성
   * ```python stylegan/run_generate_dataset.py``` 
+
+* ```gender``` ```quality``` ```age``` ```glass``` 속성 값 예측 CNN 생성 & 이미지 필터링 실시
+  * ```python stylegan/run_cnn.py``` 
+
+* **StyleGAN-FineTune-v8** 학습
+  * ```python stylegan/run_stylegan_finetune_v8.py```
+
+</details>
+

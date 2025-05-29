@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import pandas as pd
 import plotly.express as px
-from property_score_cnn.run_merged_cnn import MergedPropertyScoreCNN
 
 from sklearn import svm
 from sklearn.manifold import TSNE
@@ -17,8 +16,10 @@ sys.path.append(PROJECT_DIR_PATH)
 
 try:
     import stylegan_common.stylegan_generator_inference as infer
+    from common import load_merged_property_score_cnn
 except:
     import stylegan.stylegan_common.stylegan_generator_inference as infer
+    from stylegan.common import load_merged_property_score_cnn
 
 # use sklearnex (scikit-learn-intelex) library for speedup SVM training
 from sklearnex import patch_sklearn
@@ -28,8 +29,6 @@ patch_sklearn()
 import warnings
 warnings.filterwarnings('ignore')
 
-
-MERGED_PROPERTY_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/ohlora_v3_merged_property_cnn.pth'
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINAL_HIDDEN_DIMS_W = 512
@@ -41,30 +40,6 @@ SVMS_PER_EACH_PROPERTY = 1      # also w-vector count for each property
 GROUP_NAMES = ['hhhh', 'hhhl', 'hhlh', 'hhll', 'hlhh', 'hlhl', 'hllh', 'hlll',
                'lhhh', 'lhhl', 'lhlh', 'lhll', 'llhh', 'llhl', 'lllh', 'llll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
-
-
-# Merged Property Score CNN (hairstyle 포함한 핵심 속성 값 계산용 CNN) 로딩
-# Create Date : 2025.05.29
-# Last Update Date : -
-
-# Arguments:
-# - device (Device) : CUDA or CPU device
-
-# Returns:
-# - merged_property_score_cnn (nn.Module) : Merged Property Score CNN (핵심 속성 값 계산용 CNN)
-
-def load_merged_property_score_cnn(device):
-    merged_property_cnn_model = MergedPropertyScoreCNN()
-    merged_property_cnn_state_dict = torch.load(MERGED_PROPERTY_SCORE_CNN_PATH,
-                                                map_location=device,
-                                                weights_only=False)
-    merged_property_cnn_model.load_state_dict(merged_property_cnn_state_dict)
-
-    merged_property_cnn_model.to(device)
-    merged_property_cnn_model.device = device
-    print('Existing Merged Property CNN load successful!! 😊')
-
-    return merged_property_cnn_model
 
 
 # intermediate w vector 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬 (hairstyle)" 에 따라 그룹화하기 위해,
@@ -95,7 +70,6 @@ def get_medians():
                'hairstyle': hairstyle_median}
 
     print(f'medians = {medians}')
-    print(1 / 0)
 
     return medians
 
