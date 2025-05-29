@@ -37,10 +37,10 @@ if __name__ == '__main__':
 
     finetune_v1_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)
 
-    # try loading StyleGAN-VectorFind-v7 pre-trained model
+    # try loading StyleGAN-FineTune-v1 pre-trained model
     generator_state_dict = load_existing_stylegan_finetune_v1(device)
     finetune_v1_generator.load_state_dict(generator_state_dict)
-    print('Existing StyleGAN-VectorFind-v1 Generator load successful!! 😊')
+    print('Existing StyleGAN-FineTune-v1 Generator load successful!! 😊')
 
     # create model structure PDF and save
     finetune_v1_generator.to(device)
