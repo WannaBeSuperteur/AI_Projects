@@ -152,6 +152,64 @@
 
 ### 3-3. StyleGAN-FineTune-v8 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v8)
 
+```
+OhLoRA-v3 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성을 위한 모델로 "️✅ 최종 채택"
+```
+
+**1. 핵심 아이디어**
+
+* 요약
+  * [StyleGAN-VectorFind-v7](../../2025_05_02_OhLoRA_v2/stylegan/README.md#3-3-stylegan-finetune-v1-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v7) 기반
+  * StyleGAN 에서 **latent vector (z)** 가 mapping 된 **intermediate vector (w)** 를 이용하여 핵심 속성 값을 변화
+    * [참고: z vector 대신 w vector 가 **entangle, 즉 속성 (얼굴형, 피부 색, 머리 길이 등) 간 얽힘** 이 덜 되어 있음](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md#4-1-feature-%EB%A1%9C%EC%9D%98-mapping-%EB%B9%84%EA%B5%90)
+
+| 구분                                                                                                                                          | latent vector (z) ❌                 | intermediate vector (w) ✅        |
+|---------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|----------------------------------|
+| 신경망 내에서의 위치<br>([StyleGAN Generator](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/images/Vision_StyleGAN_1.PNG) 기준) | 입력 부분 (mapping 이전)                  | mapping 이후, synthesis network 이전 |
+| 차원<br>([모델 구조 PDF 파일](model_structure_pdf/finetune_v8_generator.pdf))                                                                       | **519** (= 512 + additional 7 dims) | **512**                          |
+
+* 핵심 속성 값 변화를 위한 벡터 탐색
+  * **intermediate w vector** 기준으로, Oh-LoRA 👱‍♀️ (오로라) 의 **표정 제어** 와 관련된 [핵심 속성 값](#2-핵심-속성-값) 을 가장 잘 변화시키는 벡터 탐색을 위한 SVM 학습
+  * [참고 논문](https://arxiv.org/pdf/1911.09267) 및 [스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)
+
+* 전체 학습 과정
+  * 먼저, StyleGAN-FineTune-v8 으로 24만 장의 여성 얼굴 이미지를 생성
+  * 생성된 이미지를 **여러 그룹으로 나누고, 각 그룹별로 SVM 을 학습** 하여, **각 그룹이 나타내는 이미지 특징에 따른 최적의 벡터를 탐색** 하여 성능 향상 시도
+    * 각 분류 기준 별, 해당 데이터 (TBU) 에서의 중간값 (median) 을 분류 기준값 (cutoff) 으로 하여 분류
+    * MBTI 가 E/I, S/N, T/F, J/P 의 4가지 분류 기준으로 성격을 16 그룹으로 나누는 것과 유사 
+
+| 구분                                                               | 핵심 속성 값                                                                                                                         |
+|------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| **표정 제어** 관련 핵심 속성 값<br>(잘 변화시키는 벡터를 탐색할 대상)                     | - ```eyes``` (눈을 뜬 정도)<br>- ```mouth``` (입을 벌린 정도)<br>- ```pose``` (고개 돌림 정도)                                                   |
+| **각 그룹별 SVM 학습** 을 위한 분류 기준이 되는 핵심 속성 값<br>(분류 기준 4개 → 총 16개 그룹) | - ```hair_color``` (머리 색)<br>- ```hair_length``` (머리 길이)<br>- ```background_color``` (배경 색 밝기)<br>- ```hairstyle``` (직모 vs. 곱슬) |
+
+![image](../../images/250526_12.png)
+
+**2. StyleGAN-VectorFind-v7 과의 차이**
+
+| 구분                                                                                                                                                                                                                                                    | [StyleGAN-VectorFind-v7](../../2025_05_02_OhLoRA_v2/stylegan/README.md#3-3-stylegan-finetune-v1-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v7) | StyleGAN-VectorFind-v8                                                    |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| 이미지 생성에 사용한 모델                                                                                                                                                                                                                                        | StyleGAN-FineTune-v1 [(참고)](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan)                                  | [StyleGAN-FineTune-v8](#3-2-fine-tuned-stylegan-stylegan-finetune-v8)     |
+| vector 추출을 위한 생성 이미지 개수                                                                                                                                                                                                                               | 80,000 개 (= 80K)                                                                                                                                              | 240,000 개 (= 240K)                                                        | 
+| 이미지 그룹 분류 기준 핵심 속성 값<br>(각 그룹 별 개별적으로 [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 을 학습하여 성능 향상을 위한) | ```hair_color``` ```hair_length``` ```background_color```                                                                                                     | ```hair_color``` ```hair_length``` ```background_color``` ```hairstyle``` |
+| 이미지 그룹 개수<br>(각 그룹 별 SVM 학습)                                                                                                                                                                                                                          | 8 (= $2^3$)                                                                                                                                                   | 16 (= $2^4$)                                                              |
+
+**3. Training Phase Details**
+
+![image](../../images/250526_11.png)
+
+**4. Inference (Synthesize) & Image Generation Test Phase Details**
+
+![image](../../images/250526_13.png)
+
+* 참고 사항 (실제 구현)
+  * **latent z vector** 는 (TBU) 에 관련 정보가 저장되어 있으면 해당 정보에 따라 생성하고, 그렇지 않으면 랜덤으로 생성
+  * **생성된 이미지를 그룹에 할당** 할 때, (TBU) 에 관련 정보가 저장되어 있으면 Property Score CNN 을 이용하는 것이 아닌, 해당 저장된 정보를 이용하여 그룹에 할당
+
+**5. 성능 보고서**
+
+* TBU
+
 ### 3-4. Gender, Quality, Age, Glass Score CNN (StyleGAN-FineTune-v8 학습 데이터 필터링용)
 
 ![image](../../images/250526_2.PNG)
