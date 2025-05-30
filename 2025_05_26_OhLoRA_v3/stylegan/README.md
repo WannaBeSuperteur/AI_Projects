@@ -196,11 +196,11 @@ OhLoRA-v3 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 **3. Training Phase Details**
 
-![image](../../images/250526_11.png)
+![image](../../images/250526_10.png)
 
 **4. Inference (Synthesize) & Image Generation Test Phase Details**
 
-![image](../../images/250526_13.png)
+![image](../../images/250526_11.png)
 
 * 참고 사항 (실제 구현)
   * **latent z vector** 는 (TBU) 에 관련 정보가 저장되어 있으면 해당 정보에 따라 생성하고, 그렇지 않으면 랜덤으로 생성
