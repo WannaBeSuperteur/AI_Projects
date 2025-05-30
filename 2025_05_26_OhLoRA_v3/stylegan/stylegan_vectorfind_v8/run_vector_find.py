@@ -91,7 +91,7 @@ def get_medians():
 #                                             'mouth_cnn_score': dict(list(float)),
 #                                             'pose_cnn_score': dict(list(float))}
 
-def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_cnn, n=20000):
+def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_cnn, n=40000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/inference_test_during_training'
     medians = get_medians()  # returned values : -0.4574, 0.5734, 0.7618, -0.0167
 
