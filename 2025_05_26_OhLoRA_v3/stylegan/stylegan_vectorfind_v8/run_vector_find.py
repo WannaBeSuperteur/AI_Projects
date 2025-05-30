@@ -91,7 +91,7 @@ def get_medians():
 #                                             'mouth_cnn_score': dict(list(float)),
 #                                             'pose_cnn_score': dict(list(float))}
 
-def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_cnn, n=160000):
+def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_cnn, n=240000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/inference_test_during_training'
     medians = get_medians()  # returned values : -0.4574, 0.5734, 0.7618, -0.0167
 
@@ -190,7 +190,7 @@ def sample_w_and_compute_property_scores(finetune_v8_generator, property_score_c
 #                          'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
 #                          'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
-def extract_best_and_worst_k_images(property_scores, ratio=0.15):
+def extract_best_and_worst_k_images(property_scores, ratio=0.2):
 
     eyes_largest_idxs = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
                          'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
@@ -479,9 +479,11 @@ def run_stylegan_vector_find(finetune_v8_generator, device):
 
     indices_info = extract_best_and_worst_k_images(property_scores)
 
+    """
     tsne_start_at = time.time()
     run_tsne(w_vectors_by_group, indices_info)
     print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
+    """
 
     # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 intermediate w vector 도출
     svm_classifiers = {'eyes': {}, 'mouth': {}, 'pose': {}}

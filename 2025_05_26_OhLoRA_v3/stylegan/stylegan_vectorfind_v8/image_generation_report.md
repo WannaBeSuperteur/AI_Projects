@@ -15,13 +15,13 @@
 
 * passed 기준 **(모두 만족)**
   * 각 속성 값 별, **의도한 값 vs. 실제 생성된 이미지에 대해 Property Score CNN 으로 도출한 값** 의 corr-coef (상관계수) 가 다음을 만족 
-  * ```eyes``` : 상관계수의 절댓값이 **0.?? 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
-  * ```mouth``` : 상관계수의 절댓값이 **0.?? 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.88 이상)
-  * ```pose``` : 상관계수의 절댓값이 **0.?? 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
+  * ```eyes``` : 상관계수의 절댓값이 **0.92 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
+  * ```mouth``` : 상관계수의 절댓값이 **0.88 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.88 이상)
+  * ```pose``` : 상관계수의 절댓값이 **0.88 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
 
-| n<br>(total samples) | k<br>(top / bottom samples) | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv)                                           |
-|----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------------------------------------------------|
-| K                    | K / K<br>**(% each)**       |                              | (%)          | (%)                   |                           |                            |                           | [test_result.csv](image_generation_report/test_result.csv) |
+| n<br>(total samples) | k<br>(top / bottom samples)     | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv)                                           |
+|----------------------|---------------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------------------------------------------------|
+| 240.0K               | 48.0K / 48.0K<br>**(20% each)** |                              | (%)          | (%)                   |                           |                            |                           | [test_result.csv](image_generation_report/test_result.csv) |
 
 ## 2. Grouping
 

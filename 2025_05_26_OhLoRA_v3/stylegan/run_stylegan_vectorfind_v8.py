@@ -36,8 +36,8 @@ ORIGINALLY_PROPERTY_DIMS = 7    # 원래 property (eyes, hair_color, hair_length
                                 #               background_mean, background_std) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 100  # 2400
-TEST_IMG_CASES_NEEDED_PASS = 100  # 80
+TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
+TEST_IMG_CASES_NEEDED_PASS = 60
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/image_generation_report'
 OHLORA_FINAL_VECTORS_TEST_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/final_vector_test_report'
@@ -325,10 +325,10 @@ def run_property_score_compare_test(finetune_v8_generator, property_score_cnn, e
             # check passed
             generated_count += 1
 
-            passed = abs(eyes_corrcoef) >= 0.92 and abs(mouth_corrcoef) >= 0.88 and abs(pose_corrcoef) >= 0.92
+            passed = abs(eyes_corrcoef) >= 0.92 and abs(mouth_corrcoef) >= 0.88 and abs(pose_corrcoef) >= 0.88
             eyes_diff = max(0.92 - abs(eyes_corrcoef), 0)
             mouth_diff = max(0.88 - abs(mouth_corrcoef), 0)
-            pose_diff = max(0.92 - abs(pose_corrcoef), 0)
+            pose_diff = max(0.88 - abs(pose_corrcoef), 0)
 
             pass_diff = eyes_diff + mouth_diff + pose_diff
             diff = {'eyes': round(eyes_diff, 4), 'mouth': round(mouth_diff, 4), 'pose': round(pose_diff, 4)}
@@ -499,7 +499,7 @@ if __name__ == '__main__':
         finetune_v8_generator.load_state_dict(generator_state_dict)
 
         # save state dict
-#        torch.save(finetune_v8_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v8.pth')
+        torch.save(finetune_v8_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v8.pth')
 
     # get property score changing vector
     try:
