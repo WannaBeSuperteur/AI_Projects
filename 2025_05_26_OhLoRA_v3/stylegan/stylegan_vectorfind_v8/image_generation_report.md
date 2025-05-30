@@ -6,11 +6,7 @@
 
 ## 1. Final Report
 
-* 결론
-  * TBU
-
 * 실험 설정
-  * random intermediate w vector 를 **아래 결과처럼 100 개가 아닌, 이보다 훨씬 많은 개수** 로 하여 테스트
   * [grouping](#2-grouping) (16 groups) 는 **모든 case 에 대해 항상 적용**
 
 * passed 기준 **(모두 만족)**
@@ -21,7 +17,7 @@
 
 | n<br>(total samples) | k<br>(top / bottom samples)     | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv)                                           |
 |----------------------|---------------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------------------------------------------------|
-| 240.0K               | 48.0K / 48.0K<br>**(20% each)** |                              | (%)          | (%)                   |                           |                            |                           | [test_result.csv](image_generation_report/test_result.csv) |
+| 240.0K               | 48.0K / 48.0K<br>**(20% each)** | 2,000                        | 49 (2.4 %)   | 19 (1.0 %)            | 0.8744                    | 0.8465                     | 0.8735                    | [test_result.csv](image_generation_report/test_result.csv) |
 
 ## 2. Grouping
 
@@ -40,7 +36,7 @@
 ## 3. Image Generation Test Result
 
 * **결론**
-  * TBU
+  * SVM 학습을 위해 생성하는 후보 이미지의 개수 (= random latent code z 의 개수), 즉 **Sample Count (N)** 이 커질수록 **성능 (mean corr-coef 기준)** 이 좋다.
 
 * 실험 설정
   * 모든 실험에서 **[sklearnex](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)** 및 **[grouping](#2-grouping) (16 groups)** 둘 다 적용

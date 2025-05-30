@@ -124,6 +124,7 @@
 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/inference_test_after_training
 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/inference_test_after_training/*
 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/*.pth
+2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report/latent_*.csv
 venv
 venv/*
 requirements_v3.10.11.txt
