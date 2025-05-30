@@ -118,7 +118,7 @@
 | 🧪 모델 학습 | 필터링된 이미지를 StyleGAN-FineTune-v1 으로 추가 Fine-Tuning **(StyleGAN-FineTune-v8)**                                                                       | 05.28 수 - 05.29 목 (2d) | ```P005-004-StyleGAN-FineTune-v8```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/17) | ✅  |
 | 🔨 모델 개선 | StyleGAN-FineTune-v8 에서 핵심 속성 값만 변화시키는 vector 추출 구현 시, '곱슬머리 or 직모' 핵심 속성 값 추가 **(StyleGAN-VectorFind-v8)**                                       | 05.29 목 (1d)           | ```P005-005-StyleGAN-VectorFind-v8``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/18) | ✅  |
 | 🧪 모델 학습 | StyleGAN-FineTune-v8 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트                                                                                      | 05.30 금 (1d)           | ```P005-005-StyleGAN-VectorFind-v8``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/18) | ✅  |
-| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                                                | 05.28 수 - 05.31 토 (4d) |                                       |                                                                    | 💨 |
+| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                                                | 05.28 수 - 05.30 금 (3d) |                                       |                                                                    | ✅  |
 
 **3. LLM 을 이용한 대화 능력 향상**
 

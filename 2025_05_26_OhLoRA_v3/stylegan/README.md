@@ -150,6 +150,10 @@
 | Generator     | 처음 일부 레이어만 학습 가능<br>- latent vector Z → intermediate vector W mapping<br>- synthesis network 의 4 x 4 부분까지 | - Trainable : ```mapping``` ```synthesis.layer0``` ```synthesis.layer1``` ```synthesis.output0```<br>- frozen : 나머지 모든 레이어 |
 | Discriminator | 마지막 일부 레이어만 학습 가능                                                                                         | - Trainable : ```layer12``` ```layer13``` ```layer14```<br>- frozen : 나머지 모든 레이어                                           |
 
+* 모델 구조 PDF 파일
+  * [Generator 구조 PDF 파일](model_structure_pdf/finetune_v8_generator.pdf) 
+  * [Discriminator 구조 PDF 파일](model_structure_pdf/finetune_v8_discriminator.pdf) 
+
 ### 3-3. StyleGAN-FineTune-v8 기반 핵심 속성값 변환 Intermediate w Vector 탐색 (StyleGAN-VectorFind-v8)
 
 ```
@@ -175,7 +179,7 @@ OhLoRA-v3 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 * 전체 학습 과정
   * 먼저, StyleGAN-FineTune-v8 으로 24만 장의 여성 얼굴 이미지를 생성
   * 생성된 이미지를 **여러 그룹으로 나누고, 각 그룹별로 SVM 을 학습** 하여, **각 그룹이 나타내는 이미지 특징에 따른 최적의 벡터를 탐색** 하여 성능 향상 시도
-    * 각 분류 기준 별, 해당 데이터 (TBU) 에서의 중간값 (median) 을 분류 기준값 (cutoff) 으로 하여 분류
+    * 각 분류 기준 별, [해당 데이터](../v8_property_scores/property_scores_mean_and_median.csv) 에서의 중간값 (median) 을 분류 기준값 (cutoff) 으로 하여 분류
     * MBTI 가 E/I, S/N, T/F, J/P 의 4가지 분류 기준으로 성격을 16 그룹으로 나누는 것과 유사 
 
 | 구분                                                               | 핵심 속성 값                                                                                                                         |
@@ -203,12 +207,13 @@ OhLoRA-v3 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 ![image](../../images/250526_11.png)
 
 * 참고 사항 (실제 구현)
-  * **latent z vector** 는 (TBU) 에 관련 정보가 저장되어 있으면 해당 정보에 따라 생성하고, 그렇지 않으면 랜덤으로 생성
-  * **생성된 이미지를 그룹에 할당** 할 때, (TBU) 에 관련 정보가 저장되어 있으면 Property Score CNN 을 이용하는 것이 아닌, 해당 저장된 정보를 이용하여 그룹에 할당
+  * **latent z vector** 는 [해당 파일](stylegan_vectorfind_v8/ohlora_z_vectors.csv) 에 관련 정보가 저장되어 있으면 해당 정보에 따라 생성하고, 그렇지 않으면 랜덤으로 생성
+  * **생성된 이미지를 그룹에 할당** 할 때, [해당 파일](stylegan_vectorfind_v8/ohlora_w_group_names.csv) 에 관련 정보가 저장되어 있으면 Property Score CNN 을 이용하는 것이 아닌, 해당 저장된 정보를 이용하여 그룹에 할당
 
 **5. 성능 보고서**
 
-* TBU
+* [이미지 생성 테스트 결과](stylegan_vectorfind_v8/image_generation_report.md)
+* [최종 사용할 Oh-LoRA 👱‍♀️ (오로라) 이미지](stylegan_vectorfind_v8/final_OhLoRA_info.md)
 
 ### 3-4. Gender, Quality, Age, Glass Score CNN (StyleGAN-FineTune-v8 학습 데이터 필터링용)
 
