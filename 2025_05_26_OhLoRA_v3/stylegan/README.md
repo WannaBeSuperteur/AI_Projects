@@ -160,7 +160,7 @@ OhLoRA-v3 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 
 * 요약
   * [StyleGAN-VectorFind-v7](../../2025_05_02_OhLoRA_v2/stylegan/README.md#3-3-stylegan-finetune-v1-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v7) 기반
-  * StyleGAN 에서 **latent vector (z)** 가 mapping 된 **intermediate vector (w)** 를 이용하여 핵심 속성 값을 변화
+  * StyleGAN 에서 **latent vector (z)** 가 mapping 된 **intermediate vector (w)** 를 이용하여 핵심 속성 값을 변화 [(설명 이미지)](../../images/OhLoRA_VectorFind_common.png)
     * [참고: z vector 대신 w vector 가 **entangle, 즉 속성 (얼굴형, 피부 색, 머리 길이 등) 간 얽힘** 이 덜 되어 있음](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md#4-1-feature-%EB%A1%9C%EC%9D%98-mapping-%EB%B9%84%EA%B5%90)
 
 | 구분                                                                                                                                          | latent vector (z) ❌                 | intermediate vector (w) ✅        |
