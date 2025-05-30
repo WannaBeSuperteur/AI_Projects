@@ -200,6 +200,7 @@
 * Model Save Path
   * ```stylegan/stylegan_model.pth``` (**Original GAN**, including Generator & Discriminator)
     * original model from [MODEL ZOO](https://github.com/genforce/genforce/blob/master/MODEL_ZOO.md) > StyleGAN Ours > **celeba-partial-256x256**
+    * 위 MODEL ZOO 목록에서 FFHQ 데이터셋으로 학습된 StyleGAN 을 사용하지 않은 이유는, **옆에 이상한 형태의 사람이 있는 듯한 저품질 이미지 (불쾌한 골짜기) 가 생성되는 경우** 가 너무 많기 때문
 * Study Doc
   * [Study Doc (2025.04.09)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.04.09%5D%20A%20Style-Based%20Generator%20Architecture%20for%20Generative%20Adversarial%20Networks.md)
 * 모델 구조 정보
