@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # remove for LLM inference only
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # remove for LLM inference only
 
 import argparse
 import torch
@@ -73,8 +73,8 @@ def test_cuda_oom_polyglot(is_separate):
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).to(device_mapping[col])
 
-        llm_tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{col}_fine_tuned')
-        print(f'\nCUDA OOM test for Fine-Tuned LLM ({llm_name}, {col}) - Load SUCCESSFUL! 👱‍♀️')
+        llm_tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_{col}_fine_tuned')
+        print(f'\nCUDA OOM test for Fine-Tuned LLM (Polyglot-Ko 1.3B, {col}) - Load SUCCESSFUL! 👱‍♀️')
 
         llms[col].generation_config.pad_token_id = llm_tokenizer.pad_token_id
         input_prompt = '로라야 사랑해! 요즘 잘 지내고 있어?'
@@ -92,15 +92,66 @@ def test_cuda_oom_polyglot(is_separate):
         print(f'CUDA memory until {col} model loading : {torch.cuda.memory_allocated()}')
 
 
-# LLM Fine-Tuning 학습 실시
+# LLM 4개 한번에 로딩 시 OOM 발생 테스트 (Kanana-1.5 2.1B)
 # Create Date : 2025.05.31
 # Last Update Date : -
 
 # Arguments:
-# - llm_name   (str) : Fine-Tuning 할 LLM 의 이름 ('kanana' or 'polyglot')
+# - is_separate (bool) : True 이면 2 대의 GPU 분산 로딩, False 이면 1 대의 GPU 에만 로딩
+# - version     (str)  : 'original' (원본 모델) or 'fine_tuned' (Oh-LoRA 👱‍♀️ 에 사용할 파인튜닝된 모델)
+
+def test_cuda_oom_kanana(is_separate, version='original'):
+    gpu_0 = torch.device('cuda:0')
+    gpu_1 = torch.device('cuda:1')
+
+    output_cols = ['output_message', 'memory', 'eyes_mouth_pose', 'summary']
+
+    llms = {}
+    if is_separate:
+        device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_1, 'summary': gpu_1}
+    else:
+        device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_0, 'summary': gpu_0}
+
+    for col in output_cols:
+        if version == 'original':
+            llm_dir = 'kanana_original'
+        else:
+            llm_dir = f'kanana_{col}_{version}'
+
+        llms[col] = AutoModelForCausalLM.from_pretrained(
+            f'{PROJECT_DIR_PATH}/llm/models/{llm_dir}',
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).to(device_mapping[col])
+
+        llm_tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_dir}')
+        print(f'\nCUDA OOM test for Fine-Tuned LLM (Kanana-1.5 2.1B, {col}) - Load SUCCESSFUL! 👱‍♀️')
+
+        llm_tokenizer.pad_token = llm_tokenizer.eos_token
+        llms[col].generation_config.pad_token_id = llm_tokenizer.pad_token_id
+        stop_token_list = get_stop_token_list_kanana(col)
+
+        input_prompt = '로라야 사랑해! 요즘 잘 지내고 있어?'
+
+        llm_output, _, _ = run_inference_kanana(llms[col],
+                                                input_prompt,
+                                                llm_tokenizer,
+                                                col,
+                                                stop_token_list=stop_token_list,
+                                                answer_start_mark=get_answer_start_mark(col))
+
+        print(f'LLM output : {llm_output}')
+        print(f'CUDA memory until {col} model loading : {torch.cuda.memory_allocated()}')
+
+
+# LLM inference (해당 LLM 이 없거나 로딩 실패 시 Fine-Tuning 학습) 실시
+# Create Date : 2025.05.31
+# Last Update Date : -
+
+# Arguments:
+# - llm_name   (str) : Inference 또는 Fine-Tuning 할 LLM 의 이름 ('kanana' or 'polyglot')
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
-def fine_tune_llm(llm_name, output_col):
+def inference_or_fine_tune_llm(llm_name, output_col):
 
     # load valid dataset
     valid_final_input_prompts = load_valid_final_prompts(output_col=output_col)
@@ -194,7 +245,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-llm_names',
                         help="name of LLMs (separated by comma)",
-                        default='kanana,polyglot,kanana,polyglot')
+                        default='kanana,kanana,kanana,kanana')
 
     parser.add_argument('-output_cols',
                         help="output column names (separated by comma) from dataset csv",
@@ -208,7 +259,11 @@ if __name__ == '__main__':
     # CUDA OOM test
     # Polyglot-Ko 1.3B : (separated = False -> Result : max         11271 MiB / 12288 MiB -> 2대의 GPU 에 분산 로딩 필요)
     #                    (separated = True  -> Result : max  (6060, 5349) MiB / 12288 MiB)
-#    test_cuda_oom_polyglot(True)
+
+    # Kanana-1.5 2.1B  : (separated = True  -> Result : max  (9155, 8461) MiB / 12288 MiB)
+
+#    test_cuda_oom_polyglot(is_separate=True)
+    test_cuda_oom_kanana(is_separate=True, version='original')
 
     llm_names_list = llm_names.split(',')
     output_cols_list = output_cols.split(',')
@@ -217,4 +272,4 @@ if __name__ == '__main__':
         assert llm_name in ['kanana', 'polyglot'], "LLM name must be 'kanana' or 'polyglot'."
 
         print(f'\n=== 🚀 Fine-Tune LLM {llm_name} with column {output_col} START 🚀 \n===')
-        fine_tune_llm(llm_name, output_col)
+        inference_or_fine_tune_llm(llm_name, output_col)
