@@ -12,7 +12,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, T
 import torch
 import pandas as pd
 
-from fine_tuning.inference import run_inference_polyglot
+from fine_tuning.inference import run_inference_kanana
 from fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
                               get_answer_start_mark
 
@@ -33,13 +33,13 @@ os.makedirs(log_dir_path, exist_ok=True)
 
 def get_stop_token_list(output_col):
     if output_col == 'output_message':
-        return [1477, 1078, 4833, 12]  # (답변 종료)
+        return [109659, 104449, 99458, 64356, 8, 220]  # (답변 종료)
     elif output_col == 'summary':
-        return [445, 779, 4833, 12]  # (요약 종료)
+        return [36811, 103168, 99458, 64356, 8, 220]  # (요약 종료)
     elif output_col == 'memory':
-        return [445, 779, 4833, 12]  # (요약 종료)
+        return [36811, 103168, 99458, 64356, 8, 220]  # (요약 종료)
     else:  # eyes_mouth_pose
-        return [1585, 22520, 12571, 4833, 12]  # (표정 출력 종료)
+        return [320, 102260, 30381, 62226, 99458, 64356, 8, 220]  # (표정 출력 종료)
 
 
 class OhLoRACustomCallback(TrainerCallback):
@@ -52,7 +52,7 @@ class OhLoRACustomCallback(TrainerCallback):
         global lora_llm, tokenizer, valid_final_prompts
 
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/polyglot_{self.output_col}_train_log.csv')
+        train_log_df.to_csv(f'{log_dir_path}/kanana_{self.output_col}_train_log.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -61,12 +61,12 @@ class OhLoRACustomCallback(TrainerCallback):
             stop_token_list = get_stop_token_list(self.output_col)
             answer_start_mark = get_answer_start_mark(self.output_col)
 
-            llm_answer, trial_count, output_token_cnt = run_inference_polyglot(lora_llm,
-                                                                               final_input_prompt,
-                                                                               tokenizer,
-                                                                               output_col=self.output_col,
-                                                                               stop_token_list=stop_token_list,
-                                                                               answer_start_mark=answer_start_mark)
+            llm_answer, trial_count, output_token_cnt = run_inference_kanana(lora_llm,
+                                                                             final_input_prompt,
+                                                                             tokenizer,
+                                                                             output_col=self.output_col,
+                                                                             stop_token_list=stop_token_list,
+                                                                             answer_start_mark=answer_start_mark)
             elapsed_time = time.time() - start_at
 
             print(f'final input prompt : {final_input_prompt}')
@@ -77,7 +77,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/polyglot_{self.output_col}_inference_log_dict.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/kanana_{self.output_col}_inference_log_dict.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
@@ -86,7 +86,7 @@ class OhLoRACustomCallback(TrainerCallback):
             print(f'logging failed : {e}')
 
 
-# Original LLM (Polyglot-Ko 1.3B) 가져오기 (Fine-Tuning 실시할)
+# Original LLM (Kanana-1.5 2.1B) 가져오기 (Fine-Tuning 실시할)
 # Create Date : 2025.05.31
 # Last Update Date : -
 
@@ -94,17 +94,17 @@ class OhLoRACustomCallback(TrainerCallback):
 # - 없음
 
 # Returns:
-# - original_llm (LLM) : Original Polyglot-Ko 1.3B LLM
+# - original_llm (LLM) : Original Kanana-1.5 2.1B LLM
 
 def get_original_llm():
-    original_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_original',
+    original_llm = AutoModelForCausalLM.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/kanana_original',
                                                         trust_remote_code=True,
                                                         torch_dtype=torch.bfloat16).cuda()
 
     return original_llm
 
 
-# Original LLM (Polyglot-Ko 1.3B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
+# Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
 # Create Date : 2025.05.31
 # Last Update Date : -
 
@@ -115,18 +115,18 @@ def get_original_llm():
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args(output_col):
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned'
-    num_train_epochs_dict = {'output_message': 60, 'memory': 20, 'summary': 60, 'eyes_mouth_pose': 30}
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/kanana_{output_col}_fine_tuned'
+    num_train_epochs_dict = {'output_message': 30, 'memory': 15, 'summary': 30, 'eyes_mouth_pose': 20}
     num_train_epochs = num_train_epochs_dict[output_col]
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
         num_train_epochs=num_train_epochs,
-        logging_steps=10,                   # logging frequency
+        logging_steps=20,                   # logging frequency
         gradient_checkpointing=False,
         output_dir=output_dir_path,
         save_total_limit=3,                 # max checkpoint count to save
-        per_device_train_batch_size=4,      # batch size per device during training
+        per_device_train_batch_size=2,      # batch size per device during training
         per_device_eval_batch_size=1,       # batch size per device during validation
         report_to=None                      # to prevent wandb API key request at start of Fine-Tuning
     )
@@ -134,7 +134,7 @@ def get_training_args(output_col):
     return training_args
 
 
-# Original LLM (Polyglot-Ko 1.3B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
+# Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
 # Create Date : 2025.05.31
 # Last Update Date : -
 
@@ -163,12 +163,12 @@ def get_sft_trainer(dataset, collator, training_args, output_col):
     return trainer
 
 
-# Original LLM (Polyglot-Ko 1.3B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
+# Original LLM (Kanana-1.5 2.1B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
 # Create Date : 2025.05.31
 # Last Update Date : -
 
 # Arguments:
-# - llm       (LLM) : Fine-Tuning 실시할 LLM (Polyglot-Ko 1.3B)
+# - llm       (LLM) : Fine-Tuning 실시할 LLM (Kanana-1.5 2.1B)
 # - lora_rank (int) : LoRA 적용 시의 Rank
 
 # Returns:
@@ -177,12 +177,15 @@ def get_sft_trainer(dataset, collator, training_args, output_col):
 def get_lora_llm(llm, lora_rank):
     global lora_llm
 
+    # Kanana-1.5 is based on LlamaForCausalLM architecture
+    # target modules of LlamaForCausalLM : ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
     lora_config = LoraConfig(
         r=lora_rank,                          # Rank of LoRA
         lora_alpha=16,
         lora_dropout=0.05,                    # Dropout for LoRA
         init_lora_weights="gaussian",         # LoRA weight initialization
-        target_modules=["query_key_value"],
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
         task_type="CAUSAL_LM"
     )
 
@@ -190,7 +193,7 @@ def get_lora_llm(llm, lora_rank):
     lora_llm.print_trainable_parameters()
 
 
-# Original LLM (Polyglot-Ko 1.3B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
+# Original LLM (Kanana-1.5 2.1B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
 # Create Date : 2025.05.31
 # Last Update Date : -
 
@@ -213,7 +216,7 @@ def generate_llm_trainable_dataset(dataset_df):
     return dataset
 
 
-# LLM (Polyglot-Ko 1.3B) Fine-Tuning 실시
+# LLM (Kanana-1.5 2.1B) Fine-Tuning 실시
 # Create Date : 2025.05.31
 # Last Update Date : -
 
@@ -222,7 +225,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # - dataset_version (str) : 학습 데이터셋 버전 ('v2_2' or 'v3')
 
 # Returns:
-# - llm/models/polyglot_{output_col}_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - llm/models/kanana_{output_col}_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model(output_col, dataset_version):
     global lora_llm, tokenizer, valid_final_prompts
@@ -231,9 +234,11 @@ def fine_tune_model(output_col, dataset_version):
     print('Oh-LoRA LLM Fine Tuning start.')
 
     # get original LLM and tokenizer
-    # Polyglot-Ko original model is from https://huggingface.co/EleutherAI/polyglot-ko-1.3b
+    # Kanana-1.5 2.1B original model is from https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base
     original_llm = get_original_llm()
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/polyglot_original')
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/kanana_original')
+
+    tokenizer.pad_token = tokenizer.eos_token
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
@@ -241,7 +246,7 @@ def fine_tune_model(output_col, dataset_version):
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
-    get_lora_llm(llm=original_llm, lora_rank=128)
+    get_lora_llm(llm=original_llm, lora_rank=64)
 
 #    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
 #    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
@@ -249,28 +254,28 @@ def fine_tune_model(output_col, dataset_version):
 
     if output_col == 'output_message':
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|endoftext|>",
+            lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|end_of_text|>",
             axis=1)
 
     elif output_col == 'summary':
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data'] + ' (오로라 답변) ' + x['output_message']} (요약 시작) ### 답변: {x[output_col]} (요약 종료) <|endoftext|>",
+            lambda x: f"{x['input_data'] + ' (오로라 답변) ' + x['output_message']} (요약 시작) ### 답변: {x[output_col]} (요약 종료) <|end_of_text|>",
             axis=1)
 
     elif output_col == 'memory':
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data']} (요약 시작) ### 답변: {'' if str(x[output_col]) == 'nan' else x[output_col]} (요약 종료) <|endoftext|>",
+            lambda x: f"{x['input_data']} (요약 시작) ### 답변: {'' if str(x[output_col]) == 'nan' else x[output_col]} (요약 종료) <|end_of_text|>",
             axis=1)
 
     else:  # eyes_mouth_pose
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['output_message']} (표정 출력 시작) ### 답변: {x[output_col]} (표정 출력 종료) <|endoftext|>",
+            lambda x: f"{x['output_message']} (표정 출력 시작) ### 답변: {x[output_col]} (표정 출력 종료) <|end_of_text|>",
             axis=1)
 
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
 
-    response_template = [6, 6, 4253, 29]  # '### 답변 :'
+    response_template = [8, 17010, 111964, 25]  # '### 답변 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args(output_col)
@@ -280,5 +285,5 @@ def fine_tune_model(output_col, dataset_version):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/kanana_{output_col}_fine_tuned'
     trainer.save_model(output_dir_path)

@@ -16,8 +16,19 @@ def get_answer_start_mark(output_col):
         return ' (표정 출력 시작)'
 
 
-def get_temperature(output_col):
-    if output_col == 'eyes_mouth_pose':
+def get_answer_end_mark(output_col):
+    if output_col == 'output_message':
+        return ' (답변 종료)'
+    elif output_col == 'summary':
+        return ' (요약 종료)'
+    elif output_col == 'memory':
+        return ' (요약 종료)'
+    else:  # eyes_mouth_pose
+        return ' (표정 출력 종료)'
+
+
+def get_temperature(output_col, llm_name):
+    if output_col == 'eyes_mouth_pose' and llm_name == 'polyglot':
         return 1.5
     else:
         return 0.6

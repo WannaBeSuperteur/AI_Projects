@@ -8,6 +8,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from fine_tuning.fine_tuning_polyglot import fine_tune_model as fine_tune_polyglot
 from fine_tuning.fine_tuning_polyglot import get_stop_token_list as get_stop_token_list_polyglot
 from fine_tuning.inference import run_inference_polyglot
+
+from fine_tuning.fine_tuning_kanana import fine_tune_model as fine_tune_kanana
+from fine_tuning.fine_tuning_kanana import get_stop_token_list as get_stop_token_list_kanana
+from fine_tuning.inference import run_inference_kanana
+
 from fine_tuning.utils import load_valid_final_prompts, get_answer_start_mark, get_temperature
 
 
@@ -19,7 +24,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # Last Update Date : -
 
 # Arguments:
-# - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('polyglot')
+# - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('kanana' or 'polyglot')
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
@@ -27,6 +32,12 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 def load_fine_tuned_llm(llm_name, output_col):
     fine_tuned_llm = None
+
+    if llm_name == 'kanana':
+        fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
+            f'{PROJECT_DIR_PATH}/llm/models/kanana_{output_col}_fine_tuned',
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).cuda()
 
     if llm_name == 'polyglot':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
@@ -37,7 +48,7 @@ def load_fine_tuned_llm(llm_name, output_col):
     return fine_tuned_llm
 
 
-# LLM 4개 한번에 로딩 시 OOM 발생 테스트
+# LLM 4개 한번에 로딩 시 OOM 발생 테스트 (Polyglot-Ko 1.3B)
 # Create Date : 2025.05.31
 # Last Update Date : -
 
@@ -75,8 +86,7 @@ def test_cuda_oom_polyglot(is_separate):
                                                   llm_tokenizer,
                                                   col,
                                                   stop_token_list=stop_token_list,
-                                                  answer_start_mark=get_answer_start_mark(col),
-                                                  remove_token_type_ids=True)
+                                                  answer_start_mark=get_answer_start_mark(col))
 
         print(f'LLM output : {llm_output}')
         print(f'CUDA memory until {col} model loading : {torch.cuda.memory_allocated()}')
@@ -87,7 +97,7 @@ def test_cuda_oom_polyglot(is_separate):
 # Last Update Date : -
 
 # Arguments:
-# - llm_name   (str) : Fine-Tuning 할 LLM 의 이름 ('polyglot')
+# - llm_name   (str) : Fine-Tuning 할 LLM 의 이름 ('kanana' or 'polyglot')
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 def fine_tune_llm(llm_name, output_col):
@@ -107,7 +117,10 @@ def fine_tune_llm(llm_name, output_col):
     except Exception as e:
         print(f'Fine-Tuned LLM ({llm_name}) load failed : {e}')
 
-        if llm_name == 'polyglot':
+        if llm_name == 'kanana':
+            fine_tune_kanana(output_col=output_col, dataset_version='v2_2')
+
+        elif llm_name == 'polyglot':
             fine_tune_polyglot(output_col=output_col, dataset_version='v2_2')
 
         fine_tuned_llm = load_fine_tuned_llm(llm_name, output_col)
@@ -116,7 +129,7 @@ def fine_tune_llm(llm_name, output_col):
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
-    inference_temperature = get_temperature(output_col)
+    inference_temperature = get_temperature(output_col, llm_name)
     llm_log_path = f'{PROJECT_DIR_PATH}/llm/fine_tuning/logs'
     inference_log_path = f'{llm_log_path}/{llm_name}_{output_col}_inference_log_{inference_temperature}.txt'
     inference_log = ''
@@ -133,18 +146,27 @@ def fine_tune_llm(llm_name, output_col):
 
         for _ in range(4):
             llm_answer, trial_count, output_token_cnt = None, None, None
+            answer_start_mark = get_answer_start_mark(output_col)
+
+            if llm_name == 'kanana':
+                stop_token_list = get_stop_token_list_kanana(output_col)
+
+                llm_answer, trial_count, output_token_cnt = run_inference_kanana(fine_tuned_llm,
+                                                                                 final_input_prompt,
+                                                                                 tokenizer,
+                                                                                 output_col,
+                                                                                 stop_token_list=stop_token_list,
+                                                                                 answer_start_mark=answer_start_mark)
 
             if llm_name == 'polyglot':
                 stop_token_list = get_stop_token_list_polyglot(output_col)
-                answer_start_mark = get_answer_start_mark(output_col)
 
                 llm_answer, trial_count, output_token_cnt = run_inference_polyglot(fine_tuned_llm,
                                                                                    final_input_prompt,
                                                                                    tokenizer,
                                                                                    output_col,
                                                                                    stop_token_list=stop_token_list,
-                                                                                   answer_start_mark=answer_start_mark,
-                                                                                   remove_token_type_ids=True)
+                                                                                   answer_start_mark=answer_start_mark)
 
             llm_answers.append(llm_answer)
             trial_counts.append(str(trial_count))
@@ -172,7 +194,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-llm_names',
                         help="name of LLMs (separated by comma)",
-                        default='polyglot,polyglot,polyglot,polyglot')
+                        default='kanana,polyglot,kanana,polyglot')
 
     parser.add_argument('-output_cols',
                         help="output column names (separated by comma) from dataset csv",
@@ -192,7 +214,7 @@ if __name__ == '__main__':
     output_cols_list = output_cols.split(',')
 
     for llm_name, output_col in zip(llm_names_list, output_cols_list):
-        assert llm_name in ['polyglot'], "LLM name must be 'polyglot'."
+        assert llm_name in ['kanana', 'polyglot'], "LLM name must be 'kanana' or 'polyglot'."
 
         print(f'\n=== 🚀 Fine-Tune LLM {llm_name} with column {output_col} START 🚀 \n===')
         fine_tune_llm(llm_name, output_col)

@@ -1,6 +1,6 @@
 
 from transformers import StoppingCriteria, StoppingCriteriaList
-from fine_tuning.utils import get_temperature
+from fine_tuning.utils import get_temperature, get_answer_end_mark
 
 import torch
 import os
@@ -23,19 +23,18 @@ class StopOnTokens(StoppingCriteria):
         return False
 
 
-# Fine Tuning 된 LLM 을 이용한 inference 실시
+# Fine Tuning 된 LLM 을 이용한 inference 실시 (Polyglot-Ko 1.3B)
 # Create Date : 2025.05.31
 # Last Update Date : -
 
 # Arguments:
-# - fine_tuned_llm        (LLM)           : Fine-Tuning 된 LLM
-# - final_input_prompt    (str)           : LLM 에 최종 입력되는 프롬프트 (경우에 따라 사용자 프롬프트 + alpha)
-# - tokenizer             (AutoTokenizer) : LLM 의 Tokenizer
-# - output_col            (str)           : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
-# - answer_start_mark     (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
-# - stop_token_list       (list)          : stopping token ('(답변 종료)') 에 해당하는 token 의 list
-# - max_trials            (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
-# - remove_token_type_ids (bool)          : tokenizer 로 Encoding 된 input 의 dict 에서 'token_type_ids' 제거 여부
+# - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
+# - final_input_prompt (str)           : LLM 에 최종 입력되는 프롬프트 (경우에 따라 사용자 프롬프트 + alpha)
+# - tokenizer          (AutoTokenizer) : LLM 의 Tokenizer
+# - output_col         (str)           : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
+# - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
+# - stop_token_list    (list)          : stopping token ('(답변 종료)', '(요약 종료)' 등) 에 해당하는 token 의 list
+# - max_trials         (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
 
 # Returns:
 # - llm_answer       (str) : LLM 답변 중 user prompt 를 제외한 부분
@@ -43,24 +42,22 @@ class StopOnTokens(StoppingCriteria):
 # - output_token_cnt (int) : LLM output 의 token 개수
 
 def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output_col, answer_start_mark,
-                           stop_token_list, max_trials=30, remove_token_type_ids=False):
+                           stop_token_list, max_trials=30):
 
     final_input_prompt_ = final_input_prompt + answer_start_mark
 
-    if remove_token_type_ids:
-        inputs = tokenizer(final_input_prompt_, return_tensors='pt')
-        inputs = {'input_ids': inputs['input_ids'].to(fine_tuned_llm.device),
-                  'attention_mask': inputs['attention_mask'].to(fine_tuned_llm.device)}
-    else:
-        inputs = tokenizer(final_input_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
+    inputs = tokenizer(final_input_prompt_, return_tensors='pt')
+    inputs = {'input_ids': inputs['input_ids'].to(fine_tuned_llm.device),
+              'attention_mask': inputs['attention_mask'].to(fine_tuned_llm.device)}
 
     llm_answer = ''
     trial_count = 0
     output_token_cnt = None
 
     # for stopping criteria
-    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # '(답변 종료)'
+    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # '(답변 종료)', '(요약 종료)' 등
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
+    answer_end_mark = get_answer_end_mark(output_col)
 
     if output_col == 'summary':
         max_length = 192
@@ -71,7 +68,7 @@ def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output
         outputs = fine_tuned_llm.generate(**inputs,
                                           max_length=max_length,
                                           do_sample=True,
-                                          temperature=get_temperature(output_col),
+                                          temperature=get_temperature(output_col, llm_name='polyglot'),
                                           stopping_criteria=stopping_criteria)
         output_token_cnt = len(outputs[0])
 
@@ -81,7 +78,7 @@ def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output
 
         # check LLM answer and return or retry
         is_bracketed = llm_answer.startswith('[') and llm_answer.endswith(']')
-        is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') != ''
+        is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '').replace(answer_end_mark, '').replace(' ', '') != ''
 
         if (is_non_empty or output_col == 'memory') and 'http' not in llm_answer:
             break
@@ -91,3 +88,65 @@ def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output
 
     return llm_answer, trial_count, output_token_cnt
 
+
+# Fine Tuning 된 LLM 을 이용한 inference 실시 (Kanana-1.5 2.1B)
+# Create Date : 2025.05.31
+# Last Update Date : -
+
+# Arguments:
+# - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
+# - final_input_prompt (str)           : LLM 에 최종 입력되는 프롬프트 (경우에 따라 사용자 프롬프트 + alpha)
+# - tokenizer          (AutoTokenizer) : LLM 의 Tokenizer
+# - output_col         (str)           : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
+# - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
+# - stop_token_list    (list)          : stopping token ('(답변 종료)', '(요약 종료)' 등) 에 해당하는 token 의 list
+# - max_trials         (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
+
+# Returns:
+# - llm_answer       (str) : LLM 답변 중 user prompt 를 제외한 부분
+# - trial_count      (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
+# - output_token_cnt (int) : LLM output 의 token 개수
+
+def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, output_col, answer_start_mark,
+                         stop_token_list, max_trials=30):
+
+    final_input_prompt_ = final_input_prompt + answer_start_mark
+    inputs = tokenizer(final_input_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
+
+    llm_answer = ''
+    trial_count = 0
+    output_token_cnt = None
+
+    # for stopping criteria
+    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # '(답변 종료)', '(요약 종료)' 등
+    stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
+    answer_end_mark = get_answer_end_mark(output_col)
+
+    if output_col == 'summary':
+        max_length = 192
+    else:
+        max_length = 128
+
+    while trial_count < max_trials:
+        outputs = fine_tuned_llm.generate(**inputs,
+                                          max_length=max_length,
+                                          do_sample=True,
+                                          temperature=get_temperature(output_col, llm_name='kanana'),
+                                          stopping_criteria=stopping_criteria)
+        output_token_cnt = len(outputs[0])
+
+        llm_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        llm_answer = llm_answer[len(final_input_prompt_):]
+        trial_count += 1
+
+        # check LLM answer and return or retry
+        is_bracketed = llm_answer.startswith('[') and llm_answer.endswith(']')
+        is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '').replace(answer_end_mark, '').replace(' ', '') != ''
+
+        if (is_non_empty or output_col == 'memory') and 'http' not in llm_answer:
+            break
+
+    # remove new-lines
+    llm_answer = llm_answer.replace('\n', '')
+
+    return llm_answer, trial_count, output_token_cnt
