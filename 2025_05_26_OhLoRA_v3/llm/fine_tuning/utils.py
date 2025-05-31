@@ -5,17 +5,6 @@ from datetime import datetime
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
-def get_stop_token_list(output_col):
-    if output_col == 'output_message':
-        return [1477, 1078, 4833, 12]  # (답변 종료)
-    elif output_col == 'summary':
-        return [445, 779, 4833, 12]  # (요약 종료)
-    elif output_col == 'memory':
-        return [445, 779, 4833, 12]  # (요약 종료)
-    else:  # eyes_mouth_pose
-        return [1585, 22520, 12571, 4833, 12]  # (표정 출력 종료)
-
-
 def get_answer_start_mark(output_col):
     if output_col == 'output_message':
         return ' (답변 시작)'
