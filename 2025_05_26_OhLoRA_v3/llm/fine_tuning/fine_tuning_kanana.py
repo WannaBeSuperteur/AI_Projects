@@ -15,6 +15,7 @@ import pandas as pd
 from fine_tuning.inference import run_inference_kanana
 from fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
                               get_answer_start_mark
+from fine_tuning.augmentation import AugmentCollator
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -218,7 +219,8 @@ def generate_llm_trainable_dataset(dataset_df):
 
 # LLM (Kanana-1.5 2.1B) Fine-Tuning 실시
 # Create Date : 2025.05.31
-# Last Update Date : -
+# Last Update Date : 2025.05.31
+# - Augmentation 이 포함된 Data Collator 적용
 
 # Arguments:
 # - output_col      (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
@@ -276,7 +278,11 @@ def fine_tune_model(output_col, dataset_version):
     preview_dataset(dataset, tokenizer)
 
     response_template = [8, 17010, 111964, 25]  # '### 답변 :'
-    collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
+
+    if output_col == 'output_message':
+        collator = AugmentCollator(response_template, llm_name='kanana', tokenizer=tokenizer)
+    else:
+        collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args(output_col)
     trainer = get_sft_trainer(dataset, collator, training_args, output_col)
