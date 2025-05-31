@@ -241,7 +241,7 @@ def fine_tune_model(output_col, dataset_version):
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
-    get_lora_llm(llm=original_llm, lora_rank=128)
+    get_lora_llm(llm=original_llm, lora_rank=64)
 
 #    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
 #    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
