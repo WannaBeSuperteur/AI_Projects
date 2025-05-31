@@ -1,5 +1,5 @@
 import os
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # remove for LLM inference only
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # remove for LLM inference only
 
 import argparse
 import torch
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     # Kanana-1.5 2.1B  : (separated = True  -> Result : max  (9155, 8461) MiB / 12288 MiB)
 
 #    test_cuda_oom_polyglot(is_separate=True)
-    test_cuda_oom_kanana(is_separate=True, version='original')
+#    test_cuda_oom_kanana(is_separate=True, version='original')
 
     llm_names_list = llm_names.split(',')
     output_cols_list = output_cols.split(',')

@@ -110,6 +110,9 @@ def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output
 def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, output_col, answer_start_mark,
                          stop_token_list, max_trials=30):
 
+    tokenizer.pad_token = tokenizer.eos_token
+    fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
+
     final_input_prompt_ = final_input_prompt + answer_start_mark
     inputs = tokenizer(final_input_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
 
