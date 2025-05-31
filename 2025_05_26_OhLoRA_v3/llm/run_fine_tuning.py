@@ -8,7 +8,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from fine_tuning.fine_tuning_polyglot import fine_tune_model as fine_tune_polyglot
 from fine_tuning.fine_tuning_polyglot import get_stop_token_list as get_stop_token_list_polyglot
 from fine_tuning.inference import run_inference_polyglot
-from fine_tuning.utils import load_valid_final_prompts, get_answer_start_mark
+from fine_tuning.utils import load_valid_final_prompts, get_answer_start_mark, get_temperature
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -116,9 +116,15 @@ def fine_tune_llm(llm_name, output_col):
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
+    inference_temperature = get_temperature(output_col)
+    llm_log_path = f'{PROJECT_DIR_PATH}/llm/fine_tuning/logs'
+    inference_log_path = f'{llm_log_path}/{llm_name}_{output_col}_inference_log_{inference_temperature}.txt'
+    inference_log = ''
+
     # run inference using Fine-Tuned LLM
     for final_input_prompt in valid_final_input_prompts:
-        print(f'\nLLM input :\n{final_input_prompt}')
+        llm_input_print = f'\nLLM input :\n{final_input_prompt}'
+        print(llm_input_print)
 
         # generate 4 answers for comparison
         llm_answers = []
@@ -148,8 +154,16 @@ def fine_tune_llm(llm_name, output_col):
         output_token_cnts_str = ','.join(output_token_cnts)
         llm_answers_str = '\n- '.join(llm_answers)
 
-        print(f'Oh-LoRA answer (trials: {trial_counts_str} | output_tkn_cnt : {output_token_cnts_str}) '
-              f':\n- {llm_answers_str}')
+        llm_output_print = (f'Oh-LoRA answer (trials: {trial_counts_str} | output_tkn_cnt : {output_token_cnts_str}) '
+                            f':\n- {llm_answers_str}')
+        print(llm_output_print)
+
+        # write inference log
+        inference_log += '\n' + llm_input_print + '\n' + llm_output_print
+
+        f = open(inference_log_path, 'w', encoding='UTF8')
+        f.write(inference_log)
+        f.close()
 
 
 if __name__ == '__main__':
