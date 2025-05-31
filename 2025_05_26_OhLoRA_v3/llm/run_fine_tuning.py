@@ -3,6 +3,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # remove for LLM inference only
 
 import argparse
 import torch
+import time
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from fine_tuning.fine_tuning_polyglot import fine_tune_model as fine_tune_polyglot
@@ -17,6 +18,7 @@ from fine_tuning.utils import load_valid_final_prompts, get_answer_start_mark, g
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+ANSWER_CNT = 4
 
 
 # Fine-Tuning 된 LLM 로딩
@@ -194,10 +196,13 @@ def inference_or_fine_tune_llm(llm_name, output_col):
         llm_answers = []
         trial_counts = []
         output_token_cnts = []
+        elapsed_times = []
 
-        for _ in range(4):
+        for _ in range(ANSWER_CNT):
             llm_answer, trial_count, output_token_cnt = None, None, None
             answer_start_mark = get_answer_start_mark(output_col)
+
+            inference_start_at = time.time()
 
             if llm_name == 'kanana':
                 stop_token_list = get_stop_token_list_kanana(output_col)
@@ -219,16 +224,20 @@ def inference_or_fine_tune_llm(llm_name, output_col):
                                                                                    stop_token_list=stop_token_list,
                                                                                    answer_start_mark=answer_start_mark)
 
+            elapsed_time = time.time() - inference_start_at
+
             llm_answers.append(llm_answer)
             trial_counts.append(str(trial_count))
             output_token_cnts.append(str(output_token_cnt))
+            elapsed_times.append(elapsed_time)
 
         trial_counts_str = ','.join(trial_counts)
         output_token_cnts_str = ','.join(output_token_cnts)
-        llm_answers_str = '\n- '.join(llm_answers)
+        llm_answers_and_times = [f'{llm_answers[i]} (🕚 {round(elapsed_times[i], 2)} s)' for i in range(ANSWER_CNT)]
+        llm_answers_and_times_str = '\n- '.join(llm_answers_and_times)
 
         llm_output_print = (f'Oh-LoRA answer (trials: {trial_counts_str} | output_tkn_cnt : {output_token_cnts_str}) '
-                            f':\n- {llm_answers_str}')
+                            f':\n- {llm_answers_and_times_str}')
         print(llm_output_print)
 
         # write inference log
