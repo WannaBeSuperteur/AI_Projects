@@ -117,7 +117,7 @@ def get_original_llm():
 
 def get_training_args(output_col):
     output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/kanana_{output_col}_fine_tuned'
-    num_train_epochs_dict = {'output_message': 7, 'memory': 20, 'summary': 10, 'eyes_mouth_pose': 20}
+    num_train_epochs_dict = {'output_message': 5, 'memory': 20, 'summary': 10, 'eyes_mouth_pose': 20}
     num_train_epochs = num_train_epochs_dict[output_col]
 
     training_args = SFTConfig(
