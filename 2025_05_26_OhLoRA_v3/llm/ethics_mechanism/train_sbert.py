@@ -30,7 +30,7 @@ class EthicsSBERTDataset(Dataset):
     def __init__(self, dataset_df):
         self.user_prompt_info = dataset_df['user_prompt'].tolist()
         self.category_info = dataset_df['category'].tolist()
-        self.similarity_score_info = dataset_df['similarity_score'].tolist()
+        self.ground_truth_score_info = dataset_df['ground_truth_score'].tolist()
 
     def __len__(self):
         return len(self.user_prompt_info)
@@ -38,10 +38,10 @@ class EthicsSBERTDataset(Dataset):
     def __getitem__(self, idx):
         user_prompt = self.user_prompt_info[idx]
         category = self.category_info[idx]
-        similarity_score = self.similarity_score_info[idx]
+        ground_truth_score = self.ground_truth_score_info[idx]
 
         input_example = InputExample(texts=[user_prompt, category],
-                                     label=similarity_score)
+                                     label=ground_truth_score)
         return input_example
 
 
