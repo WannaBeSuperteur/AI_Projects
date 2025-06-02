@@ -17,3 +17,8 @@
 
 * **Memory Mechanism (S-BERT)** 모델 실행 (해당 모델 없을 시, Training 먼저 실행)
   * ```python llm/run_memory_mechanism.py```
+
+### 3. Ethics Mechanism
+
+* **Ethics Mechanism (S-BERT)** 모델 실행 (해당 모델 없을 시, Training 먼저 실행)
+  * ```python llm/run_ethics_mechanism.py```
