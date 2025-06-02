@@ -171,10 +171,10 @@ def inference_or_fine_tune_llm(llm_name, output_col):
         print(f'Fine-Tuned LLM ({llm_name}) load failed : {e}')
 
         if llm_name == 'kanana':
-            fine_tune_kanana(output_col=output_col, dataset_version='v2_2')
+            fine_tune_kanana(output_col=output_col, dataset_version='v3')
 
         elif llm_name == 'polyglot':
-            fine_tune_polyglot(output_col=output_col, dataset_version='v2_2')
+            fine_tune_polyglot(output_col=output_col, dataset_version='v3')
 
         fine_tuned_llm = load_fine_tuned_llm(llm_name, output_col)
         tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{output_col}_fine_tuned')
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-llm_names',
                         help="name of LLMs (separated by comma)",
-                        default='kanana,kanana,kanana,kanana')
+                        default='kanana,polyglot,kanana,polyglot')
 
     parser.add_argument('-output_cols',
                         help="output column names (separated by comma) from dataset csv",
