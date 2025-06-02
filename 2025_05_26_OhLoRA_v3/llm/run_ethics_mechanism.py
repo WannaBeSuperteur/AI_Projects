@@ -1,4 +1,11 @@
 
+try:
+    from ethics_mechanism.train_sbert import train_sbert, load_pretrained_sbert_model
+    from ethics_mechanism.inference_sbert import run_inference, run_inference_each_example
+except:
+    from llm.ethics_mechanism.train_sbert import train_sbert, load_pretrained_sbert_model
+    from llm.ethics_mechanism.inference_sbert import run_inference, run_inference_each_example
+
 import pandas as pd
 
 import os
@@ -37,6 +44,23 @@ def convert_to_sbert_dataset(dataset_df):
     return converted_df
 
 
+# Ethics Mechanism 학습된 모델 로딩
+# Create Date : 2025.06.02
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - sbert_model (S-BERT Model) : 학습된 Sentence BERT 모델
+
+def load_sbert_model():
+    model_path = f'{PROJECT_DIR_PATH}/llm/models/ethics_sbert/trained_sbert_model'
+    sbert_model = load_pretrained_sbert_model(model_path)
+
+    return sbert_model
+
+
 if __name__ == '__main__':
 
     # load train & test dataset
@@ -48,3 +72,17 @@ if __name__ == '__main__':
 
     train_dataset_df_converted = convert_to_sbert_dataset(train_dataset_df)
     test_dataset_df_converted = convert_to_sbert_dataset(test_dataset_df)
+
+    # try load S-BERT Model -> when failed, run training and save S-BERT Model
+    try:
+        sbert_model = load_sbert_model()
+        print('S-BERT Model (for ethics mechanism) - Load SUCCESSFUL! 👱‍♀️')
+
+    except Exception as e:
+        print(f'S-BERT Model (for ethics mechanism) load failed : {e}')
+
+        train_sbert(train_dataset_df)
+        sbert_model = load_sbert_model()
+
+    # run inference on test dataset
+    run_inference(sbert_model, test_dataset_df)
