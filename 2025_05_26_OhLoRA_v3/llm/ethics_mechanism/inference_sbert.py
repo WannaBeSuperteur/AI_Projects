@@ -20,6 +20,7 @@ n_categories = len(categories)
 # Returns:
 # - 반환값 없음
 # - 테스트 결과 (성능지표 값) 출력 및 해당 결과를 llm/ethics_mechanism/test_result.csv 로 저장
+# - 테스트 결과 (성능지표 값) 의 각 Category 별 예측값을 llm/ethics_mechanism/test_result_prediction_table.csv 로 저장
 # - 테스트 결과 (성능지표 값) 의 Confusion Matrix 출력 및 해당 결과를 llm/ethics_mechanism/test_confusion_matrix.csv 로 저장
 
 def run_inference(sbert_model, test_dataset_df):
@@ -54,12 +55,54 @@ def run_inference(sbert_model, test_dataset_df):
                         'absolute_error': np.round(absolute_errors, 4)}
 
     test_result_df = pd.DataFrame(test_result_dict)
-    test_result_df.to_csv(f'{PROJECT_DIR_PATH}/llm/ethics_mechanism/test_result.csv', index=False)
+    test_result_df.to_csv(f'{PROJECT_DIR_PATH}/llm/ethics_mechanism/test_result.csv',
+                          index=False)
+
+    # save prediction table
+    prediction_table = convert_to_prediction_table(test_result_dict)
+    prediction_table.to_csv(f'{PROJECT_DIR_PATH}/llm/ethics_mechanism/test_result_prediction_table.csv',
+                            index=False)
 
     # save confusion matrix
     confusion_matrix = compute_confusion_matrix(test_result_dict)
     print(f'\nConfusion Matrix:\n{confusion_matrix}')
-    confusion_matrix.to_csv(f'{PROJECT_DIR_PATH}/llm/ethics_mechanism/test_confusion_matrix.csv', index=False)
+    confusion_matrix.to_csv(f'{PROJECT_DIR_PATH}/llm/ethics_mechanism/test_confusion_matrix.csv',
+                            index=False)
+
+
+# Test Result 를 각 Category 별 예측값 표 형식으로 수정
+# Create Date : 2025.06.02
+# Last Update Date : -
+
+# Arguments:
+# test_result_dict (dict) : 테스트 결과에 대한 Dictionary
+
+# Arguments:
+# prediction_table (Pandas DataFrame) : 테스트 결과에 대한 각 Category 별 예측값 표
+
+def convert_to_prediction_table(test_result_dict):
+    global categories, n_categories
+
+    prediction_table_dict = {'user_prompt': [], 'category': []}
+    for category in categories:
+        prediction_table_dict[f'pred_{category}'] = []
+
+    n_test_results = len(test_result_dict['user_prompt'])
+    n_test_cases = n_test_results // n_categories
+
+    for tc_idx in range(n_test_cases):
+        prediction_table_dict['user_prompt'].append(test_result_dict['user_prompt'][tc_idx * n_categories])
+
+        for ctg_idx, category in enumerate(categories):
+            pred_score = test_result_dict['predicted_score'][tc_idx * n_categories + ctg_idx]
+            gt_score = test_result_dict['ground_truth_score'][tc_idx * n_categories + ctg_idx]
+            prediction_table_dict[f'pred_{category}'].append(pred_score)
+
+            if gt_score == 1.0:
+                prediction_table_dict['category'].append(category)
+
+    prediction_table = pd.DataFrame(prediction_table_dict)
+    return prediction_table
 
 
 # Confusion Matrix 도출
