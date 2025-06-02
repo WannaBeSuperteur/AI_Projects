@@ -42,9 +42,11 @@ def run_inference(sbert_model, test_dataset_df):
     print(f'Corr-coef : {corr_coef:.4f}')
 
     # save test result
-    test_result_dict = {'user_prompt': user_prompt_list, 'category': category_info_list,
-                        'predicted_score': predicted_scores, 'ground_truth_score': ground_truth_scores,
-                        'absolute_error': absolute_errors}
+    test_result_dict = {'user_prompt': user_prompt_list,
+                        'category': category_info_list,
+                        'predicted_score': np.round(predicted_scores, 4),
+                        'ground_truth_score': ground_truth_scores,
+                        'absolute_error': np.round(absolute_errors, 4)}
 
     test_result_df = pd.DataFrame(test_result_dict)
     test_result_df.to_csv(f'{PROJECT_DIR_PATH}/llm/ethics_mechanism/test_result.csv', index=False)
