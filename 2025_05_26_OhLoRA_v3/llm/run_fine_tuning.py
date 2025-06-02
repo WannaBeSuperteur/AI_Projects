@@ -280,5 +280,5 @@ if __name__ == '__main__':
     for llm_name, output_col in zip(llm_names_list, output_cols_list):
         assert llm_name in ['kanana', 'polyglot'], "LLM name must be 'kanana' or 'polyglot'."
 
-        print(f'\n=== 🚀 Fine-Tune LLM {llm_name} with column {output_col} START 🚀 \n===')
+        print(f'\n=== 🚀 Fine-Tune LLM {llm_name} with column {output_col} START 🚀 ===')
         inference_or_fine_tune_llm(llm_name, output_col)
