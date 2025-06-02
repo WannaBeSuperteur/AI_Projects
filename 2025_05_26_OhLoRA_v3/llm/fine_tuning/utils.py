@@ -29,7 +29,7 @@ def get_answer_end_mark(output_col):
 
 def get_temperature(output_col, llm_name):
     if output_col == 'eyes_mouth_pose' and llm_name == 'polyglot':
-        return 1.5
+        return 1.0
     else:
         return 0.6
 
