@@ -117,7 +117,7 @@ def get_original_llm():
 
 def get_training_args(output_col):
     output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/kanana_{output_col}_fine_tuned'
-    num_train_epochs_dict = {'output_message': 5, 'memory': 20, 'summary': 10, 'eyes_mouth_pose': 30}
+    num_train_epochs_dict = {'output_message': 50, 'memory': 20, 'summary': 10, 'eyes_mouth_pose': 30}
     num_train_epochs = num_train_epochs_dict[output_col]
 
     training_args = SFTConfig(
@@ -248,7 +248,7 @@ def fine_tune_model(output_col, dataset_version):
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
-    get_lora_llm(llm=original_llm, lora_rank=64)
+    get_lora_llm(llm=original_llm, lora_rank=16)
 
 #    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
 #    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
