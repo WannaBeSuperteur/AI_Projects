@@ -81,8 +81,8 @@ if __name__ == '__main__':
     except Exception as e:
         print(f'S-BERT Model (for ethics mechanism) load failed : {e}')
 
-        train_sbert(train_dataset_df)
+        train_sbert(train_dataset_df_converted)
         sbert_model = load_sbert_model()
 
     # run inference on test dataset
-    run_inference(sbert_model, test_dataset_df)
+    run_inference(sbert_model, test_dataset_df_converted)
