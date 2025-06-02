@@ -11,7 +11,7 @@ n_categories = len(categories)
 # Ethics Mechanism 을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "데이터셋 전체에 대한" inference 실시
 # Create Date : 2025.06.02
 # Last Update Date : 2025.06.02
-# - Confusion Matrix 추가
+# - Confusion Matrix, Prediction Table 등 테스트 결과 관련 부가 정보 추가
 
 # Arguments:
 # - sbert_model     (S-BERT Model)     : 학습된 Sentence BERT 모델
