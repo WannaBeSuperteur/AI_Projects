@@ -20,7 +20,7 @@
 | 모델                                     | 설명                                                                                                                                  | Base Model                                                                                                  |
 |----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
 | LLM 답변 ```output_message```            | Oh-LoRA 👱‍♀️ (오로라) 의 답변을 위한 메인 LLM                                                                                                 | [Kanana-1.5 2.1B (HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base)<br>(by **Kakao**)    |
-| memory (RAG-like concept) ```memory``` | 사용자의 질문 및 관련 정보로부터 Oh-LoRA 👱‍♀️ (오로라) 가 기억해야 할 내용 추출<br>- 이를 통해 [Oh-LoRA 👱‍♀️ (오로라) 의 메모리](#1-1-llm-memory-rag-like-concept) 업데이트 | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)<br>(by **EleutherAI**) |
+| memory (RAG-like concept) ```memory``` | 사용자의 질문 및 관련 정보로부터 Oh-LoRA 👱‍♀️ (오로라) 가 기억해야 할 내용 추출<br>- 이를 통해 [Oh-LoRA 👱‍♀️ (오로라) 의 메모리](#1-2-llm-memory-rag-like-concept) 업데이트 | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)<br>(by **EleutherAI**) |
 | 표정/몸짓 ```eyes_mouth_pose```            | [Oh-LoRA 👱‍♀️ (오로라) 이미지 생성](../stylegan/README.md) 을 위한 표정 정보 추출                                                                   | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)<br>(by **EleutherAI**) |
 | summary (하고 있는 대화 요약) ```summary```    | 사용자의 질문 및 Oh-LoRA 👱‍♀️ (오로라) 의 답변 내용을 요약하여, **다음 턴에서 이 정보를 활용하여 오로라가 보다 자연스럽게 답할 수 있게** 함                                          | [Kanana-1.5 2.1B (HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base)<br>(by **Kakao**)    |
 
@@ -64,7 +64,7 @@
 ![image](../../images/250526_22.png)
 
 * 동작 원리
-  * [Sentence BERT (S-BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 기반 
+  * [Sentence BERT (S-BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 기반 
   * 사용자의 최초 원본 프롬프트와 각 불량 언어 카테고리 (```사랑 고백/만남``` ```정치``` ```패드립```) 를 나타내는 단어를 S-BERT 로 비교
   * 각 카테고리 별 **일정 threshold** 보다 높으면 해당 카테고리의 발언으로 판단
   * 사용자의 기존 제재 로그를 검토하여 **최종 제재 수위 (Oh-LoRA 👱‍♀️ 관련 제품 "전체 이용 제한") 결정**
