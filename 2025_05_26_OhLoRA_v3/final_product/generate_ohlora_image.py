@@ -13,7 +13,7 @@ kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 # Arguments:
 # - vectorfind_v8_generator (nn.Module)   : StyleGAN-VectorFind-v8 의 Generator
-# - ohlora_z_vector         (NumPy array) : Oh-LoRA 이미지 생성용 latent z vector, dim = (512 + 3,)
+# - ohlora_z_vector         (NumPy array) : Oh-LoRA 이미지 생성용 latent z vector, dim = (512 + 7,)
 # - eyes_vector             (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터, dim = (512,)
 # - mouth_vector            (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터, dim = (512,)
 # - pose_vector             (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터, dim = (512,)
