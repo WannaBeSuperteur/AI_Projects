@@ -84,11 +84,12 @@
 * 학습 방법 
   * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
   * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = 64
-  * train for **5 epochs**
+  * train for **5 - 30 epochs**
   * initial [learning rate](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Learning_Rate.md) : **0.0003 (= 3e-4)**
 * 학습 데이터셋
   * train 데이터 **572 rows ([v2](../../2025_05_02_OhLoRA_v2/llm/README.md#3-ohlora-v2-llm-fine-tuning) 대비 🔺 25.4 %)**, valid 데이터 **90 rows ([v2](../../2025_05_02_OhLoRA_v2/llm/README.md#3-ohlora-v2-llm-fine-tuning) 대비 🔺 28.6 %)**
   * train & valid data 는 모두 [v3 dataset](fine_tuning_dataset/OhLoRA_fine_tuning_v3.csv) 을 사용
+  * **오로라의 답변 메시지 (```output_message```)** LLM 의 경우, 입력 데이터에 **유의어로의 교체** 에 기반한 간단한 data augmentation 적용 [(구현 코드)](fine_tuning/augmentation.py)
 * 상세 학습 설정
 
 | 모델 (task)                            | 사용할 LLM          | LoRA rank | epochs | 비고                                                        |
