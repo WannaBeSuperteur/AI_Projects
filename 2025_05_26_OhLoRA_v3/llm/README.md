@@ -10,7 +10,8 @@
   * [3-2. Memory Mechanism (RAG-like concept)](#3-2-memory-mechanism-rag-like-concept)
   * [3-3. Ethics Mechanism](#3-3-ethics-mechanism)
 * [4. 모델 다운로드 경로](#4-모델-다운로드-경로)
-* [5. 향후 진행하고 싶은 것](#5-향후-진행하고-싶은-것)
+* [5. 논의 사항](#5-논의-사항)
+* [6. 향후 진행하고 싶은 것](#6-향후-진행하고-싶은-것)
 
 ## 1. OhLoRA-v3 LLM 전체 메커니즘
 
@@ -140,6 +141,13 @@
 
 TBU
 
-## 5. 향후 진행하고 싶은 것
+## 5. 논의 사항
+
+* 멀티턴 대화 데이터셋 대신 **요약 메커니즘** 을 사용한 이유
+  * 직전 대화의 핵심 내용을 **LLM이 충분히 판단할 수 있을** 것이라는 기대
+  * [Transformer 구조](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_%ED%8A%B8%EB%9E%9C%EC%8A%A4%ED%8F%AC%EB%A8%B8%20%EB%AA%A8%EB%8D%B8.md) 특성상, **멀티턴의 긴 입력이 주어지면 Oh-LoRA 👱‍♀️ (오로라) 의 응답 시간 증가** → UX (사용자 경험) 저하
+  * 학습 데이터 작성 시간이 비교적 증가할 수 있음
+
+## 6. 향후 진행하고 싶은 것
 
 TBU
