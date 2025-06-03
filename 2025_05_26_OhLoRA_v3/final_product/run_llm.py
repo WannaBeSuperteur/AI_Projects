@@ -55,8 +55,6 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
         is_other_mark = '(사용자' in llm_answer.replace(' ', '') or '요약)' in llm_answer.replace(' ', '')
 
-#        print('output_message', trial_count, llm_answer)
-
         if not (is_empty or is_answer_end_mark or is_other_mark) and ('http' not in llm_answer):
             return llm_answer.replace('(답변 종료)', '')
 
@@ -111,7 +109,6 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
                                       temperature=0.6,
                                       stopping_criteria=stopping_criteria)
 
-#        print('memory (token count)', len(outputs[0]), len(inputs['input_ids'][0]))
         llm_answer = memory_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
         llm_answer = llm_answer.replace('(요약 종료)', '')
 
@@ -157,8 +154,6 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
         is_unnecessary_mark = '�' in llm_answer
         is_too_many_blanks = '     ' in llm_answer
         is_low_quality = is_unnecessary_mark or is_too_many_blanks
-
-#        print('memory', trial_count, llm_answer)
 
         if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
             return [llm_answer]
@@ -248,8 +243,6 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
         too_many_tokens = len(outputs[0]) - len(inputs['input_ids'][0]) >= 60
         is_almost_empty = len(llm_answer.replace('(요약 종료)', '')) < 2
 
-#        print('summary', trial_count, llm_answer)
-
         if not (is_answer_end_mark or too_many_tokens or is_almost_empty) and ('http' not in llm_answer):
             return llm_answer.replace('(요약 종료)', '')
 
@@ -297,7 +290,6 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
                                                temperature=1.0,
                                                stopping_criteria=stopping_criteria)
 
-#        print('eyes_mouth_pose (token count)', len(outputs[0]), len(inputs['input_ids'][0]))
         llm_answer = eyes_mouth_pose_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         llm_answer = llm_answer[len(llm_answer_cleaned_):]
@@ -309,8 +301,6 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
             eyes_score_text = llm_answer.split('눈 ')[1].split(',')[0].split(')')[0]
             mouth_score_text = llm_answer.split('입 ')[1].split(',')[0].split(')')[0]
             pose_score_text = llm_answer.split('고개 돌림 ')[1].split(',')[0].split(')')[0]
-
-#            print('eyes_mouth_pose', trial_count, eyes_score_text, mouth_score_text, pose_score_text)
 
             final_eyes_score_text, final_mouth_score_text, final_pose_score_text = None, None, None
 
@@ -325,8 +315,6 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
             for txt in pose_score_texts:
                 if pose_score_text.startswith(txt):
                     final_pose_score_text = txt
-
-#            print('eyes_mouth_pose', trial_count, final_eyes_score_text, final_mouth_score_text, final_pose_score_text)
 
             assert final_eyes_score_text is not None
             assert final_mouth_score_text is not None
