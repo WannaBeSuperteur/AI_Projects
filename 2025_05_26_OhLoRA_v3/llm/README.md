@@ -14,13 +14,15 @@
 ![image](../../images/250526_21.png)
 
 * LLM 모델
+  * [LLM 모델 사용 상세 결정안 코멘트](https://github.com/WannaBeSuperteur/AI_Projects/issues/21#issuecomment-2926149441) 
+  * [LoRA Rank 64 vs. 16 실험 결과 보고서](fine_tuning/report_LoRA_rank_64_vs_16.md)
 
-| 모델                                     | 설명                                                                                                                                  | Base Model                                                                           |
-|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| LLM 답변 ```output_message```            | Oh-LoRA 👱‍♀️ (오로라) 의 답변을 위한 메인 LLM                                                                                                 | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) |
-| memory (RAG-like concept) ```memory``` | 사용자의 질문 및 관련 정보로부터 Oh-LoRA 👱‍♀️ (오로라) 가 기억해야 할 내용 추출<br>- 이를 통해 [Oh-LoRA 👱‍♀️ (오로라) 의 메모리](#1-1-llm-memory-rag-like-concept) 업데이트 | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) |
-| 표정/몸짓 ```eyes_mouth_pose```            | [Oh-LoRA 👱‍♀️ (오로라) 이미지 생성](../stylegan/README.md) 을 위한 표정 정보 추출                                                                   | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) |
-| summary (하고 있는 대화 요약) ```summary```    | 사용자의 질문 및 Oh-LoRA 👱‍♀️ (오로라) 의 답변 내용을 요약하여, **다음 턴에서 이 정보를 활용하여 오로라가 보다 자연스럽게 답할 수 있게** 함                                          | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) |
+| 모델                                     | 설명                                                                                                                                  | Base Model                                                                                                  |
+|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| LLM 답변 ```output_message```            | Oh-LoRA 👱‍♀️ (오로라) 의 답변을 위한 메인 LLM                                                                                                 | [Kanana-1.5 2.1B (HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base)<br>(by **Kakao**)    |
+| memory (RAG-like concept) ```memory``` | 사용자의 질문 및 관련 정보로부터 Oh-LoRA 👱‍♀️ (오로라) 가 기억해야 할 내용 추출<br>- 이를 통해 [Oh-LoRA 👱‍♀️ (오로라) 의 메모리](#1-1-llm-memory-rag-like-concept) 업데이트 | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)<br>(by **EleutherAI**) |
+| 표정/몸짓 ```eyes_mouth_pose```            | [Oh-LoRA 👱‍♀️ (오로라) 이미지 생성](../stylegan/README.md) 을 위한 표정 정보 추출                                                                   | [Polyglot-Ko 1.3B (HuggingFace)](https://huggingface.co/EleutherAI/polyglot-ko-1.3b)<br>(by **EleutherAI**) |
+| summary (하고 있는 대화 요약) ```summary```    | 사용자의 질문 및 Oh-LoRA 👱‍♀️ (오로라) 의 답변 내용을 요약하여, **다음 턴에서 이 정보를 활용하여 오로라가 보다 자연스럽게 답할 수 있게** 함                                          | [Kanana-1.5 2.1B (HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base)<br>(by **Kakao**)    |
 
 * 추가 메커니즘
 
@@ -70,6 +72,8 @@
   * [S-BERT Training](ethics_mechanism/train_sbert.py)
   * [S-BERT Inference](ethics_mechanism/inference_sbert.py)
   * 실제 사용자 제재 처리 (TBU)
+* 보고서
+  * [Ethics mechanism 테스트 결과 보고서](ethics_mechanism/test_report.md) 
 
 ## 코드 실행 방법
 
