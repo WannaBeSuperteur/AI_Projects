@@ -131,8 +131,8 @@
 | 🔨 모델 개발   | S-BERT (for RAG-like memory concept) 적용 **(추가 학습 미 실시)**                                           | 06.02 월 (1d)           | ```P005-009-SBERT-for-memory``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/22) | ✅  |
 | 📝 데이터셋 작성 | BERT (부적절한 언어 여부 파악) 학습 데이터 작성                                                                     | 06.02 월 (1d)           | ```P005-010-BERT-ethics```      | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/23) | ✅  |
 | 🧪 모델 학습   | BERT (부적절한 언어 여부 파악) 학습 (Pre-trained BERT 기반)                                                      | 06.02 월 (1d)           | ```P005-010-BERT-ethics```      | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/23) | ✅  |
-| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(2차, 오로라 답변 LLM 1개, LoRA rank=16, 실험 목적)**                         | 06.02 월 - 06.03 화 (2d) | ```P005-011-train-LLM-rank16``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/24) | 💨 |
-| 📃 문서화     | LLM 개발 내용 문서화                                                                                      | 06.03 화 (1d)           |                                 |                                                                    | ⬜  |
+| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(2차, 오로라 답변 LLM 1개, LoRA rank=16, 실험 목적)**                         | 06.02 월 - 06.03 화 (2d) | ```P005-011-train-LLM-rank16``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/24) | ✅  |
+| 📃 문서화     | LLM 개발 내용 문서화                                                                                      | 06.03 화 (1d)           |                                 |                                                                    | 💨 |
 
 ## 4. 프로젝트 상세 설명
 
