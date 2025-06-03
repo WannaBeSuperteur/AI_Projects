@@ -12,10 +12,16 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, T
 import torch
 import pandas as pd
 
-from fine_tuning.inference import run_inference_kanana
-from fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
-                              get_answer_start_mark
-from fine_tuning.augmentation import AugmentCollator
+try:
+    from fine_tuning.inference import run_inference_kanana
+    from fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
+                                  get_answer_start_mark
+    from fine_tuning.augmentation import AugmentCollator
+except:
+    from llm.fine_tuning.inference import run_inference_kanana
+    from llm.fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
+        get_answer_start_mark
+    from llm.fine_tuning.augmentation import AugmentCollator
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -249,10 +255,6 @@ def fine_tune_model(output_col, dataset_version):
 
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=16)
-
-#    print(tokenizer.encode('### 답변:'))  # ... [6, 6, 6, 4253, 29]
-#    print(tokenizer.encode('(답변 시작) ### 답변:'))  # ... [11, 1477, 1078, 1016, 12, 6501, 6, 6, 4253, 29]
-#    print(tokenizer.encode('(답변 종료)'))  # ... [11, 1477, 1078, 4833, 12]
 
     if output_col == 'output_message':
         dataset_df['text'] = dataset_df.apply(

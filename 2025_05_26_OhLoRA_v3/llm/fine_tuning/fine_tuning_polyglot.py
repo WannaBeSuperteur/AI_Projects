@@ -12,10 +12,16 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, T
 import torch
 import pandas as pd
 
-from fine_tuning.inference import run_inference_polyglot
-from fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
-                              get_answer_start_mark
-from fine_tuning.augmentation import AugmentCollator
+try:
+    from fine_tuning.inference import run_inference_polyglot
+    from fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
+                                  get_answer_start_mark
+    from fine_tuning.augmentation import AugmentCollator
+except:
+    from llm.fine_tuning.inference import run_inference_polyglot
+    from llm.fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
+        get_answer_start_mark
+    from llm.fine_tuning.augmentation import AugmentCollator
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))

@@ -2,6 +2,8 @@ import torch
 from transformers import StoppingCriteriaList
 
 from llm.fine_tuning.inference import StopOnTokens
+from llm.fine_tuning.fine_tuning_kanana import get_stop_token_list as get_kanana_stop_token_list
+from llm.fine_tuning.fine_tuning_polyglot import get_stop_token_list as get_polyglot_stop_token_list
 
 import os
 import random
@@ -22,7 +24,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
     trial_count = 0
-    max_trials = 15
+    max_trials = 3
 
     # tokenize final Oh-LoRA input
     final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
@@ -32,12 +34,12 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
               'attention_mask': inputs['attention_mask'].to(ohlora_llm.device)}
 
     # for stopping criteria
-    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(ohlora_llm.device)  # '(답변 종료)'
+    stop_token_ids = torch.tensor(get_kanana_stop_token_list('output_message')).to(ohlora_llm.device)  # '(답변 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:
         outputs = ohlora_llm.generate(**inputs,
-                                      max_length=96,
+                                      max_length=128,
                                       do_sample=True,
                                       temperature=0.6,
                                       stopping_criteria=stopping_criteria)
@@ -46,27 +48,16 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         llm_answer = llm_answer[len(final_ohlora_input_):]
         llm_answer = llm_answer.replace('\u200b', '').replace('\xa0', '')  # zwsp, nbsp (폭 없는 공백, 줄 바꿈 없는 공백) 제거
 
-        if '[' in llm_answer and ']' in llm_answer:
-            llm_answer = llm_answer.split(']')[1]
-
         trial_count += 1
 
         # check LLM answer and return or retry
         is_empty = llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') == ''
         is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
         is_other_mark = '(사용자' in llm_answer.replace(' ', '') or '요약)' in llm_answer.replace(' ', '')
-        is_polluted = is_answer_end_mark or is_other_mark
 
-        starts_with_nonblank_in_early_try = trial_count < 2 and not llm_answer.startswith(' ')
-        too_many_tokens = len(outputs[0]) >= 91
-        is_uncleaned = is_empty or is_polluted or starts_with_nonblank_in_early_try or too_many_tokens
+#        print('output_message', trial_count, llm_answer)
 
-        is_unnecessary_quote = '"' in llm_answer or '”' in llm_answer or '“' in llm_answer or '’' in llm_answer
-        is_unnecessary_mark = '�' in llm_answer
-        is_too_many_blanks = '     ' in llm_answer
-        is_low_quality = is_unnecessary_quote or is_unnecessary_mark or is_too_many_blanks
-
-        if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
+        if not (is_empty or is_answer_end_mark or is_other_mark) and ('http' not in llm_answer):
             return llm_answer.replace('(답변 종료)', '')
 
     return '(읽씹)'
@@ -83,17 +74,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
 # - llm_answer_cleaned (str) : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
 
 def clean_llm_answer(ohlora_answer):
-    llm_answer = ohlora_answer
-
-    if llm_answer.startswith(' - ') or llm_answer.startswith('- '):
-        llm_answer = llm_answer[2:]
-
-    arrow_marks = ['➤', '⊙', '➥', '⇨', '➯', '⑤', '⑥']
-    for arrow_mark in arrow_marks:
-        llm_answer = llm_answer.replace(arrow_mark, '')
-
-    llm_answer_cleaned = llm_answer
-    return llm_answer_cleaned
+    return ohlora_answer
 
 
 # Oh-LoRA (오로라) 의 생성된 답변으로부터 memory 정보를 parsing
@@ -113,14 +94,14 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
     max_trials = 5
 
     # tokenize final Oh-LoRA input
-    final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
+    final_ohlora_input_ = final_ohlora_input + ' (요약 시작)'
 
     inputs = memory_llm_tokenizer(final_ohlora_input_, return_tensors='pt')
     inputs = {'input_ids': inputs['input_ids'].to(memory_llm.device),
               'attention_mask': inputs['attention_mask'].to(memory_llm.device)}
 
     # for stopping criteria
-    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(memory_llm.device)  # '(답변 종료)'
+    stop_token_ids = torch.tensor(get_polyglot_stop_token_list('memory')).to(memory_llm.device)  # '(요약 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:
@@ -130,8 +111,9 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
                                       temperature=0.6,
                                       stopping_criteria=stopping_criteria)
 
+#        print('memory (token count)', len(outputs[0]), len(inputs['input_ids'][0]))
         llm_answer = memory_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
-        llm_answer = llm_answer.replace('(답변 종료)', '')
+        llm_answer = llm_answer.replace('(요약 종료)', '')
 
         # post-process memory LLM answer
         llm_answer = llm_answer[len(final_ohlora_input_):]
@@ -152,10 +134,10 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
         trial_count += 1
 
         # check LLM answer and return or retry
-        is_answer_end_mark = '답변 종료' in llm_answer or '답변종료' in llm_answer
+        is_answer_end_mark = '요약 종료' in llm_answer or '요약종료' in llm_answer
         too_many_tokens = len(outputs[0]) - len(inputs['input_ids'][0]) == 24
 
-        is_in_format = llm_answer[0] == '[' and llm_answer[-1] == ']' and ': ' in llm_answer
+        is_in_format = llm_answer == '' or (llm_answer[0] == '[' and llm_answer[-1] == ']' and ': ' in llm_answer)
         is_in_format_cnts = llm_answer.count('[') == 1 and llm_answer.count(']') == 1 and llm_answer.count(':') == 1
 
         # empty answer -> format is CORRECT
@@ -175,6 +157,8 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
         is_unnecessary_mark = '�' in llm_answer
         is_too_many_blanks = '     ' in llm_answer
         is_low_quality = is_unnecessary_mark or is_too_many_blanks
+
+#        print('memory', trial_count, llm_answer)
 
         if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
             return [llm_answer]
@@ -234,19 +218,19 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
     max_trials = 3
 
     # tokenize final Oh-LoRA input
-    final_summary_input = final_ohlora_input + ' (오로라 답변)' + llm_answer_cleaned + ' (답변 시작)'
+    final_summary_input = final_ohlora_input + ' (오로라 답변)' + llm_answer_cleaned + ' (요약 시작)'
 
     inputs = summary_llm_tokenizer(final_summary_input, return_tensors='pt')
     inputs = {'input_ids': inputs['input_ids'].to(summary_llm.device),
               'attention_mask': inputs['attention_mask'].to(summary_llm.device)}
 
     # for stopping criteria
-    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(summary_llm.device)  # '(답변 종료)'
+    stop_token_ids = torch.tensor(get_kanana_stop_token_list('summary')).to(summary_llm.device)  # '(요약 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:
         outputs = summary_llm.generate(**inputs,
-                                       max_new_tokens=48,
+                                       max_new_tokens=64,
                                        do_sample=True,
                                        temperature=0.6,
                                        stopping_criteria=stopping_criteria)
@@ -260,15 +244,14 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
         trial_count += 1
 
         # check LLM answer and return or retry
-        is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
-        too_many_tokens = len(outputs[0]) - len(inputs['input_ids'][0]) >= 44
-        is_uncleaned = is_answer_end_mark or too_many_tokens
+        is_answer_end_mark = '요약 종료' in llm_answer.replace('(요약 종료)', '') or '요약종료' in llm_answer.replace('(요약 종료)', '')
+        too_many_tokens = len(outputs[0]) - len(inputs['input_ids'][0]) >= 60
+        is_almost_empty = len(llm_answer.replace('(요약 종료)', '')) < 2
 
-        is_unnecessary_mark = '�' in llm_answer
-        is_low_quality = len(llm_answer.replace('(답변 종료)', '')) < 2 or is_unnecessary_mark
+#        print('summary', trial_count, llm_answer)
 
-        if (not is_uncleaned) and (not is_low_quality) and ('http' not in llm_answer):
-            return llm_answer.replace('(답변 종료)', '')
+        if not (is_answer_end_mark or too_many_tokens or is_almost_empty) and ('http' not in llm_answer):
+            return llm_answer.replace('(요약 종료)', '')
 
     return None
 
@@ -289,26 +272,32 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
 
 def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokenizer, llm_answer_cleaned):
     trial_count = 0
-    max_trials = 3
+    max_trials = 5
+
+    eyes_score_texts = ['작게', '보통', '크게', '아주 크게']
+    mouth_score_texts = ['보통', '크게', '아주 크게']
+    pose_score_texts = ['없음', '보통', '많이']
 
     # tokenize final Oh-LoRA input
-    llm_answer_cleaned_ = llm_answer_cleaned + ' (답변 시작)'
+    llm_answer_cleaned_ = llm_answer_cleaned + ' (표정 출력 시작)'
 
     inputs = eyes_mouth_pose_llm_tokenizer(llm_answer_cleaned_, return_tensors='pt')
     inputs = {'input_ids': inputs['input_ids'].to(eyes_mouth_pose_llm.device),
               'attention_mask': inputs['attention_mask'].to(eyes_mouth_pose_llm.device)}
 
     # for stopping criteria
-    stop_token_ids = torch.tensor([1477, 1078, 4833, 12]).to(eyes_mouth_pose_llm.device)  # '(답변 종료)'
+    eyes_mouth_pose_stop_tokens = get_polyglot_stop_token_list('eyes_mouth_pose')  # '(표정 출력 종료)'
+    stop_token_ids = torch.tensor(eyes_mouth_pose_stop_tokens).to(eyes_mouth_pose_llm.device)
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:
         outputs = eyes_mouth_pose_llm.generate(**inputs,
-                                               max_new_tokens=32,
+                                               max_new_tokens=36,
                                                do_sample=True,
-                                               temperature=1.5,
+                                               temperature=1.0,
                                                stopping_criteria=stopping_criteria)
 
+#        print('eyes_mouth_pose (token count)', len(outputs[0]), len(inputs['input_ids'][0]))
         llm_answer = eyes_mouth_pose_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         llm_answer = llm_answer[len(llm_answer_cleaned_):]
@@ -321,11 +310,29 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
             mouth_score_text = llm_answer.split('입 ')[1].split(',')[0].split(')')[0]
             pose_score_text = llm_answer.split('고개 돌림 ')[1].split(',')[0].split(')')[0]
 
-            assert eyes_score_text in ['작게', '보통', '크게', '아주 크게']
-            assert mouth_score_text in ['보통', '크게', '아주 크게']
-            assert pose_score_text in ['없음', '보통', '많이']
+#            print('eyes_mouth_pose', trial_count, eyes_score_text, mouth_score_text, pose_score_text)
 
-            return eyes_score_text, mouth_score_text, pose_score_text
+            final_eyes_score_text, final_mouth_score_text, final_pose_score_text = None, None, None
+
+            for txt in eyes_score_texts:
+                if eyes_score_text.startswith(txt):
+                    final_eyes_score_text = txt
+
+            for txt in mouth_score_texts:
+                if mouth_score_text.startswith(txt):
+                    final_mouth_score_text = txt
+
+            for txt in pose_score_texts:
+                if pose_score_text.startswith(txt):
+                    final_pose_score_text = txt
+
+#            print('eyes_mouth_pose', trial_count, final_eyes_score_text, final_mouth_score_text, final_pose_score_text)
+
+            assert final_eyes_score_text is not None
+            assert final_mouth_score_text is not None
+            assert final_pose_score_text is not None
+
+            return final_eyes_score_text, final_mouth_score_text, final_pose_score_text
 
         except:
             pass
