@@ -36,9 +36,8 @@ eyes_current_score, mouth_current_score, pose_current_score = EYES_BASE_SCORE, M
 status = 'waiting'
 last_eyes_close, last_pose_right, last_answer_generate = None, None, time.time()
 
-passed_ohlora_nos = [127, 672, 709, 931, 1017, 1073, 1162, 1211, 1277, 1351,
-                     1359, 1409, 1591, 1646, 1782, 1788, 1819, 1836, 1905, 1918,
-                     2054, 2089, 2100, 2111, 2137, 2185, 2240]
+passed_ohlora_nos = [83, 143, 194, 214, 285, 483, 536, 679, 853, 895,
+                     986, 991, 1064, 1180, 1313, 1535, 1750, 1792, 1996]
 
 eyes_vector_queue = []
 mouth_vector_queue = []
@@ -76,6 +75,7 @@ def load_models():
 
     output_types = ['output_message', 'memory', 'eyes_mouth_pose', 'summary']
     device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_1, 'summary': gpu_1}
+    llm_mapping = {'output_message': 'kanana', 'memory': 'polyglot', 'eyes_mouth_pose': 'polyglot', 'summary': 'kanana'}
 
     # load StyleGAN-VectorFind-v8 generator model
     stylegan_generator = StyleGANGenerator(resolution=256)
@@ -91,7 +91,7 @@ def load_models():
     ohlora_llms_tokenizer = {}
 
     for output_type in output_types:
-        model_path = f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_type}_fine_tuned'
+        model_path = f'{PROJECT_DIR_PATH}/llm/models/{llm_mapping[output_type]}_{output_type}_fine_tuned'
         ohlora_llm = AutoModelForCausalLM.from_pretrained(model_path,
                                                           trust_remote_code=True,
                                                           torch_dtype=torch.bfloat16).to(device_mapping[output_type])
