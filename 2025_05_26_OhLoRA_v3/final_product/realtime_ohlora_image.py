@@ -26,13 +26,13 @@ IMAGE_RESOLUTION = 256
 # Last Update Date : -
 
 # Arguments:
-# - vectorfind_v8_generator (nn.Module)   : StyleGAN-VectorFind-v8 의 Generator
-# - ohlora_z_vector         (NumPy array) : Oh-LoRA 이미지 생성용 latent z vector, dim = (512 + 7,)
-# - eyes_vector             (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터, dim = (512,)
-# - mouth_vector            (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터, dim = (512,)
-# - pose_vector             (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터, dim = (512,)
+# - vectorfind_generator (nn.Module)   : StyleGAN-VectorFind-v7 또는 StyleGAN-VectorFind-v8 의 Generator
+# - ohlora_z_vector      (NumPy array) : Oh-LoRA 이미지 생성용 latent z vector, dim = (512 + 3,) (v7) or (512 + 7,) (v8)
+# - eyes_vector          (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터, dim = (512,)
+# - mouth_vector         (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터, dim = (512,)
+# - pose_vector          (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터, dim = (512,)
 
-def display_realtime_ohlora_image(vectorfind_v8_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector):
+def display_realtime_ohlora_image(vectorfind_generator, ohlora_z_vector, eyes_vector, mouth_vector, pose_vector):
     eyes_pms = np.linspace(-1.2, 1.2, 20)
     mouth_pms = np.linspace(-1.8, 1.8, 20)
     pose_pms = np.linspace(-1.8, 0.6, 20)
@@ -48,7 +48,7 @@ def display_realtime_ohlora_image(vectorfind_v8_generator, ohlora_z_vector, eyes
             mouth_pm = pm if property_name == 'mouth' else 0.0
             pose_pm = pm if property_name == 'pose' else 0.0
 
-            ohlora_image_to_display = generate_images(vectorfind_v8_generator, ohlora_z_vector,
+            ohlora_image_to_display = generate_images(vectorfind_generator, ohlora_z_vector,
                                                       eyes_vector, mouth_vector, pose_vector,
                                                       eyes_pm=eyes_pm, mouth_pm=mouth_pm, pose_pm=pose_pm)
 

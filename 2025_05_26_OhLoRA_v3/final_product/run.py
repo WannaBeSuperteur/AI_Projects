@@ -17,7 +17,7 @@ from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_m
                      decide_property_score_texts, decide_property_scores)
 from run_display import generate_and_show_ohlora_image
 
-from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator
+from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, StyleGANGeneratorForV6
 from stylegan.run_stylegan_vectorfind_v8 import (load_ohlora_z_vectors,
                                                  load_ohlora_w_group_names,
                                                  get_property_change_vectors)
@@ -36,8 +36,11 @@ eyes_current_score, mouth_current_score, pose_current_score = EYES_BASE_SCORE, M
 status = 'waiting'
 last_eyes_close, last_pose_right, last_answer_generate = None, None, time.time()
 
-passed_ohlora_nos = [83, 143, 194, 214, 285, 483, 536, 679, 853, 895,
-                     986, 991, 1064, 1180, 1313, 1535, 1750, 1792, 1996]
+passed_ohlora_nos = {'v7': [127, 672, 709, 931, 1017, 1073, 1162, 1211, 1277, 1351,
+                            1359, 1409, 1591, 1646, 1782, 1788, 1819, 1836, 1905, 1918,
+                            2054, 2089, 2100, 2111, 2137, 2185, 2240],
+                     'v8': [83, 143, 194, 214, 285, 483, 536, 679, 853, 895,
+                            986, 991, 1064, 1180, 1313, 1535, 1750, 1792, 1996]}
 
 eyes_vector_queue = []
 mouth_vector_queue = []
@@ -50,17 +53,17 @@ cosine_line_values = cosine_line_values_up + [1.0 for _ in range(10)] + cosine_l
 cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]
 
 
-# 필요한 모델 로딩 : StyleGAN-VectorFind-v8 Generator,
+# 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator,
 #                  4 LLMs (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned),
 #                  S-BERT (RoBERTa-based)
 # Create Date : 2025.06.03
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# - vectorfind_version (str) : Oh-LoRA latent z vector & w vector 를 위한 StyleGAN-VectorFind 버전 ('v7' or 'v8')
 
 # Returns:
-# - stylegan_generator    (nn.Module)       : StyleGAN-VectorFind-v8 generator
+# - stylegan_generator    (nn.Module)       : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 generator
 # - ohlora_llms           (dict(LLM))       : LLM (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned)
 #                                             {'output_message': LLM, 'memory': LLM, 'summary': LLM,
 #                                              'eyes_mouth_pose': LLM}
@@ -69,7 +72,7 @@ cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]
 #                                              'eyes_mouth_pose': tokenizer}
 # - sbert_model           (S-BERT Model)    : S-BERT (RoBERTa-based)
 
-def load_models():
+def load_models(vectorfind_version):
     gpu_0 = torch.device('cuda:0')
     gpu_1 = torch.device('cuda:1')
 
@@ -77,10 +80,15 @@ def load_models():
     device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_1, 'summary': gpu_1}
     llm_mapping = {'output_message': 'kanana', 'memory': 'polyglot', 'eyes_mouth_pose': 'polyglot', 'summary': 'kanana'}
 
-    # load StyleGAN-VectorFind-v8 generator model
-    stylegan_generator = StyleGANGenerator(resolution=256)
+    # load StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 generator model
     stylegan_model_dir = f'{PROJECT_DIR_PATH}/stylegan/models'
-    generator_path = f'{stylegan_model_dir}/stylegan_gen_vector_find_v8.pth'
+
+    if vectorfind_version == 'v7':
+        stylegan_generator = StyleGANGeneratorForV6(resolution=256)  # v6 and v7 have same architecture
+        generator_path = f'{stylegan_model_dir}/stylegan_gen_vector_find_v7.pth'
+    else:  # v8
+        stylegan_generator = StyleGANGenerator(resolution=256)
+        generator_path = f'{stylegan_model_dir}/stylegan_gen_vector_find_v8.pth'
 
     generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
     stylegan_generator.load_state_dict(generator_state_dict)
@@ -287,8 +295,10 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
 # Last Update Date : -
 
 # Arguments:
-# - ohlora_no (int or None) : 오로라 얼굴 생성용 latent z vector 의 번호 (index, case No.)
-#                             참고: 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/final_OhLoRA_info.md 파일
+# - vectorfind_version (str)         : Oh-LoRA latent z vector & w vector 를 위한 StyleGAN-VectorFind 버전 ('v7' or 'v8')
+# - ohlora_no          (int or None) : 오로라 얼굴 생성용 latent z vector 의 번호 (index, case No.)
+#                                      참고1: 2025_05_02_OhLoRA_v3/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md
+#                                      참고2: 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/final_OhLoRA_info.md
 
 # Returns:
 # - ohlora_z_vector (NumPy array) : Oh-LoRA 이미지 생성용 latent z vector, dim = (512 + 7,)
@@ -296,27 +306,28 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
 # - mouth_vector    (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터, dim = (512,)
 # - pose_vector     (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터, dim = (512,)
 
-def get_vectors(ohlora_no):
+def get_vectors(vectorfind_version, ohlora_no):
     global passed_ohlora_nos
 
     # find index of Oh-LoRA vectors
     ohlora_idx = None
 
     if ohlora_no is not None:
-        for idx, passed_ohlora_no in enumerate(passed_ohlora_nos):
+        for idx, passed_ohlora_no in enumerate(passed_ohlora_nos[vectorfind_version]):
             if ohlora_no == passed_ohlora_no:
                 ohlora_idx = idx
                 break
 
     if ohlora_idx is None:
-        ohlora_idx = random.randint(0, len(passed_ohlora_nos) - 1)
-        print(f'Oh-LoRA face vector selected randomly : case No. {passed_ohlora_nos[ohlora_idx]}')
+        ohlora_idx = random.randint(0, len(passed_ohlora_nos[vectorfind_version]) - 1)
+        print(f'Oh-LoRA face vector selected randomly : case No. {passed_ohlora_nos[vectorfind_version][ohlora_idx]}')
 
     # get Oh-LoRA vectors
-    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(vectorfind_version)
 
-    ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_z_vectors.csv'
-    ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_w_group_names.csv'
+    vector_csv_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_{vectorfind_version}'
+    ohlora_z_vector_csv_path = f'{vector_csv_dir}/ohlora_z_vectors.csv'
+    ohlora_w_group_name_csv_path = f'{vector_csv_dir}/ohlora_w_group_names.csv'
     ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
     ohlora_w_group_names = load_ohlora_w_group_names(group_name_csv_path=ohlora_w_group_name_csv_path)
 
@@ -334,6 +345,9 @@ if __name__ == '__main__':
 
     # parse user arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('-vf_ver',
+                        help="'v7' for StyleGAN-VectorFind-v7, 'v8' for StyleGAN-VectorFind-v8",
+                        default='v8')
     parser.add_argument('-ohlora_no',
                         help="latent z vector ID for Oh-LoRA face image generation (index, case No.)",
                         default='none')
@@ -344,16 +358,17 @@ if __name__ == '__main__':
         ohlora_no = int(ohlora_no)
     except:
         ohlora_no = None
+    vectorfind_version = args.vf_ver
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device : {device}')
 
     # get Oh-LoRA vectors
-    ohlora_z_vector, eyes_vector, mouth_vector, pose_vector = get_vectors(ohlora_no)
+    ohlora_z_vector, eyes_vector, mouth_vector, pose_vector = get_vectors(vectorfind_version, ohlora_no)
 
     # load model
-    stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model = load_models()
+    stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model = load_models(vectorfind_version)
     print('ALL MODELS for Oh-LoRA (오로라) load successful!! 👱‍♀️')
 
     # run Oh-LoRA (오로라)
