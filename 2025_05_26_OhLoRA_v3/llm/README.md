@@ -123,8 +123,8 @@
 | LLM                                  | Fine-Tuning 코드 실행 방법                                                                 |
 |--------------------------------------|--------------------------------------------------------------------------------------|
 | 답변 메시지 ```output_message```          | ```python llm/run_fine_tuning.py -llm_names kanana -output_cols output_message```    |
-| 최근 대화 내용 요약 ```summary```            | ```python llm/run_fine_tuning.py -llm_names polyglot -output_cols summary```         |
-| 메모리 (사용자에 대해 기억 필요한 내용) ```memory``` | ```python llm/run_fine_tuning.py -llm_names kanana -output_cols memory```            |
+| 최근 대화 내용 요약 ```summary```            | ```python llm/run_fine_tuning.py -llm_names kanana -output_cols summary```           |
+| 메모리 (사용자에 대해 기억 필요한 내용) ```memory``` | ```python llm/run_fine_tuning.py -llm_names polyglot -output_cols memory```          |
 | 표정 및 고개 돌림 제어 ```eyes_mouth_pose```  | ```python llm/run_fine_tuning.py -llm_names polyglot -output_cols eyes_mouth_pose``` |
 
 ### 3-2. Memory Mechanism (RAG-like concept)
