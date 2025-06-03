@@ -10,6 +10,7 @@ import threading
 import os
 import sys
 import time
+from datetime import datetime
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
@@ -199,6 +200,53 @@ def realtime_ohlora_generate():
                                        eyes_score, mouth_score, pose_score)
 
 
+# 사용자 프롬프트에 시간 관련 단어 포함 시, 현재 시간 정보 추가
+# Create Date : 2025.06.03
+# Last Update Date : -
+
+# Arguments:
+# - user_prompt (str) : 최초 원본 사용자 프롬프트
+
+# Returns:
+# - updated_user_prompt (str) : 현재 시간 정보가 추가된 사용자 프롬프트 (시간 관련 단어 없을 시 최초 원본 그대로 반환)
+
+def add_time_info(user_prompt):
+
+    # 시간 단어 미 포함 시
+    time_words = ['오늘', '내일', '지금', '요일', '이따', '휴일']
+    time_word_included = False
+
+    for time_word in time_words:
+        if time_word in user_prompt:
+            time_word_included = True
+            break
+
+    if not time_word_included:
+        return user_prompt
+
+    # 시간 단어 포함 시
+    dow_mapping = ['월', '화', '수', '목', '금', '토', '일']
+    current_dow = datetime.today().weekday()
+    current_hour = datetime.now().hour
+
+    if current_hour < 4:
+        dow_text = dow_mapping[(current_dow + 6) % 7]
+        time_mark = f'(지금은 {dow_text}요일 저녁)'
+    else:
+        dow_text = dow_mapping[current_dow]
+        evening_start_hour = 17 if dow_text == '금' else 18
+
+        if current_hour < 12:
+            time_mark = f'(지금은 {dow_text}요일 오전)'
+        elif current_hour < evening_start_hour:
+            time_mark = f'(지금은 {dow_text}요일 오후)'
+        else:
+            time_mark = f'(지금은 {dow_text}요일 저녁)'
+
+    updated_user_prompt = time_mark + ' ' + user_prompt
+    return updated_user_prompt
+
+
 # Oh-LoRA (오로라) 실행
 # Create Date : 2025.06.03
 # Last Update Date : -
@@ -229,6 +277,7 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
 
     while True:
         user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
+        user_prompt = add_time_info(user_prompt)
         status = 'generating'
 
         # check user prompt length
