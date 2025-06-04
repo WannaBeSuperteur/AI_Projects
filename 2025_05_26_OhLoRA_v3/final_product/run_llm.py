@@ -5,13 +5,76 @@ from llm.fine_tuning.inference import StopOnTokens
 from llm.fine_tuning.fine_tuning_kanana import get_stop_token_list as get_kanana_stop_token_list
 from llm.fine_tuning.fine_tuning_polyglot import get_stop_token_list as get_polyglot_stop_token_list
 
+from datetime import datetime
 import os
 import random
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
+# Oh-LoRA (오로라) 답변 생성 시 요일 정보 환각 현상 여부 확인
+# Create Date : 2025.06.04
+# Last Update Date : -
+
+# Arguments :
+# - ohlora_answer (str) : 오로라👱‍♀️ 가 생성한 답변
+
+# Returns:
+# - is_hallucination (bool) : 환각 현상 여부 (환각 현상 발생 시 True)
+
+def is_dow_hallucination(ohlora_answer):
+
+    # get current day-of-week and current month
+    dow_mapping = ['월', '화', '수', '목', '금', '토', '일']
+    current_dow = datetime.today().weekday()
+    current_hour = datetime.now().hour
+
+    if current_hour < 4:
+        dow_text = dow_mapping[(current_dow + 6) % 7]
+    else:
+        dow_text = dow_mapping[current_dow]
+
+    # check time hallucination
+    if dow_text in ['일', '월', '화', '수'] and ('내일 주말' in ohlora_answer or '내일은 주말' in ohlora_answer):
+        return True
+
+    if dow_text in ['월', '화', '수', '목'] and ('오늘 주말' in ohlora_answer or '오늘은 주말' in ohlora_answer):
+        return True
+
+    if dow_text not in ['목', '금'] and '내일부터 주말이' in ohlora_answer:
+        return True
+
+    if dow_text not in ['금', '토'] and '오늘부터 주말이' in ohlora_answer:
+        return True
+
+    if dow_text != '목' and ('내일 불금' in ohlora_answer or '내일은 불금' in ohlora_answer):
+        return True
+
+    if dow_text != '금' and ('오늘 불금' in ohlora_answer or '오늘은 불금' in ohlora_answer):
+        return True
+
+    if dow_text not in ['토', '일'] and '내일부터 한 주 시작' in ohlora_answer:
+        return True
+
+    if dow_text not in ['일', '월'] and '오늘부터 한 주 시작' in ohlora_answer:
+        return True
+
+    for i in range(7):
+        if dow_text != dow_mapping[i] and (f'오늘 {dow_mapping[i]}요일' in ohlora_answer or
+                                           f'오늘은 {dow_mapping[i]}요일' in ohlora_answer or
+                                           f'오늘도 {dow_mapping[i]}요일' in ohlora_answer):
+            return True
+
+        if dow_text != dow_mapping[i] and (f'내일 {dow_mapping[(i + 1) % 7]}요일' in ohlora_answer or
+                                           f'내일은 {dow_mapping[(i + 1) % 7]}요일' in ohlora_answer or
+                                           f'내일도 {dow_mapping[(i + 1) % 7]}요일' in ohlora_answer):
+            return True
+
+    # no time hallucination
+    return False
+
+
 # Oh-LoRA (오로라) 의 답변 생성
-# Create Date : 2025.06.03
+# Create Date : 2025.06.04
 # Last Update Date : -
 
 # Arguments :
@@ -24,7 +87,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
     trial_count = 0
-    max_trials = 3
+    time_hallucination_count = 0
+    max_trials = 5
 
     # tokenize final Oh-LoRA input
     final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
@@ -41,7 +105,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
         outputs = ohlora_llm.generate(**inputs,
                                       max_length=128,
                                       do_sample=True,
-                                      temperature=0.6,
+                                      temperature=0.6 + 0.1 * time_hallucination_count,
                                       stopping_criteria=stopping_criteria)
 
         llm_answer = ohlora_llm_tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -50,12 +114,22 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
 
         trial_count += 1
 
+        # '오늘는', '내일는' -> '오늘은', '내일은'
+        llm_answer = llm_answer.replace('오늘는', '오늘은')
+        llm_answer = llm_answer.replace('내일는', '내일은')
+
         # check LLM answer and return or retry
         is_empty = llm_answer.replace('\n', '').replace('(답변 종료)', '').replace(' ', '') == ''
         is_answer_end_mark = '답변 종료' in llm_answer.replace('(답변 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
         is_other_mark = '(사용자' in llm_answer.replace(' ', '') or '요약)' in llm_answer.replace(' ', '')
 
-        if not (is_empty or is_answer_end_mark or is_other_mark) and ('http' not in llm_answer):
+        is_time_hallucinated = trial_count < max_trials and is_dow_hallucination(llm_answer)
+        is_low_quality = (is_empty or is_answer_end_mark or is_other_mark) or is_time_hallucinated
+
+        if is_time_hallucinated:
+            time_hallucination_count += 1
+
+        if not is_low_quality and ('http' not in llm_answer):
             return llm_answer.replace('(답변 종료)', '')
 
     return '(읽씹)'
