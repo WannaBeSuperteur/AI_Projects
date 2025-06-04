@@ -6,7 +6,10 @@ import numpy as np
 import torch
 # import torch.distributed as dist
 
-from stylegan_common.visualizer import postprocess_image, save_image
+try:
+    from stylegan_common.visualizer import postprocess_image, save_image
+except:
+    from stylegan.stylegan_common.visualizer import postprocess_image, save_image
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 

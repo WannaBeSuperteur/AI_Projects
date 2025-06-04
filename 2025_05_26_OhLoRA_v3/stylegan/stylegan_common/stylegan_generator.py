@@ -942,3 +942,321 @@ class DenseBlock(nn.Module):
         x = F.linear(x, weight=self.weight * self.wscale, bias=bias)
         x = self.activate(x)
         return x
+
+
+class StyleGANGeneratorForV6(nn.Module):
+    """Defines the generator network in StyleGAN.
+
+    NOTE: The synthesized images are with `RGB` channel order and pixel range
+    [-1, 1].
+
+    Settings for the mapping network:
+
+    (1) z_space_dim: Dimension of the input latent space, Z.
+        (default: 512 -> change to 128 is not compatible for pre-trained model)
+    (2) w_space_dim: Dimension of the output latent space, W.
+        (default: 512 -> change to 128 is not compatible for pre-trained model)
+    (3) label_size: Size of the additional label for conditional generation.
+        (default: 0)
+    (4）mapping_layers: Number of layers of the mapping network. (default: 8)
+    (5) mapping_fmaps: Number of hidden channels of the mapping network.
+        (default: 512)
+    (6) mapping_lr_mul: Learning rate multiplier for the mapping network.
+        (default: 0.01)
+    (7) repeat_w: Repeat w-code for different layers.
+
+    Settings for the synthesis network:
+
+    (1) resolution: The resolution of the output image.
+    (2) image_channels: Number of channels of the output image. (default: 3)
+    (3) final_tanh: Whether to use `tanh` to control the final pixel range.
+        (default: False)
+    (4) const_input: Whether to use a constant in the first convolutional layer.
+        (default: True)
+    (5) fused_scale: Whether to fused `upsample` and `conv2d` together,
+        resulting in `conv2d_transpose`. (default: `auto`)
+    (6) use_wscale: Whether to use weight scaling. (default: True)
+    (7) noise_type: Type of noise added to the convolutional results at each
+        layer. (default: `spatial`)
+    (8) fmaps_base: Factor to control number of feature maps for each layer.
+        (default: 16 << 10)
+    (9) fmaps_max: Maximum number of feature maps in each layer. (default: 512)
+    """
+
+    def __init__(self,
+                 resolution,
+                 z_space_dim=512,       # 512 in Original code
+                 w_space_dim=512,       # 512 in Original code
+                 label_size=3,          # (eyes, mouth, pose) property
+                 mapping_layers=8,
+                 mapping_fmaps=512,
+                 mapping_lr_mul=0.01,
+                 repeat_w=True,
+                 image_channels=3,
+                 final_tanh=False,
+                 const_input=True,
+                 fused_scale='auto',
+                 use_wscale=True,
+                 noise_type='spatial',
+                 fmaps_base=16 << 10,
+                 fmaps_max=512):
+        """Initializes with basic settings.
+
+        Raises:
+            ValueError: If the `resolution` is not supported, or `fused_scale`
+                is not supported.
+        """
+        super().__init__()
+
+        if resolution not in _RESOLUTIONS_ALLOWED:
+            raise ValueError(f'Invalid resolution: `{resolution}`!\n'
+                             f'Resolutions allowed: {_RESOLUTIONS_ALLOWED}.')
+        if fused_scale not in _FUSED_SCALE_ALLOWED:
+            raise ValueError(f'Invalid fused-scale option: `{fused_scale}`!\n'
+                             f'Options allowed: {_FUSED_SCALE_ALLOWED}.')
+
+        self.init_res = _INIT_RES
+        self.resolution = resolution
+        self.z_space_dim = z_space_dim
+        self.w_space_dim = w_space_dim
+        self.label_size = label_size
+        self.mapping_layers = mapping_layers
+        self.mapping_fmaps = mapping_fmaps
+        self.mapping_lr_mul = mapping_lr_mul
+        self.repeat_w = repeat_w
+        self.image_channels = image_channels
+        self.final_tanh = final_tanh
+        self.const_input = const_input
+        self.fused_scale = fused_scale
+        self.use_wscale = use_wscale
+        self.noise_type = noise_type
+        self.fmaps_base = fmaps_base
+        self.fmaps_max = fmaps_max
+
+        self.num_layers = int(np.log2(self.resolution // self.init_res * 2)) * 2
+
+        if self.repeat_w:
+            self.mapping_space_dim = self.w_space_dim
+        else:
+            self.mapping_space_dim = self.w_space_dim * self.num_layers
+        self.mapping = MappingModuleForV6(input_space_dim=self.z_space_dim,
+                                          hidden_space_dim=self.mapping_fmaps,
+                                          final_space_dim=self.mapping_space_dim,
+                                          label_size=self.label_size,
+                                          num_layers=self.mapping_layers,
+                                          use_wscale=self.use_wscale,
+                                          lr_mul=self.mapping_lr_mul)
+
+        self.truncation = TruncationModuleForV6(w_space_dim=self.w_space_dim,
+                                                num_layers=self.num_layers,
+                                                repeat_w=self.repeat_w)
+
+        self.synthesis = SynthesisModule(resolution=self.resolution,
+                                         init_resolution=self.init_res,
+                                         w_space_dim=self.w_space_dim,
+                                         image_channels=self.image_channels,
+                                         final_tanh=self.final_tanh,
+                                         const_input=self.const_input,
+                                         fused_scale=self.fused_scale,
+                                         use_wscale=self.use_wscale,
+                                         noise_type=self.noise_type,
+                                         fmaps_base=self.fmaps_base,
+                                         fmaps_max=self.fmaps_max)
+
+        self.pth_to_tf_var_mapping = {}
+        for key, val in self.mapping.pth_to_tf_var_mapping.items():
+            self.pth_to_tf_var_mapping[f'mapping.{key}'] = val
+        for key, val in self.truncation.pth_to_tf_var_mapping.items():
+            self.pth_to_tf_var_mapping[f'truncation.{key}'] = val
+        for key, val in self.synthesis.pth_to_tf_var_mapping.items():
+            self.pth_to_tf_var_mapping[f'synthesis.{key}'] = val
+
+    def set_space_of_latent(self, space_of_latent='w'):
+        """Sets the space to which the latent code belong.
+
+        This function is particually used for choosing how to inject the latent
+        code into the convolutional layers. The original generator will take a
+        W-Space code and apply it for style modulation after an affine
+        transformation. But, sometimes, it may need to directly feed an already
+        affine-transformed code into the convolutional layer, e.g., when
+        training an encoder for GAN inversion. We term the transformed space as
+        Style Space (or Y-Space). This function is designed to tell the
+        convolutional layers how to use the input code.
+
+        Args:
+            space_of_latent: The space to which the latent code belong. Case
+                insensitive. (default: 'w')
+        """
+        for module in self.modules():
+            if isinstance(module, StyleModLayer):
+                setattr(module, 'space_of_latent', space_of_latent)
+
+    def forward(self,
+                z,
+                label,  # (eyes, mouth, pose) property score
+                lod=None,
+                w_moving_decay=0.995,
+                style_mixing_prob=0.0,  # originally 0.9
+                trunc_psi=None,
+                trunc_layers=None,
+                randomize_noise=False,
+                **_unused_kwargs):
+        mapping_results = self.mapping(z, label)
+        w = mapping_results['w']
+
+        if self.training and w_moving_decay < 1:
+            batch_w_avg = all_gather(w).mean(dim=0)
+            self.truncation.w_avg.copy_(
+                self.truncation.w_avg * w_moving_decay +
+                batch_w_avg * (1 - w_moving_decay))
+
+        if self.training and style_mixing_prob > 0:
+            new_z = torch.randn_like(z)
+            new_w = self.mapping(new_z, label)['w']
+            lod = self.synthesis.lod.cpu().tolist() if lod is None else lod
+            current_layers = self.num_layers - int(lod) * 2
+            if np.random.uniform() < style_mixing_prob:
+                mixing_cutoff = np.random.randint(1, current_layers)
+                w = self.truncation(w)
+                new_w = self.truncation(new_w)
+                w[:, mixing_cutoff:] = new_w[:, mixing_cutoff:]
+
+        wp = self.truncation(w, trunc_psi, trunc_layers)
+        synthesis_results = self.synthesis(wp, lod, randomize_noise)
+
+        return {**mapping_results, **synthesis_results}
+
+
+class MappingModuleForV6(nn.Module):
+    """Implements the latent space mapping module.
+
+    Basically, this module executes several dense layers in sequence.
+    """
+
+    def __init__(self,
+                 input_space_dim=512,
+                 hidden_space_dim=512,
+                 final_space_dim=512,
+                 label_convert_dim=16,
+                 label_size=3,  # (eyes, mouth, pose) property score
+                 num_layers=8,
+                 normalize_input=True,
+                 use_wscale=True,
+                 lr_mul=0.01):
+        super().__init__()
+
+        self.input_space_dim = input_space_dim
+        self.hidden_space_dim = hidden_space_dim
+        self.final_space_dim = final_space_dim
+        self.label_size = label_size
+        self.num_layers = num_layers
+        self.normalize_input = normalize_input
+        self.use_wscale = use_wscale
+        self.lr_mul = lr_mul
+
+        self.norm = PixelNormLayer() if self.normalize_input else nn.Identity()
+
+        self.pth_to_tf_var_mapping = {}
+        for i in range(num_layers):
+            dim_mul = 2 if label_size else 1
+            in_channels = (input_space_dim * dim_mul if i == 0 else
+                           hidden_space_dim)
+            out_channels = (final_space_dim if i == (num_layers - 1) else
+                            hidden_space_dim)
+            self.add_module(f'dense{i}',
+                            DenseBlock(in_channels=input_space_dim + label_convert_dim if i == 0 else in_channels,
+                                       out_channels=out_channels,
+                                       use_wscale=self.use_wscale,
+                                       lr_mul=self.lr_mul))
+            self.pth_to_tf_var_mapping[f'dense{i}.weight'] = f'Dense{i}/weight'
+            self.pth_to_tf_var_mapping[f'dense{i}.bias'] = f'Dense{i}/bias'
+        if label_size:
+            self.label_weight = nn.Parameter(
+                torch.randn(label_size, label_convert_dim))
+            self.pth_to_tf_var_mapping[f'label_weight'] = f'LabelConcat/weight'
+
+    def forward(self, z, label):
+        if z.ndim != 2 or z.shape[1] != self.input_space_dim:
+            raise ValueError(f'Input latent code should be with shape '
+                             f'[batch_size, input_dim], where '
+                             f'`input_dim` equals to {self.input_space_dim}!\n'
+                             f'But `{z.shape}` is received!')
+
+        if label.ndim != 2 or label.shape != (z.shape[0], self.label_size):
+            raise ValueError(f'Input label should be with shape '
+                             f'[batch_size, label_size], where '
+                             f'`batch_size` equals to that of '
+                             f'latent codes ({z.shape[0]}) and '
+                             f'`label_size` equals to {self.label_size}!\n'
+                             f'But `{label.shape}` is received!')
+
+        embedding = torch.matmul(label, self.label_weight)
+        z = torch.cat((z, embedding), dim=1)
+
+        z = self.norm(z)
+        w = z
+        for i in range(self.num_layers):
+            w = self.__getattr__(f'dense{i}')(w)
+        results = {
+            'z': z,
+            'label': label,
+            'w': w,
+        }
+        if self.label_size:
+            results['embedding'] = embedding
+        return results
+
+
+class TruncationModuleForV6(nn.Module):
+    """Implements the truncation module.
+
+    Truncation is executed as follows:
+
+    For layers in range [0, truncation_layers), the truncated w-code is computed
+    as
+
+    w_new = w_avg + (w - w_avg) * truncation_psi
+
+    To disable truncation, please set
+    (1) truncation_psi = 1.0 (None) OR
+    (2) truncation_layers = 0 (None)
+
+    NOTE: The returned tensor is layer-wise style codes.
+    """
+
+    def __init__(self, w_space_dim, num_layers, repeat_w=True):
+        super().__init__()
+
+        self.num_layers = num_layers
+        self.w_space_dim = w_space_dim
+        self.repeat_w = repeat_w
+
+        if self.repeat_w:
+            self.register_buffer('w_avg', torch.zeros(w_space_dim))
+        else:
+            self.register_buffer('w_avg', torch.zeros(num_layers * w_space_dim))
+        self.pth_to_tf_var_mapping = {'w_avg': 'dlatent_avg'}
+
+    def forward(self, w, trunc_psi=None, trunc_layers=None):
+        if w.ndim == 2:
+            if self.repeat_w and w.shape[1] == self.w_space_dim:
+                w = w.view(-1, 1, self.w_space_dim)
+                wp = w.repeat(1, self.num_layers, 1)
+            else:
+                assert w.shape[1] == self.w_space_dim * self.num_layers
+                wp = w.view(-1, self.num_layers, self.w_space_dim)
+        else:
+            wp = w
+        assert wp.ndim == 3
+        assert wp.shape[1:] == (self.num_layers, self.w_space_dim)
+
+        trunc_psi = 1.0 if trunc_psi is None else trunc_psi
+        trunc_layers = 0 if trunc_layers is None else trunc_layers
+        if trunc_psi < 1.0 and trunc_layers > 0:
+            layer_idx = np.arange(self.num_layers).reshape(1, -1, 1)
+            coefs = np.ones_like(layer_idx, dtype=np.float32)
+            coefs[layer_idx < trunc_layers] *= trunc_psi
+            coefs = torch.from_numpy(coefs).to(wp)
+            w_avg = self.w_avg.view(1, -1, self.w_space_dim)
+            wp = w_avg + (wp - w_avg) * coefs
+        return wp

@@ -46,6 +46,7 @@ os.makedirs(OHLORA_FINAL_VECTORS_TEST_REPORT_PATH, exist_ok=True)
 
 GROUP_NAMES = ['hhhh', 'hhhl', 'hhlh', 'hhll', 'hlhh', 'hlhl', 'hllh', 'hlll',
                'lhhh', 'lhhl', 'lhlh', 'lhll', 'llhh', 'llhl', 'lllh', 'llll']
+GROUP_NAMES_V7 = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
 medians = get_medians()  # returned values : -0.4574, 0.5734, 0.7618, -0.0167
@@ -62,24 +63,30 @@ def generate_image_using_w(finetune_v8_generator, w, trunc_psi=1.0, trunc_layers
 
 # Property Score 값을 변경하기 위해 intermediate w vector 에 가감할 벡터 정보 반환 ('hhhh', 'hhhl', ..., 'llll' 의 각 그룹 별)
 # Create Date : 2025.05.29
-# Last Update Date : -
+# Last Update Date : 2025.06.03
+# - StyleGAN-VectorFind-v7 로부터 벡터 정보 반환 추가
 
 # Arguments:
-# - 없음
+# - vectorfind_version (str) : Oh-LoRA latent z vector & w vector 를 위한 StyleGAN-VectorFind 버전 ('v7' or 'v8')
 
 # Returns:
 # - eyes_vectors  (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - mouth_vectors (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors  (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 
-def get_property_change_vectors():
-    vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/property_score_vectors'
+def get_property_change_vectors(vectorfind_version):
+    vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_{vectorfind_version}/property_score_vectors'
+
+    if vectorfind_version == 'v7':
+        group_names_list = GROUP_NAMES_V7
+    else:  # v8
+        group_names_list = GROUP_NAMES
 
     eyes_vectors = {}
     mouth_vectors = {}
     pose_vectors = {}
 
-    for group_name in GROUP_NAMES:
+    for group_name in group_names_list:
         eyes_vector = np.array(pd.read_csv(f'{vector_save_dir}/eyes_change_w_vector_{group_name}.csv',
                                            index_col=0))
 

@@ -1,6 +1,10 @@
 
 from transformers import StoppingCriteria, StoppingCriteriaList
-from fine_tuning.utils import get_temperature, get_answer_end_mark
+
+try:
+    from fine_tuning.utils import get_temperature, get_answer_end_mark
+except:
+    from llm.fine_tuning.utils import get_temperature, get_answer_end_mark
 
 import torch
 import os
