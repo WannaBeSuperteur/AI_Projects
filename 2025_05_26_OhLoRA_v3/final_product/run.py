@@ -443,7 +443,12 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
         llm_answer_cleaned = clean_llm_answer(llm_answer)
 
         # check ethics of user prompt
-        check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned)
+        system_message, block_period = check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned)
+        if system_message != '':
+            print(f'[SYSTEM MESSAGE]\n{system_message}')
+
+        if block_period > 0:
+            raise Exception('blocked_by_ohlora')
 
         # update memory
         memory_list = parse_memory(memory_llm=ohlora_llms['memory'],
