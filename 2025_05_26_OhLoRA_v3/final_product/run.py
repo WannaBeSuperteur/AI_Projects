@@ -534,7 +534,44 @@ def get_vectors(vectorfind_version, ohlora_no):
     return ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
 
 
+# Oh-LoRA 👱‍♀️ (오로라) 차단 여부 검사
+# Create Date : 2025.06.04
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - is_blocked     (bool) : 차단 여부
+# - system_message (str)  : 차단 관련 시스템 메시지
+
+def is_blocked_by_ohlora():
+    block_log_path = f'{ALL_PROJECTS_DIR_PATH}/ohlora_block_log.csv'
+    block_log = pd.read_csv(block_log_path)
+    block_reason_mapping = {'love': '오로라 👱‍♀️ 에게 사랑 고백/만남 요구', 'politics': '정치 발언', 'paedrip': '패드립'}
+
+    for idx, row in block_log.iterrows():
+        block_start = int(row['blocked_at'])
+        block_end = block_start + int(row['block_period'])
+
+        if time.time() < block_end:
+            is_blocked = True
+            block_end_dt = datetime.fromtimestamp(block_end)
+            block_end_dt_str = block_end_dt.strftime("%Y.%m.%d %H:%M:%S")
+            system_message = (f"Oh-LoRA 👱‍♀️ 가 대화를 거부하였습니다.\n만료일: {block_end_dt_str}\n"
+                              f"사유: {block_reason_mapping[row['block_reason']]}")
+            return is_blocked, system_message
+
+    return False, ''
+
+
 if __name__ == '__main__':
+
+    # check blocked
+    is_blocked, system_message = is_blocked_by_ohlora()
+    if is_blocked:
+        print(f'[SYSTEM MESSAGE]\n{system_message}')
+        exit(0)
 
     # parse user arguments
     parser = argparse.ArgumentParser()
