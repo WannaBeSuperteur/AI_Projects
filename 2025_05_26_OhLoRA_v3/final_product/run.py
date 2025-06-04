@@ -12,6 +12,7 @@ import sys
 import time
 from datetime import datetime
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+ALL_PROJECTS_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 sys.path.append(PROJECT_DIR_PATH)
 
 from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_memory_list, summarize_llm_answer,
@@ -25,6 +26,8 @@ from stylegan.run_stylegan_vectorfind_v8 import (load_ohlora_z_vectors,
 
 from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
 from llm.run_memory_mechanism import pick_best_memory_item
+
+import pandas as pd
 
 
 EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE = 0.2, 1.0, 0.0
@@ -52,6 +55,24 @@ cosine_line_values_up = [math.cos((1.0 + (x / 30.0)) * math.pi) for x in range(3
 cosine_line_values_down = [math.cos((2.0 + (x / 30.0)) * math.pi) for x in range(30)]
 cosine_line_values = cosine_line_values_up + [1.0 for _ in range(10)] + cosine_line_values_down
 cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]
+
+
+# block periods
+love_block_periods = {1: 0,
+                      2: 60 * 60,
+                      3: 24 * 60 * 60,
+                      4: 14 * 24 * 60 * 60,
+                      5: 1461 * 24 * 60 * 60}
+
+politics_block_periods = {1: 0,
+                          2: 3 * 24 * 60 * 60,
+                          3: 7 * 24 * 60 * 60,
+                          4: 30 * 24 * 60 * 60,
+                          5: 365 * 24 * 60 * 60}
+
+paedrip_block_periods = {1: 7 * 24 * 60 * 60,
+                         2: 30 * 24 * 60 * 60,
+                         3: 1461 * 24 * 60 * 60}
 
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator,
@@ -251,6 +272,116 @@ def add_time_info(user_prompt):
     return updated_user_prompt
 
 
+# Oh-LoRA (오로라) 의 Ethics mechanism 을 이용한 사용자 제재 처리
+# Create Date : 2025.06.04
+# Last Update Date : -
+
+# Arguments:
+# - sbert_model_ethics (S-BERT Model) : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
+# - user_prompt        (str)          : 최초 원본 사용자 프롬프트
+# - llm_answer_cleaned (str)          : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
+
+# Returns:
+# - system_message (str) : 경고 또는 차단을 나타내는 시스템 메시지
+# - block_period   (int) : 차단 기간 (초), 0초 차단은 경고
+
+def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned):
+    global love_block_periods, politics_block_periods, paedrip_block_periods
+
+    categories = ['사랑 고백/만남', '일반', '정치', '패드립']
+    block_log_path = f'{ALL_PROJECTS_DIR_PATH}/ohlora_block_log.csv'
+
+    def compute_cosine_similarity(vector0, vector1):
+        return np.dot(vector0, vector1) / (np.linalg.norm(vector0) * np.linalg.norm(vector1))
+
+    def log_block(block_log, block_period, block_reason, block_level):
+        new_block_log = {'blocked_at': list(block_log['blocked_at']) + [int(time.time())],
+                         'block_period': list(block_log['block_period']) + [block_period],
+                         'block_reason': list(block_log['block_reason']) + [block_reason],
+                         'block_level': list(block_log['block_level']) + [block_level]}
+        pd.DataFrame(new_block_log).to_csv(block_log_path, index=False)
+
+    def convert_block_period(block_period):
+        if block_period < 60 * 60:
+            return f'{block_period // 60}분'
+        elif block_period < 24 * 60 * 60:
+            return f'{block_period // (60 * 60)}시간'
+        elif block_period < 365 * 24 * 60 * 60:
+            return f'{block_period // (24 * 60 * 60)}일'
+        else:
+            return f'{block_period // (365 * 24 * 60 * 60)}년'
+
+    # compute cosine similarity
+    similarity_scores = {}
+    user_prompt_embedding = sbert_model_ethics.encode([user_prompt])
+
+    for category in categories:
+        category_embedding = sbert_model_ethics.encode([category])
+        similarity_score = compute_cosine_similarity(user_prompt_embedding[0], category_embedding[0])
+        similarity_scores[category] = similarity_score
+
+    is_love = similarity_scores['사랑 고백/만남'] >= 0.98 and ('미안' in llm_answer_cleaned or '부담' in llm_answer_cleaned)
+    is_normal = similarity_scores['일반'] >= 0.5
+    is_politics = similarity_scores['정치'] >= 0.95 and ('미안' in llm_answer_cleaned or '부담' in llm_answer_cleaned)
+    is_paedrip = similarity_scores['패드립'] >= 0.9
+
+    is_block_for_love = is_love and not is_normal
+    is_block_for_politics = is_politics and not is_normal
+    is_block_for_paedrip = is_paedrip and not is_normal
+
+    # load user warning & block log -> decide block period
+    block_log = pd.read_csv(block_log_path)
+    love_block_period, politics_block_period, paedrip_block_period = 0, 0, 0
+    block_reasons = []
+
+    if is_block_for_love:
+        love_block_log = block_log[block_log['block_reason'] == 'love']['block_level']
+        max_love_block_level = love_block_log.max() if len(love_block_log) >= 1 else 0
+        new_love_block_level = max_love_block_level + 1
+        love_block_period = love_block_periods.get(new_love_block_level, 1461 * 24 * 60 * 60)
+        block_reasons.append('사랑 고백/만남')
+
+    if is_block_for_politics:
+        politics_block_log = block_log[block_log['block_reason'] == 'politics']['block_level']
+        max_politics_block_level = politics_block_log.max() if len(politics_block_log) >= 1 else 0
+        new_politics_block_level = max_politics_block_level + 1
+        politics_block_period = politics_block_periods.get(new_politics_block_level, 365 * 24 * 60 * 60)
+        block_reasons.append('정치')
+
+    if is_block_for_paedrip:
+        paedrip_block_log = block_log[block_log['block_reason'] == 'paedrip']['block_level']
+        max_paedrip_block_level = paedrip_block_log.max() if len(paedrip_block_log) >= 1 else 0
+        new_paedrip_block_level = max_paedrip_block_level + 1
+        paedrip_block_period = paedrip_block_periods.get(new_paedrip_block_level, 1461 * 24 * 60 * 60)
+        block_reasons.append('패드립')
+
+    block_period = love_block_period + politics_block_period + paedrip_block_period
+    if block_period > 1461 * 24 * 60 * 60:
+        block_period = 1461 * 24 * 60 * 60
+
+    # logging
+    if is_block_for_love:
+        log_block(block_log, block_period, 'love', new_love_block_level)
+
+    if is_block_for_politics:
+        log_block(block_log, block_period, 'politics', new_politics_block_level)
+
+    if is_block_for_paedrip:
+        log_block(block_log, block_period, 'paedrip', new_paedrip_block_level)
+
+    # final resturn
+    if not (is_block_for_love or is_block_for_politics or is_block_for_paedrip):
+        system_message = ''
+    elif block_period == 0:
+        system_message = (f"🚨 {','.join(block_reasons)} 발언으로 Oh-LoRA 👱‍♀️ (오로라) 에게 경고를 받았습니다. 🚨\n"
+                          f"동일/유사 발언 반복 시 Oh-LoRA 👱‍♀️ (오로라) 관련 모든 AI 사용이 일정 기간 차단될 수 있습니다.")
+    else:
+        system_message = (f"⛔ {','.join(block_reasons)} 발언으로 Oh-LoRA 👱‍♀️ (오로라) 에게 차단되었습니다. ⛔\n"
+                          f"{convert_block_period(block_period)} 동안 Oh-LoRA 👱‍♀️ (오로라) 관련 모든 AI 사용이 불가합니다.")
+
+    return system_message, block_period
+
+
 # Oh-LoRA (오로라) 실행
 # Create Date : 2025.06.04
 # Last Update Date : -
@@ -310,6 +441,9 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
                                          ohlora_llm_tokenizer=ohlora_llms_tokenizer['output_message'],
                                          final_ohlora_input=final_ohlora_input)
         llm_answer_cleaned = clean_llm_answer(llm_answer)
+
+        # check ethics of user prompt
+        check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned)
 
         # update memory
         memory_list = parse_memory(memory_llm=ohlora_llms['memory'],
