@@ -56,8 +56,8 @@ cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator,
 #                  4 LLMs (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned),
-#                  S-BERT (RoBERTa-based)
-# Create Date : 2025.06.03
+#                  S-BERT (RoBERTa-based) 2개 (for memory & ethics mechanism)
+# Create Date : 2025.06.04
 # Last Update Date : -
 
 # Arguments:
@@ -71,7 +71,8 @@ cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]
 # - ohlora_llms_tokenizer (dict(tokenizer)) : LLM (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned) 의 tokenizer
 #                                             {'output_message': tokenizer, 'memory': tokenizer, 'summary': tokenizer,
 #                                              'eyes_mouth_pose': tokenizer}
-# - sbert_model           (S-BERT Model)    : S-BERT (RoBERTa-based)
+# - sbert_model_memory    (S-BERT Model)    : memory mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
+# - sbert_model_ethics    (S-BERT Model)    : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
 
 def load_models(vectorfind_version):
     gpu_0 = torch.device('cuda:0')
@@ -112,10 +113,13 @@ def load_models(vectorfind_version):
         ohlora_llms_tokenizer[output_type] = ohlora_llm_tokenizer
 
     # load S-BERT Model (RoBERTa-based)
-    model_path = f'{PROJECT_DIR_PATH}/llm/models/memory_sbert/trained_sbert_model'
-    sbert_model = load_pretrained_sbert_model(model_path)
+    memory_model_path = f'{PROJECT_DIR_PATH}/llm/models/memory_sbert/trained_sbert_model'
+    sbert_model_memory = load_pretrained_sbert_model(memory_model_path)
 
-    return stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model
+    ethics_model_path = f'{PROJECT_DIR_PATH}/llm/models/ethics_sbert/trained_sbert_model'
+    sbert_model_ethics = load_pretrained_sbert_model(ethics_model_path)
+
+    return stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics
 
 
 # Oh-LoRA (오로라) 답변 직후 이미지 생성
@@ -248,7 +252,7 @@ def add_time_info(user_prompt):
 
 
 # Oh-LoRA (오로라) 실행
-# Create Date : 2025.06.03
+# Create Date : 2025.06.04
 # Last Update Date : -
 
 # Arguments:
@@ -258,14 +262,15 @@ def add_time_info(user_prompt):
 # - ohlora_llms_tokenizer (dict(tokenizer)) : LLM (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned) 의 tokenizer
 #                                             {'output_message': tokenizer, 'memory': tokenizer, 'summary': tokenizer,
 #                                              'eyes_mouth_pose': tokenizer}
-# - sbert_model           (S-BERT Model)    : S-BERT (RoBERTa-based)
+# - sbert_model_memory    (S-BERT Model)    : memory mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
+# - sbert_model_ethics    (S-BERT Model)    : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
 
 # Running Mechanism:
 # - Oh-LoRA LLM 답변 생성 시마다 이에 기반하여 final_product/ohlora.png 경로에 오로라 이미지 생성
 # - Oh-LoRA 답변을 parsing 하여 llm/memory_mechanism/saved_memory/ohlora_memory.txt 경로에 메모리 저장
 # - S-BERT 모델을 이용하여, RAG 와 유사한 방식으로 해당 파일에서 사용자 프롬프트에 가장 적합한 메모리 정보를 찾아서 최종 LLM 입력에 추가
 
-def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
+def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics):
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     global status, last_answer_generate
 
@@ -286,7 +291,7 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model):
             print('[SYSTEM MESSAGE] 너무 긴 질문은 오로라👱‍♀️ 에게 부담 돼요! 그런 질문은 오로라의 절친 혜나 🌹 (LLM Hyena) 에게 해 주세요! 😢')
             continue
 
-        best_memory_item = pick_best_memory_item(sbert_model,
+        best_memory_item = pick_best_memory_item(sbert_model_memory,
                                                  user_prompt,
                                                  memory_file_name='ohlora_memory.txt',
                                                  threshold=0.95,
@@ -417,12 +422,13 @@ if __name__ == '__main__':
     ohlora_z_vector, eyes_vector, mouth_vector, pose_vector = get_vectors(vectorfind_version, ohlora_no)
 
     # load model
-    stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model = load_models(vectorfind_version)
+    stylegan_generator, ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics \
+        = load_models(vectorfind_version)
     print('ALL MODELS for Oh-LoRA (오로라) load successful!! 👱‍♀️')
 
     # run Oh-LoRA (오로라)
     try:
-        run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model)
+        run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics)
 
     except KeyboardInterrupt:
         print('[SYSTEM MESSAGE] 오로라와의 대화가 끝났습니다. 👱‍♀️👋 다음에도 오로라와 함께해 주실 거죠?')
