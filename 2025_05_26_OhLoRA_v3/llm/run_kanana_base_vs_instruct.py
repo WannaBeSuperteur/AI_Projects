@@ -17,7 +17,7 @@ import time
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # remove for LLM inference only
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-EXPERIMENT_TIMES = 5
+EXPERIMENT_TIMES = 1
 
 kanana_llm = None
 tokenizer = None
