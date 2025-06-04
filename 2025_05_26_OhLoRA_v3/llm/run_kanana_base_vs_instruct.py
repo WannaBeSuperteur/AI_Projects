@@ -69,8 +69,8 @@ class BaseVsInstructCustomCallback(TrainerCallback):
 
         entire_log['llm_name'].append(kanana_llm_name)
         entire_log['epochs'].append(int(round(state.log_history[-1]['epoch'])))
-        entire_log['elapsed_time_mean'].append(np.mean(elapsed_time_log))
-        entire_log['output_tokens_mean'].append(np.mean(output_tokens_log))
+        entire_log['elapsed_time_mean'].append(round(np.mean(elapsed_time_log), 4))
+        entire_log['output_tokens_mean'].append(round(np.mean(output_tokens_log), 4))
         entire_log['num_start_answers'].append(llm_answer_starts_with_num)
 
         pd.DataFrame(entire_log).to_csv(test_log_csv_path)
