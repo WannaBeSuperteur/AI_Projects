@@ -73,7 +73,7 @@ class BaseVsInstructCustomCallback(TrainerCallback):
         entire_log['output_tokens_mean'].append(np.mean(output_tokens_log))
         entire_log['num_start_answers'].append(llm_answer_starts_with_num)
 
-        pd.DataFrame(entire_log).to_csv('')
+        pd.DataFrame(entire_log).to_csv(test_log_csv_path)
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
