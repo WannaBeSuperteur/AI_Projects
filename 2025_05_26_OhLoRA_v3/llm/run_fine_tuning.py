@@ -48,7 +48,7 @@ def load_fine_tuned_llm(llm_name, output_col):
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
-    if llm_name == 'polyglot':
+    elif llm_name == 'polyglot':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
             f'{PROJECT_DIR_PATH}/llm/models/polyglot_{output_col}_fine_tuned',
             trust_remote_code=True,
