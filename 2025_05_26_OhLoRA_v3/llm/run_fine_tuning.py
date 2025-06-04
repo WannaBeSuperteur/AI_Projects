@@ -23,10 +23,11 @@ ANSWER_CNT = 4
 
 # Fine-Tuning 된 LLM 로딩
 # Create Date : 2025.05.31
-# Last Update Date : -
+# Last Update Date : 2025.06.04
+# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가
 
 # Arguments:
-# - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('kanana' or 'polyglot')
+# - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai' or 'polyglot')
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
@@ -38,6 +39,12 @@ def load_fine_tuned_llm(llm_name, output_col):
     if llm_name == 'kanana':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
             f'{PROJECT_DIR_PATH}/llm/models/kanana_{output_col}_fine_tuned',
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).cuda()
+
+    elif llm_name == 'kananai':
+        fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
+            f'{PROJECT_DIR_PATH}/llm/models/kananai_{output_col}_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
@@ -96,13 +103,15 @@ def test_cuda_oom_polyglot(is_separate):
 
 # LLM 4개 한번에 로딩 시 OOM 발생 테스트 (Kanana-1.5 2.1B)
 # Create Date : 2025.05.31
-# Last Update Date : -
+# Last Update Date : 2025.06.04
+# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가에 따른 instruct_version 변수 추가
 
 # Arguments:
-# - is_separate (bool) : True 이면 2 대의 GPU 분산 로딩, False 이면 1 대의 GPU 에만 로딩
-# - version     (str)  : 'original' (원본 모델) or 'fine_tuned' (Oh-LoRA 👱‍♀️ 에 사용할 파인튜닝된 모델)
+# - is_separate      (bool) : True 이면 2 대의 GPU 분산 로딩, False 이면 1 대의 GPU 에만 로딩
+# - instruct_version (bool) : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
+# - version          (str)  : 'original' (원본 모델) or 'fine_tuned' (Oh-LoRA 👱‍♀️ 에 사용할 파인튜닝된 모델)
 
-def test_cuda_oom_kanana(is_separate, version='original'):
+def test_cuda_oom_kanana(is_separate, instruct_version, version='original'):
     gpu_0 = torch.device('cuda:0')
     gpu_1 = torch.device('cuda:1')
 
@@ -139,7 +148,8 @@ def test_cuda_oom_kanana(is_separate, version='original'):
                                                 llm_tokenizer,
                                                 col,
                                                 stop_token_list=stop_token_list,
-                                                answer_start_mark=get_answer_start_mark(col))
+                                                answer_start_mark=get_answer_start_mark(col),
+                                                instruct_version=instruct_version)
 
         print(f'LLM output : {llm_output}')
         print(f'CUDA memory until {col} model loading : {torch.cuda.memory_allocated()}')
@@ -147,10 +157,11 @@ def test_cuda_oom_kanana(is_separate, version='original'):
 
 # LLM inference (해당 LLM 이 없거나 로딩 실패 시 Fine-Tuning 학습) 실시
 # Create Date : 2025.05.31
-# Last Update Date : -
+# Last Update Date : 2025.06.04
+# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가
 
 # Arguments:
-# - llm_name   (str) : Inference 또는 Fine-Tuning 할 LLM 의 이름 ('kanana' or 'polyglot')
+# - llm_name   (str) : Inference 또는 Fine-Tuning 할 LLM 의 이름 ('kanana', 'kananai' or 'polyglot')
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 def inference_or_fine_tune_llm(llm_name, output_col):
@@ -171,7 +182,10 @@ def inference_or_fine_tune_llm(llm_name, output_col):
         print(f'Fine-Tuned LLM ({llm_name}) load failed : {e}')
 
         if llm_name == 'kanana':
-            fine_tune_kanana(output_col=output_col, dataset_version='v3')
+            fine_tune_kanana(output_col=output_col, dataset_version='v3', instruct_version=False)
+
+        elif llm_name == 'kananai':
+            fine_tune_kanana(output_col=output_col, dataset_version='v3', instruct_version=True)
 
         elif llm_name == 'polyglot':
             fine_tune_polyglot(output_col=output_col, dataset_version='v3')
@@ -204,15 +218,17 @@ def inference_or_fine_tune_llm(llm_name, output_col):
 
             inference_start_at = time.time()
 
-            if llm_name == 'kanana':
+            if llm_name == 'kanana' or llm_name == 'kananai':
                 stop_token_list = get_stop_token_list_kanana(output_col)
+                instruct_version = (llm_name == 'kananai')
 
                 llm_answer, trial_count, output_token_cnt = run_inference_kanana(fine_tuned_llm,
                                                                                  final_input_prompt,
                                                                                  tokenizer,
                                                                                  output_col,
                                                                                  stop_token_list=stop_token_list,
-                                                                                 answer_start_mark=answer_start_mark)
+                                                                                 answer_start_mark=answer_start_mark,
+                                                                                 instruct_version=instruct_version)
 
             if llm_name == 'polyglot':
                 stop_token_list = get_stop_token_list_polyglot(output_col)
@@ -254,7 +270,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-llm_names',
                         help="name of LLMs (separated by comma)",
-                        default='kanana,polyglot,kanana,polyglot')
+                        default='kananai,polyglot,kananai,polyglot')
 
     parser.add_argument('-output_cols',
                         help="output column names (separated by comma) from dataset csv",
@@ -278,7 +294,7 @@ if __name__ == '__main__':
     output_cols_list = output_cols.split(',')
 
     for llm_name, output_col in zip(llm_names_list, output_cols_list):
-        assert llm_name in ['kanana', 'polyglot'], "LLM name must be 'kanana' or 'polyglot'."
+        assert llm_name in ['kanana', 'kananai', 'polyglot'], "LLM name must be 'kanana', 'kananai' or 'polyglot'."
 
         print(f'\n=== 🚀 Fine-Tune LLM {llm_name} with column {output_col} START 🚀 ===')
         inference_or_fine_tune_llm(llm_name, output_col)
