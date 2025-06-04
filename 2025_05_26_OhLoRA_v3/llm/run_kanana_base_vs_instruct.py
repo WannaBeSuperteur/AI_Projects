@@ -161,7 +161,7 @@ def fine_tune_kanana_llm(kanana_llm_name, instruct_version):
     get_lora_llm(llm=kanana_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
-        lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_message']} (답변 종료) <|endoftext|>",
+        lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_message']} (답변 종료) <|end_of_text|>",
         axis=1)
 
     dataset = generate_llm_trainable_dataset(dataset_df)
