@@ -4,7 +4,7 @@
   * [1-1. 현재 시간 정보 추가](#1-1-현재-시간-정보-추가)
   * [1-2. LLM Memory (RAG-like concept)](#1-2-llm-memory-rag-like-concept)
   * [1-3. LLM Ethics (S-BERT)](#1-3-llm-ethics-s-bert)
-* [2. OhLoRA-v2 LLM Fine-Tuning](#2-ohlora-v2-llm-fine-tuning)
+* [2. OhLoRA-v3 LLM Fine-Tuning](#2-ohlora-v3-llm-fine-tuning)
 * [3. 코드 실행 방법](#3-코드-실행-방법)
   * [3-1. LLM Fine-Tuning](#3-1-llm-fine-tuning)
   * [3-2. Memory Mechanism (RAG-like concept)](#3-2-memory-mechanism-rag-like-concept)
@@ -84,7 +84,7 @@
 * 보고서
   * [Ethics mechanism 테스트 결과 보고서](ethics_mechanism/test_report.md) 
 
-## 2. OhLoRA-v2 LLM Fine-Tuning
+## 2. OhLoRA-v3 LLM Fine-Tuning
 
 * 학습 모델
   * **Kanana-1.5 2.1B (by Kakao, 2.09 B params) (✅ for ```output_message``` ```summary```)** [(HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base)
