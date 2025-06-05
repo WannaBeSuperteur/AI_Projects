@@ -1,3 +1,9 @@
+## 목차
+
+* [1. 실험 목적](#1-실험-목적)
+* [2. 실험 대상 및 방법](#2-실험-대상-및-방법)
+* [3. 실험 결론](#3-실험-결론)
+
 ## 1. 실험 목적
 
 * [Kanana-1.5 2.1B Base](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base) 모델과 [Kanana-1.5 2.1B Instruct](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505) 모델을 Fine-Tuning 시, **숫자로 시작하는 답변** 의 출력 횟수 비교
@@ -15,7 +21,7 @@
 * Fine-Tuning 데이터셋
   * [Oh-LoRA v3 학습용 데이터셋](../../fine_tuning_dataset/OhLoRA_fine_tuning_v3.csv)
 
-## 실험 결론
+## 3. 실험 결론
 
 * Kanana-1.5 2.1B **Instruct** 모델은 Kanana-1.5 2.1B **Base** 모델에 비해 **숫자로 시작하는 답변 출력 횟수** 가 유의미하게 적음
 
