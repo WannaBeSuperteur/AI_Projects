@@ -72,7 +72,7 @@
 | LLM              | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)                                     | 가상 인간이 인물 설정에 맞게 사용자와 대화할 수 있게 하는 기술                                                                                                                                                                  |
 | LLM              | [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)                                  | 가상 인간의 LLM 을 효율적으로 Fine-Tuning 하는 기술                                                                                                                                                                  |
 | LLM              | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8)      | 가상 인간이 사용자와의 대화 내용을 기억하는 메모리 역할<br>- [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 메커니즘 |
-| LLM              | [BERT](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#bert-%EB%AA%A8%EB%8D%B8%EC%9D%B4%EB%9E%80)       | 가상 인간이 사용자의 질문이 **화제 전환인지 / 부적절한 언어를 사용했는지** 판단                                                                                                                                                       |
+| LLM              | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8)      | 가상 인간이 사용자의 질문이 **부적절한 언어를 사용했는지** 판단                                                                                                                                                                 |
 
 ### 2-1. 사용한 Python 라이브러리 및 시스템 환경
 
@@ -156,5 +156,9 @@
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
+* 중대 이슈 없음
+
 ## 6. 사용자 가이드
 
+* 모델 및 데이터셋 정보는 [해당 문서](MODEL_AND_DATASET_INFO.md) 참고.
+* 사용자 가이드는 [해당 문서](system_info_and_user_guide.md#2-사용자-가이드) 참고.
