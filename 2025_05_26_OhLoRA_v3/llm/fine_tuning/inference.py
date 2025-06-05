@@ -95,7 +95,8 @@ def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output
 
 # Fine Tuning 된 LLM 을 이용한 inference 실시 (Kanana-1.5 2.1B)
 # Create Date : 2025.05.31
-# Last Update Date : -
+# Last Update Date : 2025.06.04
+# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가에 따른 instruct_version 변수 추가
 
 # Arguments:
 # - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
@@ -105,6 +106,7 @@ def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output
 # - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
 # - stop_token_list    (list)          : stopping token ('(답변 종료)', '(요약 종료)' 등) 에 해당하는 token 의 list
 # - max_trials         (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
+# - instruct_version   (bool)          : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
 
 # Returns:
 # - llm_answer       (str) : LLM 답변 중 user prompt 를 제외한 부분
@@ -112,7 +114,9 @@ def run_inference_polyglot(fine_tuned_llm, final_input_prompt, tokenizer, output
 # - output_token_cnt (int) : LLM output 의 token 개수
 
 def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, output_col, answer_start_mark,
-                         stop_token_list, max_trials=30):
+                         stop_token_list, instruct_version, max_trials=30):
+
+    kanana_llm_name = 'kananai' if instruct_version else 'kanana'
 
     tokenizer.pad_token = tokenizer.eos_token
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
@@ -138,7 +142,7 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, output_c
         outputs = fine_tuned_llm.generate(**inputs,
                                           max_length=max_length,
                                           do_sample=True,
-                                          temperature=get_temperature(output_col, llm_name='kanana'),
+                                          temperature=get_temperature(output_col, llm_name=kanana_llm_name),
                                           stopping_criteria=stopping_criteria)
         output_token_cnt = len(outputs[0])
 

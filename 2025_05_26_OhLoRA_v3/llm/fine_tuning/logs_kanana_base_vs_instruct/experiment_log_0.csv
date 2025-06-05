@@ -1,0 +1,11 @@
+,llm_name,epochs,elapsed_time_mean,output_tokens_mean,num_start_answers
+0,kanana,1,4.6124,53.8111,6
+1,kanana,2,4.417,53.4333,4
+2,kanana,3,4.7634,54.4111,3
+3,kanana,4,4.6675,53.8778,4
+4,kanana,5,4.471,53.1778,5
+5,kananai,1,4.7785,55.7444,2
+6,kananai,2,4.4877,52.7,1
+7,kananai,3,4.2056,50.9111,3
+8,kananai,4,4.6161,53.6222,0
+9,kananai,5,4.5589,54.2,2
