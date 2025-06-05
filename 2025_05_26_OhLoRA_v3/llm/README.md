@@ -66,7 +66,7 @@
 * 구현 코드
   * [S-BERT Inference](memory_mechanism/inference_sbert.py)
   * [Entry & Best Memory Item Choice](run_memory_mechanism.py)
-  * LLM 이 출력한 표정 정보를 Property Score 로 변환 (TBU)
+  * [LLM 이 출력한 표정 정보를 Property Score 로 변환](../final_product/run_llm.py) (해당 코드 파일의 ```decide_property_scores``` 함수)
 
 ### 1-3. LLM Ethics (S-BERT)
 
@@ -80,7 +80,7 @@
 * 구현 코드
   * [S-BERT Training](ethics_mechanism/train_sbert.py)
   * [S-BERT Inference](ethics_mechanism/inference_sbert.py)
-  * 실제 사용자 제재 처리 (TBU)
+  * [실제 사용자 제재 처리](../final_product/run.py) (해당 코드 파일의 ```check_and_process_ethics``` 함수)
 * 보고서
   * [Ethics mechanism 테스트 결과 보고서](ethics_mechanism/test_report.md) 
 
@@ -114,7 +114,7 @@
 
 ## 3. 코드 실행 방법
 
-모든 코드는 **먼저 아래 [다운로드 경로 안내](#4-모델-다운로드-경로) (TBU) 및 해당 각 HuggingFace 링크에 있는 Model Card 에 나타난 저장 경로 (Save Path) 정보를 참고하여 모델 다운로드 후,** ```2025_05_26_OhLoRA_v3``` (프로젝트 메인 디렉토리) 에서 실행
+모든 코드는 **먼저 아래 [다운로드 경로 안내](#4-모델-다운로드-경로) 및 해당 각 HuggingFace 링크에 있는 Model Card 에 나타난 저장 경로 (Save Path) 정보를 참고하여 모델 다운로드 후,** ```2025_05_26_OhLoRA_v3``` (프로젝트 메인 디렉토리) 에서 실행
 
 ### 3-1. LLM Fine-Tuning
 
@@ -139,7 +139,13 @@
 
 ## 4. 모델 다운로드 경로
 
-TBU
+* ```S-BERT (roberta-base)``` 원본 모델은 학습 코드 실행 시 원본 모델을 자동으로 다운로드 후 학습하므로, **별도 다운로드 불필요**
+
+| 모델 이름                       | 원본 모델                                                                        | Fine-Tuned LLM<br>(for OhLoRA-v3 👱‍♀️)                                                                               |
+|-----------------------------|------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| ```Kanana-1.5 2.1B```       | [Kakao HuggingFace](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base)   | - [```output_message``` & ```summary``` (HuggingFace)](https://huggingface.co/daebakgazua/250526_OhLoRA_LLM_kanana)   |
+| ```Polyglot-Ko 1.3B```      | [EleutherAI HuggingFace](https://huggingface.co/EleutherAI/polyglot-ko-1.3b) | - [```memory``` & ```eyes_mouth_pose``` (HuggingFace)](https://huggingface.co/daebakgazua/250526_OhLoRA_LLM_polyglot) |
+| ```S-BERT (roberta-base)``` | [HuggingFace](https://huggingface.co/klue/roberta-base)                      | - [HuggingFace](https://huggingface.co/daebakgazua/250526_OhLoRA_LLM_SBERT)                                           |
 
 ## 5. 논의 사항
 
@@ -148,6 +154,3 @@ TBU
   * [Transformer 구조](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_%ED%8A%B8%EB%9E%9C%EC%8A%A4%ED%8F%AC%EB%A8%B8%20%EB%AA%A8%EB%8D%B8.md) 특성상, **멀티턴의 긴 입력이 주어지면 Oh-LoRA 👱‍♀️ (오로라) 의 응답 시간 증가** → UX (사용자 경험) 저하
   * 학습 데이터 작성 시간이 비교적 증가할 수 있음
 
-## 6. 향후 진행하고 싶은 것
-
-TBU
