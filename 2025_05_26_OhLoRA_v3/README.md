@@ -48,7 +48,7 @@
   * 사람이 아닌 AI 가상 인간만이 가질 수 있음
 * 기타 잡다한 TMI
   * 오로라 Fine-Tuning 에 사용한 데이터셋 (직접 제작) 을 보면 알 수 있어요!
-  * [dataset v2](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv), [dataset v2.1](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_1.csv), [dataset v2.2](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_2.csv)
+  * Fine-Tuning 데이터셋 : [dataset v3](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v3.csv)
 
 <details><summary>(스포일러) 오로라👱‍♀️ 가 2003년 10월 11일 생인 이유 [ 펼치기 / 접기 ] </summary>
 
@@ -80,14 +80,14 @@
   * Python : **Python 3.10.11**
   * Dev Tool : PyCharm 2024.1 Community Edition
 * Python Libraries
-  * 주요 파이썬 라이브러리 (TBU)
-  * 실험 환경의 전체 파이썬 라이브러리 목록 (TBU)
+  * [주요 파이썬 라이브러리](system_info_and_user_guide.md#1-1-주요-python-라이브러리)
+  * [실험 환경의 전체 파이썬 라이브러리 목록](system_info_and_user_guide.md#1-2-시스템에-설치된-전체-python-라이브러리)
 * OS & CPU & GPU
   * OS : **Windows 10**
   * CPU : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
   * GPU : 2 x **Quadro M6000** (12 GB each)
   * **CUDA 12.4** (NVIDIA-SMI 551.61)
-* 시스템 환경 상세 정보 (TBU)
+* [시스템 환경 상세 정보](system_info_and_user_guide.md#1-시스템-환경)
 
 ## 3. 프로젝트 일정
 
@@ -148,11 +148,17 @@
 
 * StyleGAN 의 핵심 속성 값을 변화시키는 벡터를 찾고, 해당 벡터를 이용하는 방법 적용
 * [참고 논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)
+* [상세 정보](stylegan/README.md)
+
+![images](../images/250526_4.PNG)
 
 ### 4-2. LLM Fine-Tuning 을 이용한 사용자 대화 구현
 
-* (TBU) 모델을 600 rows 규모의 학습 데이터셋으로 Fine-Tuning
+* 모델을 572 rows 규모의 학습 데이터셋으로 Fine-Tuning
 * [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 컨셉으로 LLM 의 memory 구현
+* [상세 정보](llm/README.md)
+
+![images](../images/250526_21.png)
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
