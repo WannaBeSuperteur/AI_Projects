@@ -60,7 +60,7 @@
 | 이미지 좌측 상단 검은색 직사각형 추가<br>- 5차 수정 (05.25)        | 0.9370 (▲ 0.0060)     | 0.8879 (▲ 0.0076)     | 0.9378 (▲ 0.015)      |
 | Near-Pixel-Diff Loss Term 추가<br>- 7차 수정 (05.25) | 0.9347 (▲ 0.0037)     | 0.8824 (▲ 0.0021)     | **0.9528 (▲ 0.0165)** |
 
-[상세 inference 결과 비교 리포트](inference_result_compare_report)
+* [상세 inference 결과 비교 리포트](inference_result_compare_report.md)
 
 ## 2. 기술 분야 및 사용 기술
 
