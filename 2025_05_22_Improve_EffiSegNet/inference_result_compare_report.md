@@ -9,8 +9,7 @@
 * [3. 실제 inference 결과 비교 (각 요소 변경)](#3-실제-inference-결과-비교-각-요소-변경)
   * [3-1. ColorJitter & Affine 확률 조정 시](#3-1-colorjitter--affine-확률-조정-시)
   * [3-2. ElasticTransform 제거 시](#3-2-elastictransform-제거-시)
-  * [3-3. Black Rectangle 추가 시](#3-3-black-rectangle-추가-시)
-  * [3-4. Near-pixels-diff Loss Term 추가 시](#3-4-near-pixels-diff-loss-term-추가-시)
+  * [3-3. Near-pixels-diff Loss Term 추가 시](#3-3-near-pixels-diff-loss-term-추가-시)
 
 ## 1. 개요
 
@@ -65,19 +64,28 @@
 
 ## 3. 실제 inference 결과 비교 (각 요소 변경)
 
-| 구분                              | 비교 대상           | 결과 비교 |
-|---------------------------------|-----------------|-------|
-| ColorJitter & Affine 확률 조정 시    | 1차 수정 vs. 3차 수정 |       |
-| ElasticTransform 제거 시           | 1차 수정 vs. 2차 수정 |       |
-| Black Rectangle 추가 시            | 7차 수정 vs. 8차 수정 |       |
-| Near-pixels-diff Loss Term 추가 시 | 5차 수정 vs. 8차 수정 |       |
+| 구분                              | 비교 대상           | 결과 비교                                                |
+|---------------------------------|-----------------|------------------------------------------------------|
+| ColorJitter & Affine 확률 조정 시    | 1차 수정 vs. 3차 수정 | 정확도의 큰 차이가 없음                                        |
+| ElasticTransform 제거 시           | 1차 수정 vs. 2차 수정 | 정확도의 큰 차이가 없음                                        |
+| Near-pixels-diff Loss Term 추가 시 | 5차 수정 vs. 8차 수정 | EffiSegNet 예측 결과에서 'noise'가 줄어듦 (단, 이로 인해 정확도 감소 가능) |
 
 ### 3-1. ColorJitter & Affine 확률 조정 시
 
+* 정확도의 큰 차이가 없음
+
+![image](../images/250522_10.png)
+
 ### 3-2. ElasticTransform 제거 시
 
-### 3-3. Black Rectangle 추가 시
+* 정확도의 큰 차이가 없음
 
-### 3-4. Near-pixels-diff Loss Term 추가 시
+![image](../images/250522_11.png)
 
+### 3-3. Near-pixels-diff Loss Term 추가 시
+
+* [원본 EffiSegNet vs. 7차 수정](#2-3-original-vs-7차-수정) 과 같이, **의도한 대로 EffiSegNet 예측 결과에서 'noise'가 줄어듦**
+* 단, **'noise'가 줄어들면서 정확도 역시 감소하는 사례 (아래 그림의 왼쪽에서 2번째 줄)** 도 있음
+
+![image](../images/250522_12.png)
 
