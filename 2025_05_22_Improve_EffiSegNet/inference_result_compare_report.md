@@ -11,7 +11,6 @@
   * [3-2. ElasticTransform 제거 시](#3-2-elastictransform-제거-시)
   * [3-3. Black Rectangle 추가 시](#3-3-black-rectangle-추가-시)
   * [3-4. Near-pixels-diff Loss Term 추가 시](#3-4-near-pixels-diff-loss-term-추가-시)
-  * [3-5. Prediction threshold 조정 시](#3-5-prediction-threshold-조정-시)
 
 ## 1. 개요
 
@@ -66,13 +65,12 @@
 
 ## 3. 실제 inference 결과 비교 (각 요소 변경)
 
-| 구분                              | 비교 대상                                     | 결과 비교 |
-|---------------------------------|-------------------------------------------|-------|
-| ColorJitter & Affine 확률 조정 시    | - Original vs. 2차 수정<br>- 3차 수정 vs. 1차 수정 |       |
-| ElasticTransform 제거 시           | - Original vs. 3차 수정<br>- 2차 수정 vs. 1차 수정 |       |
-| Black Rectangle 추가 시            | - Original vs. 5차 수정<br>- 7차 수정 vs. 8차 수정 |       |
-| Near-pixels-diff Loss Term 추가 시 | - Original vs. 7차 수정<br>- 5차 수정 vs. 8차 수정 |       |
-| Prediction threshold 조정 시       | - Original vs. 6차 수정                      |       |
+| 구분                              | 비교 대상           | 결과 비교 |
+|---------------------------------|-----------------|-------|
+| ColorJitter & Affine 확률 조정 시    | 1차 수정 vs. 3차 수정 |       |
+| ElasticTransform 제거 시           | 1차 수정 vs. 2차 수정 |       |
+| Black Rectangle 추가 시            | 7차 수정 vs. 8차 수정 |       |
+| Near-pixels-diff Loss Term 추가 시 | 5차 수정 vs. 8차 수정 |       |
 
 ### 3-1. ColorJitter & Affine 확률 조정 시
 
@@ -82,5 +80,4 @@
 
 ### 3-4. Near-pixels-diff Loss Term 추가 시
 
-### 3-5. Prediction threshold 조정 시
 
