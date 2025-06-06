@@ -21,6 +21,12 @@
 
 ## 2. 실제 inference 결과 비교 (Original vs.)
 
+| 구분                 | 결과 비교 |
+|--------------------|-------|
+| Original vs. 4차 수정 |       |
+| Original vs. 5차 수정 |       |
+| Original vs. 7차 수정 |       |
+
 ### 2-1. Original vs. 4차 수정
 
 ### 2-2. Original vs. 5차 수정
@@ -28,6 +34,14 @@
 ### 2-3. Original vs. 7차 수정
 
 ## 3. 실제 inference 결과 비교 (각 요소 변경)
+
+| 구분                              | 비교 대상                                     | 결과 비교 |
+|---------------------------------|-------------------------------------------|-------|
+| ColorJitter & Affine 확률 조정 시    | - Original vs. 2차 수정<br>- 3차 수정 vs. 1차 수정 |       |
+| ElasticTransform 제거 시           | - Original vs. 3차 수정<br>- 2차 수정 vs. 1차 수정 |       |
+| Black Rectangle 추가 시            | - Original vs. 5차 수정<br>- 7차 수정 vs. 8차 수정 |       |
+| Near-pixels-diff Loss Term 추가 시 | - Original vs. 7차 수정<br>- 5차 수정 vs. 8차 수정 |       |
+| Prediction threshold 조정 시       | - Original vs. 6차 수정                      |       |
 
 ### 3-1. ColorJitter & Affine 확률 조정 시
 
