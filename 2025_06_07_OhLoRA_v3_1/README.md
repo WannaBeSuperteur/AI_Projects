@@ -17,7 +17,7 @@
 
 **1. 핵심 아이디어**
 
-* **LLM Fine-Tuning & StyleGAN** 을 이용한 가상인간 여성 [Oh-LoRA (오로라)](../2025_04_08_OhLoRA) 의 **[2차 업그레이드 버전](../2025_05_26_OhLoRA_v3) 의 추가 개발**
+* **LLM Fine-Tuning & StyleGAN** 을 이용한 가상인간 여성 [Oh-LoRA (오로라)](../2025_04_08_OhLoRA) 의 **[2차 업그레이드 버전 (Oh-LoRA v3)](../2025_05_26_OhLoRA_v3) 의 추가 개발**
   * [1차 업그레이드 (Oh-LoRA v2)](../2025_05_02_OhLoRA_v2) 
   * [2차 업그레이드 (Oh-LoRA v3)](../2025_05_26_OhLoRA_v3)
 * **LLM 추가 개발 없이, 가상 인간 얼굴 생성 부분만 추가 개발**
@@ -89,15 +89,15 @@
 
 **2. StyleGAN 을 이용한 가상 인간 얼굴 생성**
 
-| 구분       | 계획 내용                                                                                                                   | 일정                     | branch                                | issue | 상태 |
-|----------|-------------------------------------------------------------------------------------------------------------------------|------------------------|---------------------------------------|-------|----|
-| 🛠 사전 작업 | [StyleGAN-FineTune-v1](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) 구현 | 06.07 토 (1d)           | ```P006-001-StyleGAN-FineTune-v1```   |       | ⬜  |
-| 🔨 모델 개선 | StyleGAN-FineTune-v9 개발 (w vector dim 512 → 2048)                                                                       | 06.07 토 (1d)           | ```P006-002-StyleGAN-FineTune-v9```   |       | ⬜  |
-| 🧪 모델 학습 | 필터링된 이미지를 StyleGAN-FineTune-v9 로 추가 Fine-Tuning                                                                         | 06.07 토 - 06.09 월 (3d) | ```P006-002-StyleGAN-FineTune-v9```   |       | ⬜  |
-| 🔨 모델 개선 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 구현 시, '곱슬머리 or 직모' 핵심 속성 값 추가 **(StyleGAN-VectorFind-v9)**             | 06.09 월 (1d)           | ```P006-003-StyleGAN-VectorFind-v9``` |       | ⬜  |
-| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(SVM)**                                                  | 06.09 월 - 06.10 화 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |       | ⬜  |
-| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(Layer-wise Relevance Propagation)**                     | 06.10 화 - 06.11 수 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |       | ⬜  |
-| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                      | 06.09 월 - 06.11 수 (3d) |                                       |       | ⬜  |
+| 구분       | 계획 내용                                                                                                                   | 일정                     | branch                                | issue                                                              | 상태 |
+|----------|-------------------------------------------------------------------------------------------------------------------------|------------------------|---------------------------------------|--------------------------------------------------------------------|----|
+| 🛠 사전 작업 | [StyleGAN-FineTune-v1](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) 구현 | 06.07 토 (1d)           | ```P006-001-StyleGAN-FineTune-v1```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/27) | 💨 |
+| 🔨 모델 개선 | StyleGAN-FineTune-v9 개발 (w vector dim 512 → 2048)                                                                       | 06.07 토 (1d)           | ```P006-002-StyleGAN-FineTune-v9```   |                                                                    | ⬜  |
+| 🧪 모델 학습 | 필터링된 이미지를 StyleGAN-FineTune-v9 로 추가 Fine-Tuning                                                                         | 06.07 토 - 06.09 월 (3d) | ```P006-002-StyleGAN-FineTune-v9```   |                                                                    | ⬜  |
+| 🔨 모델 개선 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 구현 시, '곱슬머리 or 직모' 핵심 속성 값 추가 **(StyleGAN-VectorFind-v9)**             | 06.09 월 (1d)           | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
+| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(SVM)**                                                  | 06.09 월 - 06.10 화 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
+| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(Layer-wise Relevance Propagation)**                     | 06.10 화 - 06.11 수 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
+| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                      | 06.09 월 - 06.11 수 (3d) |                                       |                                                                    | ⬜  |
 
 ## 4. 프로젝트 상세 설명
 
