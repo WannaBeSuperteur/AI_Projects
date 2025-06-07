@@ -41,6 +41,8 @@ glass_cnn_models = load_cnn_model(property_name='glass', cnn_model_class=GlassCN
 base_transform = transforms.Compose([transforms.ToPILImage(),
                                      transforms.ToTensor()])
 
+last_g_loss_float = None
+
 
 def compute_grad_penalty(images, scores):
     """Computes gradient penalty."""
@@ -53,7 +55,7 @@ def compute_grad_penalty(images, scores):
     return penalty
 
 
-def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma, save_image):
+def compute_d_loss(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamma, save_image):
     """Computes loss for discriminator."""
 
     reals = data['image']
@@ -68,8 +70,8 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
     if save_image:
         save_real_fake_imgs(reals, fakes)
 
-    real_scores = discriminator(reals, label=labels, **dis_train_args)
-    fake_scores = discriminator(fakes, label=labels, **dis_train_args)
+    real_scores = discriminator(reals, label=labels)
+    fake_scores = discriminator(fakes, label=labels)
 
     d_loss = F.softplus(fake_scores).mean()
     d_loss += F.softplus(-real_scores).mean()
@@ -96,7 +98,7 @@ def compute_d_loss(generator, discriminator, data, gen_train_args, dis_train_arg
             fake_grad_penalty * (r2_gamma * 0.5)), real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
-def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args):  # pylint: disable=no-self-use
+def compute_g_loss(generator, discriminator, data, gen_train_args):  # pylint: disable=no-self-use
     """Computes loss for generator."""
     # TODO: Use random labels.
 
@@ -105,17 +107,19 @@ def compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_arg
 
     latents = torch.randn(batch_size, ORIGINAL_HIDDEN_DIMS_Z).cuda()
     fakes = generator(latents, label=labels, **gen_train_args)['image']
-    fake_scores = discriminator(fakes, label=labels, **dis_train_args)
+    fake_scores = discriminator(fakes, label=labels)
 
     g_loss = F.softplus(-fake_scores).mean()
     return g_loss
 
 
-# generator     -> Z -> W mapping & synthesis layer 의 4 x 4 output 까지 학습 가능
-#                  layers_to_train = ['mapping', 'synthesis.layer0', 'synthesis.layer1', 'synthesis.output0']
+# generator     -> Z -> W mapping & synthesis layer 의 4 x 4 ~ 16 x 16 output 까지 학습 가능
+#                  layers_to_train = ['mapping', 'synthesis.layer0', 'synthesis.layer1', 'synthesis.output0',
+#                                                'synthesis.layer2', 'synthesis.layer3', 'synthesis.output1',
+#                                                'synthesis.layer4', 'synthesis.layer5', 'synthesis.output2']
 
-# discriminator -> 대부분의 Conv. Layer 를 Freeze
-#                  layers_to_train = ['layer12', 'layer13', 'layer14']
+# discriminator -> 상당수의 Conv. Layer 를 Freeze
+#                  layers_to_train = ['layer10', 'layer11', 'layer12', 'layer13', 'layer14']
 
 def set_model_requires_grad(model, model_name, requires_grad):
     """Sets the `requires_grad` configuration for a particular model."""
@@ -126,7 +130,8 @@ def set_model_requires_grad(model, model_name, requires_grad):
 
         if requires_grad:  # requires_grad == True
             if model_name == 'generator':
-                trainable_synthesis_layers = ['layer0', 'layer1', 'output0']
+                trainable_synthesis_layers = ['layer0', 'layer1', 'output0', 'layer2', 'layer3', 'output1',
+                                              'layer4', 'layer5', 'output2']
 
                 if name.split('.')[0] == 'mapping':
                     param.requires_grad = True
@@ -134,39 +139,49 @@ def set_model_requires_grad(model, model_name, requires_grad):
                     param.requires_grad = True
 
             elif model_name == 'discriminator':
-                if name.split('.')[0] in ['layer12', 'layer13', 'layer14']:
+                if name.split('.')[0] in ['layer10', 'layer11', 'layer12', 'layer13', 'layer14']:
                     param.requires_grad = True
 
         else:
             param.requires_grad = False
 
 
-def train_step(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma, save_image):
+def train_step(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamma, save_image):
+    global last_g_loss_float
 
     # Update discriminator.
     set_model_requires_grad(discriminator, 'discriminator', True)
     set_model_requires_grad(generator, 'generator', False)
-#    check_model_trainable_status(0, generator, discriminator) (GEN/DIS layer frozen/trainable 상태 정상 확인 완료)
+#    check_model_trainable_status(0, generator, discriminator)  # TODO check
 
-    d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
-                                                                                 gen_train_args, dis_train_args,
-                                                                                 r1_gamma, r2_gamma, save_image)
+    d_train_count = 0
+    d_loss_float = None
 
-    discriminator.optimizer.zero_grad()
-    d_loss.backward()
-    discriminator.optimizer.step()
-    d_loss_float = float(d_loss.detach().cpu())
+    while d_train_count < 4:
+        d_loss, real_scores_mean, fake_scores_mean, real_fake_auroc = compute_d_loss(generator, discriminator, data,
+                                                                                     gen_train_args,
+                                                                                     r1_gamma, r2_gamma, save_image)
+
+        discriminator.optimizer.zero_grad()
+        d_loss.backward()
+        discriminator.optimizer.step()
+
+        d_loss_float = float(d_loss.detach().cpu())
+        d_train_count += 1
+
+        if last_g_loss_float is None or d_loss_float < 1.5 * last_g_loss_float:
+            break
 
     # Update generator.
     set_model_requires_grad(discriminator, 'discriminator', False)
     set_model_requires_grad(generator, 'generator', True)
-#    check_model_trainable_status(1, generator, discriminator) (GEN/DIS layer frozen/trainable 상태 정상 확인 완료)
+#    check_model_trainable_status(1, generator, discriminator)  # TODO check
 
     g_train_count = 0
     g_loss_float = None
 
     while g_train_count < 4:
-        g_loss = compute_g_loss(generator, discriminator, data, gen_train_args, dis_train_args)
+        g_loss = compute_g_loss(generator, discriminator, data, gen_train_args)
         generator.optimizer.zero_grad()
         g_loss.backward()
         generator.optimizer.step()
@@ -177,15 +192,16 @@ def train_step(generator, discriminator, data, gen_train_args, dis_train_args, r
         if g_loss_float < 2.0 * d_loss_float:
             break
 
-    return d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
+    last_g_loss_float = g_loss_float
+    return d_loss_float, g_loss_float, d_train_count, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc
 
 
-def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_train_args, r1_gamma, r2_gamma):
+def train(generator, discriminator, stylegan_ft_loader, gen_train_args, r1_gamma, r2_gamma):
 
     """Training function."""
     print('Start training.')
 
-    train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'g_train_count': [],
+    train_log_dict = {'epoch': [], 'idx': [], 'd_loss': [], 'g_loss': [], 'd_train_count': [], 'g_train_count': [],
                       'real_scores_mean': [], 'fake_scores_mean': [], 'real_fake_auroc': [],
                       'mean_gender_score': [], 'mean_quality_score': [], 'mean_age_score': [], 'mean_glass_score': []}
 
@@ -210,8 +226,8 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
                                            (current_epoch == 0 and idx % 25 == 0) or
                                            (current_epoch == 0 and idx < 10))
 
-            d_loss_float, g_loss_float, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
-                train_step(generator, discriminator, data, gen_train_args, dis_train_args, r1_gamma, r2_gamma,
+            d_loss_float, g_loss_float, d_train_count, g_train_count, real_scores_mean, fake_scores_mean, real_fake_auroc =(
+                train_step(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamma,
                            save_image=print_result_and_save_image))
 
             if print_result_and_save_image:
@@ -222,6 +238,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
                 train_log_dict['idx'].append(idx)
                 train_log_dict['d_loss'].append(round(d_loss_float, 4))
                 train_log_dict['g_loss'].append(round(g_loss_float, 4))
+                train_log_dict['d_train_count'].append(d_train_count)
                 train_log_dict['g_train_count'].append(g_train_count)
                 train_log_dict['real_scores_mean'].append(round(real_scores_mean, 4))
                 train_log_dict['fake_scores_mean'].append(round(fake_scores_mean, 4))
@@ -232,8 +249,9 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
                                                                                train_log_dict=train_log_dict)
 
                 print(f'epoch={current_epoch}, idx={idx}, '
-                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, g_train_count={g_train_count}, '
-                      f'real_scores_mean={real_scores_mean:.4f}, fake_scores_mean={fake_scores_mean:.4f}, '
+                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f},'
+                      f'd_train={d_train_count}, g_train={g_train_count}, '
+                      f'real_mean={real_scores_mean:.4f}, fake_mean={fake_scores_mean:.4f}, '
                       f'real_fake_auroc={real_fake_auroc:.4f}, inference_result={score_mean_dict}')
 
                 pd.DataFrame(train_log_dict).to_csv(train_log_save_path)
@@ -412,11 +430,9 @@ def run_fine_tuning(finetune_v1_generator, finetune_v1_discriminator, stylegan_f
 
     gen_train_args = dict(w_moving_decay=0.995, style_mixing_prob=0.0,
                           trunc_psi=1.0, trunc_layers=0, randomize_noise=True)
-    dis_train_args = dict()
-
     r1_gamma = 10.0
     r2_gamma = 0.0
 
     # run Fine-Tuning
-    train(finetune_v1_generator, finetune_v1_discriminator, stylegan_ft_loader, gen_train_args, dis_train_args,
+    train(finetune_v1_generator, finetune_v1_discriminator, stylegan_ft_loader, gen_train_args,
           r1_gamma, r2_gamma)

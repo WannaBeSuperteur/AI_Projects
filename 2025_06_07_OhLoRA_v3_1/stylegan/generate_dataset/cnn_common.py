@@ -96,7 +96,7 @@ class RemainingImageDataset(Dataset):
 
 
 # StyleGAN-FineTune-v1 이 생성한 이미지 중 첫 2,000 장의 데이터셋 생성을 위한 정보가 있는 Pandas DataFrame 생성
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -119,7 +119,7 @@ def create_train_dataset_df():
 
 
 # StyleGAN-FineTune-v1 이 생성한 이미지 중 첫 2,000 장의 데이터셋 로딩
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -137,7 +137,7 @@ def load_dataset(property_name):
 
 
 # StyleGAN-FineTune-v1 이 생성한 이미지 중 나머지 8,000 장 로딩
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -167,7 +167,7 @@ def load_remaining_images_dataset(property_name):
 
 
 # CNN 모델 정의
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -192,7 +192,7 @@ def define_cnn_model(cnn_model_class, device, max_lr):
 
 
 # Gender, Quality CNN 의 경우 Oh-LoRA v1 개발 시 학습한 Pre-trained 모델을 로딩 (이후 Fine-Tuning 실시 목적)
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -207,10 +207,8 @@ def load_pretrained_weights(cnn_model, property_name, device):
 
 
 # 모델 학습 실시 (K-Fold / Stratified K-Fold Cross Validation)
-# Create Date : 2025.05.26
-# Last Update Date : 2025.05.27
-# - age CNN 에 대한 max_lr 0.00005 -> 0.000025 로 수정 및 pass threshold & pos/neg threshold 조정
-# - glass pass threshold 조정
+# Create Date : 2025.06.07
+# Last Update Date : -
 
 # Arguments:
 # - data_loader     (DataLoader)      : 2,000 장의 데이터를 train data 로 하는 DataLoader
@@ -337,7 +335,7 @@ def train_cnn_models(data_loader, is_stratified, property_name, cnn_model_class)
 
 
 # 학습 로그 저장
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -394,7 +392,7 @@ def save_train_log(val_loss_list, val_loss_threshold, best_epoch_model, data_loa
 
 
 # 각 모델 (각각의 Fold 에 대한) 의 학습 실시
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -482,7 +480,7 @@ def train_cnn_each_model(model, data_loader, train_idxs, valid_idxs, cnn_model_c
 
 
 # 학습된 CNN 모델 불러오기
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -499,6 +497,9 @@ def load_cnn_model(property_name, cnn_model_class):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for loading model : {device}')
 
+    if torch.cuda.device_count() >= 2:
+        device = torch.device('cuda:1')
+
     # add CNN models
     for i in range(K_FOLDS):
         model = cnn_model_class()
@@ -511,66 +512,3 @@ def load_cnn_model(property_name, cnn_model_class):
         cnn_models.append(model)
 
     return cnn_models
-
-
-# 학습된 모델을 이용하여 나머지 13,000 장의 이미지에 대해 핵심 속성 값 예측 (Ensemble 의 아이디어 / K 개 모델의 평균으로)
-# Create Date : 2025.05.26
-# Last Update Date : -
-
-# Arguments:
-# - property_name           (str)             : 핵심 속성 값 이름 ('gender' or 'quality')
-# - remaining_images_loader (DataLoader)      : 나머지 8,000 장의 이미지 데이터셋을 로딩한 PyTorch DataLoader
-# - cnn_models              (list(nn.Module)) : load 된 CNN Model 의 리스트 (총 K 개의 모델)
-# - report_path             (str)             : final_score 의 report 를 저장할 경로
-
-# Returns:
-# - final_score (Pandas DataFrame) : 해당 속성 값에 대한 모델 예측값을 저장한 Pandas DataFrame
-#                                    columns = ['img_no', 'img_path', 'property_{property_name}_final_score',
-#                                               'score_model_0', 'score_model_1', ...]
-
-def predict_score_remaining_images(property_name, remaining_images_loader, cnn_models, report_path):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'device for testing model : {device}')
-
-    final_score_dict = {'img_no': [], 'img_path': [], f'property_{property_name}_final_score': []}
-
-    for i in range(K_FOLDS):
-        final_score_dict[f'score_model_{i}'] = []
-        cnn_models[i] = cnn_models[i].to(device)
-
-    # predict score
-    for idx, images in enumerate(remaining_images_loader):
-        if idx % 100 == 0:
-            print(f'batch {idx} of test dataset')
-
-        with torch.no_grad():
-            images = images.to(device)
-            current_batch_size = images.size(0)
-
-            # add image info
-            for i in range(current_batch_size):
-                img_idx = idx * INFERENCE_BATCH_SIZE + i
-
-                img_no = remaining_images_loader.dataset.img_nos[img_idx]
-                img_path = remaining_images_loader.dataset.img_paths[img_idx]
-                final_score_dict['img_no'].append(img_no)
-                final_score_dict['img_path'].append(img_path)
-
-            # add model prediction scores
-            model_scores = np.zeros((current_batch_size, K_FOLDS))
-
-            for model_idx, model in enumerate(cnn_models):
-                outputs_cpu = model(images).to(torch.float32).detach().cpu()
-
-                for i in range(current_batch_size):
-                    model_score = float(outputs_cpu[i])
-                    final_score_dict[f'score_model_{model_idx}'].append(round(model_score, 4))
-                    model_scores[i][model_idx] = model_score
-
-            for i in range(current_batch_size):
-                final_score_dict[f'property_{property_name}_final_score'].append(round(np.mean(model_scores[i]), 4))
-
-    final_score = pd.DataFrame(final_score_dict)
-    final_score.to_csv(report_path, index=False)
-
-    return final_score

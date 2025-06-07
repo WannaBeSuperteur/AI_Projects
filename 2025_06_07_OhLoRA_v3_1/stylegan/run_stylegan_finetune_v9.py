@@ -96,9 +96,10 @@ def set_optimizer(finetune_v1_generator, finetune_v1_discriminator):
 # - finetune_v1_generator (nn.Module) : StyleGAN-FineTune-v1 의 Generator
 
 def freeze_generator_layers(finetune_v1_generator):
-    trainable_synthesis_layers = ['layer0', 'layer1', 'output0']
+    trainable_synthesis_layers = ['layer0', 'layer1', 'output0', 'layer2', 'layer3', 'output1',
+                                  'layer4', 'layer5', 'output2']
 
-    # freeze 범위 : Z -> W mapping & synthesize network 의 4 x 4 를 제외한 모든 레이어
+    # freeze 범위 : Z -> W mapping & synthesize network 의 4 x 4 ~ 16 x 16 을 제외한 모든 레이어
     for name, param in finetune_v1_generator.named_parameters():
         if name.split('.')[0] == 'synthesis' and name.split('.')[1] not in trainable_synthesis_layers:
             param.requires_grad = False
@@ -115,7 +116,7 @@ def freeze_discriminator_layers(finetune_v1_discriminator):
 
     # freeze 범위 : Last Conv. Layer & Final Fully-Connected Layer 를 제외한 모든 레이어
     for name, param in finetune_v1_discriminator.named_parameters():
-        if name.split('.')[0] not in ['layer12', 'layer13', 'layer14']:
+        if name.split('.')[0] not in ['layer10', 'layer11', 'layer12', 'layer13', 'layer14']:
             param.requires_grad = False
 
 
