@@ -119,7 +119,7 @@ def compute_g_loss(generator, discriminator, data, gen_train_args):  # pylint: d
 #                                                'synthesis.layer4', 'synthesis.layer5', 'synthesis.output2']
 
 # discriminator -> 상당수의 Conv. Layer 를 Freeze
-#                  layers_to_train = ['layer10', 'layer11', 'layer12', 'layer13', 'layer14']
+#                  layers_to_train = ['layer10', 'layer11', 'input6', 'layer12', 'layer13', 'layer14']
 
 def set_model_requires_grad(model, model_name, requires_grad):
     """Sets the `requires_grad` configuration for a particular model."""
@@ -139,7 +139,7 @@ def set_model_requires_grad(model, model_name, requires_grad):
                     param.requires_grad = True
 
             elif model_name == 'discriminator':
-                if name.split('.')[0] in ['layer10', 'layer11', 'layer12', 'layer13', 'layer14']:
+                if name.split('.')[0] in ['layer10', 'layer11', 'input6', 'layer12', 'layer13', 'layer14']:
                     param.requires_grad = True
 
         else:
@@ -152,7 +152,7 @@ def train_step(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamm
     # Update discriminator.
     set_model_requires_grad(discriminator, 'discriminator', True)
     set_model_requires_grad(generator, 'generator', False)
-#    check_model_trainable_status(0, generator, discriminator)  # TODO check
+#    check_model_trainable_status(0, generator, discriminator)  # check 결과 정상 확인
 
     d_train_count = 0
     d_loss_float = None
@@ -175,7 +175,7 @@ def train_step(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamm
     # Update generator.
     set_model_requires_grad(discriminator, 'discriminator', False)
     set_model_requires_grad(generator, 'generator', True)
-#    check_model_trainable_status(1, generator, discriminator)  # TODO check
+#    check_model_trainable_status(1, generator, discriminator)  # check 결과 정상 확인
 
     g_train_count = 0
     g_loss_float = None
@@ -249,7 +249,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, r1_gamma
                                                                                train_log_dict=train_log_dict)
 
                 print(f'epoch={current_epoch}, idx={idx}, '
-                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f},'
+                      f'd_loss={d_loss_float:.4f}, g_loss={g_loss_float:.4f}, '
                       f'd_train={d_train_count}, g_train={g_train_count}, '
                       f'real_mean={real_scores_mean:.4f}, fake_mean={fake_scores_mean:.4f}, '
                       f'real_fake_auroc={real_fake_auroc:.4f}, inference_result={score_mean_dict}')
@@ -330,6 +330,11 @@ def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train
     img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v9/inference_test_during_finetuning'
     img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
 
+    if torch.cuda.device_count() >= 2:
+        cnn_device = torch.device('cuda:1')
+    else:
+        cnn_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     # prepare inference test result dict
     inference_test_result = {
         'img_no': list(range(IMGS_PER_TEST_PROPERTY_SET)),
@@ -350,15 +355,15 @@ def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train
             image = image.unsqueeze(0)
 
             for cnn_no in range(CNN_MODELS_FOR_EACH_OF_GENDER_QUALITY_AGE_GLASS):
-                output_score_gender = gender_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
-                output_score_quality = quality_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
-                output_score_age = age_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
-                output_score_glass = glass_cnn_models[cnn_no](image.cuda()).to(torch.float32).detach().cpu().numpy()
+                out_gender = gender_cnn_models[cnn_no](image.to(cnn_device)).to(torch.float32).detach().cpu().numpy()
+                out_quality = quality_cnn_models[cnn_no](image.to(cnn_device)).to(torch.float32).detach().cpu().numpy()
+                out_age = age_cnn_models[cnn_no](image.to(cnn_device)).to(torch.float32).detach().cpu().numpy()
+                out_glass = glass_cnn_models[cnn_no](image.to(cnn_device)).to(torch.float32).detach().cpu().numpy()
 
-                inference_test_result[f'gender_score_cnn_{cnn_no}'].append(round(output_score_gender[0][0], 4))
-                inference_test_result[f'quality_score_cnn_{cnn_no}'].append(round(output_score_quality[0][0], 4))
-                inference_test_result[f'age_score_cnn_{cnn_no}'].append(round(output_score_age[0][0], 4))
-                inference_test_result[f'glass_score_cnn_{cnn_no}'].append(round(output_score_glass[0][0], 4))
+                inference_test_result[f'gender_score_cnn_{cnn_no}'].append(round(out_gender[0][0], 4))
+                inference_test_result[f'quality_score_cnn_{cnn_no}'].append(round(out_quality[0][0], 4))
+                inference_test_result[f'age_score_cnn_{cnn_no}'].append(round(out_age[0][0], 4))
+                inference_test_result[f'glass_score_cnn_{cnn_no}'].append(round(out_glass[0][0], 4))
 
             for property_name in ['gender', 'quality', 'age', 'glass']:
                 property_score_sum = 0.0

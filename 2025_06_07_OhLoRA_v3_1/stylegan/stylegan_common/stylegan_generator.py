@@ -261,7 +261,7 @@ class StyleGANGeneratorForV9(nn.Module):
     def __init__(self,
                  resolution,
                  z_space_dim=512,       # 512 in Original code
-                 w_space_dim=2048,      # 512 in Original code
+                 w_space_dim=512,       # 512 in Original code
                  label_size=7,          # originally (eyes, hair_color, hair_length, mouth, ..., back_std) property
                  mapping_layers=8,
                  mapping_fmaps=512,
@@ -314,13 +314,14 @@ class StyleGANGeneratorForV9(nn.Module):
             self.mapping_space_dim = self.w_space_dim
         else:
             self.mapping_space_dim = self.w_space_dim * self.num_layers
-        self.mapping = MappingModule(input_space_dim=self.z_space_dim,
-                                     hidden_space_dim=self.mapping_fmaps,
-                                     final_space_dim=self.mapping_space_dim,
-                                     label_size=self.label_size,
-                                     num_layers=self.mapping_layers,
-                                     use_wscale=self.use_wscale,
-                                     lr_mul=self.mapping_lr_mul)
+        self.mapping = MappingModuleForV9(input_space_dim=self.z_space_dim,
+                                          hidden_space_dim=self.mapping_fmaps,
+                                          just_before_final_space_dim=(4 * self.mapping_space_dim),
+                                          final_space_dim=self.mapping_space_dim,
+                                          label_size=self.label_size,
+                                          num_layers=self.mapping_layers,
+                                          use_wscale=self.use_wscale,
+                                          lr_mul=self.mapping_lr_mul)
 
         self.truncation = TruncationModule(w_space_dim=self.w_space_dim,
                                            num_layers=self.num_layers,
@@ -472,6 +473,116 @@ class MappingModule(nn.Module):
         w = z
         for i in range(self.num_layers):
             w = self.__getattr__(f'dense{i}')(w)
+        results = {
+            'z': z,
+            'label': label,
+            'w': w,
+        }
+        if self.label_size:
+            results['embedding'] = embedding
+        return results
+
+
+class MappingModuleForV9(nn.Module):
+    """Implements the latent space mapping module.
+
+    Basically, this module executes several dense layers in sequence.
+    """
+
+    def __init__(self,
+                 input_space_dim=512,
+                 hidden_space_dim=512,
+                 just_before_final_space_dim=2048,
+                 final_space_dim=512,
+                 label_convert_dim=16,
+                 label_size=7,  # originally (eyes, hair_color, hair_length, mouth, ..., back_std) property score
+                 num_layers=8,
+                 normalize_input=True,
+                 use_wscale=True,
+                 lr_mul=0.01):
+        super().__init__()
+
+        self.input_space_dim = input_space_dim
+        self.hidden_space_dim = hidden_space_dim
+        self.just_before_final_space_dim = just_before_final_space_dim
+        self.final_space_dim = final_space_dim
+        self.label_size = label_size
+        self.num_layers = num_layers
+        self.normalize_input = normalize_input
+        self.use_wscale = use_wscale
+        self.lr_mul = lr_mul
+
+        self.norm = PixelNormLayer() if self.normalize_input else nn.Identity()
+
+        self.pth_to_tf_var_mapping = {}
+        for i in range(num_layers):
+            dim_mul = 2 if label_size else 1
+            in_channels = (input_space_dim * dim_mul if i == 0 else
+                           hidden_space_dim)
+            out_channels = (final_space_dim if i == (num_layers - 1) else
+                            hidden_space_dim)
+            self.add_module(f'dense{i}',
+                            DenseBlock(in_channels=input_space_dim + label_convert_dim if i == 0 else in_channels,
+                                       out_channels=out_channels,
+                                       use_wscale=self.use_wscale,
+                                       lr_mul=self.lr_mul))
+            self.pth_to_tf_var_mapping[f'dense{i}.weight'] = f'Dense{i}/weight'
+            self.pth_to_tf_var_mapping[f'dense{i}.bias'] = f'Dense{i}/bias'
+        if label_size:
+            self.label_weight = nn.Parameter(
+                torch.randn(label_size, label_convert_dim))
+            self.pth_to_tf_var_mapping[f'label_weight'] = f'LabelConcat/weight'
+
+        # add new layers (LoRA concept?)
+        self.add_module(f'dense_new0',
+                        DenseBlock(in_channels=hidden_space_dim,
+                                   out_channels=just_before_final_space_dim,
+                                   use_wscale=self.use_wscale,
+                                   lr_mul=self.lr_mul))
+        self.pth_to_tf_var_mapping[f'dense_new0.weight'] = f'DenseNew0/weight'
+        self.pth_to_tf_var_mapping[f'dense_new0.bias'] = f'DenseNew0/bias'
+
+        self.add_module(f'dense_new1',
+                        DenseBlock(in_channels=just_before_final_space_dim,
+                                   out_channels=hidden_space_dim,
+                                   use_wscale=self.use_wscale,
+                                   lr_mul=self.lr_mul))
+        self.pth_to_tf_var_mapping[f'dense_new1.weight'] = f'DenseNew1/weight'
+        self.pth_to_tf_var_mapping[f'dense_new1.bias'] = f'DenseNew1/bias'
+
+        torch.nn.init.normal_(self.__getattr__(f'dense_new0').weight, mean=0.0, std=0.15)
+        torch.nn.init.normal_(self.__getattr__(f'dense_new0').bias, mean=0.0, std=0.15)
+        torch.nn.init.normal_(self.__getattr__(f'dense_new1').weight, mean=0.0, std=0.15)
+        torch.nn.init.normal_(self.__getattr__(f'dense_new1').bias, mean=0.0, std=0.15)
+
+    def forward(self, z, label):
+        if z.ndim != 2 or z.shape[1] != self.input_space_dim:
+            raise ValueError(f'Input latent code should be with shape '
+                             f'[batch_size, input_dim], where '
+                             f'`input_dim` equals to {self.input_space_dim}!\n'
+                             f'But `{z.shape}` is received!')
+
+        if label.ndim != 2 or label.shape != (z.shape[0], self.label_size):
+            raise ValueError(f'Input label should be with shape '
+                             f'[batch_size, label_size], where '
+                             f'`batch_size` equals to that of '
+                             f'latent codes ({z.shape[0]}) and '
+                             f'`label_size` equals to {self.label_size}!\n'
+                             f'But `{label.shape}` is received!')
+
+        embedding = torch.matmul(label, self.label_weight)
+        z = torch.cat((z, embedding), dim=1)
+
+        z = self.norm(z)
+        w = z
+        for i in range(self.num_layers):
+            if i == self.num_layers - 2:
+                w1 = self.__getattr__(f'dense{i}')(w)
+                w2 = self.__getattr__(f'dense_new0')(w)
+            elif i == self.num_layers - 1:
+                w = self.__getattr__(f'dense{i}')(w1) + self.__getattr__(f'dense_new1')(w2)
+            else:
+                w = self.__getattr__(f'dense{i}')(w)
         results = {
             'z': z,
             'label': label,

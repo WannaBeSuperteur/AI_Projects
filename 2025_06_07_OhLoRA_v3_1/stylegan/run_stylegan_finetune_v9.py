@@ -54,8 +54,7 @@ class StyleGANFineTuneV9TrainDataset(Dataset):
 # - stylegan_ft_loader (DataLoader) : StyleGAN-FineTune-v9 Fine-Tuning 용 Data Loader
 
 def get_stylegan_fine_tuning_dataloader():
-    all_scores_dir_path = f'{PROJECT_DIR_PATH}/property_score_cnn/segmentation/property_score_results'
-    property_score_csv_path = f'{all_scores_dir_path}/all_scores_ohlora_v3.csv'
+    property_score_csv_path = f'{PROJECT_DIR_PATH}/stylegan/generate_dataset/all_scores_ohlora_v3_1.csv'
     dataset_df = pd.read_csv(property_score_csv_path, index_col=0)
 
     stylegan_ft_dataset = StyleGANFineTuneV9TrainDataset(dataset_df, transform=stylegan_transform)
@@ -114,9 +113,9 @@ def freeze_generator_layers(finetune_v1_generator):
 
 def freeze_discriminator_layers(finetune_v1_discriminator):
 
-    # freeze 범위 : Last Conv. Layer & Final Fully-Connected Layer 를 제외한 모든 레이어
+    # freeze 범위 : 상당수의 Convolutional Layers
     for name, param in finetune_v1_discriminator.named_parameters():
-        if name.split('.')[0] not in ['layer10', 'layer11', 'layer12', 'layer13', 'layer14']:
+        if name.split('.')[0] not in ['layer10', 'layer11', 'input6', 'layer12', 'layer13', 'layer14']:
             param.requires_grad = False
 
 
@@ -131,7 +130,7 @@ if __name__ == '__main__':
     # load StyleGAN-VectorFind-v1 pre-trained model
     generator_state_dict, discriminator_state_dict = load_existing_stylegan_finetune_v1_all(device)
 
-    finetune_v1_generator.load_state_dict(generator_state_dict)
+    finetune_v1_generator.load_state_dict(generator_state_dict, strict=False)
     print('Existing StyleGAN-VectorFind-v1 Generator load successful!! 😊')
 
     finetune_v1_discriminator.load_state_dict(discriminator_state_dict)
