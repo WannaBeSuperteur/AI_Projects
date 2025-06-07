@@ -1,4 +1,6 @@
 
+* **LLM을 이용한 답변 생성** 관련 내용은 [Oh-LoRA v3 프로젝트 문서](../2025_05_26_OhLoRA_v3) 및 [v3 프로젝트의 LLM 기술 문서](../2025_05_26_OhLoRA_v3/llm/README.md) 를 참고하시기 바랍니다.
+
 ## 목차
 
 * [1. 프로젝트 개요](#1-프로젝트-개요)
@@ -22,7 +24,7 @@
 
 **2. Oh-LoRA 👱‍♀️ (오로라) 이미지 생성 기술**
 
-* [Oh-LoRA v2](../2025_05_02_OhLoRA_v2) 와 같이, 핵심 속성 값 (눈을 뜬 정도, 입을 벌린 정도, 고개 돌림 정도) 을 조정하는 벡터를 찾는 방법 사용
+* [Oh-LoRA v2](../2025_05_02_OhLoRA_v2) 및 [Oh-LoRA v3](../2025_05_26_OhLoRA_v3) 와 같이, 핵심 속성 값 (눈을 뜬 정도, 입을 벌린 정도, 고개 돌림 정도) 을 조정하는 벡터를 찾는 방법 사용
   * [참고 논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md) 
 
 ### 1-1. Oh-LoRA 👱‍♀️✨ (오로라) 소개
