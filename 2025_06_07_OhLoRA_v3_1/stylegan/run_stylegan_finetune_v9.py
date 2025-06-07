@@ -1,7 +1,7 @@
 import stylegan_common.stylegan_generator as gen
 import stylegan_common.stylegan_discriminator as dis
 from common import load_existing_stylegan_finetune_v1_all, save_model_structure_pdf
-from stylegan_finetune_v8.fine_tuning_v8 import run_fine_tuning
+from stylegan_finetune_v9.fine_tuning_v9 import run_fine_tuning
 
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
