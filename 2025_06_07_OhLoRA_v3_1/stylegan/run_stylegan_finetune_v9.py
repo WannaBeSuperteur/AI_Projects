@@ -26,7 +26,7 @@ stylegan_transform = transforms.Compose([
 
 
 # Image Dataset
-class StyleGANFineTuneV8TrainDataset(Dataset):
+class StyleGANFineTuneV9TrainDataset(Dataset):
     def __init__(self, dataset_df, transform):
         self.img_paths = dataset_df['img_path'].tolist()
         self.transform = transform
@@ -43,31 +43,31 @@ class StyleGANFineTuneV8TrainDataset(Dataset):
         return {'image': image, 'img_path': simplified_img_path}
 
 
-# StyleGAN-FineTune-v8 Fine Tuning DataLoader 가져오기
-# Create Date : 2025.05.28
+# StyleGAN-FineTune-v9 Fine Tuning DataLoader 가져오기
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
 # - 없음
 
 # Returns:
-# - stylegan_ft_loader (DataLoader) : StyleGAN-FineTune-v8 Fine-Tuning 용 Data Loader
+# - stylegan_ft_loader (DataLoader) : StyleGAN-FineTune-v9 Fine-Tuning 용 Data Loader
 
 def get_stylegan_fine_tuning_dataloader():
     all_scores_dir_path = f'{PROJECT_DIR_PATH}/property_score_cnn/segmentation/property_score_results'
     property_score_csv_path = f'{all_scores_dir_path}/all_scores_ohlora_v3.csv'
     dataset_df = pd.read_csv(property_score_csv_path, index_col=0)
 
-    stylegan_ft_dataset = StyleGANFineTuneV8TrainDataset(dataset_df, transform=stylegan_transform)
+    stylegan_ft_dataset = StyleGANFineTuneV9TrainDataset(dataset_df, transform=stylegan_transform)
     stylegan_ft_loader = DataLoader(stylegan_ft_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
 
-    print(f'StyleGAN-FineTune-v8 dataset size : {len(stylegan_ft_dataset)}')
+    print(f'StyleGAN-FineTune-v9 dataset size : {len(stylegan_ft_dataset)}')
 
     return stylegan_ft_loader
 
 
 # StyleGAN-FineTune-v1 Generator, Discriminator 의 Optimizer & Scheduler 설정
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -89,7 +89,7 @@ def set_optimizer(finetune_v1_generator, finetune_v1_discriminator):
 
 
 # StyleGAN Fine-Tuning 을 위한 Generator Layer Freezing
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -105,7 +105,7 @@ def freeze_generator_layers(finetune_v1_generator):
 
 
 # StyleGAN Fine-Tuning 을 위한 Discriminator Layer Freezing
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for fine-tuning StyleGAN-FineTune-v1 : {device}')
 
-    finetune_v1_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)
+    finetune_v1_generator = gen.StyleGANGeneratorForV9(resolution=IMAGE_RESOLUTION)
     finetune_v1_discriminator = dis.StyleGANDiscriminator(resolution=IMAGE_RESOLUTION)
 
     # load StyleGAN-VectorFind-v1 pre-trained model
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     # create model structure PDF and save
     finetune_v1_generator.to(device)
     save_model_structure_pdf(finetune_v1_generator,
-                             model_name='finetune_v8_generator',
+                             model_name='finetune_v9_generator',
                              input_size=[(PDF_BATCH_SIZE, ORIGINAL_HIDDEN_DIMS_Z),
                                          (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)],
                              print_layer_details=False,
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     finetune_v1_discriminator.to(device)
     save_model_structure_pdf(finetune_v1_discriminator,
-                             model_name='finetune_v8_discriminator',
+                             model_name='finetune_v9_discriminator',
                              input_size=[(PDF_BATCH_SIZE, 3, IMAGE_RESOLUTION, IMAGE_RESOLUTION),
                                          (PDF_BATCH_SIZE, ORIGINALLY_PROPERTY_DIMS)],
                              print_layer_details=False,
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     # get dataloader
     stylegan_ft_loader = get_stylegan_fine_tuning_dataloader()
 
-    # run StyleGAN-FineTune-v8 Fine Tuning
+    # run StyleGAN-FineTune-v9 Fine Tuning
     fine_tuned_generator, fine_tuned_discriminator = run_fine_tuning(finetune_v1_generator,
                                                                      finetune_v1_discriminator,
                                                                      stylegan_ft_loader)
@@ -171,5 +171,5 @@ if __name__ == '__main__':
     fine_tuned_model_path = f'{PROJECT_DIR_PATH}/stylegan/models'
     os.makedirs(fine_tuned_model_path, exist_ok=True)
 
-    torch.save(fine_tuned_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v8.pth')
-    torch.save(fine_tuned_discriminator.state_dict(), f'{fine_tuned_model_path}/stylegan_dis_fine_tuned_v8.pth')
+    torch.save(fine_tuned_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_fine_tuned_v9.pth')
+    torch.save(fine_tuned_discriminator.state_dict(), f'{fine_tuned_model_path}/stylegan_dis_fine_tuned_v9.pth')

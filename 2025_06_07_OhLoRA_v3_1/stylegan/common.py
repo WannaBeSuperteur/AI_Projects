@@ -21,7 +21,7 @@ stylegan_transform = transforms.Compose([
 
 
 # Model Summary (모델 구조) 출력
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -44,7 +44,7 @@ def print_summary(model, model_name, input_size, print_layer_details=False, prin
 
 
 # 기존 Pre-train 된 StyleGAN 모델의 구조를 PDF 로 내보내기
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -68,7 +68,7 @@ def save_model_structure_pdf(model, model_name, input_size, print_layer_details=
 
 
 # 기존 Oh-LoRA v1 Project 에서 Pre-train 된 StyleGAN (StyleGAN-FineTune-v1) 모델 로딩 (Generator 의 state dict 만)
-# Create Date : 2025.05.26
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -87,7 +87,7 @@ def load_existing_stylegan_finetune_v1(device):
 
 
 # 기존 Oh-LoRA v1 Project 에서 Pre-train 된 StyleGAN (StyleGAN-FineTune-v1) 모델 로딩 (Discriminator 까지 포함)
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -108,18 +108,18 @@ def load_existing_stylegan_finetune_v1_all(device):
     return generator_state_dict, discriminator_state_dict
 
 
-# StyleGAN-FineTune-v8 의 Generator 모델 로딩
-# Create Date : 2025.05.29
+# StyleGAN-FineTune-v9 의 Generator 모델 로딩
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
 # - device (Device) : CUDA or CPU device
 
 # Returns:
-# - generator_state_dict (OrderedDict) : StyleGAN-FineTune-v8 모델의 Generator 의 state_dict
+# - generator_state_dict (OrderedDict) : StyleGAN-FineTune-v9 모델의 Generator 의 state_dict
 
-def load_existing_stylegan_finetune_v8(device):
-    generator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v8.pth'
+def load_existing_stylegan_finetune_v9(device):
+    generator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v9.pth'
 
     # load generator state dict
     generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
@@ -127,8 +127,8 @@ def load_existing_stylegan_finetune_v8(device):
     return generator_state_dict
 
 
-# 기존 StyleGAN-VectorFind-v8 모델 로딩 (Generator 의 state dict 만)
-# Create Date : 2025.05.29
+# 기존 StyleGAN-VectorFind-v9 모델 로딩 (Generator 의 state dict 만)
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -137,8 +137,8 @@ def load_existing_stylegan_finetune_v8(device):
 # Returns:
 # - generator_state_dict (OrderedDict) : StyleGAN-VectorFind-v6 모델의 Generator 의 state_dict
 
-def load_existing_stylegan_vectorfind_v8(device):
-    generator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_vector_find_v8.pth'
+def load_existing_stylegan_vectorfind_v9(device):
+    generator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_vector_find_v9.pth'
 
     # load generator state dict
     generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)

@@ -191,9 +191,9 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
 
     current_epoch = 0
 
-    gen_save_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v8.pth'
-    dis_save_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_dis_fine_tuned_v8.pth'
-    train_log_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v8/train_log.csv'
+    gen_save_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v9.pth'
+    dis_save_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_dis_fine_tuned_v9.pth'
+    train_log_save_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v9/train_log.csv'
 
     while current_epoch < TOTAL_EPOCHS:
         for idx, raw_data in enumerate(stylegan_ft_loader):
@@ -246,7 +246,7 @@ def train(generator, discriminator, stylegan_ft_loader, gen_train_args, dis_trai
 
 
 # 모델의 각 레이어의 trainable / fronzen 상태 확인
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -263,7 +263,7 @@ def check_model_trainable_status(check_id, generator, discriminator):
 
 
 # StyleGAN Fine-Tuning 중 inference test 실시
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -278,7 +278,7 @@ def run_inference_test_during_finetuning(finetune_v1_generator, current_epoch, b
     kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
     finetune_v1_generator.G_kwargs_val = kwargs_val
 
-    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v8/inference_test_during_finetuning'
+    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v9/inference_test_during_finetuning'
     img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
     os.makedirs(img_save_dir, exist_ok=True)
 
@@ -295,7 +295,7 @@ def run_inference_test_during_finetuning(finetune_v1_generator, current_epoch, b
 
 
 # Inference Test 에서 Property Score CNN 의 gender & quality & age & glass 속성 예측값 로깅
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -309,7 +309,7 @@ def run_inference_test_during_finetuning(finetune_v1_generator, current_epoch, b
 def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train_log_dict):
     global gender_cnn_models, quality_cnn_models, age_cnn_models, glass_cnn_models
 
-    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v8/inference_test_during_finetuning'
+    img_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v9/inference_test_during_finetuning'
     img_save_dir = f'{img_save_dir}/epoch_{current_epoch:04d}_idx_{batch_idx:04d}'
 
     # prepare inference test result dict
@@ -367,7 +367,7 @@ def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train
 
 
 # StyleGAN Fine Tuning 에서 Discriminator 테스트용으로 real, fake 이미지 저장
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
@@ -377,7 +377,7 @@ def log_gender_quality_age_glass_predicted_score(current_epoch, batch_idx, train
 def save_real_fake_imgs(reals, fakes):
     image_lists = [reals, fakes]
     real_fake_label = ['real', 'fake']
-    image_save_dir_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v8/inference_test_real_fake'
+    image_save_dir_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_finetune_v9/inference_test_real_fake'
     os.makedirs(image_save_dir_path, exist_ok=True)
 
     max_val, min_val = 1.0, -1.0
@@ -400,17 +400,13 @@ def save_real_fake_imgs(reals, fakes):
 
 
 # 모델 Fine Tuning 실시
-# Create Date : 2025.05.28
+# Create Date : 2025.06.07
 # Last Update Date : -
 
 # Arguments:
 # - finetune_v1_generator     (nn.Module)  : StyleGAN-FineTune-v1 의 Generator
 # - finetune_v1_discriminator (nn.Module)  : StyleGAN-FineTune-v1 의 Discriminator
 # - stylegan_ft_loader        (DataLoader) : StyleGAN Fine-Tuning 용 데이터셋의 Data Loader
-
-# Returns:
-# - fine_tuned_v8_generator     (nn.Module) : Fine-Tuning 된 StyleGAN 모델 (= StyleGAN-FineTune-v8) 의 Generator
-# - fine_tuned_v8_discriminator (nn.Module) : Fine-Tuning 된 StyleGAN 모델 (= StyleGAN-FineTune-v8) 의 Discriminator
 
 def run_fine_tuning(finetune_v1_generator, finetune_v1_discriminator, stylegan_ft_loader):
 
