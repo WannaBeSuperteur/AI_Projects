@@ -106,7 +106,8 @@ def freeze_generator_layers(finetune_v1_generator):
 
 # StyleGAN Fine-Tuning 을 위한 Discriminator Layer Freezing
 # Create Date : 2025.06.07
-# Last Update Date : -
+# Last Update Date : 2025.06.08
+# - freeze 대상 layer 의 범위 조정
 
 # Arguments:
 # - finetune_v1_discriminator (nn.Module) : StyleGAN-FineTune-v1 의 Discriminator
@@ -115,7 +116,8 @@ def freeze_discriminator_layers(finetune_v1_discriminator):
 
     # freeze 범위 : 상당수의 Convolutional Layers
     for name, param in finetune_v1_discriminator.named_parameters():
-        if name.split('.')[0] not in ['layer10', 'layer11', 'input6', 'layer12', 'layer13', 'layer14']:
+        if name.split('.')[0] not in ['layer8', 'layer9', 'input5', 'layer10', 'layer11', 'input6',
+                                      'layer12', 'layer13', 'layer14']:
             param.requires_grad = False
 
 
