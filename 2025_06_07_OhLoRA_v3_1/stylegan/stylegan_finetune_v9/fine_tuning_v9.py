@@ -169,7 +169,7 @@ def train_step(generator, discriminator, data, gen_train_args, r1_gamma, r2_gamm
         d_loss_float = float(d_loss.detach().cpu())
         d_train_count += 1
 
-        if last_g_loss_float is None or d_loss_float < 1.5 * last_g_loss_float:
+        if last_g_loss_float is None or d_loss_float < 2.5 * last_g_loss_float:
             break
 
     # Update generator.
