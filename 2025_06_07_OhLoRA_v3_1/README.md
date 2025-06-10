@@ -77,18 +77,16 @@
 
 ## 3. 프로젝트 일정
 
-* 전체 일정 : **2025.06.07 토 - 06.11 수 (5d)**
+* 전체 일정 : **2025.06.07 토 - 06.12 목 (6d)**
 * 상태 : ⬜ (TODO), 💨 (ING), ✅ (DONE), ❎ (DONE BUT **NOT MERGED**), ❌ (FAILED)
 
 **1. 프로젝트 전체 관리**
 
-| 구분       | 계획 내용                      | 일정           | branch | issue | 상태 |
-|----------|----------------------------|--------------|--------|-------|----|
-| 📃 문서화   | 프로젝트 개요 및 최초 일정 작성         | 06.07 토 (1d) |        |       | ✅  |
-| 🔍 최종 검토 | 최종 사용자 실행용 코드 작성           | 06.11 수 (1d) |        |       | ⬜  |
-| 🔍 최종 검토 | 최종 QA (버그 유무 검사)           | 06.11 수 (1d) |        |       | ⬜  |
-| 📃 문서화   | 데이터셋 및 모델 HuggingFace 에 등록 | 06.11 수 (1d) |        |       | ⬜  |
-| 📃 문서화   | 프로젝트 문서 정리 및 마무리           | 06.11 수 (1d) |        |       | ⬜  |
+| 구분     | 계획 내용               | 일정           | branch | issue | 상태 |
+|--------|---------------------|--------------|--------|-------|----|
+| 📃 문서화 | 프로젝트 개요 및 최초 일정 작성  | 06.07 토 (1d) |        |       | ✅  |
+| 📃 문서화 | 모델 HuggingFace 에 등록 | 06.12 목 (1d) |        |       | ⬜  |
+| 📃 문서화 | 프로젝트 문서 정리 및 마무리    | 06.12 목 (1d) |        |       | ⬜  |
 
 **2. StyleGAN 을 이용한 가상 인간 얼굴 생성**
 
@@ -97,10 +95,10 @@
 | 🛠 사전 작업 | [StyleGAN-FineTune-v1](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) 구현 | 06.07 토 (1d)           | ```P006-001-StyleGAN-FineTune-v1```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/27) | ✅  |
 | 🔨 모델 개선 | StyleGAN-FineTune-v9 개발 (w vector dim 512 → 2048)                                                                       | 06.07 토 (1d)           | ```P006-002-StyleGAN-FineTune-v9```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/28) | ✅  |
 | 🧪 모델 학습 | 필터링된 이미지를 StyleGAN-FineTune-v9 로 추가 Fine-Tuning                                                                         | 06.07 토 - 06.09 월 (3d) | ```P006-002-StyleGAN-FineTune-v9```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/28) | 💨 |
-| 🔨 모델 개선 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 구현 시, '곱슬머리 or 직모' 핵심 속성 값 추가 **(StyleGAN-VectorFind-v9)**             | 06.09 월 (1d)           | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
-| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(SVM)**                                                  | 06.09 월 - 06.10 화 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
-| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(Layer-wise Relevance Propagation)**                     | 06.10 화 - 06.11 수 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
-| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                      | 06.09 월 - 06.11 수 (3d) |                                       |                                                                    | ⬜  |
+| 🔨 모델 개선 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 구현 시, '곱슬머리 or 직모' 핵심 속성 값 추가 **(StyleGAN-VectorFind-v9)**             | 06.10 화 (1d)           | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
+| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(SVM)**                                                  | 06.10 화 - 06.11 수 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
+| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(Layer-wise Relevance Propagation)**                     | 06.11 수 - 06.12 목 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
+| 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                      | 06.10 화 - 06.12 목 (3d) |                                       |                                                                    | ⬜  |
 
 ## 4. 프로젝트 상세 설명
 
