@@ -48,7 +48,7 @@ GROUP_NAMES = ['hhhh', 'hhhl', 'hhlh', 'hhll', 'hlhh', 'hlhl', 'hllh', 'hlll',
                'lhhh', 'lhhl', 'lhlh', 'lhll', 'llhh', 'llhl', 'lllh', 'llll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
-medians = get_medians()  # returned values : -0.4574, 0.5734, 0.7618, -0.0167
+medians = get_medians()  # returned values : -0.4315, 0.5685, 0.6753, 0.0372
 kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 

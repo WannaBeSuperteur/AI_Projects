@@ -93,7 +93,7 @@ def get_medians():
 
 def sample_w_and_compute_property_scores(finetune_v9_generator, property_score_cnn, n=4000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/inference_test_during_training'
-    medians = get_medians()  # returned values : -0.4574, 0.5734, 0.7618, -0.0167
+    medians = get_medians()  # returned values : -0.4315, 0.5685, 0.6753, 0.0372
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
     w = np.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
