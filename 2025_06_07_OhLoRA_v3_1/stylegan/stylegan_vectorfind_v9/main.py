@@ -16,9 +16,7 @@ MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan/model_structure_pdf
 os.makedirs(MODEL_STRUCTURE_PDF_DIR_PATH, exist_ok=True)
 
 
-IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
-ORIGINAL_HIDDEN_DIMS_W = 512
 ORIGINALLY_PROPERTY_DIMS = 7  # 원래 property (eyes, hair_color, hair_length, mouth, pose,
                               #               background_mean, background_std) 목적으로 사용된 dimension 값
 PDF_BATCH_SIZE = 30
@@ -60,7 +58,7 @@ def run_inference_test_before_training(finetune_v9_generator):
     infer.synthesize(finetune_v9_generator, num=50, save_dir=img_save_dir, z=None, label=None)
 
 
-def main_svm(finetune_v9_generator, device, n, ratio):
+def main_svm(finetune_v9_generator, device, n, ratio, layer_name):
 
     # model structure PDF file
     create_model_structure_pdf(finetune_v9_generator)
@@ -69,5 +67,5 @@ def main_svm(finetune_v9_generator, device, n, ratio):
     run_inference_test_before_training(finetune_v9_generator)
 
     # Fine Tuning and return SVM accuracy
-    entire_accuracy_dict = run_stylegan_vector_find(finetune_v9_generator, device, n, ratio)
+    entire_accuracy_dict = run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name)
     return entire_accuracy_dict

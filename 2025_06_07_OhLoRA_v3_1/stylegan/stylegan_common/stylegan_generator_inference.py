@@ -21,7 +21,7 @@ DIM_W = 512
 
 
 def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_start_idx=0, verbose=True,
-               save_img=True, return_img=False, return_w=False):
+               save_img=True, return_img=False, return_vector_at=None):
     """Synthesizes images.
 
     Args:
@@ -35,7 +35,8 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
         verbose: whether to print info
         save_img: whether to save synthesized images
         return_img: whether to return synthesized images
-        return_w: whether to return w (intermediate latent vectors)
+        return_vector_at: return which intermediate vector (intermediate latent vectors) (None for do not return)
+                          ('w', 'mapping_split1' or 'mapping_split2')
     """
 
     os.makedirs(save_dir, exist_ok=True)
@@ -57,7 +58,7 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
     batch_count = len(indices) // VALID_BATCH_SIZE
     start_at = time.time()
     all_images = np.zeros((num, IMG_RESOLUTION, IMG_RESOLUTION, 3))
-    all_ws = np.zeros((num, DIM_W))
+    all_mid_vectors = np.zeros((num, DIM_W))
 
     for batch_idx in range(0, len(indices), VALID_BATCH_SIZE):
         sub_indices = indices[batch_idx:batch_idx + VALID_BATCH_SIZE]
@@ -74,11 +75,20 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
             property_vector = label[sub_indices].cuda()
 
         with torch.no_grad():
-            if return_w:
+            if return_vector_at is not None:
                 gen_results = generator_model(code, property_vector, **generator_model.G_kwargs_val)
                 images = gen_results['image']
                 images = postprocess_image(images.detach().cpu().numpy())
-                ws = gen_results['w'].detach().cpu().numpy()
+
+                if return_vector_at == 'w':
+                    mid_vectors = gen_results['w'].detach().cpu().numpy()
+                elif return_vector_at == 'mapping_split1':
+                    mid_vectors = np.concatenate([gen_results['w1'].detach().cpu().numpy(),
+                                                 gen_results['w2'].detach().cpu().numpy()], axis=1)  # TODO check
+                else:  # mapping_split2
+                    mid_vectors = np.concatenate([gen_results['w1_'].detach().cpu().numpy(),
+                                                 gen_results['w2_'].detach().cpu().numpy()], axis=1)  # TODO check
+
             else:
                 images = generator_model(code, property_vector, **generator_model.G_kwargs_val)['image']
                 images = postprocess_image(images.detach().cpu().numpy())
@@ -97,13 +107,13 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
         if return_img:
             all_images[batch_idx:batch_idx + batch_size] = images
 
-        if return_w:
-            all_ws[batch_idx:batch_idx + batch_size] = ws
+        if return_vector_at is not None:
+            all_mid_vectors[batch_idx:batch_idx + batch_size] = mid_vectors
 
-    if return_img and return_w:
-        return all_images, all_ws
-    elif return_w:
-        return all_ws
+    if return_img and (return_vector_at is not None):
+        return all_images, all_mid_vectors
+    elif return_vector_at is not None:
+        return all_mid_vectors
     elif return_img:
         return all_images
 

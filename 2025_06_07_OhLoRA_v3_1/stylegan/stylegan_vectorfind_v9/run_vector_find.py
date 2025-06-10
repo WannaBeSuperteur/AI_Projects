@@ -32,17 +32,20 @@ warnings.filterwarnings('ignore')
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINAL_HIDDEN_DIMS_W = 512
+HIDDEN_DIMS_MAPPING_SPLIT1 = 512 + 2048
+HIDDEN_DIMS_MAPPING_SPLIT2 = 512 + 512
+
 ORIGINALLY_PROPERTY_DIMS = 7    # 원래 property (eyes, hair_color, hair_length, mouth, pose,
                                 #               background_mean, background_std) 목적으로 사용된 dimension 값
 BATCH_SIZE = 20
-SVMS_PER_EACH_PROPERTY = 1      # also w-vector count for each property
+SVMS_PER_EACH_PROPERTY = 1      # also intermediate (mid) vector count for each property
 
 GROUP_NAMES = ['hhhh', 'hhhl', 'hhlh', 'hhll', 'hlhh', 'hlhl', 'hllh', 'hlll',
                'lhhh', 'lhhl', 'lhlh', 'lhll', 'llhh', 'llhl', 'lllh', 'llll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
 
-# intermediate w vector 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬 (hairstyle)" 에 따라 그룹화하기 위해,
+# intermediate vector 로 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬 (hairstyle)" 에 따라 그룹화하기 위해,
 # hair_color, hair_length, background_mean, hairstyle 핵심 속성 값의 중앙값 얻기
 
 # Create Date : 2025.06.10
@@ -74,37 +77,47 @@ def get_medians():
     return medians
 
 
-# intermediate w vector 샘플링 및 해당 w 값으로 생성된 이미지에 대한 semantic score 계산
+# intermediate vector 샘플링 및 해당 vector 값으로 생성된 이미지에 대한 semantic score 계산
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
 # - property_score_cnn    (nn.Module) : 핵심 속성 값 계산용 CNN 모델
-# - n                     (int)       : sampling 할 intermediate w vector 의 개수
+# - layer_name            (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                       ('mapping_split1', 'mapping_split2' or 'w')
+# - n                     (int)       : sampling 할 intermediate vector 의 개수
 
 # Returns:
-# - w_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w (각 그룹별)
-# - property_scores    (dict)              : sampling 된 intermediate w 로 생성된 이미지의 Pre-trained CNN 도출 핵심 속성값
+# - mid_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate vector (각 그룹별)
+# - property_scores      (dict)              : sampling 된 intermediate vector 생성 이미지의 Pre-trained CNN 도출 핵심 속성값
 #                                            dict 는 각 그룹의 이름 ('hhhh', 'hhhl', ..., 'llll') 을 key 로 함
 #                                            {'eyes_cnn_score': dict(list(float)),
 #                                             'mouth_cnn_score': dict(list(float)),
 #                                             'pose_cnn_score': dict(list(float))}
 
-def sample_w_and_compute_property_scores(finetune_v9_generator, property_score_cnn, n=4000):
+def sample_vector_and_compute_property_scores(finetune_v9_generator, property_score_cnn, layer_name, n=4000):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/inference_test_during_training'
     medians = get_medians()  # returned values : -0.4315, 0.5685, 0.6753, 0.0372
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
-    w = np.zeros((n, ORIGINAL_HIDDEN_DIMS_W)).astype(np.float64)
+
+    if layer_name == 'w':
+        mid_vector = np.zeros((n, ORIGINAL_HIDDEN_DIMS_W)).astype(np.float64)
+    elif layer_name == 'mapping_split1':
+        mid_vector = np.zeros((n, HIDDEN_DIMS_MAPPING_SPLIT1)).astype(np.float64)
+    else:  # mapping_split2
+        mid_vector = np.zeros((n, HIDDEN_DIMS_MAPPING_SPLIT2)).astype(np.float64)
+
     additional = np.random.normal(0, 1, size=(n, ORIGINALLY_PROPERTY_DIMS)).astype(np.float64)
 
     # 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬" 평균의 CNN 도출 속성값에 따라 MBTI 처럼 16 개의 그룹으로 나눔
     # (그룹명 : 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬" 값 순서로, h: median 보다 높음 / l: median 보다 낮음)
-    w_vectors_by_group = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
-                          'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
-                          'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
-                          'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
+    mid_vectors_by_group = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
+                            'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
+                            'lhhh': [], 'lhhl': [], 'lhlh': [], 'lhll': [],
+                            'llhh': [], 'llhl': [], 'lllh': [], 'llll': []}
 
     eyes_cnn_scores = {'hhhh': [], 'hhhl': [], 'hhlh': [], 'hhll': [],
                        'hlhh': [], 'hlhl': [], 'hllh': [], 'hlll': [],
@@ -128,15 +141,18 @@ def sample_w_and_compute_property_scores(finetune_v9_generator, property_score_c
         z_ = z[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
         additional_ = additional[i * BATCH_SIZE : (i+1) * BATCH_SIZE]
 
-        images, ws = infer.synthesize(finetune_v9_generator,
-                                      num=BATCH_SIZE,
-                                      save_dir=save_dir,
-                                      z=z_,
-                                      label=additional_,
-                                      img_name_start_idx=0,
-                                      verbose=False, save_img=False, return_img=True, return_w=True)
+        images, mid_vectors = infer.synthesize(finetune_v9_generator,
+                                               num=BATCH_SIZE,
+                                               save_dir=save_dir,
+                                               z=z_,
+                                               label=additional_,
+                                               img_name_start_idx=0,
+                                               verbose=False,
+                                               save_img=False,
+                                               return_img=True,
+                                               return_vector_at=layer_name)
 
-        w[i * BATCH_SIZE : (i+1) * BATCH_SIZE] = ws
+        mid_vector[i * BATCH_SIZE : (i+1) * BATCH_SIZE] = mid_vectors
 
         with torch.no_grad():
             for image_no in range(BATCH_SIZE):
@@ -159,18 +175,18 @@ def sample_w_and_compute_property_scores(finetune_v9_generator, property_score_c
                 mouth_cnn_scores[group_name].append(property_score_np[0][3])
                 pose_cnn_scores[group_name].append(property_score_np[0][4])
 
-                w_vector = w[i * BATCH_SIZE + image_no]
-                w_vectors_by_group[group_name].append(list(w_vector))
+                intermediate_vector = mid_vector[i * BATCH_SIZE + image_no]
+                mid_vectors_by_group[group_name].append(list(intermediate_vector))
 
     property_scores = {'eyes_cnn_score': eyes_cnn_scores,
                        'mouth_cnn_score': mouth_cnn_scores,
                        'pose_cnn_score': pose_cnn_scores}
 
     for group_name in GROUP_NAMES:
-        w_vectors_by_group[group_name] = np.array(w_vectors_by_group[group_name])
-        print(f'generated images in group {group_name} : {len(w_vectors_by_group[group_name])}')
+        mid_vectors_by_group[group_name] = np.array(mid_vectors_by_group[group_name])
+        print(f'generated images in group {group_name} : {len(mid_vectors_by_group[group_name])}')
 
-    return w_vectors_by_group, property_scores
+    return mid_vectors_by_group, property_scores
 
 
 # 각 핵심 속성 값이 가장 큰 & 가장 작은 ratio 비율만큼의 이미지를 그룹별로 각각 추출
@@ -258,19 +274,20 @@ def extract_best_and_worst_k_images(property_scores, ratio=0.2):
 
 # 각 핵심 속성 값 별 핵심 속성 값이 가장 큰 & 작은 k 장의 이미지에 대해 t-SNE 를 이용하여, 그룹별로 핵심 속성 값의 시각적 분포 파악
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
-# - w_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w vector (각 그룹별)
-# - indices_info       (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
-#                                            {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
-#                                             'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
-#                                             'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
+# - mid_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate vector (각 그룹별)
+# - indices_info         (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
+#                                              {'eyes_largest': dict(list(int)), 'eyes_smallest': dict(list(int)),
+#                                               'mouth_largest': dict(list(int)), 'mouth_smallest': dict(list(int)),
+#                                               'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 
 # Returns:
 # - stylegan/stylegan_vectorfind_v9/tsne_result 디렉토리에 그룹 별 & 각 핵심 속성 값 별 t-SNE 시각화 결과 저장
 
-def run_tsne(w_vectors_by_group, indices_info):
+def run_tsne(mid_vectors_by_group, indices_info):
     property_names = ['eyes', 'mouth', 'pose']
 
     tsne_result_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/tsne_result'
@@ -281,15 +298,15 @@ def run_tsne(w_vectors_by_group, indices_info):
             largest_img_idxs = indices_info[f'{property_name}_largest'][group_name]
             smallest_img_idxs = indices_info[f'{property_name}_smallest'][group_name]
             idxs = largest_img_idxs + smallest_img_idxs
-            indexed_w_vectors = w_vectors_by_group[group_name][idxs]
+            indexed_mid_vectors = mid_vectors_by_group[group_name][idxs]
 
             # run t-SNE
             print(f'running t-SNE for {property_name} / {group_name} ...')
             tsne_result = TSNE(n_components=2,
-                               perplexity=min(50, len(indexed_w_vectors) - 1),
+                               perplexity=min(50, len(indexed_mid_vectors) - 1),
                                learning_rate=100,
                                n_iter=1000,
-                               random_state=2025).fit_transform(indexed_w_vectors)
+                               random_state=2025).fit_transform(indexed_mid_vectors)
 
             # save t-SNE plot result images
             classes = ['largest'] * len(largest_img_idxs) + ['smallest'] * len(smallest_img_idxs)
@@ -312,12 +329,12 @@ def run_tsne(w_vectors_by_group, indices_info):
             fig.write_image(f'{tsne_result_path}/tsne_result_{property_name}_{group_name}.png')
 
 
-# 핵심 속성 값의 변화를 나타내는 intermediate w vector 를 도출하기 위한 SVM 학습
+# 핵심 속성 값의 변화를 나타내는 intermediate vector 를 도출하기 위한 SVM 학습
 # Create Date : 2025.06.10
 # Last Update Date : -
 
 # Arguments:
-# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate w vector (각 그룹별)
+# - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate vector (각 그룹별)
 # - group_name              (str)               : 머리 색, 머리 길이, 배경색 평균의 속성값 별 그룹명
 #                                                 ('hhhh', 'hhhl', ..., 'llll')
 # - indices_info            (dict)              : 각 핵심 속성 값이 가장 큰 & 가장 작은 k 장의 이미지의 (그룹별) 인덱스 정보
@@ -393,24 +410,32 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
     return svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info
 
 
-# SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 intermediate w vector 를 도출 (최종 w vector)
+# SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 intermediate vector 를 도출 (최종 mid vector)
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
 # - svm_classifiers (dict) : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
 #                            {'eyes': dict(list(SVM)),
 #                             'mouth': dict(list(SVM)),
 #                             'pose': dict(list(SVM))}
+# - layer_name      (str)  : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                            ('mapping_split1', 'mapping_split2' or 'w')
 
 # Returns:
-# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate w vector (각 그룹 별)
+# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate vector (각 그룹 별)
 #                                   {'eyes_vector': dict(NumPy array),
 #                                    'mouth_vector': dict(NumPy array),
 #                                    'pose_vector': dict(NumPy array)}
 
-def find_property_score_vectors(svm_classifiers):
-    dim = ORIGINAL_HIDDEN_DIMS_W
+def find_property_score_vectors(svm_classifiers, layer_name):
+    if layer_name == 'w':
+        dim = ORIGINAL_HIDDEN_DIMS_W
+    elif layer_name == 'mapping_split1':
+        dim = HIDDEN_DIMS_MAPPING_SPLIT1
+    else:  # mapping_split2
+        dim = HIDDEN_DIMS_MAPPING_SPLIT2
 
     property_score_vectors = {}
 
@@ -434,20 +459,23 @@ def find_property_score_vectors(svm_classifiers):
     return property_score_vectors
 
 
-# 핵심 속성 값의 변화를 나타내는 intermediate w vector 에 대한 정보 저장
+# 핵심 속성 값의 변화를 나타내는 intermediate vector 에 대한 정보 저장
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
-# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate w vector (각 그룹 별)
+# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate vector (각 그룹 별)
 #                                   {'eyes_vector': dict(NumPy array),
 #                                    'mouth_vector': dict(NumPy array),
 #                                    'pose_vector': dict(NumPy array)}
+# - layer_name             (str)  : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                   ('mapping_split1', 'mapping_split2' or 'w')
 
 # Returns:
-# - stylegan/stylegan_vectorfind_v9/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 intermediate w vector 정보 저장
+# - stylegan/stylegan_vectorfind_v9/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 intermediate vector 정보 저장
 
-def save_property_score_vectors_info(property_score_vectors):
+def save_property_score_vectors_info(property_score_vectors, layer_name):
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/property_score_vectors'
     os.makedirs(vector_save_dir, exist_ok=True)
 
@@ -456,43 +484,49 @@ def save_property_score_vectors_info(property_score_vectors):
         mouth_vector_df = pd.DataFrame(property_score_vectors['mouth_vector'][group_name])
         pose_vector_df = pd.DataFrame(property_score_vectors['pose_vector'][group_name])
 
-        eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_w_vector_{group_name}.csv')
-        mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_w_vector_{group_name}.csv')
-        pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_w_vector_{group_name}.csv')
+        eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_{layer_name}_vector_{group_name}.csv')
+        mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_{layer_name}_vector_{group_name}.csv')
+        pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_{layer_name}_vector_{group_name}.csv')
 
 
 # StyleGAN-FineTune-v9 모델을 이용한 vector find 실시
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
+# - device                (device)    : Property Score CNN 로딩을 위한 device (GPU 등)
 # - n                     (int)       : 총 생성할 이미지 sample 개수
 # - ratio                 (float)     : 총 생성 이미지 중 SVM 의 학습 데이터로 사용할 TOP, BOTTOM 비율 (각각) (= k / n)
+# - layer_name            (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                       ('mapping_split1', 'mapping_split2' or 'w')
 
 # Returns:
 # - entire_accuracy_dict (dict) : 전체 group 에 대한 SVM accuracy 정보
 #                                 {'eyes': float, 'mouth': float, 'pose': float}
 
-def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio):
+def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name):
     property_score_cnn = load_merged_property_score_cnn(device)
 
-    # intermediate w vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
+    # intermediate vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
     sampling_start_at = time.time()
-    w_vectors_by_group, property_scores = sample_w_and_compute_property_scores(finetune_v9_generator,
-                                                                               property_score_cnn,
-                                                                               n)
-    print(f'sampling (from latent vector w) running time (s) : {time.time() - sampling_start_at}\n')
+    mid_vectors_by_group, property_scores = sample_vector_and_compute_property_scores(finetune_v9_generator,
+                                                                                      property_score_cnn,
+                                                                                      n,
+                                                                                      layer_name)
+
+    print(f'sampling (from latent vector {layer_name}) running time (s) : {time.time() - sampling_start_at}\n')
 
     indices_info = extract_best_and_worst_k_images(property_scores, ratio)
 
     """
     tsne_start_at = time.time()
-    run_tsne(w_vectors_by_group, indices_info)
+    run_tsne(mid_vectors_by_group, indices_info)
     print(f't-SNE running time (s) : {time.time() - tsne_start_at}')
     """
 
-    # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 intermediate w vector 도출
+    # SVM 학습 & 해당 SVM 으로 핵심 속성 값의 변화를 나타내는 최종 intermediate vector 도출
     svm_classifiers = {'eyes': {}, 'mouth': {}, 'pose': {}}
     entire_valid_count = {'eyes': 0, 'mouth': 0, 'pose': 0}
     entire_valid_correct_count = {'eyes': 0, 'mouth': 0, 'pose': 0}
@@ -501,7 +535,7 @@ def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio):
 
     for group_name in GROUP_NAMES:
         svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info =(
-            train_svm(w_vectors_by_group, group_name, indices_info, svm_classifiers))
+            train_svm(mid_vectors_by_group, group_name, indices_info, svm_classifiers))
 
         for property_name in PROPERTY_NAMES:
             entire_valid_count[property_name] += total_valid_cnt_info[property_name]
@@ -520,7 +554,7 @@ def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio):
 
     print(f'\nSVM training running time (s) : {time.time() - svm_train_start_at}')
 
-    property_score_vectors = find_property_score_vectors(svm_classifiers)
-    save_property_score_vectors_info(property_score_vectors)
+    property_score_vectors = find_property_score_vectors(svm_classifiers, layer_name)
+    save_property_score_vectors_info(property_score_vectors, layer_name)
 
     return entire_accuracy_dict

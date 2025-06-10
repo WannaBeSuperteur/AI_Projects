@@ -42,13 +42,16 @@ os.makedirs(test_result_dir, exist_ok=True)
 
 # StyleGAN-VectorFind-v9 자동화 테스트 함수 (SVM 기반)
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
-# - n     (int)   : 총 생성할 이미지 sample 개수
-# - ratio (float) : 총 생성 이미지 중 SVM 의 학습 데이터로 사용할 TOP, BOTTOM 비율 (각각) (= k / n)
+# - n          (int)   : 총 생성할 이미지 sample 개수
+# - ratio      (float) : 총 생성 이미지 중 SVM 의 학습 데이터로 사용할 TOP, BOTTOM 비율 (각각) (= k / n)
+# - layer_name (str)   : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                        ('mapping_split1', 'mapping_split2' or 'w')
 
-def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
+def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name):
     global finetune_v9_generator
 
     start_at = time.time()
@@ -64,8 +67,8 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
     finetune_v9_generator.load_state_dict(generator_state_dict)
 
     # get property score changing vector
-    entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio)
-    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+    entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio, layer_name)
+    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(layer_name)
 
     # get Merged Property Score CNN
     property_score_cnn = load_merged_property_score_cnn(device)
@@ -75,12 +78,14 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
 
     run_image_generation_test(finetune_v9_generator,
                               property_score_cnn,
+                              layer_name,
                               eyes_vectors,
                               mouth_vectors,
                               pose_vectors)
 
     eyes_corr_mean, mouth_corr_mean, pose_corr_mean = run_property_score_compare_test(finetune_v9_generator,
                                                                                       property_score_cnn,
+                                                                                      layer_name,
                                                                                       eyes_vectors,
                                                                                       mouth_vectors,
                                                                                       pose_vectors)
@@ -103,7 +108,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
     test_result_svm['sum_mean_corr'].append(sum_mean_corr)
 
     test_result_svm_df = pd.DataFrame(test_result_svm)
-    test_result_svm_df.to_csv(f'{test_result_dir}/test_result_svm.csv')
+    test_result_svm_df.to_csv(f'{test_result_dir}/test_result_svm_{layer_name}.csv')
 
     # re-initialize test directories
     shutil.rmtree(image_gen_report_dir)
@@ -116,8 +121,9 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
 
 
 if __name__ == '__main__':
-    ns = [2000, 4000]
-    ratios = [0.2, 0.2]
+    ns = [4000, 8000, 20000, 40000]
+    ratios = [0.2, 0.2, 0.2, 0.2]
+    layer_name = 'mapping_split1'
 
     for n, ratio in zip(ns, ratios):
-        run_stylegan_vectorfind_v9_automated_test_svm(n, ratio)
+        run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name)

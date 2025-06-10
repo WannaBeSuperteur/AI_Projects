@@ -32,6 +32,9 @@ IMAGE_RESOLUTION = 256
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
 ORIGINAL_HIDDEN_DIMS_W = 512
+HIDDEN_DIMS_MAPPING_SPLIT1 = 512 + 2048
+HIDDEN_DIMS_MAPPING_SPLIT2 = 512 + 512
+
 ORIGINALLY_PROPERTY_DIMS = 7    # 원래 property (eyes, hair_color, hair_length, mouth, pose,
                                 #               background_mean, background_std) 목적으로 사용된 dimension 값
 
@@ -52,24 +55,53 @@ medians = get_medians()  # returned values : -0.4315, 0.5685, 0.6753, 0.0372
 kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 
-def generate_image_using_w(finetune_v9_generator, w, trunc_psi=1.0, trunc_layers=0, randomize_noise=False, lod=None):
-    with torch.no_grad():
-        wp = finetune_v9_generator.truncation(w, trunc_psi, trunc_layers)
-        images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
-        images = postprocess_image(images.detach().cpu().numpy())
+def generate_image_using_mid_vector(finetune_v9_generator, mid_vector, layer_name,
+                                    trunc_psi=1.0, trunc_layers=0, randomize_noise=False, lod=None):
+
+    if layer_name == 'w':
+        with torch.no_grad():
+            wp = finetune_v9_generator.truncation(mid_vector, trunc_psi, trunc_layers)
+            images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
+            images = postprocess_image(images.detach().cpu().numpy())
+
+    elif layer_name == 'mapping_split1':
+        with torch.no_grad():
+            w1 = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]  # TODO check
+            w2 = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]  # TODO check
+            w1_ = finetune_v9_generator.__getattr__(f'dense7')(w1.cuda()).detach().cpu()
+            w2_ = finetune_v9_generator.__getattr__(f'dense_new1')(w2.cuda()).detach().cpu()
+            w = torch.concat([w1_, w2_], dim=1)  # TODO check
+
+            wp = finetune_v9_generator.truncation(w, trunc_psi, trunc_layers)
+            images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
+            images = postprocess_image(images.detach().cpu().numpy())
+
+    else:  # mapping_split2
+        with torch.no_grad():
+            w1_ = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]  # TODO check
+            w2_ = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]  # TODO check
+            w = torch.concat([w1_, w2_], dim=1)  # TODO check
+
+            wp = finetune_v9_generator.truncation(w, trunc_psi, trunc_layers)
+            images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
+            images = postprocess_image(images.detach().cpu().numpy())
+
     return images
 
 
-# Property Score 값을 변경하기 위해 intermediate w vector 에 가감할 벡터 정보 반환 ('hhhh', 'hhhl', ..., 'llll' 의 각 그룹 별)
+# Property Score 값을 변경하기 위해 intermediate vector 에 가감할 벡터 정보 반환 ('hhhh', 'hhhl', ..., 'llll' 의 각 그룹 별)
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Returns:
 # - eyes_vectors  (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - mouth_vectors (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors  (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - layer_name    (str)               : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                       ('mapping_split1', 'mapping_split2' or 'w')
 
-def get_property_change_vectors():
+def get_property_change_vectors(layer_name):
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/property_score_vectors'
 
     eyes_vectors = {}
@@ -77,14 +109,17 @@ def get_property_change_vectors():
     pose_vectors = {}
 
     for group_name in GROUP_NAMES:
-        eyes_vector = np.array(pd.read_csv(f'{vector_save_dir}/eyes_change_w_vector_{group_name}.csv',
-                                           index_col=0))
+        eyes_vector = np.array(
+            pd.read_csv(f'{vector_save_dir}/eyes_change_{layer_name}_vector_{group_name}.csv',
+                        index_col=0))
 
-        mouth_vector = np.array(pd.read_csv(f'{vector_save_dir}/mouth_change_w_vector_{group_name}.csv',
-                                            index_col=0))
+        mouth_vector = np.array(
+            pd.read_csv(f'{vector_save_dir}/mouth_change_{layer_name}_vector_{group_name}.csv',
+                        index_col=0))
 
-        pose_vector = np.array(pd.read_csv(f'{vector_save_dir}/pose_change_w_vector_{group_name}.csv',
-                                           index_col=0))
+        pose_vector = np.array(
+            pd.read_csv(f'{vector_save_dir}/pose_change_{layer_name}_vector_{group_name}.csv',
+                        index_col=0))
 
         eyes_vectors[group_name] = eyes_vector
         mouth_vectors[group_name] = mouth_vector
@@ -100,7 +135,7 @@ def get_property_change_vectors():
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
 # - property_score_cnn    (nn.Module) : 핵심 속성 값 계산용 CNN 모델
-# - code_part1            (Tensor)    : latent code (w) 에 해당하는 부분 (dim: 512)
+# - code_part1            (Tensor)    : latent code 에 해당하는 부분 (dim: 512)
 # - code_part2            (Tensor)    : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 7)
 # - save_dir              (str)       : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v9/inference_test_after_training)
 # - i                     (int)       : case index
@@ -134,13 +169,48 @@ def get_group_name(finetune_v9_generator, property_score_cnn, code_part1, code_p
     return group_name
 
 
-# intermediate w vector 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
+# 이미지 생성을 위한 concatenated intermediate vector 생성 및 반환
 # Create Date : 2025.06.10
 # Last Update Date : -
 
 # Arguments:
+# - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
+# - layer_name            (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                       ('mapping_split1', 'mapping_split2' or 'w')
+# - code_part1            (Tensor)    : latent z vector 의 앞부분 (dim = 512)
+# - code_part2            (Tensor)    : latent z vector 의 뒷부분 (dim = 7)
+
+# Returns:
+# - code_mid (Tensor) : 이미지 생성을 위한 concatenated intermediate vector
+
+def generate_code_mid(finetune_v9_generator, layer_name, code_part1, code_part2):
+    with torch.no_grad():
+        if layer_name == 'w':
+            code_mid = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
+
+        elif layer_name == 'mapping_split1':
+            code_w1 = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w1'].detach().cpu()
+            code_w2 = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w2'].detach().cpu()
+            code_mid = torch.concat([code_w1, code_w2], dim=1)  # TODO check
+
+        else:  # mapping_split2
+            code_w1_ = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w1_'].detach().cpu()
+            code_w2_ = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w2_'].detach().cpu()
+            code_mid = torch.concat([code_w1_, code_w2_], dim=1)  # TODO check
+
+    return code_mid
+
+
+# intermediate vector 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
+# Create Date : 2025.06.10
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
+
+# Arguments:
 # - finetune_v9_generator (nn.Module)         : StyleGAN-FineTune-v9 의 Generator
 # - property_score_cnn    (nn.Module)         : 핵심 속성 값 계산용 CNN 모델
+# - layer_name            (str)               : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                               ('mapping_split1', 'mapping_split2' or 'w')
 # - eyes_vectors          (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - mouth_vectors         (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors          (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
@@ -148,7 +218,9 @@ def get_group_name(finetune_v9_generator, property_score_cnn, code_part1, code_p
 # Returns:
 # - stylegan_vectorfind_v9/inference_test_after_training 디렉토리에 이미지 생성 결과 저장
 
-def run_image_generation_test(finetune_v9_generator, property_score_cnn, eyes_vectors, mouth_vectors, pose_vectors):
+def run_image_generation_test(finetune_v9_generator, property_score_cnn, layer_name, eyes_vectors, mouth_vectors,
+                              pose_vectors):
+
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/inference_test_after_training'
     os.makedirs(save_dir, exist_ok=True)
 
@@ -157,10 +229,8 @@ def run_image_generation_test(finetune_v9_generator, property_score_cnn, eyes_ve
 
     for i in range(TEST_IMG_CASES):
         code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)    # 512
-        code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS)  # 3
-
-        with torch.no_grad():
-            code_w = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
+        code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS)  # 7
+        code_mid = generate_code_mid(finetune_v9_generator, layer_name, code_part1, code_part2)
 
         for vi in range(n_vector_cnt):
             group_name = get_group_name(finetune_v9_generator, property_score_cnn,
@@ -173,9 +243,9 @@ def run_image_generation_test(finetune_v9_generator, property_score_cnn, eyes_ve
 
                 for pm_idx, pm in enumerate(pms):
                     with torch.no_grad():
-                        code_w_ = code_w + pm * torch.tensor(vector[vi:vi+1, :])  # 512
-                        code_w_ = code_w_.type(torch.float32)
-                        images = generate_image_using_w(finetune_v9_generator, code_w_)
+                        code_mid_ = code_mid + pm * torch.tensor(vector[vi:vi+1, :])
+                        code_mid_ = code_mid_.type(torch.float32)
+                        images = generate_image_using_mid_vector(finetune_v9_generator, code_mid_, layer_name)
 
                         save_image(os.path.join(save_dir, f'case_{i:02d}_{vi:02d}_{property_name}_pm_{pm_idx}.jpg'),
                                    images[0])
@@ -204,36 +274,43 @@ def load_ohlora_z_vectors(vector_csv_path):
         return None
 
 
-# Oh-LoRA 이미지 생성용 intermediate w vector 각각에 대해, group name 정보를 먼저 불러오기 시도
+# Oh-LoRA 이미지 생성용 intermediate vector 각각에 대해, group name 정보를 먼저 불러오기 시도
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
-# - group_name_csv_path (str) : intermediate w vector 에 대한 group name 정보가 저장된 csv 파일의 경로
+# - group_name_csv_path (str) : intermediate vector 에 대한 group name 정보가 저장된 csv 파일의 경로
+# - layer_name          (str) : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                               ('mapping_split1', 'mapping_split2' or 'w')
 
 # Returns:
-# - group_names (list(str) or None) : Oh-LoRA 이미지 생성용 intermediate w vector 에 대한 group name 의 list (불러오기 성공 시)
+# - group_names (list(str) or None) : Oh-LoRA 이미지 생성용 intermediate vector 에 대한 group name 의 list (불러오기 성공 시)
 #                                     None (불러오기 실패 시)
 
-def load_ohlora_w_group_names(group_name_csv_path):
+def load_ohlora_mid_vector_group_names(group_name_csv_path, layer_name):
     try:
-        ohlora_w_vectors_df = pd.read_csv(group_name_csv_path)
-        group_names = ohlora_w_vectors_df['group_name'].tolist()
-        print(f'group names for each Oh-LoRA w vector load successful!! 👱‍♀️✨')
+        ohlora_mid_vectors_df = pd.read_csv(group_name_csv_path)
+        group_names = ohlora_mid_vectors_df['group_name'].tolist()
+        print(f'group names for each Oh-LoRA {layer_name} vector load successful!! 👱‍♀️✨')
         return group_names
 
     except Exception as e:
-        print(f'group names for each Oh-LoRA w vector load failed ({e}), using Property-Score-CNN-derived group names')
+        print(f'group names for each Oh-LoRA {layer_name} vector load failed ({e}), '
+              f'using Property-Score-CNN-derived group names')
         return None
 
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
 # - finetune_v9_generator (nn.Module)         : StyleGAN-FineTune-v9 의 Generator
 # - property_score_cnn    (nn.Module)         : 핵심 속성 값을 계산하기 위한 CNN
+# - layer_name            (str)               : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                               ('mapping_split1', 'mapping_split2' or 'w')
 # - eyes_vectors          (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - mouth_vectors         (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors          (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
@@ -247,16 +324,17 @@ def load_ohlora_w_group_names(group_name_csv_path):
 # - stylegan_vectorfind_v9/inference_test_after_training 디렉토리에 이미지 생성
 # - stylegan_vectorfind_v9/image_generation_report 디렉토리에 테스트 결과를 csv 파일로 저장
 
-def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, eyes_vectors, mouth_vectors,
+def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, layer_name, eyes_vectors, mouth_vectors,
                                     pose_vectors):
 
     n_vector_cnt = len(eyes_vectors['hhhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
     passed_count = 0
 
     ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/ohlora_z_vectors.csv'
-    ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/ohlora_w_group_names.csv'
+    ohlora_mid_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/ohlora_{layer_name}_group_names.csv'
     ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
-    ohlora_w_group_names = load_ohlora_w_group_names(group_name_csv_path=ohlora_w_group_name_csv_path)
+    ohlora_mid_group_names = load_ohlora_mid_vector_group_names(group_name_csv_path=ohlora_mid_group_name_csv_path,
+                                                                layer_name=layer_name)
 
     # label: 'eyes', 'mouth', 'pose'
     eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels()
@@ -291,16 +369,15 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
             code_part1s_np[i] = code_part1[0]
             code_part2s_np[i] = code_part2[0]
 
-        with torch.no_grad():
-            code_w = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
+        code_mid = generate_code_mid(finetune_v9_generator, layer_name, code_part1, code_part2)
 
         for vi in range(n_vector_cnt):
-            if ohlora_w_group_names is None:
+            if ohlora_mid_group_names is None:
                 group_name = get_group_name(finetune_v9_generator, property_score_cnn,
                                             code_part1, code_part2, save_dir, i, vi)
             else:
                 n_vector_idx = i * n_vector_cnt + vi
-                group_name = ohlora_w_group_names[n_vector_idx]
+                group_name = ohlora_mid_group_names[n_vector_idx]
 
             eyes_vector = eyes_vectors[group_name]
             mouth_vector = mouth_vectors[group_name]
@@ -317,7 +394,8 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
                 pms = {'eyes': eyes_pm_order[pm_idx], 'mouth': mouth_pm_order[pm_idx], 'pose': pose_pm_order[pm_idx]}
 
                 generate_image(finetune_v9_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector,
-                               eyes_scores, mouth_scores, pose_scores, code_w, save_dir, img_file_name, vi, pms)
+                               eyes_scores, mouth_scores, pose_scores, code_mid, layer_name, save_dir, img_file_name,
+                               vi, pms)
 
             # compute and record corr-coef
             eyes_corrcoef = np.corrcoef(eyes_pm_order, eyes_scores)[0][1]
@@ -390,7 +468,7 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
     statistics_save_path = f'{image_gen_report_path}/test_statistics.csv'
     statistics_df.to_csv(statistics_save_path)
 
-    # save latent codes (w)
+    # save latent codes (intermediate vector)
     code_part1s_np = np.round(code_part1s_np[:generated_count], 4)
     code_part2s_np = np.round(code_part2s_np[:generated_count], 4)
     code_all_np = np.concatenate([code_part1s_np, code_part2s_np], axis=1)
@@ -404,7 +482,8 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
 
 # 주어진 eyes, mouth, pose 핵심 속성 값 변화 벡터를 이용하여 이미지 생성
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.10
+# - intermediate vector 를 추출할 레이어 지정 다양화
 
 # Arguments:
 # - finetune_v9_generator (nn.Module)   : StyleGAN-FineTune-v9 의 Generator
@@ -415,7 +494,9 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
 # - eyes_scores           (list)        : Property Score CNN 에 의해 도출된 eyes 핵심 속성 값의 리스트
 # - mouth_scores          (list)        : Property Score CNN 에 의해 도출된 mouth 핵심 속성 값의 리스트
 # - pose_scores           (list)        : Property Score CNN 에 의해 도출된 pose 핵심 속성 값의 리스트
-# - code_w                (Tensor)      : latent code (w) 에 해당하는 부분 (dim: 512)
+# - code_mid              (Tensor)      : latent code (intermediate vector) 에 해당하는 부분
+# - layer_name            (str)         : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                         ('mapping_split1', 'mapping_split2' or 'w')
 # - save_dir              (str)         : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v9/inference_test_after_training)
 # - img_file_name         (str)         : 저장할 이미지 파일 이름
 # - vi                    (int)         : n vector index
@@ -423,18 +504,25 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
 #                                         {'eyes': float, 'mouth': float, 'pose': float}
 
 def generate_image(finetune_v9_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector,
-                   eyes_scores, mouth_scores, pose_scores, code_w, save_dir, img_file_name, vi, pms):
+                   eyes_scores, mouth_scores, pose_scores, code_mid, layer_name, save_dir, img_file_name, vi, pms):
 
     eyes_pm, mouth_pm, pose_pm = pms['eyes'], pms['mouth'], pms['pose']
 
     # generate image
-    with torch.no_grad():
-        code_w_ = code_w + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_W])
-        code_w_ = code_w_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_W])
-        code_w_ = code_w_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, :ORIGINAL_HIDDEN_DIMS_W])
-        code_w_ = code_w_.type(torch.float32)
+    if layer_name == 'w':
+        dim = ORIGINAL_HIDDEN_DIMS_W
+    elif layer_name == 'mapping_split1':
+        dim = HIDDEN_DIMS_MAPPING_SPLIT1
+    else:  # mapping_split2
+        dim = HIDDEN_DIMS_MAPPING_SPLIT2
 
-        images = generate_image_using_w(finetune_v9_generator, code_w_)
+    with torch.no_grad():
+        code_mid_ = code_mid + eyes_pm * torch.tensor(eyes_vector[vi:vi + 1, :dim])
+        code_mid_ = code_mid_ + mouth_pm * torch.tensor(mouth_vector[vi:vi + 1, :dim])
+        code_mid_ = code_mid_ + pose_pm * torch.tensor(pose_vector[vi:vi + 1, :dim])
+        code_mid_ = code_mid_.type(torch.float32)
+
+        images = generate_image_using_mid_vector(finetune_v9_generator, code_mid_, layer_name)
 
     save_image(os.path.join(save_dir, img_file_name), images[0])
 
@@ -451,7 +539,7 @@ def generate_image(finetune_v9_generator, property_score_cnn, eyes_vector, mouth
         pose_scores.append(round(property_scores_np[0][4], 4))
 
 
-# 이미지 50장 생성 후 비교 테스트를 위한, property score label (intermediate w vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
+# 이미지 50장 생성 후 비교 테스트를 위한, property score label (intermediate vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
 # Create Date : 2025.06.10
 # Last Update Date : -
 
@@ -511,13 +599,13 @@ if __name__ == '__main__':
 
     # get property score changing vector
     try:
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors('w')
         print('Existing "Property Score Changing Vector" info load successful!! 😊')
 
     except Exception as e:
         print(f'"Property Score Changing Vector" info load failed : {e}')
-        stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n=240000, ratio=0.2)
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+        stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n=240000, ratio=0.2, layer_name='w')
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors('w')
 
     # get Merged Property Score CNN
     property_score_cnn = load_merged_property_score_cnn(device)
@@ -527,12 +615,14 @@ if __name__ == '__main__':
 
     run_image_generation_test(finetune_v9_generator,
                               property_score_cnn,
-                              eyes_vectors,
-                              mouth_vectors,
-                              pose_vectors)
+                              layer_name='w',
+                              eyes_vectors=eyes_vectors,
+                              mouth_vectors=mouth_vectors,
+                              pose_vectors=pose_vectors)
 
     run_property_score_compare_test(finetune_v9_generator,
                                     property_score_cnn,
-                                    eyes_vectors,
-                                    mouth_vectors,
-                                    pose_vectors)
+                                    layer_name='w',
+                                    eyes_vectors=eyes_vectors,
+                                    mouth_vectors=mouth_vectors,
+                                    pose_vectors=pose_vectors)
