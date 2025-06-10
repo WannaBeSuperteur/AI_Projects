@@ -512,7 +512,7 @@ if __name__ == '__main__':
 
     except Exception as e:
         print(f'"Property Score Changing Vector" info load failed : {e}')
-        stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device)
+        stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n=240000, ratio=0.2)
         eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
 
     # get Merged Property Score CNN

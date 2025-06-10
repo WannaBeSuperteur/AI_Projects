@@ -96,7 +96,7 @@ def sample_w_and_compute_property_scores(finetune_v9_generator, property_score_c
     medians = get_medians()  # returned values : -0.4315, 0.5685, 0.6753, 0.0372
 
     z = np.random.normal(0, 1, size=(n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
-    w = np.zeros((n, ORIGINAL_HIDDEN_DIMS_Z)).astype(np.float64)
+    w = np.zeros((n, ORIGINAL_HIDDEN_DIMS_W)).astype(np.float64)
     additional = np.random.normal(0, 1, size=(n, ORIGINALLY_PROPERTY_DIMS)).astype(np.float64)
 
     # 생성된 이미지를 머리 색, 머리 길이, 배경 색 평균, "직모 vs. 곱슬" 평균의 CNN 도출 속성값에 따라 MBTI 처럼 16 개의 그룹으로 나눔
@@ -467,21 +467,24 @@ def save_property_score_vectors_info(property_score_vectors):
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
+# - n                     (int)       : 총 생성할 이미지 sample 개수
+# - ratio                 (float)     : 총 생성 이미지 중 SVM 의 학습 데이터로 사용할 TOP, BOTTOM 비율 (각각) (= k / n)
 
 # Returns:
 # - entire_accuracy_dict (dict) : 전체 group 에 대한 SVM accuracy 정보
 #                                 {'eyes': float, 'mouth': float, 'pose': float}
 
-def run_stylegan_vector_find(finetune_v9_generator, device):
+def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio):
     property_score_cnn = load_merged_property_score_cnn(device)
 
     # intermediate w vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
     sampling_start_at = time.time()
     w_vectors_by_group, property_scores = sample_w_and_compute_property_scores(finetune_v9_generator,
-                                                                               property_score_cnn)
+                                                                               property_score_cnn,
+                                                                               n)
     print(f'sampling (from latent vector w) running time (s) : {time.time() - sampling_start_at}\n')
 
-    indices_info = extract_best_and_worst_k_images(property_scores)
+    indices_info = extract_best_and_worst_k_images(property_scores, ratio)
 
     """
     tsne_start_at = time.time()

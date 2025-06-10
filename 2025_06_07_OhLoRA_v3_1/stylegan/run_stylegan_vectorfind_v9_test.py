@@ -59,7 +59,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
     finetune_v9_generator.load_state_dict(generator_state_dict)
 
     # get property score changing vector
-    entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device)
+    entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio)
     eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
 
     # get Merged Property Score CNN
