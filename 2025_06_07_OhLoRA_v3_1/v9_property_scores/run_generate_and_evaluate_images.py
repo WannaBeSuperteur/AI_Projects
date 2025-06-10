@@ -44,7 +44,7 @@ def load_stylegan_finetune_v9_generator(device):
     generator_path = f'{PROJECT_DIR_PATH}/stylegan/models/stylegan_gen_fine_tuned_v9.pth'
     generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
 
-    finetune_v9_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)
+    finetune_v9_generator = gen.StyleGANGeneratorForV9(resolution=IMAGE_RESOLUTION)
     finetune_v9_generator.load_state_dict(generator_state_dict)
     finetune_v9_generator.to(device)
     print('Existing StyleGAN-FineTune-v9 Generator load successful!! 😊')

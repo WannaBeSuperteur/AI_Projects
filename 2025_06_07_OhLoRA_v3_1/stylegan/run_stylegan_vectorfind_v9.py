@@ -483,7 +483,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for inferencing StyleGAN-FineTune-v9 : {device}')
 
-    finetune_v9_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)  # v1, v9 Generator 는 동일한 구조
+    finetune_v9_generator = gen.StyleGANGeneratorForV9(resolution=IMAGE_RESOLUTION)  # v1, v9 Generator 는 동일한 구조
 
     # try loading StyleGAN-VectorFind-v9 pre-trained model
     try:

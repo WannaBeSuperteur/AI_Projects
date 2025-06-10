@@ -52,7 +52,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
     print(f'device for inferencing StyleGAN-FineTune-v9 : {device}')
 
     # load StyleGAN-FineTune-v9 pre-trained model
-    finetune_v9_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)  # v1, v9 Generator 는 동일한 구조
+    finetune_v9_generator = gen.StyleGANGeneratorForV9(resolution=IMAGE_RESOLUTION)  # v1, v9 Generator 는 동일한 구조
     generator_state_dict = load_existing_stylegan_finetune_v9(device)
     print('Existing StyleGAN-FineTune-v9 Generator load successful!! 😊')
 
