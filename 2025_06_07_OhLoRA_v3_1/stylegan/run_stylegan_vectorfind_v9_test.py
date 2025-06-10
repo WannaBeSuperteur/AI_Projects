@@ -19,15 +19,17 @@ from run_stylegan_vectorfind_v9 import (get_property_change_vectors,
                                         run_property_score_compare_test)
 
 import torch
+import pandas as pd
+
 import os
 import shutil
-import pandas as pd
+import time
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_RESOLUTION = 256
 finetune_v9_generator = None
 
-test_result_svm = {'n': [], 'k': [],
+test_result_svm = {'n': [], 'k': [], 'time': [],
                    'svm_eyes_acc': [], 'svm_mouth_acc': [], 'svm_pose_acc': [],
                    'eyes_mean_corr': [], 'mouth_mean_corr': [], 'pose_mean_corr': [], 'sum_mean_corr': []}
 
@@ -48,6 +50,8 @@ os.makedirs(test_result_dir, exist_ok=True)
 
 def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
     global finetune_v9_generator
+
+    start_at = time.time()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for inferencing StyleGAN-FineTune-v9 : {device}')
@@ -82,8 +86,11 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
                                                                                       pose_vectors)
 
     # add experiment log
+    elapsed_time = time.time() - start_at
+
     test_result_svm['n'].append(n)
     test_result_svm['k'].append(int(round(n * ratio)))
+    test_result_svm['time'].append(round(elapsed_time, 2))
 
     test_result_svm['svm_eyes_acc'].append(round(entire_svm_accuracy_dict['eyes'], 4))
     test_result_svm['svm_mouth_acc'].append(round(entire_svm_accuracy_dict['mouth'], 4))
@@ -98,10 +105,14 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
     test_result_svm_df = pd.DataFrame(test_result_svm)
     test_result_svm_df.to_csv(f'{test_result_dir}/test_result_svm.csv')
 
-    # remove test directory
+    # re-initialize test directories
     shutil.rmtree(image_gen_report_dir)
     shutil.rmtree(vector_save_dir)
     shutil.rmtree(generated_img_dir)
+
+    os.makedirs(image_gen_report_dir)
+    os.makedirs(vector_save_dir)
+    os.makedirs(generated_img_dir)
 
 
 if __name__ == '__main__':
