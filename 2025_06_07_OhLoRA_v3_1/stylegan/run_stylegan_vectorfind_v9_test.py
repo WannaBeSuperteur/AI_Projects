@@ -35,6 +35,7 @@ image_gen_report_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/imag
 vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/property_score_vectors'
 generated_img_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/inference_test_after_training'
 test_result_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/test_result'
+os.makedirs(test_result_dir, exist_ok=True)
 
 
 # StyleGAN-VectorFind-v9 자동화 테스트 함수 (SVM 기반)
