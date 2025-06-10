@@ -77,7 +77,7 @@ def get_medians():
     return medians
 
 
-# intermediate vector 샘플링 및 해당 vector 값으로 생성된 이미지에 대한 semantic score 계산
+# intermediate vector 샘플링 및 해당 vector 값으로 생성된 이미지에 대한 property score 계산
 # Create Date : 2025.06.10
 # Last Update Date : 2025.06.10
 # - intermediate vector 를 추출할 레이어 지정 다양화

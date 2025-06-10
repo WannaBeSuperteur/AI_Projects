@@ -2,7 +2,7 @@ from torchvision.io import read_image
 
 try:
     from stylegan_vectorfind_v9.main import main_svm as stylegan_vectorfind_v9_main_svm
-    from stylegan_vectorfind_v9.run_vector_find import get_medians
+    from stylegan_vectorfind_v9.run_vector_find_svm import get_medians
     from stylegan_common.visualizer import postprocess_image, save_image
     import stylegan_common.stylegan_generator as gen
 
@@ -13,7 +13,7 @@ try:
 
 except:
     from stylegan.stylegan_vectorfind_v9.main import main_svm as stylegan_vectorfind_v9_main_svm
-    from stylegan.stylegan_vectorfind_v9.run_vector_find import get_medians
+    from stylegan.stylegan_vectorfind_v9.run_vector_find_svm import get_medians
     from stylegan.stylegan_common.visualizer import postprocess_image, save_image
     import stylegan.stylegan_common.stylegan_generator as gen
 

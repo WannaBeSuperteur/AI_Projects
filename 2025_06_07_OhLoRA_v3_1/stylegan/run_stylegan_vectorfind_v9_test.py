@@ -14,9 +14,9 @@ except:
                                  load_existing_stylegan_vectorfind_v9,
                                  load_merged_property_score_cnn)
 
-from run_stylegan_vectorfind_v9 import (get_property_change_vectors,
-                                        run_image_generation_test,
-                                        run_property_score_compare_test)
+from run_stylegan_vectorfind_v9_svm import (get_property_change_vectors,
+                                            run_image_generation_test,
+                                            run_property_score_compare_test)
 
 import torch
 import pandas as pd
