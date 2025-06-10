@@ -69,6 +69,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio):
     finetune_v9_generator.to(device)
 
     run_image_generation_test(finetune_v9_generator,
+                              property_score_cnn,
                               eyes_vectors,
                               mouth_vectors,
                               pose_vectors)

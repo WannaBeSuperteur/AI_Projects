@@ -99,6 +99,7 @@ def get_property_change_vectors():
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
+# - property_score_cnn    (nn.Module) : 핵심 속성 값 계산용 CNN 모델
 # - code_part1            (Tensor)    : latent code (w) 에 해당하는 부분 (dim: 512)
 # - code_part2            (Tensor)    : latent code 중 원래 StyleGAN-FineTune-v1 의 핵심 속성 값 목적으로 사용된 부분 (dim: 7)
 # - save_dir              (str)       : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v9/inference_test_after_training)
@@ -108,7 +109,7 @@ def get_property_change_vectors():
 # Returns:
 # - group_name (str) : 이미지의 group 이름 ('hhhh', 'hhhl', ..., 'llll' 중 하나)
 
-def get_group_name(finetune_v9_generator, code_part1, code_part2, save_dir, i, vi):
+def get_group_name(finetune_v9_generator, property_score_cnn, code_part1, code_part2, save_dir, i, vi):
 
     with torch.no_grad():
         images = finetune_v9_generator(code_part1.cuda(), code_part2.cuda(), **kwargs_val)['image']
@@ -139,6 +140,7 @@ def get_group_name(finetune_v9_generator, code_part1, code_part2, save_dir, i, v
 
 # Arguments:
 # - finetune_v9_generator (nn.Module)         : StyleGAN-FineTune-v9 의 Generator
+# - property_score_cnn    (nn.Module)         : 핵심 속성 값 계산용 CNN 모델
 # - eyes_vectors          (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - mouth_vectors         (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors          (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
@@ -146,7 +148,7 @@ def get_group_name(finetune_v9_generator, code_part1, code_part2, save_dir, i, v
 # Returns:
 # - stylegan_vectorfind_v9/inference_test_after_training 디렉토리에 이미지 생성 결과 저장
 
-def run_image_generation_test(finetune_v9_generator, eyes_vectors, mouth_vectors, pose_vectors):
+def run_image_generation_test(finetune_v9_generator, property_score_cnn, eyes_vectors, mouth_vectors, pose_vectors):
     save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/inference_test_after_training'
     os.makedirs(save_dir, exist_ok=True)
 
@@ -161,7 +163,8 @@ def run_image_generation_test(finetune_v9_generator, eyes_vectors, mouth_vectors
             code_w = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
 
         for vi in range(n_vector_cnt):
-            group_name = get_group_name(finetune_v9_generator, code_part1, code_part2, save_dir, i, vi)
+            group_name = get_group_name(finetune_v9_generator, property_score_cnn,
+                                        code_part1, code_part2, save_dir, i, vi)
 
             # run image generation test
             for property_name, vector_dict in zip(PROPERTY_NAMES, vector_dicts):
@@ -293,7 +296,8 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
 
         for vi in range(n_vector_cnt):
             if ohlora_w_group_names is None:
-                group_name = get_group_name(finetune_v9_generator, code_part1, code_part2, save_dir, i, vi)
+                group_name = get_group_name(finetune_v9_generator, property_score_cnn,
+                                            code_part1, code_part2, save_dir, i, vi)
             else:
                 n_vector_idx = i * n_vector_cnt + vi
                 group_name = ohlora_w_group_names[n_vector_idx]
@@ -522,6 +526,7 @@ if __name__ == '__main__':
     finetune_v9_generator.to(device)
 
     run_image_generation_test(finetune_v9_generator,
+                              property_score_cnn,
                               eyes_vectors,
                               mouth_vectors,
                               pose_vectors)
