@@ -1,16 +1,13 @@
 
 import torch
 import torch.nn as nn
-from torch.utils.data import random_split, DataLoader
-
-import pandas as pd
 import os
 
 try:
-    from run_train_cnn import HairstyleScoreCNN, get_dataloader
+    from train_cnn import HairstyleScoreCNN, get_dataloader
     from common import save_model_structure_pdf
 except:
-    from property_score_cnn.run_train_cnn import HairstyleScoreCNN, get_dataloader
+    from property_score_cnn.train_cnn import HairstyleScoreCNN, get_dataloader
     from property_score_cnn.common import save_model_structure_pdf
 
 
