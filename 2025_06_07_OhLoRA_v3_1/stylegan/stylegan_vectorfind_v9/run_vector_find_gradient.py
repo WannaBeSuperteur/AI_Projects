@@ -5,7 +5,10 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 from torchinfo import summary
 
-from nn_train_utils import run_train_process, run_test_process, get_mid_vector_dim, create_dataloader
+from stylegan_vectorfind_v9.nn_train_utils import (run_train_process,
+                                                   run_test_process,
+                                                   get_mid_vector_dim,
+                                                   create_dataloader)
 
 import time
 import os
