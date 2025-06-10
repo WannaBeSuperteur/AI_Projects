@@ -28,7 +28,12 @@
 **2. Oh-LoRA 👱‍♀️ (오로라) 이미지 생성 기술**
 
 * [Oh-LoRA v2](../2025_05_02_OhLoRA_v2) 및 [Oh-LoRA v3](../2025_05_26_OhLoRA_v3) 와 같이, 핵심 속성 값 (눈을 뜬 정도, 입을 벌린 정도, 고개 돌림 정도) 을 조정하는 벡터를 찾는 방법 사용
-  * [참고 논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md) 
+  * [참고 논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)
+
+**3. 참고 사항**
+
+* 본 프로젝트는 제품 출시는 없는 **순수 연구 프로젝트**
+* 본 프로젝트의 연구 결과는 **향후 Oh-LoRA 관련 다양한 제품 개발** 에 반영 예정
 
 ### 1-1. Oh-LoRA 👱‍♀️✨ (오로라) 소개
 
@@ -94,10 +99,10 @@
 |----------|-------------------------------------------------------------------------------------------------------------------------|------------------------|---------------------------------------|--------------------------------------------------------------------|----|
 | 🛠 사전 작업 | [StyleGAN-FineTune-v1](../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#3-1-image-generation-model-stylegan) 구현 | 06.07 토 (1d)           | ```P006-001-StyleGAN-FineTune-v1```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/27) | ✅  |
 | 🔨 모델 개선 | StyleGAN-FineTune-v9 개발 (w vector dim 512 → 2048)                                                                       | 06.07 토 (1d)           | ```P006-002-StyleGAN-FineTune-v9```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/28) | ✅  |
-| 🧪 모델 학습 | 필터링된 이미지를 StyleGAN-FineTune-v9 로 추가 Fine-Tuning                                                                         | 06.07 토 - 06.09 월 (3d) | ```P006-002-StyleGAN-FineTune-v9```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/28) | 💨 |
-| 🔨 모델 개선 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 구현 시, '곱슬머리 or 직모' 핵심 속성 값 추가 **(StyleGAN-VectorFind-v9)**             | 06.10 화 (1d)           | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
-| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(SVM)**                                                  | 06.10 화 - 06.11 수 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
-| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(Layer-wise Relevance Propagation)**                     | 06.11 수 - 06.12 목 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` |                                                                    | ⬜  |
+| 🧪 모델 학습 | 필터링된 이미지를 StyleGAN-FineTune-v9 로 추가 Fine-Tuning                                                                         | 06.07 토 - 06.09 월 (3d) | ```P006-002-StyleGAN-FineTune-v9```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/28) | ✅  |
+| 🔨 모델 개선 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 구현 시, '곱슬머리 or 직모' 핵심 속성 값 추가 **(StyleGAN-VectorFind-v9)**             | 06.10 화 (1d)           | ```P006-003-StyleGAN-VectorFind-v9``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/29) | 💨 |
+| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(SVM)**                                                  | 06.10 화 - 06.11 수 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/29) | ⬜  |
+| 🧪 모델 학습 | StyleGAN-FineTune-v9 에서 핵심 속성 값만 변화시키는 vector 추출 학습 및 성능 테스트 **(NN + Gradient)**                                        | 06.11 수 - 06.12 목 (2d) | ```P006-003-StyleGAN-VectorFind-v9``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/29) | ⬜  |
 | 📃 문서화   | StyleGAN 개발 내용 문서화                                                                                                      | 06.10 화 - 06.12 목 (3d) |                                       |                                                                    | ⬜  |
 
 ## 4. 프로젝트 상세 설명
