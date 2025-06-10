@@ -148,27 +148,29 @@ def sample_vector_and_compute_property_scores(finetune_v9_generator, property_sc
 
 # StyleGAN-VectorFind-v9 모델의 Gradient (= 핵심 속성 값 변화 벡터) 탐색 용 간단한 딥러닝 모델 정의
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.11
+# - 변수명 수정 (vectorfind_v9_gradient_nn -> vectorfind_v9_nn)
 
 # Arguments:
 # - layer_name (str) : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름 ('mapping_split1', 'mapping_split2' or 'w')
 
 # Returns:
-# - vectorfind_v9_gradient_nn (nn.Module) : StyleGAN-VectorFind-v9 Gradient (= 핵심 속성 값 변화 벡터) 탐색 용 딥러닝 모델
+# - vectorfind_v9_nn (nn.Module) : StyleGAN-VectorFind-v9 Gradient (= 핵심 속성 값 변화 벡터) 탐색 용 딥러닝 모델
 
 def define_nn_model(layer_name):
     mid_vector_dim = get_mid_vector_dim(layer_name)
 
-    nn = SimpleNNForVectorFindV9(mid_vector_dim)
-    nn.optimizer = torch.optim.AdamW(nn.parameters(), lr=0.001)
-    nn.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=nn.optimizer, gamma=0.95)
+    vectorfind_v9_nn = SimpleNNForVectorFindV9(mid_vector_dim)
+    vectorfind_v9_nn.optimizer = torch.optim.AdamW(vectorfind_v9_nn.parameters(), lr=0.001)
+    vectorfind_v9_nn.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=vectorfind_v9_nn.optimizer,
+                                                                        gamma=0.95)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    nn.to(device)
-    nn.device = device
+    vectorfind_v9_nn.to(device)
+    vectorfind_v9_nn.device = device
 
-    summary(nn, input_size=(TRAIN_BATCH_SIZE, mid_vector_dim))
-    return nn
+    summary(vectorfind_v9_nn, input_size=(TRAIN_BATCH_SIZE, mid_vector_dim))
+    return vectorfind_v9_nn
 
 
 # StyleGAN-FineTune-v9 모델을 이용한 vector find 실시 (간단한 딥러닝 & Gradient 이용)

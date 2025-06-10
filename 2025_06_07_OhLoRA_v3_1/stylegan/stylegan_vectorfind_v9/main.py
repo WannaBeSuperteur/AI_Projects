@@ -1,10 +1,12 @@
 try:
     import stylegan_common.stylegan_generator_inference as infer
-    from stylegan_vectorfind_v9.run_vector_find import run_stylegan_vector_find
+    from stylegan_vectorfind_v9.run_vector_find_svm import run_stylegan_vector_find as run_stylegan_vector_find_svm
+    from stylegan_vectorfind_v9.run_vector_find_gradient import run_stylegan_vector_find_gradient
     from common import save_model_structure_pdf
 except:
     import stylegan.stylegan_common.stylegan_generator_inference as infer
-    from stylegan.stylegan_vectorfind_v9.run_vector_find import run_stylegan_vector_find
+    from stylegan.stylegan_vectorfind_v9.run_vector_find_svm import run_stylegan_vector_find as run_stylegan_vector_find_svm
+    from stylegan.stylegan_vectorfind_v9.run_vector_find_gradient import run_stylegan_vector_find_gradient
     from stylegan.common import save_model_structure_pdf
 
 import os
@@ -67,5 +69,18 @@ def main_svm(finetune_v9_generator, device, n, ratio, layer_name):
     run_inference_test_before_training(finetune_v9_generator)
 
     # Fine Tuning and return SVM accuracy
-    entire_accuracy_dict = run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name)
+    entire_accuracy_dict = run_stylegan_vector_find_svm(finetune_v9_generator, device, n, ratio, layer_name)
+    return entire_accuracy_dict
+
+
+def main_gradient(finetune_v9_generator, device, n, layer_name):
+
+    # model structure PDF file
+    create_model_structure_pdf(finetune_v9_generator)
+
+    # run inference test before training
+    run_inference_test_before_training(finetune_v9_generator)
+
+    # Fine Tuning and return SVM accuracy
+    entire_accuracy_dict = run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_name)
     return entire_accuracy_dict
