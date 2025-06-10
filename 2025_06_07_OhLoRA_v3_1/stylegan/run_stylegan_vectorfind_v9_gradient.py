@@ -4,25 +4,33 @@ try:
     from stylegan_vectorfind_v9.main import main_gradient as stylegan_vectorfind_v9_main_gradient
     from stylegan_vectorfind_v9.run_vector_find_gradient import SimpleNNForVectorFindV9
     from stylegan_vectorfind_v9.nn_train_utils import get_mid_vector_dim
-    from stylegan_common.visualizer import postprocess_image, save_image
+    from stylegan_common.visualizer import save_image
     import stylegan_common.stylegan_generator as gen
 
     from common import (load_existing_stylegan_finetune_v9,
                         load_existing_stylegan_vectorfind_v9,
                         stylegan_transform,
                         load_merged_property_score_cnn)
+    from common_vectorfind_v9 import (generate_image_using_mid_vector,
+                                      generate_code_mid,
+                                      load_ohlora_z_vectors,
+                                      get_pm_labels)
 
 except:
     from stylegan.stylegan_vectorfind_v9.main import main_gradient as stylegan_vectorfind_v9_main_gradient
     from stylegan.stylegan_vectorfind_v9.run_vector_find_gradient import SimpleNNForVectorFindV9
     from stylegan.stylegan_vectorfind_v9.nn_train_utils import get_mid_vector_dim
-    from stylegan.stylegan_common.visualizer import postprocess_image, save_image
+    from stylegan.stylegan_common.visualizer import save_image
     import stylegan.stylegan_common.stylegan_generator as gen
 
     from stylegan.common import (load_existing_stylegan_finetune_v9,
                                  load_existing_stylegan_vectorfind_v9,
                                  stylegan_transform,
                                  load_merged_property_score_cnn)
+    from stylegan.common_vectorfind_v9 import (generate_image_using_mid_vector,
+                                               generate_code_mid,
+                                               load_ohlora_z_vectors,
+                                               get_pm_labels)
 
 import torch
 import os
@@ -53,40 +61,6 @@ PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 
-def generate_image_using_mid_vector(finetune_v9_generator, mid_vector, layer_name,
-                                    trunc_psi=1.0, trunc_layers=0, randomize_noise=False, lod=None):
-
-    if layer_name == 'w':
-        with torch.no_grad():
-            wp = finetune_v9_generator.truncation(mid_vector, trunc_psi, trunc_layers)
-            images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
-            images = postprocess_image(images.detach().cpu().numpy())
-
-    elif layer_name == 'mapping_split1':
-        with torch.no_grad():
-            w1 = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]
-            w2 = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]
-            w1_ = finetune_v9_generator.mapping.dense7(w1.cuda()).detach().cpu()
-            w2_ = finetune_v9_generator.mapping.dense_new1(w2.cuda()).detach().cpu()
-            w = w1_ + w2_
-
-            wp = finetune_v9_generator.truncation(w, trunc_psi, trunc_layers)
-            images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
-            images = postprocess_image(images.detach().cpu().numpy())
-
-    else:  # mapping_split2
-        with torch.no_grad():
-            w1_ = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]
-            w2_ = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]
-            w = w1_ + w2_
-
-            wp = finetune_v9_generator.truncation(w, trunc_psi, trunc_layers)
-            images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
-            images = postprocess_image(images.detach().cpu().numpy())
-
-    return images
-
-
 # Property Score 값을 변경하기 위한 Gradient 를 계산하는 Simple Neural Network 모델 반환
 # Create Date : 2025.06.11
 # Last Update Date : -
@@ -113,38 +87,6 @@ def get_property_change_gradient_nn(property_name, layer_name):
     print(f'Existing StyleGAN-VectorFind-v9 Gradient NN (property: {property_name}) load successful!! 😊')
 
     return vectorfind_v9_nn
-
-
-# 이미지 생성을 위한 concatenated intermediate vector 생성 및 반환
-# Create Date : 2025.06.11
-# Last Update Date : -
-
-# Arguments:
-# - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
-# - layer_name            (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
-#                                       ('mapping_split1', 'mapping_split2' or 'w')
-# - code_part1            (Tensor)    : latent z vector 의 앞부분 (dim = 512)
-# - code_part2            (Tensor)    : latent z vector 의 뒷부분 (dim = 7)
-
-# Returns:
-# - code_mid (Tensor) : 이미지 생성을 위한 concatenated intermediate vector
-
-def generate_code_mid(finetune_v9_generator, layer_name, code_part1, code_part2):
-    with torch.no_grad():
-        if layer_name == 'w':
-            code_mid = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
-
-        elif layer_name == 'mapping_split1':
-            code_w1 = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w1'].detach().cpu()
-            code_w2 = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w2'].detach().cpu()
-            code_mid = torch.concat([code_w1, code_w2], dim=1)
-
-        else:  # mapping_split2
-            code_w1_ = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w1_'].detach().cpu()
-            code_w2_ = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w2_'].detach().cpu()
-            code_mid = torch.concat([code_w1_, code_w2_], dim=1)
-
-    return code_mid
 
 
 # intermediate vector 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
@@ -193,29 +135,6 @@ def run_image_generation_test(finetune_v9_generator, layer_name, eyes_gradient_n
 
                     save_image(os.path.join(save_dir, f'case_{i:02d}_{property_name}_pm_{pm_idx}.jpg'),
                                images[0])
-
-
-# Oh-LoRA 이미지 생성용 latent z vector 가 저장된 파일을 먼저 불러오기 시도
-# Create Date : 2025.06.11
-# Last Update Date : -
-
-# Arguments:
-# - vector_csv_path (str) : latent z vector 가 저장된 csv 파일의 경로
-
-# Returns:
-# - ohlora_z_vectors (NumPy array or None) : Oh-LoRA 이미지 생성용 latent z vector (불러오기 성공 시)
-#                                            None (불러오기 실패 시)
-
-def load_ohlora_z_vectors(vector_csv_path):
-    try:
-        ohlora_z_vectors_df = pd.read_csv(vector_csv_path)
-        ohlora_z_vectors = np.array(ohlora_z_vectors_df)
-        print(f'Oh-LoRA z vector load successful!! 👱‍♀️✨')
-        return ohlora_z_vectors
-
-    except Exception as e:
-        print(f'Oh-LoRA z vector load failed ({e}), using random-generated z vectors')
-        return None
 
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
@@ -446,37 +365,6 @@ def generate_image(finetune_v9_generator, property_score_cnn, eyes_vector, mouth
         eyes_scores.append(round(property_scores_np[0][0], 4))
         mouth_scores.append(round(property_scores_np[0][3], 4))
         pose_scores.append(round(property_scores_np[0][4], 4))
-
-
-# 이미지 50장 생성 후 비교 테스트를 위한, property score label (intermediate vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
-# Create Date : 2025.06.11
-# Last Update Date : -
-
-# Arguments:
-# - 없음
-
-# Returns:
-# - eyes_pm_order  (list(float)) : eyes (눈을 뜬 정도) 속성에 대한 50장 각각의 property score label
-# - mouth_pm_order (list(float)) : mouth (입을 벌린 정도) 속성에 대한 50장 각각의 property score label
-# - pose_pm_order  (list(float)) : pose (고개 돌림) 속성에 대한 50장 각각의 property score label
-
-def get_pm_labels():
-    eyes_pms = [-1.2, 1.2]
-    mouth_pms = [-1.8, -0.9, 0.0, 0.9, 1.8]
-    pose_pms = [-1.8, -1.2, -0.6, 0.0, 0.6]
-
-    eyes_pm_order = []
-    mouth_pm_order = []
-    pose_pm_order = []
-
-    for mouth in mouth_pms:
-        for eyes in eyes_pms:
-            for pose in pose_pms:
-                eyes_pm_order.append(eyes)
-                mouth_pm_order.append(mouth)
-                pose_pm_order.append(pose)
-
-    return eyes_pm_order, mouth_pm_order, pose_pm_order
 
 
 if __name__ == '__main__':
