@@ -9,7 +9,7 @@ import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
-from property_score_cnn.run_merged_cnn import MergedPropertyScoreCNN
+from property_score_cnn.merged_cnn import MergedPropertyScoreCNN
 
 
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan/model_structure_pdf'

@@ -11,7 +11,7 @@ sys.path.append(PROJECT_DIR_PATH)
 
 import stylegan.stylegan_common.stylegan_generator as gen
 from stylegan.stylegan_common.visualizer import save_image, postprocess_image
-from property_score_cnn.run_merged_cnn import MergedPropertyScoreCNN
+from property_score_cnn.merged_cnn import MergedPropertyScoreCNN
 
 
 IMAGE_RESOLUTION = 256
