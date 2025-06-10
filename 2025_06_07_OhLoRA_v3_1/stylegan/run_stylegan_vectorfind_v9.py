@@ -1,7 +1,7 @@
 from torchvision.io import read_image
 
 try:
-    from stylegan_vectorfind_v9.main import main as stylegan_vectorfind_v9_main
+    from stylegan_vectorfind_v9.main import main_svm as stylegan_vectorfind_v9_main_svm
     from stylegan_vectorfind_v9.run_vector_find import get_medians
     from stylegan_common.visualizer import postprocess_image, save_image
     import stylegan_common.stylegan_generator as gen
@@ -12,7 +12,7 @@ try:
                         load_merged_property_score_cnn)
 
 except:
-    from stylegan.stylegan_vectorfind_v9.main import main as stylegan_vectorfind_v9_main
+    from stylegan.stylegan_vectorfind_v9.main import main_svm as stylegan_vectorfind_v9_main_svm
     from stylegan.stylegan_vectorfind_v9.run_vector_find import get_medians
     from stylegan.stylegan_common.visualizer import postprocess_image, save_image
     import stylegan.stylegan_common.stylegan_generator as gen
@@ -69,7 +69,7 @@ def generate_image_using_w(finetune_v9_generator, w, trunc_psi=1.0, trunc_layers
 # - mouth_vectors (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors  (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 
-def get_property_change_vectors(vectorfind_version):
+def get_property_change_vectors():
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/property_score_vectors'
 
     eyes_vectors = {}
@@ -236,6 +236,11 @@ def load_ohlora_w_group_names(group_name_csv_path):
 # - pose_vectors          (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 
 # Returns:
+# - eyes_corr_mean  (float) : eyes (눈을 뜬 정도) 속성값에 대한 "의도한 값" - "생성된 이미지 실측값" 에 대한 실측값의 상관계수 평균
+# - mouth_corr_mean (float) : eyes (눈을 뜬 정도) 속성값에 대한 "의도한 값" - "생성된 이미지 실측값" 에 대한 실측값의 상관계수 평균
+# - pose_corr_mean  (float) : eyes (눈을 뜬 정도) 속성값에 대한 "의도한 값" - "생성된 이미지 실측값" 에 대한 실측값의 상관계수 평균
+
+# File Outputs:
 # - stylegan_vectorfind_v9/inference_test_after_training 디렉토리에 이미지 생성
 # - stylegan_vectorfind_v9/image_generation_report 디렉토리에 테스트 결과를 csv 파일로 저장
 
@@ -390,6 +395,8 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, e
     pd.DataFrame(code_part2s_np).to_csv(f'{image_gen_report_path}/latent_codes_part2.csv', index=False)
     pd.DataFrame(code_all_np).to_csv(f'{image_gen_report_path}/latent_codes_all.csv', index=False)
 
+    return eyes_corr_mean, mouth_corr_mean, pose_corr_mean
+
 
 # 주어진 eyes, mouth, pose 핵심 속성 값 변화 벡터를 이용하여 이미지 생성
 # Create Date : 2025.06.10
@@ -505,7 +512,7 @@ if __name__ == '__main__':
 
     except Exception as e:
         print(f'"Property Score Changing Vector" info load failed : {e}')
-        stylegan_vectorfind_v9_main(finetune_v9_generator, device)
+        stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device)
         eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
 
     # get Merged Property Score CNN

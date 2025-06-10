@@ -127,6 +127,8 @@
 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report/latent_*.csv
 2025_05_26_OhLoRA_v3/llm/models
 2025_05_26_OhLoRA_v3/llm/models/*
+2025_06_07_OhLoRA_v3_1/property_score_cnn/models/*.pt
+2025_06_07_OhLoRA_v3_1/property_score_cnn/models/*.pth
 2025_06_07_OhLoRA_v3_1/stylegan/models/*.pt
 2025_06_07_OhLoRA_v3_1/stylegan/models/*.pth
 2025_06_07_OhLoRA_v3_1/stylegan/generated_face_images_filtered

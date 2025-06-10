@@ -9,6 +9,8 @@ import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
+from property_score_cnn.run_merged_cnn import MergedPropertyScoreCNN
+
 
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan/model_structure_pdf'
 MERGED_PROPERTY_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/ohlora_v3_merged_property_cnn.pth'
@@ -146,3 +148,25 @@ def load_existing_stylegan_vectorfind_v9(device):
     return generator_state_dict
 
 
+# Merged Property Score CNN (hairstyle 포함한 핵심 속성 값 계산용 CNN) 로딩
+# Create Date : 2025.06.10
+# Last Update Date : -
+
+# Arguments:
+# - device (Device) : CUDA or CPU device
+
+# Returns:
+# - merged_property_score_cnn (nn.Module) : Merged Property Score CNN (핵심 속성 값 계산용 CNN)
+
+def load_merged_property_score_cnn(device):
+    merged_property_cnn_model = MergedPropertyScoreCNN()
+    merged_property_cnn_state_dict = torch.load(MERGED_PROPERTY_SCORE_CNN_PATH,
+                                                map_location=device,
+                                                weights_only=False)
+    merged_property_cnn_model.load_state_dict(merged_property_cnn_state_dict)
+
+    merged_property_cnn_model.to(device)
+    merged_property_cnn_model.device = device
+    print('Existing Merged Property CNN load successful!! 😊')
+
+    return merged_property_cnn_model

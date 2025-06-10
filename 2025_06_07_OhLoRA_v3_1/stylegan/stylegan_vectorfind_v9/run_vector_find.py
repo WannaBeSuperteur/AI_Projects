@@ -468,6 +468,10 @@ def save_property_score_vectors_info(property_score_vectors):
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
 
+# Returns:
+# - entire_accuracy_dict (dict) : 전체 group 에 대한 SVM accuracy 정보
+#                                 {'eyes': float, 'mouth': float, 'pose': float}
+
 def run_stylegan_vector_find(finetune_v9_generator, device):
     property_score_cnn = load_merged_property_score_cnn(device)
 
@@ -496,17 +500,24 @@ def run_stylegan_vector_find(finetune_v9_generator, device):
         svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info =(
             train_svm(w_vectors_by_group, group_name, indices_info, svm_classifiers))
 
-        for property_name in ['eyes', 'mouth', 'pose']:
+        for property_name in PROPERTY_NAMES:
             entire_valid_count[property_name] += total_valid_cnt_info[property_name]
             entire_valid_correct_count[property_name] += total_valid_correct_cnt_info[property_name]
 
     print('\n=== ENTIRE SVM ACCURACY ===')
+    entire_accuracy_dict = {}
+
     for property_name in PROPERTY_NAMES:
         entire_valid = entire_valid_count[property_name]
         entire_valid_correct = entire_valid_correct_count[property_name]
         entire_accuracy = entire_valid_correct / entire_valid
+
         print(f'entire accuracy for {property_name} : {entire_accuracy:.4f} ({entire_valid_correct} / {entire_valid})')
+        entire_accuracy_dict[property_name] = entire_accuracy
+
     print(f'\nSVM training running time (s) : {time.time() - svm_train_start_at}')
 
     property_score_vectors = find_property_score_vectors(svm_classifiers)
     save_property_score_vectors_info(property_score_vectors)
+
+    return entire_accuracy_dict
