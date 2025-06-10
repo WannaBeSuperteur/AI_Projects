@@ -17,7 +17,6 @@ RANK = 0
 WORLD_SIZE = 1
 VALID_BATCH_SIZE = 4
 IMG_RESOLUTION = 256
-DIM_W = 512
 
 
 def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_start_idx=0, verbose=True,
@@ -58,7 +57,15 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
     batch_count = len(indices) // VALID_BATCH_SIZE
     start_at = time.time()
     all_images = np.zeros((num, IMG_RESOLUTION, IMG_RESOLUTION, 3))
-    all_mid_vectors = np.zeros((num, DIM_W))
+
+    if return_vector_at == 'w':
+        dim_mid = 512
+    elif return_vector_at == 'mapping_split1':
+        dim_mid = 512 + 2048
+    else:  # mapping_split2:
+        dim_mid = 512 + 512
+
+    all_mid_vectors = np.zeros((num, dim_mid))
 
     for batch_idx in range(0, len(indices), VALID_BATCH_SIZE):
         sub_indices = indices[batch_idx:batch_idx + VALID_BATCH_SIZE]
@@ -84,10 +91,11 @@ def synthesize(generator_model, num, save_dir, z=None, label=None, img_name_star
                     mid_vectors = gen_results['w'].detach().cpu().numpy()
                 elif return_vector_at == 'mapping_split1':
                     mid_vectors = np.concatenate([gen_results['w1'].detach().cpu().numpy(),
-                                                 gen_results['w2'].detach().cpu().numpy()], axis=1)  # TODO check
+                                                 gen_results['w2'].detach().cpu().numpy()], axis=1)
+
                 else:  # mapping_split2
                     mid_vectors = np.concatenate([gen_results['w1_'].detach().cpu().numpy(),
-                                                 gen_results['w2_'].detach().cpu().numpy()], axis=1)  # TODO check
+                                                 gen_results['w2_'].detach().cpu().numpy()], axis=1)
 
             else:
                 images = generator_model(code, property_vector, **generator_model.G_kwargs_val)['image']

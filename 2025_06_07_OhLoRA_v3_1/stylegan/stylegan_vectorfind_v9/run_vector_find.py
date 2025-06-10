@@ -513,8 +513,8 @@ def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name
     sampling_start_at = time.time()
     mid_vectors_by_group, property_scores = sample_vector_and_compute_property_scores(finetune_v9_generator,
                                                                                       property_score_cnn,
-                                                                                      n,
-                                                                                      layer_name)
+                                                                                      layer_name,
+                                                                                      n)
 
     print(f'sampling (from latent vector {layer_name}) running time (s) : {time.time() - sampling_start_at}\n')
 

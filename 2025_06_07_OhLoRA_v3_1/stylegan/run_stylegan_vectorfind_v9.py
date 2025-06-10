@@ -66,11 +66,11 @@ def generate_image_using_mid_vector(finetune_v9_generator, mid_vector, layer_nam
 
     elif layer_name == 'mapping_split1':
         with torch.no_grad():
-            w1 = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]  # TODO check
-            w2 = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]  # TODO check
-            w1_ = finetune_v9_generator.__getattr__(f'dense7')(w1.cuda()).detach().cpu()
-            w2_ = finetune_v9_generator.__getattr__(f'dense_new1')(w2.cuda()).detach().cpu()
-            w = torch.concat([w1_, w2_], dim=1)  # TODO check
+            w1 = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]
+            w2 = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]
+            w1_ = finetune_v9_generator.mapping.dense7(w1.cuda()).detach().cpu()
+            w2_ = finetune_v9_generator.mapping.dense_new1(w2.cuda()).detach().cpu()
+            w = w1_ + w2_
 
             wp = finetune_v9_generator.truncation(w, trunc_psi, trunc_layers)
             images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
@@ -78,9 +78,9 @@ def generate_image_using_mid_vector(finetune_v9_generator, mid_vector, layer_nam
 
     else:  # mapping_split2
         with torch.no_grad():
-            w1_ = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]  # TODO check
-            w2_ = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]  # TODO check
-            w = torch.concat([w1_, w2_], dim=1)  # TODO check
+            w1_ = mid_vector[:, :ORIGINAL_HIDDEN_DIMS_W]
+            w2_ = mid_vector[:, ORIGINAL_HIDDEN_DIMS_W:]
+            w = w1_ + w2_
 
             wp = finetune_v9_generator.truncation(w, trunc_psi, trunc_layers)
             images = finetune_v9_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
@@ -191,12 +191,12 @@ def generate_code_mid(finetune_v9_generator, layer_name, code_part1, code_part2)
         elif layer_name == 'mapping_split1':
             code_w1 = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w1'].detach().cpu()
             code_w2 = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w2'].detach().cpu()
-            code_mid = torch.concat([code_w1, code_w2], dim=1)  # TODO check
+            code_mid = torch.concat([code_w1, code_w2], dim=1)
 
         else:  # mapping_split2
             code_w1_ = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w1_'].detach().cpu()
             code_w2_ = finetune_v9_generator.mapping(code_part1.cuda(), code_part2.cuda())['w2_'].detach().cpu()
-            code_mid = torch.concat([code_w1_, code_w2_], dim=1)  # TODO check
+            code_mid = torch.concat([code_w1_, code_w2_], dim=1)
 
     return code_mid
 
