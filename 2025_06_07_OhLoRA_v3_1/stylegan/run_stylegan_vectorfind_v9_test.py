@@ -40,7 +40,7 @@ test_result_svm = {'n': [], 'k': [], 'time': [],
                    'eyes_mean_corr': [], 'mouth_mean_corr': [], 'pose_mean_corr': [], 'sum_mean_corr': []}
 
 test_result_grad = {'n': [], 'time': [],
-                    'nn_eyes_acc': [], 'nn_mouth_acc': [], 'nn_pose_acc': [],
+                    'nn_eyes_mse': [], 'nn_mouth_mse': [], 'nn_pose_mse': [],
                     'eyes_mean_corr': [], 'mouth_mean_corr': [], 'pose_mean_corr': [], 'sum_mean_corr': []}
 
 image_gen_report_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/image_generation_report'
@@ -154,7 +154,7 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
     finetune_v9_generator.load_state_dict(generator_state_dict)
 
     # save gradient neural network
-    entire_accuracy_dict = stylegan_vectorfind_v9_main_gradient(finetune_v9_generator, device, n, layer_name)
+    mse_errors = stylegan_vectorfind_v9_main_gradient(finetune_v9_generator, device, n, layer_name)
     eyes_gradient_nn = get_property_change_gradient_nn(property_name='eyes', layer_name=layer_name)
     mouth_gradient_nn = get_property_change_gradient_nn(property_name='mouth', layer_name=layer_name)
     pose_gradient_nn = get_property_change_gradient_nn(property_name='pose', layer_name=layer_name)
@@ -185,9 +185,9 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
     test_result_grad['n'].append(n)
     test_result_grad['time'].append(round(elapsed_time, 2))
 
-    test_result_grad['nn_eyes_acc'].append(round(entire_accuracy_dict['eyes'], 4))
-    test_result_grad['nn_mouth_acc'].append(round(entire_accuracy_dict['mouth'], 4))
-    test_result_grad['nn_pose_acc'].append(round(entire_accuracy_dict['pose'], 4))
+    test_result_grad['nn_eyes_mse'].append(round(mse_errors['eyes'], 4))
+    test_result_grad['nn_mouth_mse'].append(round(mse_errors['mouth'], 4))
+    test_result_grad['nn_pose_mse'].append(round(mse_errors['pose'], 4))
 
     sum_mean_corr = abs(round(eyes_corr_mean, 4)) + abs(round(mouth_corr_mean, 4)) + abs(round(pose_corr_mean, 4))
     test_result_grad['eyes_mean_corr'].append(abs(round(eyes_corr_mean, 4)))

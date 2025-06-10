@@ -81,6 +81,6 @@ def main_gradient(finetune_v9_generator, device, n, layer_name):
     # run inference test before training
     run_inference_test_before_training(finetune_v9_generator)
 
-    # Fine Tuning and return SVM accuracy
-    entire_accuracy_dict = run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_name)
-    return entire_accuracy_dict
+    # Fine Tuning and return Gradient NN MSE error
+    mse_errors = run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_name)
+    return mse_errors
