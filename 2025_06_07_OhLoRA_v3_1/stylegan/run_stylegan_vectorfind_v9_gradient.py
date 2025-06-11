@@ -121,6 +121,7 @@ def run_image_generation_test(finetune_v9_generator, layer_name, eyes_gradient_n
             output = gradient_nn(code_mid.cuda())
             output.backward()
             gradient = code_mid.grad.detach().cpu()
+            gradient = gradient / np.linalg.norm(gradient)
 
             output = output.detach().cpu()      # to prevent memory leak
             code_mid = code_mid.detach().cpu()  # to prevent memory leak
@@ -139,7 +140,8 @@ def run_image_generation_test(finetune_v9_generator, layer_name, eyes_gradient_n
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.06.11
-# Last Update Date : -
+# Last Update Date : 2025.06.11
+# - {eyes|mouth|pose}_pms (핵심 속성 값에 대한 property score label 의 종류) 를 get_pm_labels 함수의 인수로 추가
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
@@ -169,7 +171,11 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
     passed_count = 0
 
     # label: 'eyes', 'mouth', 'pose'
-    eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels()
+    eyes_pms = [-1.2, 1.2]
+    mouth_pms = [-1.6, -0.8, 0.0, 0.8, 1.6]
+    pose_pms = [-1.4, -0.7, 0.0, 0.7, 1.4]
+
+    eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels(eyes_pms, mouth_pms, pose_pms)
     pm_cnt = len(eyes_pm_order)
 
     all_data_dict = {'case': [], 'passed': [], 'eyes_corr': [], 'mouth_corr': [], 'pose_corr': []}
@@ -211,6 +217,7 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
             output = gradient_nn(code_mid.cuda())
             output.backward()
             gradient = code_mid.grad.detach().cpu()
+            gradient = gradient / np.linalg.norm(gradient)
 
             output = output.detach().cpu()      # to prevent memory leak
             code_mid = code_mid.detach().cpu()  # to prevent memory leak

@@ -135,7 +135,8 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name):
 
 # StyleGAN-VectorFind-v9 자동화 테스트 함수 (Gradient Neural Network 기반)
 # Create Date : 2025.06.11
-# Last Update Date : -
+# Last Update Date : 2025.06.11
+# - Gradient NN 가중치 파일 삭제 오류 해결
 
 # Arguments:
 # - n          (int) : 총 생성할 이미지 sample 개수
@@ -212,7 +213,9 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
 
     # remove NN models for gradients
     for property_name in PROPERTY_NAMES:
-        shutil.rmtree(f'{models_dir}/stylegan_gen_vector_find_v9_nn_{property_name}.pth')
+        model_path = f'{models_dir}/stylegan_gen_vector_find_v9_nn_{property_name}.pth'
+        if os.path.isfile(model_path):
+            os.remove(model_path)
 
 
 if __name__ == '__main__':

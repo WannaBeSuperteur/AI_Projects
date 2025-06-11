@@ -222,8 +222,8 @@ def load_ohlora_mid_vector_group_names(group_name_csv_path, layer_name):
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.10
-# - intermediate vector 를 추출할 레이어 지정 다양화
+# Last Update Date : 2025.06.11
+# - {eyes|mouth|pose}_pms (핵심 속성 값에 대한 property score label 의 종류) 를 get_pm_labels 함수의 인수로 추가
 
 # Arguments:
 # - finetune_v9_generator (nn.Module)         : StyleGAN-FineTune-v9 의 Generator
@@ -256,7 +256,11 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
                                                                 layer_name=layer_name)
 
     # label: 'eyes', 'mouth', 'pose'
-    eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels()
+    eyes_pms = [-1.2, 1.2]
+    mouth_pms = [-1.8, -0.9, 0.0, 0.9, 1.8]
+    pose_pms = [-1.8, -1.2, -0.6, 0.0, 0.6]
+
+    eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels(eyes_pms, mouth_pms, pose_pms)
     pm_cnt = len(eyes_pm_order)
 
     all_data_dict = {'case': [], 'vector_no': [], 'passed': [], 'group_name': [],

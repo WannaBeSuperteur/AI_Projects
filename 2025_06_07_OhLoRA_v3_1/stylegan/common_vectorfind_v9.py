@@ -103,21 +103,20 @@ def load_ohlora_z_vectors(vector_csv_path):
 
 # 이미지 50장 생성 후 비교 테스트를 위한, property score label (intermediate vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.11
+# - 각 옵션 (SVM, Gradient) 별 label 지정하기 위해 인수 추가
 
 # Arguments:
-# - 없음
+# - eyes_pms  (list(float)) : eyes (눈을 뜬 정도) 속성에 대한 property score label 의 종류
+# - mouth_pms (list(float)) : mouth (입을 벌린 정도) 속성에 대한 property score label 의 종류
+# - pose_pms  (list(float)) : pose (고개 돌림) 속성에 대한 property score label 의 종류
 
 # Returns:
 # - eyes_pm_order  (list(float)) : eyes (눈을 뜬 정도) 속성에 대한 50장 각각의 property score label
 # - mouth_pm_order (list(float)) : mouth (입을 벌린 정도) 속성에 대한 50장 각각의 property score label
 # - pose_pm_order  (list(float)) : pose (고개 돌림) 속성에 대한 50장 각각의 property score label
 
-def get_pm_labels():
-    eyes_pms = [-1.2, 1.2]
-    mouth_pms = [-1.8, -0.9, 0.0, 0.9, 1.8]
-    pose_pms = [-1.8, -1.2, -0.6, 0.0, 0.6]
-
+def get_pm_labels(eyes_pms, mouth_pms, pose_pms):
     eyes_pm_order = []
     mouth_pm_order = []
     pose_pm_order = []
