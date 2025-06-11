@@ -119,13 +119,13 @@ def get_mid_vector_dim(layer_name):
         return 512 + 512
 
 
-def create_dataloader(example_dataset):
-    dataset_size = len(example_dataset)
+def create_dataloader(dataset):
+    dataset_size = len(dataset)
     train_size = int(dataset_size * 0.8)
     valid_size = int(dataset_size * 0.1)
     test_size = dataset_size - (train_size + valid_size)
 
-    train_dataset, valid_dataset, test_dataset = random_split(example_dataset, [train_size, valid_size, test_size])
+    train_dataset, valid_dataset, test_dataset = random_split(dataset, [train_size, valid_size, test_size])
     train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
