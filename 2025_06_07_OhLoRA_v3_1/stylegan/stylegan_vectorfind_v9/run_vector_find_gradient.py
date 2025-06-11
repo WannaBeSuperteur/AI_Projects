@@ -5,10 +5,18 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 from torchinfo import summary
 
-from stylegan_vectorfind_v9.nn_train_utils import (run_train_process,
-                                                   run_test_process,
-                                                   get_mid_vector_dim,
-                                                   create_dataloader)
+try:
+    from common import save_model_structure_pdf
+    from stylegan_vectorfind_v9.nn_train_utils import (run_train_process,
+                                                       run_test_process,
+                                                       get_mid_vector_dim,
+                                                       create_dataloader)
+except:
+    from stylegan.common import save_model_structure_pdf
+    from stylegan.stylegan_vectorfind_v9.nn_train_utils import (run_train_process,
+                                                                run_test_process,
+                                                                get_mid_vector_dim,
+                                                                create_dataloader)
 
 import time
 import os
@@ -176,6 +184,32 @@ def define_nn_model(layer_name):
     return vectorfind_v9_nn
 
 
+# StyleGAN-VectorFind-v9 핵심 속성 값 변화 벡터 (= Gradient) 추출 용 Neural Network 의 구조를 PDF 파일로 저장
+# Create Date : 2025.06.11
+# Last Update Date : -
+
+# Arguments:
+# - gradient_nn (nn.Module) : StyleGAN-VectorFind-v9 핵심 속성 값 변화 벡터 (= Gradient) 탐색 용 딥러닝 모델
+# - layer_name  (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                             ('mapping_split1', 'mapping_split2' or 'w')
+
+# Returns:
+# - stylegan/model_structure_pdf 에 해당 Neural Network 의 구조를 나타내는 PDF 파일 저장
+
+def create_gradient_nn_structure_pdf(gradient_nn, layer_name):
+    if layer_name == 'w':
+        nn_input_dims = 512
+    elif layer_name == 'mapping_split1':
+        nn_input_dims = 512 + 2048
+    else:  # mapping_split2
+        nn_input_dims = 512 + 512
+
+    save_model_structure_pdf(gradient_nn,
+                             model_name=f'vectorfind_v9_gradient_nn_{layer_name}',
+                             input_size=(TRAIN_BATCH_SIZE, nn_input_dims),
+                             print_frozen=False)
+
+
 # StyleGAN-FineTune-v9 모델을 이용한 vector find 실시 (간단한 딥러닝 & Gradient 이용)
 # Create Date : 2025.06.10
 # Last Update Date : 2025.06.11
@@ -210,6 +244,10 @@ def run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_na
     # 각 Property (eyes, mouth, pose) 별, Deep Learning (간단한 Neural Network) 학습
     for property_name in PROPERTY_NAMES:
         vectorfind_v9_gradient_nn = define_nn_model(layer_name)
+
+        if property_name == PROPERTY_NAMES[0]:
+            create_gradient_nn_structure_pdf(vectorfind_v9_gradient_nn, layer_name)
+
         input_data = mid_vectors_all
         output_data = property_scores_dict[property_name]
         data_np = np.concatenate([input_data, output_data], axis=1)
