@@ -232,7 +232,7 @@ def run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_na
     mse_errors = {}
     model_dir_path = f'{PROJECT_DIR_PATH}/stylegan/models'
 
-    # intermediate vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
+    # intermediate vector 샘플링 (전체 이미지 대상 Gradient Neural Network 학습)
     sampling_start_at = time.time()
     mid_vectors_all, property_scores_dict = sample_vector_and_compute_property_scores(finetune_v9_generator,
                                                                                       property_score_cnn,
