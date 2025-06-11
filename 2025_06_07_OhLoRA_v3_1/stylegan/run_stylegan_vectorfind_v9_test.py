@@ -137,6 +137,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name):
 # Create Date : 2025.06.11
 # Last Update Date : 2025.06.11
 # - Gradient NN 가중치 파일 삭제 오류 해결
+# - image generation report 디렉토리 삭제 -> 유지로 변경
 
 # Arguments:
 # - n          (int) : 총 생성할 이미지 sample 개수
@@ -203,11 +204,9 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
     test_result_grad_df.to_csv(f'{test_result_dir}/test_result_gradient_{layer_name}.csv')
 
     # re-initialize test directories
-    shutil.rmtree(image_gen_report_dir)
     shutil.rmtree(vector_save_dir)
     shutil.rmtree(generated_img_dir)
 
-    os.makedirs(image_gen_report_dir)
     os.makedirs(vector_save_dir)
     os.makedirs(generated_img_dir)
 

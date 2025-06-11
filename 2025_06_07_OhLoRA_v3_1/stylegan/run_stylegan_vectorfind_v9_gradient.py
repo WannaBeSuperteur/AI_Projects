@@ -142,6 +142,7 @@ def run_image_generation_test(finetune_v9_generator, layer_name, eyes_gradient_n
 # Create Date : 2025.06.11
 # Last Update Date : 2025.06.11
 # - {eyes|mouth|pose}_pms (핵심 속성 값에 대한 property score label 의 종류) 를 get_pm_labels 함수의 인수로 추가
+# - image generation report 저장 파일명에 layer name 추가
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
@@ -286,7 +287,7 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
     all_data_df['sum_abs_corr'] = abs(all_data_df['eyes_corr']) + abs(all_data_df['mouth_corr']) + abs(all_data_df['pose_corr'])
     all_data_df['sum_abs_corr'] = all_data_df['sum_abs_corr'].apply(lambda x: round(x, 4))
 
-    all_data_save_path = f'{image_gen_report_path}/test_result.csv'
+    all_data_save_path = f'{image_gen_report_path}/test_result_{layer_name}.csv'
     all_data_df.to_csv(all_data_save_path, index=False)
 
     # compute statistics
@@ -302,7 +303,7 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
                                   'passed': passed_count,
                                   'passed_ratio': passed_count / generated_count})
 
-    statistics_save_path = f'{image_gen_report_path}/test_statistics.csv'
+    statistics_save_path = f'{image_gen_report_path}/test_statistics_{layer_name}.csv'
     statistics_df.to_csv(statistics_save_path)
 
     # save latent codes (intermediate vector)
@@ -310,9 +311,12 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
     code_part2s_np = np.round(code_part2s_np[:generated_count], 4)
     code_all_np = np.concatenate([code_part1s_np, code_part2s_np], axis=1)
 
-    pd.DataFrame(code_part1s_np).to_csv(f'{image_gen_report_path}/latent_codes_part1.csv', index=False)
-    pd.DataFrame(code_part2s_np).to_csv(f'{image_gen_report_path}/latent_codes_part2.csv', index=False)
-    pd.DataFrame(code_all_np).to_csv(f'{image_gen_report_path}/latent_codes_all.csv', index=False)
+    pd.DataFrame(code_part1s_np).to_csv(f'{image_gen_report_path}/latent_codes_part1_{layer_name}.csv',
+                                        index=False)
+    pd.DataFrame(code_part2s_np).to_csv(f'{image_gen_report_path}/latent_codes_part2_{layer_name}.csv',
+                                        index=False)
+    pd.DataFrame(code_all_np).to_csv(f'{image_gen_report_path}/latent_codes_all_{layer_name}.csv',
+                                     index=False)
 
     return eyes_corr_mean, mouth_corr_mean, pose_corr_mean
 
