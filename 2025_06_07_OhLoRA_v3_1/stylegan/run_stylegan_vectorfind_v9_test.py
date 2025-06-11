@@ -180,6 +180,7 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
     eyes_corr_mean, mouth_corr_mean, pose_corr_mean = (
         run_property_score_compare_test_gradient(finetune_v9_generator,
                                                  property_score_cnn,
+                                                 n=n,
                                                  layer_name=layer_name,
                                                  eyes_gradient_nn=eyes_gradient_nn,
                                                  mouth_gradient_nn=mouth_gradient_nn,

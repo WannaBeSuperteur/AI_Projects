@@ -142,11 +142,12 @@ def run_image_generation_test(finetune_v9_generator, layer_name, eyes_gradient_n
 # Create Date : 2025.06.11
 # Last Update Date : 2025.06.11
 # - {eyes|mouth|pose}_pms (핵심 속성 값에 대한 property score label 의 종류) 를 get_pm_labels 함수의 인수로 추가
-# - image generation report 저장 파일명에 layer name 추가
+# - image generation report 저장 파일명에 총 생성 이미지 샘플 개수 (n) 및 layer name 추가
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
 # - property_score_cnn    (nn.Module) : 핵심 속성 값을 계산하기 위한 CNN
+# - n                     (int)       : 총 생성할 이미지 샘플 개수
 # - layer_name            (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
 #                                       ('mapping_split1', 'mapping_split2' or 'w')
 # - eyes_gradient_nn      (nn.Module) : eyes (눈을 뜬 정도) 의 Gradient (= 핵심 속성 값 변화 벡터) 탐색 용 딥러닝 모델
@@ -162,12 +163,13 @@ def run_image_generation_test(finetune_v9_generator, layer_name, eyes_gradient_n
 # - stylegan_vectorfind_v9/inference_test_after_training 디렉토리에 이미지 생성
 # - stylegan_vectorfind_v9/image_generation_report 디렉토리에 테스트 결과를 csv 파일로 저장
 
-def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, layer_name, eyes_gradient_nn,
+def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, n, layer_name, eyes_gradient_nn,
                                     mouth_gradient_nn, pose_gradient_nn):
 
     gradient_nns = [eyes_gradient_nn, mouth_gradient_nn, pose_gradient_nn]
     ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/ohlora_z_vectors.csv'
     ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
+    n_kilo = f'{n // 1000}K'
 
     passed_count = 0
 
@@ -287,7 +289,7 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
     all_data_df['sum_abs_corr'] = abs(all_data_df['eyes_corr']) + abs(all_data_df['mouth_corr']) + abs(all_data_df['pose_corr'])
     all_data_df['sum_abs_corr'] = all_data_df['sum_abs_corr'].apply(lambda x: round(x, 4))
 
-    all_data_save_path = f'{image_gen_report_path}/test_result_{layer_name}.csv'
+    all_data_save_path = f'{image_gen_report_path}/test_result_{layer_name}_{n_kilo}.csv'
     all_data_df.to_csv(all_data_save_path, index=False)
 
     # compute statistics
@@ -303,7 +305,7 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
                                   'passed': passed_count,
                                   'passed_ratio': passed_count / generated_count})
 
-    statistics_save_path = f'{image_gen_report_path}/test_statistics_{layer_name}.csv'
+    statistics_save_path = f'{image_gen_report_path}/test_statistics_{layer_name}_{n_kilo}.csv'
     statistics_df.to_csv(statistics_save_path)
 
     # save latent codes (intermediate vector)
@@ -311,11 +313,11 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
     code_part2s_np = np.round(code_part2s_np[:generated_count], 4)
     code_all_np = np.concatenate([code_part1s_np, code_part2s_np], axis=1)
 
-    pd.DataFrame(code_part1s_np).to_csv(f'{image_gen_report_path}/latent_codes_part1_{layer_name}.csv',
+    pd.DataFrame(code_part1s_np).to_csv(f'{image_gen_report_path}/latent_codes_part1_{layer_name}_{n_kilo}.csv',
                                         index=False)
-    pd.DataFrame(code_part2s_np).to_csv(f'{image_gen_report_path}/latent_codes_part2_{layer_name}.csv',
+    pd.DataFrame(code_part2s_np).to_csv(f'{image_gen_report_path}/latent_codes_part2_{layer_name}_{n_kilo}.csv',
                                         index=False)
-    pd.DataFrame(code_all_np).to_csv(f'{image_gen_report_path}/latent_codes_all_{layer_name}.csv',
+    pd.DataFrame(code_all_np).to_csv(f'{image_gen_report_path}/latent_codes_all_{layer_name}_{n_kilo}.csv',
                                      index=False)
 
     return eyes_corr_mean, mouth_corr_mean, pose_corr_mean
@@ -383,6 +385,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device for inferencing StyleGAN-FineTune-v9 : {device}')
 
+    n = 240000  # StyleGAN-FineTune-v9 로 생성할 이미지 샘플의 총 개수
     finetune_v9_generator = gen.StyleGANGeneratorForV9(resolution=IMAGE_RESOLUTION)  # v1, v9 Generator 는 동일한 구조
 
     # try loading StyleGAN-VectorFind-v9 pre-trained model
@@ -414,7 +417,7 @@ if __name__ == '__main__':
 
     except Exception as e:
         print(f'"Property Score Changing Vector" info load failed : {e}')
-        stylegan_vectorfind_v9_main_gradient(finetune_v9_generator, device, n=240000, layer_name='w')
+        stylegan_vectorfind_v9_main_gradient(finetune_v9_generator, device, n=n, layer_name='w')
 
         eyes_gradient_nn = get_property_change_gradient_nn('eyes', 'w')
         mouth_gradient_nn = get_property_change_gradient_nn('mouth', 'w')
@@ -434,6 +437,7 @@ if __name__ == '__main__':
 
     run_property_score_compare_test(finetune_v9_generator,
                                     property_score_cnn,
+                                    n=n,
                                     layer_name='w',
                                     eyes_gradient_nn=eyes_gradient_nn,
                                     mouth_gradient_nn=mouth_gradient_nn,
