@@ -218,8 +218,8 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
 
 
 if __name__ == '__main__':
-    ns = [800, 1600]
-    ratios = [0.2, 0.2]
+    ns = [4000, 8000, 20000, 40000, 80000]
+    ratios = [0.0, 0.0, 0.0, 0.0, 0.0]
     layer_name = 'w'
 
     for n, ratio in zip(ns, ratios):
