@@ -58,10 +58,13 @@
   * z → w mapping 중 **분기 후 병합되는 부분** 추가 
 
 * 상세 설계
-  * 위 그림의 오른쪽과 같이, **Generator 의 Synthesis Network 의 후반부 & Discriminator 의 전반부 Layer 들을 Freeze** 처리
-  * 위 그림에서 ```w2 (2048)```, ```w2' (512)``` 로 표시한 레이어는 [Gaussian Weight Initialization](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Weight_initialization.md#3-%EA%B0%80%EC%9A%B0%EC%8B%9C%EC%95%88-%EB%B6%84%ED%8F%AC-%EC%B4%88%EA%B8%B0%ED%99%94-gaussian-initialization) $N(0, 0.15^2)$ 적용
-    * $N(0, 1^2)$ 로 초기화하면 **초반 생성되는 이미지가 사람 얼굴의 형태와 큰 차이가 남**
-  * 1회의 GAN 학습 step 에서, **Generator 와 Discriminator 를 Loss 에 따라 각각 최대 4회 연속 학습** 하도록 설정
+  * 학습 설계 
+    * 위 그림의 오른쪽과 같이, **Generator 의 Synthesis Network 의 후반부 & Discriminator 의 전반부 Layer 들을 Freeze** 처리
+    * 1회의 GAN 학습 step 에서, **Generator 와 Discriminator 를 Loss 에 따라 각각 최대 4회 연속 학습** 하도록 설정
+  * 신경망 레이어 설계
+    * 위 그림에서 ```w1 (512)```, ```w1' (512)``` 로 표시한 2개의 레이어에는 **기존 StyleGAN-FineTune-v1 의 가중치 주입**
+    * 위 그림에서 **새로 만들어지는 (가중치가 주입되지 않은) 레이어** 인 ```w2 (2048)```, ```w2' (512)``` 로 표시한 레이어는 [Gaussian Weight Initialization](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Weight_initialization.md#3-%EA%B0%80%EC%9A%B0%EC%8B%9C%EC%95%88-%EB%B6%84%ED%8F%AC-%EC%B4%88%EA%B8%B0%ED%99%94-gaussian-initialization) $N(0, 0.15^2)$ 적용
+      * $N(0, 1^2)$ 로 초기화하면 **초반 생성되는 이미지가 사람 얼굴의 형태와 큰 차이가 남**
 
 * 학습 설정 및 결과
   * 72 epochs (32.5 hours)
