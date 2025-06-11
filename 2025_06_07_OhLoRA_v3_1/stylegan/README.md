@@ -72,11 +72,27 @@
 
 ### 3-3. StyleGAN-VectorFind-v9 (SVM 방법)
 
-
-
 ### 3-4. StyleGAN-VectorFind-v9 (Gradient 방법)
 
+**0. 전체 요약 그림**
+
+**1. 학습 단계**
+
+* ```eyes``` ```mouth``` ```pose``` 의 3개 핵심 속성 값에 대해, 
+  * **intermediate (= mid) vector** 를 입력, **핵심 속성 값** 을 출력으로 하는 간단한 신경망 (총 3개) 학습 
+
+**2. 추론 및 이미지 생성 테스트 단계**
+
 ![image](../../images/250607_10.PNG)
+
+* ```eyes``` ```mouth``` ```pose``` 의 3개 핵심 속성 값에 대해, 
+  * StyleGAN-FineTune-v9 Generator 를 이용하여 **intermediate vector** 계산 및 추출 
+  * 해당 **intermediate vector** 를 입력으로 하여, 위에서 학습한 신경망에 대해 **Gradient 계산**
+  * **계산한 Gradient 를 핵심 속성 값을 변화시키는 벡터** 로 사용
+* 최종 이미지 생성
+  * **(latent z vector) + (가중치) $\times$ (위에서 계산한 Gradient)** 를 계산
+  * 해당 계산된 벡터를 StyleGAN-FineTune-v9 Generator 의 **해당 intermediate vector 를 추출한 부분 이후의 나머지 부분** 에 입력 → 최종 이미지 생성
+  * 위 그림에서는 Generator 의 그 나머지 부분을 **remaining net.** 이라고 함
 
 ### 3-5. Gender, Quality, Age, Glass Score CNN (StyleGAN-FineTune-v8 학습 데이터 필터링용)
 
