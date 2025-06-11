@@ -180,6 +180,7 @@ def define_nn_model(layer_name):
 # Create Date : 2025.06.10
 # Last Update Date : 2025.06.11
 # - run_train_process 함수 호출 시 mid_vector_dim 인수 추가
+# - test process 수정 및 그 결과 출력
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
@@ -228,7 +229,11 @@ def run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_na
         torch.save(best_epoch_model.state_dict(), model_path)
 
         # 해당 Neural Network 를 테스트
-        performance_scores = run_test_process(vectorfind_v9_gradient_nn, test_loader)
+        best_epoch_model.to(device)
+        best_epoch_model.device = device
+        performance_scores = run_test_process(best_epoch_model, test_loader)
+
+        print(f'test performance scores ({property_name}) : {performance_scores}\n\n')
         mse_errors[property_name] = performance_scores['mse']
 
     return mse_errors
