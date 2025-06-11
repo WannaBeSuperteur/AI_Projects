@@ -34,6 +34,7 @@ import time
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_RESOLUTION = 256
 finetune_v9_generator = None
+PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
 test_result_svm = {'n': [], 'k': [], 'time': [],
                    'svm_eyes_acc': [], 'svm_mouth_acc': [], 'svm_pose_acc': [],
@@ -47,6 +48,8 @@ image_gen_report_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/imag
 vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/property_score_vectors'
 generated_img_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/inference_test_after_training'
 test_result_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/test_result'
+models_dir = f'{PROJECT_DIR_PATH}/stylegan/models'
+
 os.makedirs(test_result_dir, exist_ok=True)
 
 
@@ -207,10 +210,14 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
     os.makedirs(vector_save_dir)
     os.makedirs(generated_img_dir)
 
+    # remove NN models for gradients
+    for property_name in PROPERTY_NAMES:
+        shutil.rmtree(f'{models_dir}/stylegan_gen_vector_find_v9_nn_{property_name}.pth')
+
 
 if __name__ == '__main__':
-    ns = [4000, 8000, 20000, 40000, 80000]
-    ratios = [0.2, 0.2, 0.2, 0.2, 0.2]
+    ns = [800, 1600]
+    ratios = [0.2, 0.2]
     layer_name = 'w'
 
     for n, ratio in zip(ns, ratios):

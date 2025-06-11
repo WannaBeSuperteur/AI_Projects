@@ -52,7 +52,7 @@ def run_validation(model, valid_loader, device, loss_func=nn.MSELoss(reduction='
     return val_accuracy, val_loss
 
 
-def run_train_process(model, NeuralNetworkClass, train_dataloader, valid_dataloader):
+def run_train_process(model, NeuralNetworkClass, mid_vector_dim, train_dataloader, valid_dataloader):
     current_epoch = 0
     min_val_loss_epoch = -1  # Loss-based Early Stopping
     min_val_loss = None
@@ -78,7 +78,7 @@ def run_train_process(model, NeuralNetworkClass, train_dataloader, valid_dataloa
             min_val_loss = val_loss
             min_val_loss_epoch = current_epoch
 
-            best_epoch_model = NeuralNetworkClass().to(model.device)
+            best_epoch_model = NeuralNetworkClass(mid_vector_dim).to(model.device)
             best_epoch_model.load_state_dict(model.state_dict())
 
         if current_epoch >= MAX_EPOCHS or current_epoch - min_val_loss_epoch >= EARLY_STOPPING_ROUNDS:
@@ -98,17 +98,13 @@ def run_test_process(model, test_dataloader):
             data, labels = data.to(model.device).to(torch.float32), labels.to(model.device).to(torch.float32)
             prediction = model(data).to(torch.float32).detach().cpu()
 
-            true_scores += list(np.array(labels).flatten())
+            true_scores += list(np.array(labels.detach().cpu()).flatten())
             pred_scores += list(np.array(prediction).flatten())
 
     mse = mean_squared_error(true_scores, pred_scores)
     mae = mean_absolute_error(true_scores, pred_scores)
     rmse = math.sqrt(mse)
     corrcoef = np.corrcoef(true_scores, pred_scores)[0][1]
-
-    test_result_detail_dict = {'pred_score': pred_scores, 'true_score': true_scores}
-    test_result_detail_df = pd.DataFrame(test_result_detail_dict)
-    test_result_detail_df.to_csv('test_result_details.csv', index=False)
 
     performance_scores = {'mse': mse, 'mae': mae, 'rmse': rmse, 'corrcoef': corrcoef}
     return performance_scores

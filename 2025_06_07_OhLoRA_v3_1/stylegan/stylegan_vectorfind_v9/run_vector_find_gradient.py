@@ -178,7 +178,8 @@ def define_nn_model(layer_name):
 
 # StyleGAN-FineTune-v9 모델을 이용한 vector find 실시 (간단한 딥러닝 & Gradient 이용)
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.11
+# - run_train_process 함수 호출 시 mid_vector_dim 인수 추가
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
@@ -218,6 +219,7 @@ def run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_na
 
         _, best_epoch_model = run_train_process(vectorfind_v9_gradient_nn,
                                                 SimpleNNForVectorFindV9,
+                                                mid_vector_dim,
                                                 train_loader,
                                                 valid_loader)
 

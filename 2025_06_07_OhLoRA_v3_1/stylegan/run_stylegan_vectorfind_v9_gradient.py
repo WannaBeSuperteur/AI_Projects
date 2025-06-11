@@ -222,48 +222,48 @@ def run_property_score_compare_test(finetune_v9_generator, property_score_cnn, l
             pms = {'eyes': eyes_pm_order[pm_idx], 'mouth': mouth_pm_order[pm_idx], 'pose': pose_pm_order[pm_idx]}
 
             eyes_vector = property_change_vector_dict['eyes']
-            mouth_vector = property_change_vector_dict['eyes']
-            pose_vector = property_change_vector_dict['eyes']
+            mouth_vector = property_change_vector_dict['mouth']
+            pose_vector = property_change_vector_dict['pose']
 
             generate_image(finetune_v9_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector,
                            eyes_scores, mouth_scores, pose_scores, code_mid, layer_name, save_dir, img_file_name, pms)
 
-            # compute and record corr-coef
-            eyes_corrcoef = np.corrcoef(eyes_pm_order, eyes_scores)[0][1]
-            mouth_corrcoef = np.corrcoef(mouth_pm_order, mouth_scores)[0][1]
-            pose_corrcoef = np.corrcoef(pose_pm_order, pose_scores)[0][1]
+        # compute and record corr-coef
+        eyes_corrcoef = np.corrcoef(eyes_pm_order, eyes_scores)[0][1]
+        mouth_corrcoef = np.corrcoef(mouth_pm_order, mouth_scores)[0][1]
+        pose_corrcoef = np.corrcoef(pose_pm_order, pose_scores)[0][1]
 
-            all_data_dict['eyes_corr'].append(round(eyes_corrcoef, 4))
-            all_data_dict['mouth_corr'].append(round(mouth_corrcoef, 4))
-            all_data_dict['pose_corr'].append(round(pose_corrcoef, 4))
+        all_data_dict['eyes_corr'].append(round(eyes_corrcoef, 4))
+        all_data_dict['mouth_corr'].append(round(mouth_corrcoef, 4))
+        all_data_dict['pose_corr'].append(round(pose_corrcoef, 4))
 
-            # check passed
-            generated_count += 1
+        # check passed
+        generated_count += 1
 
-            passed = abs(eyes_corrcoef) >= 0.92 and abs(mouth_corrcoef) >= 0.88 and abs(pose_corrcoef) >= 0.88
-            eyes_diff = max(0.92 - abs(eyes_corrcoef), 0)
-            mouth_diff = max(0.88 - abs(mouth_corrcoef), 0)
-            pose_diff = max(0.88 - abs(pose_corrcoef), 0)
+        passed = abs(eyes_corrcoef) >= 0.92 and abs(mouth_corrcoef) >= 0.88 and abs(pose_corrcoef) >= 0.88
+        eyes_diff = max(0.92 - abs(eyes_corrcoef), 0)
+        mouth_diff = max(0.88 - abs(mouth_corrcoef), 0)
+        pose_diff = max(0.88 - abs(pose_corrcoef), 0)
 
-            pass_diff = eyes_diff + mouth_diff + pose_diff
-            diff = {'eyes': round(eyes_diff, 4), 'mouth': round(mouth_diff, 4), 'pose': round(pose_diff, 4)}
+        pass_diff = eyes_diff + mouth_diff + pose_diff
+        diff = {'eyes': round(eyes_diff, 4), 'mouth': round(mouth_diff, 4), 'pose': round(pose_diff, 4)}
 
-            if passed:
-                passed_count += 1
+        if passed:
+            passed_count += 1
 
-            passed = 'O' if passed else 'X'
-            all_data_dict['passed'].append(passed)
+        passed = 'O' if passed else 'X'
+        all_data_dict['passed'].append(passed)
 
-            # save data for case
-            case_data_dict = {'pm_idx': list(range(pm_cnt)),
-                              'eyes_pm': eyes_pm_order, 'mouth_pm': mouth_pm_order, 'pose_pm': pose_pm_order,
-                              'eyes_score': eyes_scores, 'mouth_score': mouth_scores, 'pose_score': pose_scores}
-            case_data_df = pd.DataFrame(case_data_dict)
+        # save data for case
+        case_data_dict = {'pm_idx': list(range(pm_cnt)),
+                          'eyes_pm': eyes_pm_order, 'mouth_pm': mouth_pm_order, 'pose_pm': pose_pm_order,
+                          'eyes_score': eyes_scores, 'mouth_score': mouth_scores, 'pose_score': pose_scores}
+        case_data_df = pd.DataFrame(case_data_dict)
 
-            case_data_save_path = f'{save_dir}/case_{i:04d}_result.csv'
-            case_data_df.to_csv(case_data_save_path, index=False)
+        case_data_save_path = f'{save_dir}/case_{i:04d}_result.csv'
+        case_data_df.to_csv(case_data_save_path, index=False)
 
-            print(f'testing idx {i} (passed : {passed_count}, current total gap: {round(pass_diff, 4)}, diff: {diff})')
+        print(f'testing idx {i} (passed : {passed_count}, current total gap: {round(pass_diff, 4)}, diff: {diff})')
 
         if ohlora_z_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
             break
