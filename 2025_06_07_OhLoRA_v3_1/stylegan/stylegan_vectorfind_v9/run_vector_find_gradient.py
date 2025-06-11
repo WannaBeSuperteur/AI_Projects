@@ -57,16 +57,16 @@ class SimpleNNForVectorFindV9(nn.Module):
         super(SimpleNNForVectorFindV9, self).__init__()
 
         self.fc1 = nn.Sequential(
-            nn.Linear(mid_vector_dim, 1024),
+            nn.Linear(mid_vector_dim, 768 + mid_vector_dim // 4),
             nn.Tanh(),
             nn.Dropout(0.25)
         )
         self.fc2 = nn.Sequential(
-            nn.Linear(1024, 128),
+            nn.Linear(768 + mid_vector_dim // 4, 128 + mid_vector_dim // 8),
             nn.Tanh(),
             nn.Dropout(0.25)
         )
-        self.fc_final = nn.Linear(128, 1)
+        self.fc_final = nn.Linear(128 + mid_vector_dim // 8, 1)
 
     def forward(self, x):
         x = self.fc1(x)
