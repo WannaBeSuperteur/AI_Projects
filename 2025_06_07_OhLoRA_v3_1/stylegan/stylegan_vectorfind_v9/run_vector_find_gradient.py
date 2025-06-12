@@ -212,9 +212,8 @@ def create_gradient_nn_structure_pdf(gradient_nn, layer_name):
 
 # StyleGAN-FineTune-v9 모델을 이용한 vector find 실시 (간단한 딥러닝 & Gradient 이용)
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.11
-# - run_train_process 함수 호출 시 mid_vector_dim 인수 추가
-# - test process 수정 및 그 결과 출력
+# Last Update Date : 2025.06.12
+# - 일부 property name 에 대한 학습 지원
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
@@ -222,12 +221,13 @@ def create_gradient_nn_structure_pdf(gradient_nn, layer_name):
 # - n                     (int)       : 총 생성할 이미지 sample 개수
 # - layer_name            (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
 #                                       ('mapping_split1', 'mapping_split2' or 'w')
+# - property_names        (list(str)) : 학습할 property name 의 리스트 (None 이면 'eyes', 'mouth', 'pose' 모두 학습)
 
 # Returns:
 # - mse_errors (dict) : 딥러닝 Neural Network 의 MSE Error 정보
 #                       {'eyes': float, 'mouth': float, 'pose': float}
 
-def run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_name):
+def run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_name, property_names=None):
     property_score_cnn = load_merged_property_score_cnn(device)
     mse_errors = {}
     model_dir_path = f'{PROJECT_DIR_PATH}/stylegan/models'
@@ -241,11 +241,14 @@ def run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_na
 
     print(f'sampling (from latent vector {layer_name}) running time (s) : {time.time() - sampling_start_at}\n')
 
+    if property_names is None:
+        property_names = PROPERTY_NAMES
+
     # 각 Property (eyes, mouth, pose) 별, Deep Learning (간단한 Neural Network) 학습
-    for property_name in PROPERTY_NAMES:
+    for property_name in property_names:
         vectorfind_v9_gradient_nn = define_nn_model(layer_name)
 
-        if property_name == PROPERTY_NAMES[0]:
+        if property_name == property_names[0]:
             create_gradient_nn_structure_pdf(vectorfind_v9_gradient_nn, layer_name)
 
         input_data = mid_vectors_all

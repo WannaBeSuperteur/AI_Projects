@@ -73,7 +73,7 @@ def main_svm(finetune_v9_generator, device, n, ratio, layer_name):
     return entire_accuracy_dict
 
 
-def main_gradient(finetune_v9_generator, device, n, layer_name):
+def main_gradient(finetune_v9_generator, device, n, layer_name, property_names=None):
 
     # model structure PDF file
     create_model_structure_pdf(finetune_v9_generator)
@@ -82,5 +82,5 @@ def main_gradient(finetune_v9_generator, device, n, layer_name):
     run_inference_test_before_training(finetune_v9_generator)
 
     # Fine Tuning and return Gradient NN MSE error
-    mse_errors = run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_name)
+    mse_errors = run_stylegan_vector_find_gradient(finetune_v9_generator, device, n, layer_name, property_names)
     return mse_errors
