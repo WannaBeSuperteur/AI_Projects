@@ -341,9 +341,6 @@ def run_property_score_compare_test_final(finetune_v9_generator, property_score_
                                           mouth_vectors, pose_vectors):
 
     ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/ohlora_z_vectors.csv'
-    ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
-
-    ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/ohlora_z_vectors.csv'
     ohlora_mid_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/ohlora_{layer_name}_group_names.csv'
     ohlora_z_vectors = load_ohlora_z_vectors(vector_csv_path=ohlora_z_vector_csv_path)
     ohlora_mid_group_names = load_ohlora_mid_vector_group_names(group_name_csv_path=ohlora_mid_group_name_csv_path,
