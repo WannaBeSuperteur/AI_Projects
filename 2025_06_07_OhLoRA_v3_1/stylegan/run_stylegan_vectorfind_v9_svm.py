@@ -65,39 +65,41 @@ kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 # Property Score 값을 변경하기 위해 intermediate vector 에 가감할 벡터 정보 반환 ('hhhh', 'hhhl', ..., 'llll' 의 각 그룹 별)
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.10
-# - intermediate vector 를 추출할 레이어 지정 다양화
+# Last Update Date : 2025.06.12
+# - 일부 property name 에 대한 학습 지원
+
+# Arguments:
+# - layer_name     (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                ('mapping_split1', 'mapping_split2' or 'w')
+# - property_names (list(str)) : 학습할 property name 의 리스트 (None 이면 'eyes', 'mouth', 'pose' 모두 학습)
 
 # Returns:
 # - eyes_vectors  (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - mouth_vectors (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors  (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
-# - layer_name    (str)               : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
-#                                       ('mapping_split1', 'mapping_split2' or 'w')
 
-def get_property_change_vectors(layer_name):
+def get_property_change_vectors(layer_name, property_names):
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/property_score_vectors'
-
-    eyes_vectors = {}
-    mouth_vectors = {}
-    pose_vectors = {}
+    eyes_vectors, mouth_vectors, pose_vectors = {}, {}, {}
 
     for group_name in GROUP_NAMES:
-        eyes_vector = np.array(
-            pd.read_csv(f'{vector_save_dir}/eyes_change_{layer_name}_vector_{group_name}.csv',
-                        index_col=0))
+        if 'eyes' in property_names:
+            eyes_vector = np.array(
+                pd.read_csv(f'{vector_save_dir}/eyes_change_{layer_name}_vector_{group_name}.csv',
+                            index_col=0))
+            eyes_vectors[group_name] = eyes_vector
 
-        mouth_vector = np.array(
-            pd.read_csv(f'{vector_save_dir}/mouth_change_{layer_name}_vector_{group_name}.csv',
-                        index_col=0))
+        if 'mouth' in property_names:
+            mouth_vector = np.array(
+                pd.read_csv(f'{vector_save_dir}/mouth_change_{layer_name}_vector_{group_name}.csv',
+                            index_col=0))
+            mouth_vectors[group_name] = mouth_vector
 
-        pose_vector = np.array(
-            pd.read_csv(f'{vector_save_dir}/pose_change_{layer_name}_vector_{group_name}.csv',
-                        index_col=0))
-
-        eyes_vectors[group_name] = eyes_vector
-        mouth_vectors[group_name] = mouth_vector
-        pose_vectors[group_name] = pose_vector
+        if 'pose' in property_names:
+            pose_vector = np.array(
+                pd.read_csv(f'{vector_save_dir}/pose_change_{layer_name}_vector_{group_name}.csv',
+                            index_col=0))
+            pose_vectors[group_name] = pose_vector
 
     return eyes_vectors, mouth_vectors, pose_vectors
 
@@ -491,13 +493,15 @@ if __name__ == '__main__':
 
     # get property score changing vector
     try:
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors('w')
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(layer_name='w',
+                                                                                property_names=PROPERTY_NAMES)
         print('Existing "Property Score Changing Vector" info load successful!! 😊')
 
     except Exception as e:
         print(f'"Property Score Changing Vector" info load failed : {e}')
         stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n=240000, ratio=0.2, layer_name='w')
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors('w')
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(layer_name='w',
+                                                                                property_names=PROPERTY_NAMES)
 
     # get Merged Property Score CNN
     property_score_cnn = load_merged_property_score_cnn(device)

@@ -122,7 +122,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name):
 
     # get property score changing vector
     entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio, layer_name)
-    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(layer_name)
+    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(layer_name, property_names=PROPERTY_NAMES)
 
     # get Merged Property Score CNN
     property_score_cnn = load_merged_property_score_cnn(device)
@@ -553,12 +553,16 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
 
     # use SVM method for 'mouth' and 'pose'
     entire_svm_accuracy_dict_mouth = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio,
-                                                                     layer_name=common_layer_name)
-    _, mouth_vectors, _ = get_property_change_vectors(layer_name=common_layer_name)
+                                                                     layer_name=common_layer_name,
+                                                                     property_names=['mouth'])
+    _, mouth_vectors, _ = get_property_change_vectors(layer_name=common_layer_name,
+                                                      property_names=['mouth'])
 
     entire_svm_accuracy_dict_pose = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio,
-                                                                    layer_name=common_layer_name)
-    _, _, pose_vectors = get_property_change_vectors(layer_name=common_layer_name)
+                                                                    layer_name=common_layer_name,
+                                                                    property_names=['pose'])
+    _, _, pose_vectors = get_property_change_vectors(layer_name=common_layer_name,
+                                                     property_names=['pose'])
 
     # run final image generation test
     eyes_corr_mean, mouth_corr_mean, pose_corr_mean = (

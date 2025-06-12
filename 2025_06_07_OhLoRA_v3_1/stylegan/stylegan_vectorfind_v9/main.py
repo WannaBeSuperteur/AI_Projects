@@ -60,7 +60,7 @@ def run_inference_test_before_training(finetune_v9_generator):
     infer.synthesize(finetune_v9_generator, num=50, save_dir=img_save_dir, z=None, label=None)
 
 
-def main_svm(finetune_v9_generator, device, n, ratio, layer_name):
+def main_svm(finetune_v9_generator, device, n, ratio, layer_name, property_names=None):
 
     # model structure PDF file
     create_model_structure_pdf(finetune_v9_generator)
@@ -69,7 +69,8 @@ def main_svm(finetune_v9_generator, device, n, ratio, layer_name):
     run_inference_test_before_training(finetune_v9_generator)
 
     # Fine Tuning and return SVM accuracy
-    entire_accuracy_dict = run_stylegan_vector_find_svm(finetune_v9_generator, device, n, ratio, layer_name)
+    entire_accuracy_dict = run_stylegan_vector_find_svm(finetune_v9_generator, device, n, ratio, layer_name,
+                                                        property_names)
     return entire_accuracy_dict
 
 

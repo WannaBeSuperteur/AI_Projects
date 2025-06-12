@@ -331,7 +331,8 @@ def run_tsne(mid_vectors_by_group, indices_info):
 
 # 핵심 속성 값의 변화를 나타내는 intermediate vector 를 도출하기 위한 SVM 학습
 # Create Date : 2025.06.10
-# Last Update Date : -
+# Last Update Date : 2025.06.12
+# - 일부 property name 에 대한 학습 지원
 
 # Arguments:
 # - latent_vectors_by_group (dict(NumPy array)) : sampling 된 intermediate vector (각 그룹별)
@@ -343,6 +344,7 @@ def run_tsne(mid_vectors_by_group, indices_info):
 #                                                  'pose_largest': dict(list(int)), 'pose_smallest': dict(list(int))}
 # - svm_classifiers         (dict(dict(SVM)))   : 학습된 SVM (Support Vector Machine) 의 dict (각 그룹별)
 #                                                 {'eyes': dict(SVM), 'mouth': dict(SVM), 'pose': dict(SVM)}
+# - property_names          (list(str))         : 학습할 property name 의 리스트 (None 이면 'eyes', 'mouth', 'pose' 모두 학습)
 
 # Returns:
 # - svm_classifiers              (dict)      : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
@@ -352,13 +354,13 @@ def run_tsne(mid_vectors_by_group, indices_info):
 # - total_valid_cnt_info         (dict(int)) : 각 핵심 속성 값 별 전체 valid data 개수 정보
 # - total_valid_correct_cnt_info (dict(int)) : 각 핵심 속성 값 별 SVM 예측 (largest / smallest) 이 맞은 valid data 개수 정보
 
-def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers):
+def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers, property_names):
     train_ratio = 0.8
     total_valid_cnt_info = {}
     total_valid_correct_cnt_info = {}
 
     print(f'\ntraining SVM for {group_name} ...')
-    for property_name in PROPERTY_NAMES:
+    for property_name in property_names:
         total_valid_cnt = 0
         total_valid_correct_cnt = 0
         svm_classifiers[property_name][group_name] = []
@@ -412,16 +414,17 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
 
 # SVM 을 이용하여 핵심 속성 값의 변화를 나타내는 intermediate vector 를 도출 (최종 mid vector)
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.10
-# - intermediate vector 를 추출할 레이어 지정 다양화
+# Last Update Date : 2025.06.12
+# - 일부 property name 에 대한 학습 지원
 
 # Arguments:
-# - svm_classifiers (dict) : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
-#                            {'eyes': dict(list(SVM)),
-#                             'mouth': dict(list(SVM)),
-#                             'pose': dict(list(SVM))}
-# - layer_name      (str)  : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
-#                            ('mapping_split1', 'mapping_split2' or 'w')
+# - svm_classifiers (dict)      : 학습된 SVM (Support Vector Machine) 의 dict (새로 학습된 SVM 을 추가하여 반환)
+#                                 {'eyes': dict(list(SVM)),
+#                                  'mouth': dict(list(SVM)),
+#                                  'pose': dict(list(SVM))}
+# - layer_name      (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                 ('mapping_split1', 'mapping_split2' or 'w')
+# - property_names  (list(str)) : 학습할 property name 의 리스트 (None 이면 'eyes', 'mouth', 'pose' 모두 학습)
 
 # Returns:
 # - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate vector (각 그룹 별)
@@ -429,7 +432,7 @@ def train_svm(latent_vectors_by_group, group_name, indices_info, svm_classifiers
 #                                    'mouth_vector': dict(NumPy array),
 #                                    'pose_vector': dict(NumPy array)}
 
-def find_property_score_vectors(svm_classifiers, layer_name):
+def find_property_score_vectors(svm_classifiers, layer_name, property_names):
     if layer_name == 'w':
         dim = ORIGINAL_HIDDEN_DIMS_W
     elif layer_name == 'mapping_split1':
@@ -439,7 +442,7 @@ def find_property_score_vectors(svm_classifiers, layer_name):
 
     property_score_vectors = {}
 
-    for property_name in PROPERTY_NAMES:
+    for property_name in property_names:
         property_score_vectors[f'{property_name}_vector'] = {}
 
         for group_name in GROUP_NAMES:
@@ -461,38 +464,43 @@ def find_property_score_vectors(svm_classifiers, layer_name):
 
 # 핵심 속성 값의 변화를 나타내는 intermediate vector 에 대한 정보 저장
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.10
-# - intermediate vector 를 추출할 레이어 지정 다양화
+# Last Update Date : 2025.06.12
+# - 일부 property name 에 대한 학습 지원
 
 # Arguments:
-# - property_score_vectors (dict) : 핵심 속성 값의 변화를 나타내는 intermediate vector (각 그룹 별)
-#                                   {'eyes_vector': dict(NumPy array),
-#                                    'mouth_vector': dict(NumPy array),
-#                                    'pose_vector': dict(NumPy array)}
-# - layer_name             (str)  : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
-#                                   ('mapping_split1', 'mapping_split2' or 'w')
+# - property_score_vectors (dict)      : 핵심 속성 값의 변화를 나타내는 intermediate vector (각 그룹 별)
+#                                        {'eyes_vector': dict(NumPy array),
+#                                         'mouth_vector': dict(NumPy array),
+#                                         'pose_vector': dict(NumPy array)}
+# - layer_name             (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                        ('mapping_split1', 'mapping_split2' or 'w')
+# - property_names         (list(str)) : 학습할 property name 의 리스트 (None 이면 'eyes', 'mouth', 'pose' 모두 학습)
 
 # Returns:
 # - stylegan/stylegan_vectorfind_v9/property_score_vectors 디렉토리에 핵심 속성 값의 변화를 나타내는 intermediate vector 정보 저장
 
-def save_property_score_vectors_info(property_score_vectors, layer_name):
+def save_property_score_vectors_info(property_score_vectors, layer_name, property_names):
     vector_save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/property_score_vectors'
     os.makedirs(vector_save_dir, exist_ok=True)
 
     for group_name in GROUP_NAMES:
-        eyes_vector_df = pd.DataFrame(property_score_vectors['eyes_vector'][group_name])
-        mouth_vector_df = pd.DataFrame(property_score_vectors['mouth_vector'][group_name])
-        pose_vector_df = pd.DataFrame(property_score_vectors['pose_vector'][group_name])
+        if 'eyes' in property_names:
+            eyes_vector_df = pd.DataFrame(property_score_vectors['eyes_vector'][group_name])
+            eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_{layer_name}_vector_{group_name}.csv')
 
-        eyes_vector_df.to_csv(f'{vector_save_dir}/eyes_change_{layer_name}_vector_{group_name}.csv')
-        mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_{layer_name}_vector_{group_name}.csv')
-        pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_{layer_name}_vector_{group_name}.csv')
+        if 'mouth' in property_names:
+            mouth_vector_df = pd.DataFrame(property_score_vectors['mouth_vector'][group_name])
+            mouth_vector_df.to_csv(f'{vector_save_dir}/mouth_change_{layer_name}_vector_{group_name}.csv')
+
+        if 'pose' in property_names:
+            pose_vector_df = pd.DataFrame(property_score_vectors['pose_vector'][group_name])
+            pose_vector_df.to_csv(f'{vector_save_dir}/pose_change_{layer_name}_vector_{group_name}.csv')
 
 
 # StyleGAN-FineTune-v9 모델을 이용한 vector find 실시
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.10
-# - intermediate vector 를 추출할 레이어 지정 다양화
+# Last Update Date : 2025.06.12
+# - 일부 property name 에 대한 학습 지원
 
 # Arguments:
 # - finetune_v9_generator (nn.Module) : StyleGAN-FineTune-v9 의 Generator
@@ -501,12 +509,13 @@ def save_property_score_vectors_info(property_score_vectors, layer_name):
 # - ratio                 (float)     : 총 생성 이미지 중 SVM 의 학습 데이터로 사용할 TOP, BOTTOM 비율 (각각) (= k / n)
 # - layer_name            (str)       : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
 #                                       ('mapping_split1', 'mapping_split2' or 'w')
+# - property_names        (list(str)) : 학습할 property name 의 리스트 (None 이면 'eyes', 'mouth', 'pose' 모두 학습)
 
 # Returns:
 # - entire_accuracy_dict (dict) : 전체 group 에 대한 SVM accuracy 정보
 #                                 {'eyes': float, 'mouth': float, 'pose': float}
 
-def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name):
+def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name, property_names=None):
     property_score_cnn = load_merged_property_score_cnn(device)
 
     # intermediate vector 샘플링 & 핵심 속성 값이 가장 큰/작은 이미지 추출
@@ -533,18 +542,21 @@ def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name
 
     svm_train_start_at = time.time()
 
+    if property_names is None:
+        property_names = PROPERTY_NAMES
+
     for group_name in GROUP_NAMES:
         svm_classifiers, total_valid_cnt_info, total_valid_correct_cnt_info =(
-            train_svm(mid_vectors_by_group, group_name, indices_info, svm_classifiers))
+            train_svm(mid_vectors_by_group, group_name, indices_info, svm_classifiers, property_names))
 
-        for property_name in PROPERTY_NAMES:
+        for property_name in property_names:
             entire_valid_count[property_name] += total_valid_cnt_info[property_name]
             entire_valid_correct_count[property_name] += total_valid_correct_cnt_info[property_name]
 
     print('\n=== ENTIRE SVM ACCURACY ===')
     entire_accuracy_dict = {}
 
-    for property_name in PROPERTY_NAMES:
+    for property_name in property_names:
         entire_valid = entire_valid_count[property_name]
         entire_valid_correct = entire_valid_correct_count[property_name]
         entire_accuracy = entire_valid_correct / entire_valid
@@ -554,7 +566,7 @@ def run_stylegan_vector_find(finetune_v9_generator, device, n, ratio, layer_name
 
     print(f'\nSVM training running time (s) : {time.time() - svm_train_start_at}')
 
-    property_score_vectors = find_property_score_vectors(svm_classifiers, layer_name)
-    save_property_score_vectors_info(property_score_vectors, layer_name)
+    property_score_vectors = find_property_score_vectors(svm_classifiers, layer_name, property_names)
+    save_property_score_vectors_info(property_score_vectors, layer_name, property_names)
 
     return entire_accuracy_dict
