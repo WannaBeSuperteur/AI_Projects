@@ -577,21 +577,21 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
     # add experiment log
     elapsed_time = time.time() - start_at
 
-    test_result_grad['n'].append(n)
-    test_result_grad['time'].append(round(elapsed_time, 2))
+    test_result_final['n'].append(n)
+    test_result_final['time'].append(round(elapsed_time, 2))
 
-    test_result_grad['nn_eyes_mse'].append(round(mse_errors['eyes'], 4))
-    test_result_grad['svm_mouth_acc'].append(round(entire_svm_accuracy_dict_mouth['mouth'], 4))
-    test_result_grad['svm_pose_acc'].append(round(entire_svm_accuracy_dict_pose['pose'], 4))
+    test_result_final['nn_eyes_mse'].append(round(mse_errors['eyes'], 4))
+    test_result_final['svm_mouth_acc'].append(round(entire_svm_accuracy_dict_mouth['mouth'], 4))
+    test_result_final['svm_pose_acc'].append(round(entire_svm_accuracy_dict_pose['pose'], 4))
 
     sum_mean_corr = abs(round(eyes_corr_mean, 4)) + abs(round(mouth_corr_mean, 4)) + abs(round(pose_corr_mean, 4))
-    test_result_grad['eyes_mean_corr'].append(abs(round(eyes_corr_mean, 4)))
-    test_result_grad['mouth_mean_corr'].append(abs(round(mouth_corr_mean, 4)))
-    test_result_grad['pose_mean_corr'].append(abs(round(pose_corr_mean, 4)))
-    test_result_grad['sum_mean_corr'].append(sum_mean_corr)
+    test_result_final['eyes_mean_corr'].append(abs(round(eyes_corr_mean, 4)))
+    test_result_final['mouth_mean_corr'].append(abs(round(mouth_corr_mean, 4)))
+    test_result_final['pose_mean_corr'].append(abs(round(pose_corr_mean, 4)))
+    test_result_final['sum_mean_corr'].append(sum_mean_corr)
 
-    test_result_grad_df = pd.DataFrame(test_result_grad)
-    test_result_grad_df.to_csv(f'{test_result_dir}/test_result_final.csv')
+    test_result_final_df = pd.DataFrame(test_result_final)
+    test_result_final_df.to_csv(f'{test_result_dir}/test_result_final.csv')
 
     # re-initialize test directories & remove NN models for gradients
     if remove_data:
