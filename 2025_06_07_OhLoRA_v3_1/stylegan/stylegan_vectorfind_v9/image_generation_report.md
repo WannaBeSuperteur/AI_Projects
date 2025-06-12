@@ -15,12 +15,15 @@
 | ```Gradient``` | - 간단한 딥러닝 모델의 Gradient 를 핵심 속성 값 변화 벡터로 사용                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |       |
 
 * 각 핵심 속성 값 별 다음 방법 적용
+  * intermediate vector 로 ```mapping_split1``` 선정 이유
+    * 생성 이미지 개수 (= latent code z 의 개수) 에 따라 **성능이 증가하는 경향성** 이 가장 큼
+    * **dims = 2560** 으로 **입력 데이터의 정보량** 이 가장 많음
 
 | 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
 |-------------|----------------|----------------------------|
-| ```eyes```  | ```Gradient``` | ```mapping_split1```       |
-| ```mouth``` | ```SVM```      | ```mapping_split2```       |
-| ```pose```  | ```SVM```      | ```w```                    |
+| ```eyes```  | ```Gradient``` | ```mapping_split1``` (공통)  |
+| ```mouth``` | ```SVM```      | ```mapping_split1``` (공통)  |
+| ```pose```  | ```SVM```      | ```mapping_split1``` (공통)  |
 
 * passed 기준 **(모두 만족)**
   * 각 속성 값 별, **의도한 값 vs. 실제 생성된 이미지에 대해 Property Score CNN 으로 도출한 값** 의 corr-coef (상관계수) 가 다음을 만족 
