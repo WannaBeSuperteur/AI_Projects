@@ -608,8 +608,8 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
 
 
 if __name__ == '__main__':
-    ns = [1000, 2000, 4000, 8000, 20000, 40000]
-    ratios = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+    ns = [80000]
+    ratios = [0.2]
 
     for n, ratio in zip(ns, ratios):
         run_stylegan_vectorfind_v9_automated_test_final(n, ratio)
