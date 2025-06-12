@@ -2,11 +2,13 @@ try:
     from stylegan_vectorfind_v9.main import main_svm as stylegan_vectorfind_v9_main_svm
     from stylegan_vectorfind_v9.main import main_gradient as stylegan_vectorfind_v9_main_gradient
     from run_stylegan_vectorfind_v9_svm import load_ohlora_mid_vector_group_names, get_group_name
+    from stylegan_common.visualizer import save_image
     import stylegan_common.stylegan_generator as gen
 
     from common import (load_existing_stylegan_finetune_v9,
                         load_existing_stylegan_vectorfind_v9,
-                        load_merged_property_score_cnn)
+                        load_merged_property_score_cnn,
+                        stylegan_transform)
     from common_vectorfind_v9 import (generate_image_using_mid_vector,
                                       generate_code_mid,
                                       load_ohlora_z_vectors,
@@ -16,11 +18,13 @@ except:
     from stylegan.stylegan_vectorfind_v9.main import main_svm as stylegan_vectorfind_v9_main_svm
     from stylegan.stylegan_vectorfind_v9.main import main_gradient as stylegan_vectorfind_v9_main_gradient
     from stylegan.run_stylegan_vectorfind_v9_svm import load_ohlora_mid_vector_group_names, get_group_name
+    from stylegan.stylegan_common.visualizer import save_image
     import stylegan.stylegan_common.stylegan_generator as gen
 
     from stylegan.common import (load_existing_stylegan_finetune_v9,
                                  load_existing_stylegan_vectorfind_v9,
-                                 load_merged_property_score_cnn)
+                                 load_merged_property_score_cnn,
+                                 stylegan_transform)
     from stylegan.common_vectorfind_v9 import (generate_image_using_mid_vector,
                                                generate_code_mid,
                                                load_ohlora_z_vectors,
@@ -35,12 +39,14 @@ from run_stylegan_vectorfind_v9_gradient import run_image_generation_test as run
 from run_stylegan_vectorfind_v9_gradient import run_property_score_compare_test as run_property_score_compare_test_gradient
 
 import torch
+from torchvision.io import read_image
 import numpy as np
 import pandas as pd
 
 import os
 import shutil
 import time
+
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_RESOLUTION = 256
@@ -59,6 +65,7 @@ TEST_IMG_CASES = 1
 TEST_IMG_CASES_FOR_COMPARE_MAX = 100  # 2000
 TEST_IMG_CASES_NEEDED_PASS = 100  # 60
 
+
 test_result_svm = {'n': [], 'k': [], 'time': [],
                    'svm_eyes_acc': [], 'svm_mouth_acc': [], 'svm_pose_acc': [],
                    'eyes_mean_corr': [], 'mouth_mean_corr': [], 'pose_mean_corr': [], 'sum_mean_corr': []}
@@ -70,6 +77,7 @@ test_result_grad = {'n': [], 'time': [],
 test_result_final = {'n': [], 'k': [], 'time': [],
                      'nn_eyes_mse': [], 'svm_mouth_acc': [], 'svm_pose_acc': [],
                      'eyes_mean_corr': [], 'mouth_mean_corr': [], 'pose_mean_corr': [], 'sum_mean_corr': []}
+
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/image_generation_report'
 OHLORA_FINAL_VECTORS_TEST_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/final_vector_test_report'
@@ -249,6 +257,63 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
             os.remove(model_path)
 
 
+# 주어진 eyes, mouth, pose 핵심 속성 값 변화 벡터를 이용하여 이미지 생성
+# Create Date : 2025.06.12
+# Last Update Date : -
+
+# Arguments:
+# - finetune_v9_generator (nn.Module)   : StyleGAN-FineTune-v9 의 Generator
+# - property_score_cnn    (nn.Module)   : 핵심 속성 값을 계산하기 위한 CNN
+# - eyes_vector           (NumPy array) : eyes (눈을 뜬 정도) 핵심 속성 값 변화 벡터
+# - mouth_vector          (NumPy array) : mouth (입을 벌린 정도) 핵심 속성 값 변화 벡터
+# - pose_vector           (NumPy array) : pose (고개 돌림) 핵심 속성 값 변화 벡터
+# - eyes_scores           (list)        : Property Score CNN 에 의해 도출된 eyes 핵심 속성 값의 리스트
+# - mouth_scores          (list)        : Property Score CNN 에 의해 도출된 mouth 핵심 속성 값의 리스트
+# - pose_scores           (list)        : Property Score CNN 에 의해 도출된 pose 핵심 속성 값의 리스트
+# - code_mid              (Tensor)      : latent code (intermediate vector) 에 해당하는 부분
+# - layer_name            (str)         : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                                         ('mapping_split1', 'mapping_split2' or 'w')
+# - save_dir              (str)         : 이미지를 저장할 디렉토리 경로 (stylegan_vectorfind_v9/inference_test_after_training)
+# - img_file_name         (str)         : 저장할 이미지 파일 이름
+# - pms                   (dict)        : eyes, mouth, pose 핵심 속성 값 변화 벡터를 latent code 에 더하거나 빼기 위한 가중치
+#                                         {'eyes': float, 'mouth': float, 'pose': float}
+
+def generate_image_final(finetune_v9_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector,
+                         eyes_scores, mouth_scores, pose_scores, code_mid, layer_name, save_dir, img_file_name, pms):
+
+    eyes_pm, mouth_pm, pose_pm = pms['eyes'], pms['mouth'], pms['pose']
+
+    # generate image
+    if layer_name == 'w':
+        dim = ORIGINAL_HIDDEN_DIMS_W
+    elif layer_name == 'mapping_split1':
+        dim = HIDDEN_DIMS_MAPPING_SPLIT1
+    else:  # mapping_split2
+        dim = HIDDEN_DIMS_MAPPING_SPLIT2
+
+    with torch.no_grad():
+        code_mid_ = code_mid + eyes_pm * torch.tensor(eyes_vector[0:1, :dim])
+        code_mid_ = code_mid_ + mouth_pm * torch.tensor(mouth_vector[0:1, :dim])
+        code_mid_ = code_mid_ + pose_pm * torch.tensor(pose_vector[0:1, :dim])
+        code_mid_ = code_mid_.type(torch.float32)
+
+        images = generate_image_using_mid_vector(finetune_v9_generator, code_mid_, layer_name)
+
+    save_image(os.path.join(save_dir, img_file_name), images[0])
+
+    # compute (predict) property score for each generated image using CNN
+    with torch.no_grad():
+        image = read_image(f'{save_dir}/{img_file_name}')
+        image = stylegan_transform(image)
+
+        property_scores = property_score_cnn(image.unsqueeze(0).cuda())
+        property_scores_np = property_scores.detach().cpu().numpy()
+
+        eyes_scores.append(round(property_scores_np[0][0], 4))
+        mouth_scores.append(round(property_scores_np[0][3], 4))
+        pose_scores.append(round(property_scores_np[0][4], 4))
+
+
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
 # Create Date : 2025.06.12
 # Last Update Date : -
@@ -360,7 +425,8 @@ def run_property_score_compare_test_final(finetune_v9_generator, property_score_
 
             eyes_vector = property_change_vector_dict['eyes']
             generate_image_final(finetune_v9_generator, property_score_cnn, eyes_vector, mouth_vector, pose_vector,
-                                 eyes_scores, mouth_scores, pose_scores, code_mid, layer_name, save_dir, img_file_name, pms)
+                                 eyes_scores, mouth_scores, pose_scores, code_mid, layer_name, save_dir, img_file_name,
+                                 pms)
 
         # compute and record corr-coef
         eyes_corrcoef = np.corrcoef(eyes_pm_order, eyes_scores)[0][1]
