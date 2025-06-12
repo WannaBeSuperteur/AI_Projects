@@ -14,6 +14,14 @@
 | ```SVM```      | - [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 과 같이, [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 으로 핵심 속성 값 변화 벡터 도출<br>- [grouping](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#2-grouping) (16 groups) 은 **모든 case 에 대해 항상 적용** |       |
 | ```Gradient``` | - 간단한 딥러닝 모델의 Gradient 를 핵심 속성 값 변화 벡터로 사용                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |       |
 
+* 각 핵심 속성 값 별 다음 방법 적용
+
+| 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
+|-------------|----------------|----------------------------|
+| ```eyes```  | ```Gradient``` | ```mapping_split1```       |
+| ```mouth``` | ```SVM```      | ```mapping_split2```       |
+| ```pose```  | ```SVM```      | ```w```                    |
+
 * passed 기준 **(모두 만족)**
   * 각 속성 값 별, **의도한 값 vs. 실제 생성된 이미지에 대해 Property Score CNN 으로 도출한 값** 의 corr-coef (상관계수) 가 다음을 만족 
   * ```eyes``` : 상관계수의 절댓값이 **(TBU) 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
@@ -21,9 +29,6 @@
   * ```pose``` : 상관계수의 절댓값이 **(TBU) 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
 
 * 최종 이미지 생성 결과
-  * 각 핵심 속성 값 별 다음 방법 적용 
-    * ```eyes``` 속성값 : ```Gradient``` 방법 적용
-    * ```mouth``` ```pose``` 속성값 : ```SVM``` 방법 적용
 
 | n<br>(total samples) | k<br>(top / bottom samples) | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv) |
 |----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
