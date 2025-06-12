@@ -2,6 +2,7 @@
 
 * [1. Final Report](#1-final-report)
 * [2. Image Generation Test Result](#2-image-generation-test-result)
+  * [2-1. 각 핵심 속성 값 별 상세 결과](#2-1-각-핵심-속성-값-별-상세-결과)
 
 ## 1. Final Report
 
