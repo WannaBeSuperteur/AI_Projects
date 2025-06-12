@@ -351,8 +351,8 @@ def run_property_score_compare_test_final(finetune_v9_generator, property_score_
 
     # label: 'eyes', 'mouth', 'pose'
     eyes_pms = [-1.2, 1.2]
-    mouth_pms = [-1.6, -0.8, 0.0, 0.8, 1.6]
-    pose_pms = [-1.4, -0.7, 0.0, 0.7, 1.4]
+    mouth_pms = [-1.8, -0.9, 0.0, 0.9, 1.8]
+    pose_pms = [-1.8, -1.2, -0.6, 0.0, 0.6]
 
     eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels(eyes_pms, mouth_pms, pose_pms)
     pm_cnt = len(eyes_pm_order)
@@ -373,6 +373,7 @@ def run_property_score_compare_test_final(finetune_v9_generator, property_score_
     for i in range(count_to_generate):
         save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/inference_test_after_training/test_{i:04d}'
         os.makedirs(save_dir, exist_ok=True)
+        eyes_scores, mouth_scores, pose_scores = [], [], []
 
         if ohlora_z_vectors is not None:
             code_part1s_np[i] = ohlora_z_vectors[i][:ORIGINAL_HIDDEN_DIMS_Z]
@@ -387,7 +388,6 @@ def run_property_score_compare_test_final(finetune_v9_generator, property_score_
             code_part2s_np[i] = code_part2[0]
 
         code_mid = generate_code_mid(finetune_v9_generator, layer_name, code_part1, code_part2)
-        eyes_scores, mouth_scores, pose_scores = [], [], []
         all_data_dict['case'].append(i)
 
         property_change_vector_dict = {}
