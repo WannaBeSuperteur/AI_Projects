@@ -62,8 +62,8 @@ ORIGINALLY_PROPERTY_DIMS = 7    # 원래 property (eyes, hair_color, hair_length
                                 #               background_mean, background_std) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 100  # 2000
-TEST_IMG_CASES_NEEDED_PASS = 100  # 60
+TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
+TEST_IMG_CASES_NEEDED_PASS = 60
 
 
 test_result_svm = {'n': [], 'k': [], 'time': [],
@@ -592,7 +592,7 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
     test_result_final['sum_mean_corr'].append(sum_mean_corr)
 
     test_result_final_df = pd.DataFrame(test_result_final)
-    test_result_final_df.to_csv(f'{test_result_dir}/test_result_final.csv')
+    test_result_final_df.to_csv(f'{test_result_dir}/test_result_true_final.csv')
 
     # re-initialize test directories & remove NN models for gradients
     if remove_data:
@@ -608,8 +608,8 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
 
 
 if __name__ == '__main__':
-    ns = [80000]
+    ns = [160000]
     ratios = [0.2]
 
     for n, ratio in zip(ns, ratios):
-        run_stylegan_vectorfind_v9_automated_test_final(n, ratio)
+        run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=True, remove_data=False)
