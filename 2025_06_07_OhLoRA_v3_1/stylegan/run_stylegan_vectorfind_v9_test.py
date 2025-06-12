@@ -219,7 +219,7 @@ def run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name):
 if __name__ == '__main__':
     ns = [4000, 8000, 20000, 40000, 80000]
     ratios = [0.0, 0.0, 0.0, 0.0, 0.0]
-    layer_name = 'mapping_split1'
+    layer_name = 'mapping_split2'
 
     for n, ratio in zip(ns, ratios):
         run_stylegan_vectorfind_v9_automated_test_gradient(n, layer_name)
