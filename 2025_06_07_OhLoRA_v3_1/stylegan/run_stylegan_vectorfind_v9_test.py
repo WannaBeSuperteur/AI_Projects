@@ -512,7 +512,8 @@ def run_property_score_compare_test_final(finetune_v9_generator, property_score_
 
 # StyleGAN-VectorFind-v9 자동화 테스트 함수 (image generation report 의 final decision 기반)
 # Create Date : 2025.06.12
-# Last Update Date : -
+# Last Update Date : 2025.06.13
+# - StyleGAN-VectorFind-v9 모델이 이미 있을 시, 해당 모델 이용
 
 # Arguments:
 # - n              (int)   : 총 생성할 이미지 sample 개수
@@ -539,30 +540,50 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
     finetune_v9_generator.load_state_dict(generator_state_dict)
     finetune_v9_generator.to(device)
 
-    # save StyleGAN-VectorFind-v9 state dict
-    if save_generator:
-        torch.save(finetune_v9_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v9.pth')
+    # try loading StyleGAN-VectorFind-v9 pre-trained model
+    try:
+        generator_state_dict = load_existing_stylegan_vectorfind_v9(device)
+        finetune_v9_generator.load_state_dict(generator_state_dict)
+        print('Existing StyleGAN-VectorFind-v9 Generator load successful!! 😊')
 
-    # use Gradient method for 'eyes'
-    mse_errors = stylegan_vectorfind_v9_main_gradient(finetune_v9_generator, device, n,
-                                                      layer_name=common_layer_name,
-                                                      property_names=['eyes'])
+        eyes_gradient_nn = get_property_change_gradient_nn(property_name='eyes',
+                                                           layer_name=common_layer_name)
 
-    eyes_gradient_nn = get_property_change_gradient_nn(property_name='eyes',
-                                                       layer_name=common_layer_name)
+        _, mouth_vectors, _ = get_property_change_vectors(layer_name=common_layer_name,
+                                                          property_names=['mouth'])
 
-    # use SVM method for 'mouth' and 'pose'
-    entire_svm_accuracy_dict_mouth = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio,
-                                                                     layer_name=common_layer_name,
-                                                                     property_names=['mouth'])
-    _, mouth_vectors, _ = get_property_change_vectors(layer_name=common_layer_name,
-                                                      property_names=['mouth'])
+        _, _, pose_vectors = get_property_change_vectors(layer_name=common_layer_name,
+                                                         property_names=['pose'])
 
-    entire_svm_accuracy_dict_pose = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio,
-                                                                    layer_name=common_layer_name,
-                                                                    property_names=['pose'])
-    _, _, pose_vectors = get_property_change_vectors(layer_name=common_layer_name,
-                                                     property_names=['pose'])
+    # when failed, train new StyleGAN-VectorFind-v9 model
+    except Exception as e:
+        print(f'Existing StyleGAN-VectorFind-v9 Generator load failed: {e}')
+        time.sleep(1000)
+
+        # save StyleGAN-VectorFind-v9 state dict
+        if save_generator:
+            torch.save(finetune_v9_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v9.pth')
+
+        # use Gradient method for 'eyes'
+        mse_errors = stylegan_vectorfind_v9_main_gradient(finetune_v9_generator, device, n,
+                                                          layer_name=common_layer_name,
+                                                          property_names=['eyes'])
+
+        eyes_gradient_nn = get_property_change_gradient_nn(property_name='eyes',
+                                                           layer_name=common_layer_name)
+
+        # use SVM method for 'mouth' and 'pose'
+        entire_svm_accuracy_dict_mouth = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio,
+                                                                         layer_name=common_layer_name,
+                                                                         property_names=['mouth'])
+        _, mouth_vectors, _ = get_property_change_vectors(layer_name=common_layer_name,
+                                                          property_names=['mouth'])
+
+        entire_svm_accuracy_dict_pose = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio,
+                                                                        layer_name=common_layer_name,
+                                                                        property_names=['pose'])
+        _, _, pose_vectors = get_property_change_vectors(layer_name=common_layer_name,
+                                                         property_names=['pose'])
 
     # run final image generation test
     eyes_corr_mean, mouth_corr_mean, pose_corr_mean = (
@@ -581,9 +602,14 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
     test_result_final['k'].append(int(round(n * ratio)))
     test_result_final['time'].append(round(elapsed_time, 2))
 
-    test_result_final['nn_eyes_mse'].append(round(mse_errors['eyes'], 4))
-    test_result_final['svm_mouth_acc'].append(round(entire_svm_accuracy_dict_mouth['mouth'], 4))
-    test_result_final['svm_pose_acc'].append(round(entire_svm_accuracy_dict_pose['pose'], 4))
+    try:
+        test_result_final['nn_eyes_mse'].append(round(mse_errors['eyes'], 4))
+        test_result_final['svm_mouth_acc'].append(round(entire_svm_accuracy_dict_mouth['mouth'], 4))
+        test_result_final['svm_pose_acc'].append(round(entire_svm_accuracy_dict_pose['pose'], 4))
+    except:
+        test_result_final['nn_eyes_mse'].append('-')
+        test_result_final['svm_mouth_acc'].append('-')
+        test_result_final['svm_pose_acc'].append('-')
 
     sum_mean_corr = abs(round(eyes_corr_mean, 4)) + abs(round(mouth_corr_mean, 4)) + abs(round(pose_corr_mean, 4))
     test_result_final['eyes_mean_corr'].append(abs(round(eyes_corr_mean, 4)))
@@ -592,7 +618,7 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
     test_result_final['sum_mean_corr'].append(sum_mean_corr)
 
     test_result_final_df = pd.DataFrame(test_result_final)
-    test_result_final_df.to_csv(f'{test_result_dir}/test_result_true_final.csv')
+    test_result_final_df.to_csv(f'{test_result_dir}/test_result_true_final_qa.csv')
 
     # re-initialize test directories & remove NN models for gradients
     if remove_data:
