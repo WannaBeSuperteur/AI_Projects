@@ -197,8 +197,8 @@ def run_image_generation_test(finetune_v9_generator, property_score_cnn, layer_n
 
 # Oh-LoRA 이미지 생성용 intermediate vector 각각에 대해, group name 정보를 먼저 불러오기 시도
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.10
-# - intermediate vector 를 추출할 레이어 지정 다양화
+# Last Update Date : 2025.06.13
+# - group name column 으로 'svm_group_name' 도 지원
 
 # Arguments:
 # - group_name_csv_path (str) : intermediate vector 에 대한 group name 정보가 저장된 csv 파일의 경로
@@ -212,7 +212,12 @@ def run_image_generation_test(finetune_v9_generator, property_score_cnn, layer_n
 def load_ohlora_mid_vector_group_names(group_name_csv_path, layer_name):
     try:
         ohlora_mid_vectors_df = pd.read_csv(group_name_csv_path)
-        group_names = ohlora_mid_vectors_df['group_name'].tolist()
+
+        if 'group_name' in ohlora_mid_vectors_df.columns:
+            group_names = ohlora_mid_vectors_df['group_name'].tolist()
+        else:
+            group_names = ohlora_mid_vectors_df['svm_group_name'].tolist()
+
         print(f'group names for each Oh-LoRA {layer_name} vector load successful!! 👱‍♀️✨')
         return group_names
 
