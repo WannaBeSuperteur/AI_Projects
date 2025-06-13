@@ -51,6 +51,9 @@
     * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에서 [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 에서 사용한 ```SVM & w``` 조합을 제외한 가장 좋은 (방법 & intermediate vector 추출 레이어) 조합 선정
   * 선택한 조합 : ```SVM & mapping_split2```
     * 해당 조합은 **n = 80K** 일 때 **"모든 속성 값에 대한 mean corr-coef 의 합산"이 가장 큰** 조합임
+* 관련 문서
+  * [최종 선정 Oh-LoRA 얼굴 이미지 정보](final_OhLoRA_info_svm_ms2.md)
+  * [본 문서의 이미지 생성 테스트 결과와 '결합'한 성능 평가 결과](performance_compare_svm_ms2.md)
 
 ### 1-3. 최종 이미지 생성 테스트 결과
 
@@ -70,9 +73,9 @@
 
 **[ option 2 : ```svm_ms2``` ]** [(상세 정보)](#1-2-최종-이미지-생성-테스트-option-2-svm_ms2)
 
-| n<br>(total samples) | k<br>(top / bottom samples) | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv) |
-|----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
-|                      | / <br>**(% each)**          |                              | ( %)         | ( %)                  |                           |                            |                           |                  |
+| n<br>(total samples) | k<br>(top / bottom samples)      | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef                                                                                                       | ```mouth``` mean corr-coef                                                                                                      | ```pose``` mean corr-coef                                                                                                       | details<br>(csv)                                                         |
+|----------------------|----------------------------------|------------------------------|--------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| 240.0K               | 48.0K / 48.0K <br>**(20% each)** | 2,000                        | 38 (1.9 %)   | 8 (0.4 %)             | 0.8726<br>[(▼ 0.0018)](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#1-final-report) | 0.8443<br>[(▼ 0.0022)](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#1-final-report) | 0.8813<br>[(▲ 0.0078)](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#1-final-report) | [csv file](image_generation_report/test_result%20(final,%20svm_ms2).csv) |
 
 ## 2. Image Generation Test Result
 
