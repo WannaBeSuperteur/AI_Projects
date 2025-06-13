@@ -46,7 +46,7 @@
 | ```mouth``` | ```SVM``` | ```mapping_split2``` (공통)  |
 | ```pose```  | ```SVM``` | ```mapping_split2``` (공통)  |
 
-* 방법 & intermediate vector 추출 레이어 선정 근거
+* (방법 & intermediate vector 추출 레이어) 조합 선정 근거
   * 핵심 아이디어 
     * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에서 [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 에서 사용한 ```SVM & w``` 조합을 제외한 가장 좋은 (방법 & intermediate vector 추출 레이어) 조합 선정
   * 선택한 조합 : ```SVM & mapping_split2```
