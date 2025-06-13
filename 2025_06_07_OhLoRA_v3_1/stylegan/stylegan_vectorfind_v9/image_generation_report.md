@@ -1,6 +1,9 @@
 ## 목차
 
 * [1. Final Report](#1-final-report)
+  * [1-1. 최종 이미지 생성 테스트 option 1: ```mixed```](#1-1-최종-이미지-생성-테스트-option-1-mixed)
+  * [1-2. 최종 이미지 생성 테스트 option 2: ```svm_ms2```](#1-2-최종-이미지-생성-테스트-option-2-svm_ms2)
+  * [1-3. 최종 이미지 생성 테스트 결과](#1-3-최종-이미지-생성-테스트-결과)
 * [2. Image Generation Test Result](#2-image-generation-test-result)
   * [2-1. 각 핵심 속성 값 별 상세 결과](#2-1-각-핵심-속성-값-별-상세-결과)
 
@@ -14,7 +17,17 @@
 | ```SVM```      | - [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 과 같이, [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 으로 핵심 속성 값 변화 벡터 도출<br>- [grouping](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#2-grouping) (16 groups) 은 **모든 case 에 대해 항상 적용** |       |
 | ```Gradient``` | - 간단한 딥러닝 모델의 Gradient 를 핵심 속성 값 변화 벡터로 사용                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |       |
 
-**[ option 1 : ```mixed``` ]**
+* 최종 이미지 테스트 방법 선정
+  * [option 1: ```mixed```](#1-1-최종-이미지-생성-테스트-option-1-mixed)
+  * [option 2: ```svm_ms2```](#1-2-최종-이미지-생성-테스트-option-2-svm_ms2)
+
+### 1-1. 최종 이미지 생성 테스트 option 1: ```mixed```
+
+| 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
+|-------------|----------------|----------------------------|
+| ```eyes```  | ```Gradient``` | ```mapping_split1``` (공통)  |
+| ```mouth``` | ```SVM```      | ```mapping_split1``` (공통)  |
+| ```pose```  | ```SVM```      | ```mapping_split1``` (공통)  |
 
 * 각 속성 값 별 방법 (```SVM``` or ```Gradient```) 사용 근거
   * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에서 각 속성 값 별 성능 (mean corr-coef) 이 더 우수한 방법 선택
@@ -25,25 +38,21 @@
   * 생성 이미지 개수 (= latent code z 의 개수) 에 따라 **성능이 증가하는 경향성** 이 가장 큼
   * **dims = 2560** 으로 **입력 데이터의 정보량** 이 가장 많음
 
-| 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
-|-------------|----------------|----------------------------|
-| ```eyes```  | ```Gradient``` | ```mapping_split1``` (공통)  |
-| ```mouth``` | ```SVM```      | ```mapping_split1``` (공통)  |
-| ```pose```  | ```SVM```      | ```mapping_split1``` (공통)  |
-
-**[ option 2 : ```svm_ms2``` ]**
-
-* 방법 & intermediate vector 추출 레이어 선정 근거
-  * 핵심 아이디어 
-    * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에서 [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 에서 사용한 ```SVM & w``` 조합을 제외한 가장 좋은 (방법 & intermediate vector 추출 레이어) 조합 선정
-  * 선택한 조합 : ```SVM & mapping_split2```
-  * 해당 조합은 **n = 80K** 일 때 **"모든 속성 값에 대한 mean corr-coef 의 합산"이 가장 큰** 조합임
+### 1-2. 최종 이미지 생성 테스트 option 2: ```svm_ms2```
 
 | 속성 값        | 사용한 방법    | intermediate vector 추출 레이어 |
 |-------------|-----------|----------------------------|
 | ```eyes```  | ```SVM``` | ```mapping_split2``` (공통)  |
 | ```mouth``` | ```SVM``` | ```mapping_split2``` (공통)  |
 | ```pose```  | ```SVM``` | ```mapping_split2``` (공통)  |
+
+* 방법 & intermediate vector 추출 레이어 선정 근거
+  * 핵심 아이디어 
+    * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에서 [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 에서 사용한 ```SVM & w``` 조합을 제외한 가장 좋은 (방법 & intermediate vector 추출 레이어) 조합 선정
+  * 선택한 조합 : ```SVM & mapping_split2```
+    * 해당 조합은 **n = 80K** 일 때 **"모든 속성 값에 대한 mean corr-coef 의 합산"이 가장 큰** 조합임
+
+### 1-3. 최종 이미지 생성 테스트 결과
 
 * passed 기준 **(모두 만족)**
   * 각 속성 값 별, **의도한 값 vs. 실제 생성된 이미지에 대해 Property Score CNN 으로 도출한 값** 의 corr-coef (상관계수) 가 다음을 만족 
@@ -53,13 +62,13 @@
 
 * 최종 이미지 생성 결과
 
-**[ option 1 : ```mixed``` ]**
+**[ option 1 : ```mixed``` ]** [(상세 정보)](#1-1-최종-이미지-생성-테스트-option-1-mixed)
 
 | n<br>(total samples) | k<br>(top / bottom samples)      | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef                                                                                                       | ```mouth``` mean corr-coef                                                                                                      | ```pose``` mean corr-coef                                                                                                       | details<br>(csv)                                                                           |
 |----------------------|----------------------------------|------------------------------|--------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
 | 160.0K               | 32.0K / 32.0K <br>**(20% each)** | 2,000                        | 43 (2.2 %)   | 22 (1.1 %)            | 0.9198<br>[(▲ 0.0454)](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#1-final-report) | 0.8159<br>[(▼ 0.0306)](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#1-final-report) | 0.8372<br>[(▼ 0.0363)](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#1-final-report) | [csv file](image_generation_report/test_result_mapping_split1_160K%20(final,%20mixed).csv) |
 
-**[ option 2 : ```svm_ms2``` ]**
+**[ option 2 : ```svm_ms2``` ]** [(상세 정보)](#1-2-최종-이미지-생성-테스트-option-2-svm_ms2)
 
 | n<br>(total samples) | k<br>(top / bottom samples) | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv) |
 |----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
