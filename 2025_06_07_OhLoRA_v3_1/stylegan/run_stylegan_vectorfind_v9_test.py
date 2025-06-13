@@ -98,6 +98,7 @@ os.makedirs(test_result_dir, exist_ok=True)
 # Create Date : 2025.06.10
 # Last Update Date : 2025.06.13
 # - 모델 저장 여부 및 데이터 (디렉토리/모델) 삭제 여부 변수 추가
+# - StyleGAN-VectorFind-v9 모델이 이미 있을 시, 해당 모델 이용
 
 # Arguments:
 # - n              (int)   : 총 생성할 이미지 sample 개수
@@ -122,12 +123,23 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name, save_gen
 
     finetune_v9_generator.load_state_dict(generator_state_dict)
 
-    # save StyleGAN-VectorFind-v9 state dict
-    if save_generator:
-        torch.save(finetune_v9_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v9.pth')
+    # try loading StyleGAN-VectorFind-v9 pre-trained model
+    try:
+        generator_state_dict = load_existing_stylegan_vectorfind_v9(device)
+        finetune_v9_generator.load_state_dict(generator_state_dict)
+        print('Existing StyleGAN-VectorFind-v9 Generator load successful!! 😊')
 
-    # get property score changing vector
-    entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio, layer_name)
+    # when failed, train new StyleGAN-VectorFind-v9 model
+    except Exception as e:
+        print(f'Existing StyleGAN-VectorFind-v9 Generator load failed: {e}')
+
+        # save StyleGAN-VectorFind-v9 state dict
+        if save_generator:
+            torch.save(finetune_v9_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v9.pth')
+
+        # get property score changing vector
+        entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio, layer_name)
+
     eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(layer_name, property_names=PROPERTY_NAMES)
 
     # get Merged Property Score CNN
@@ -157,9 +169,14 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name, save_gen
     test_result_svm['k'].append(int(round(n * ratio)))
     test_result_svm['time'].append(round(elapsed_time, 2))
 
-    test_result_svm['svm_eyes_acc'].append(round(entire_svm_accuracy_dict['eyes'], 4))
-    test_result_svm['svm_mouth_acc'].append(round(entire_svm_accuracy_dict['mouth'], 4))
-    test_result_svm['svm_pose_acc'].append(round(entire_svm_accuracy_dict['pose'], 4))
+    try:
+        test_result_svm['svm_eyes_acc'].append(round(entire_svm_accuracy_dict['eyes'], 4))
+        test_result_svm['svm_mouth_acc'].append(round(entire_svm_accuracy_dict['mouth'], 4))
+        test_result_svm['svm_pose_acc'].append(round(entire_svm_accuracy_dict['pose'], 4))
+    except:
+        test_result_svm['svm_eyes_acc'].append('-')
+        test_result_svm['svm_mouth_acc'].append('-')
+        test_result_svm['svm_pose_acc'].append('-')
 
     sum_mean_corr = abs(round(eyes_corr_mean, 4)) + abs(round(mouth_corr_mean, 4)) + abs(round(pose_corr_mean, 4))
     test_result_svm['eyes_mean_corr'].append(abs(round(eyes_corr_mean, 4)))
@@ -168,7 +185,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name, save_gen
     test_result_svm['sum_mean_corr'].append(sum_mean_corr)
 
     test_result_svm_df = pd.DataFrame(test_result_svm)
-    test_result_svm_df.to_csv(f'{test_result_dir}/test_result_final (svm_ms2).csv')
+    test_result_svm_df.to_csv(f'{test_result_dir}/test_result_true_final_svm_ms2_qa.csv')
 
     # re-initialize test directories
     if remove_data:
