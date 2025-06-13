@@ -23,6 +23,7 @@
 
 * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에 근거한 선정
 * [최종 선정 Oh-LoRA 얼굴 이미지 정보](final_OhLoRA_info_mixed.md)
+* [본 문서의 이미지 생성 테스트 vs. ```mixed``` 옵션으로 생성 시 성능 비교](performance_compare_mixed.md)
 
 | 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
 |-------------|----------------|----------------------------|
