@@ -112,7 +112,16 @@ StyleGAN-VectorFind-v9 에서 **mid vector (= intermediate vector)** 를 추출�
 
 ## 5. 코드 실행 방법
 
-모든 코드는 ```2025_06_07_OhLoRA_v3_1``` (프로젝트 메인 디렉토리) 에서 실행
+모든 코드는 ```2025_06_07_OhLoRA_v3_1``` (프로젝트 메인 디렉토리) 에서 실행 **(단, 먼저 [HuggingFace Link](https://huggingface.co/daebakgazua/250607_OhLoRA_StyleGAN_all) 에서 모델 파일 다운로드 후, [모델 파일 경로 정보](https://huggingface.co/daebakgazua/250607_OhLoRA_StyleGAN_all/blob/main/README.md#2-model-files--save-path-for-usage) 에 따라 해당 파일들을 알맞은 경로에 배치)**
 
 * **StyleGAN-FineTune-v9** 학습
   * ```python stylegan/run_stylegan_finetune_v9.py```
+
+* **StyleGAN-VectorFind-v9 [(SVM 방법)](#3-3-stylegan-vectorfind-v9-svm-방법)** 학습 및 테스트
+  * ```python stylegan/run_stylegan_finetune_v9_svm.py```
+
+* **StyleGAN-VectorFind-v9 [(Gradient 방법)](#3-4-stylegan-vectorfind-v9-gradient-방법)** 학습 및 테스트
+  * ```python stylegan/run_stylegan_finetune_v9_gradient.py```
+
+* **StyleGAN-VectorFind-v9 final option 학습 및 테스트 **(코드 수정하여 사용)**
+  * ```python stylegan/run_stylegan_finetune_v9_test.py```
