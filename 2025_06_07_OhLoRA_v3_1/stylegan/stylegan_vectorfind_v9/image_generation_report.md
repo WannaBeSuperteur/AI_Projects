@@ -19,11 +19,21 @@
     * 생성 이미지 개수 (= latent code z 의 개수) 에 따라 **성능이 증가하는 경향성** 이 가장 큼
     * **dims = 2560** 으로 **입력 데이터의 정보량** 이 가장 많음
 
+**[ option 1 : ```mixed``` ]**
+
 | 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
 |-------------|----------------|----------------------------|
 | ```eyes```  | ```Gradient``` | ```mapping_split1``` (공통)  |
 | ```mouth``` | ```SVM```      | ```mapping_split1``` (공통)  |
 | ```pose```  | ```SVM```      | ```mapping_split1``` (공통)  |
+
+**[ option 2 : ```svm_ms2``` ]**
+
+| 속성 값        | 사용한 방법    | intermediate vector 추출 레이어 |
+|-------------|-----------|----------------------------|
+| ```eyes```  | ```SVM``` | ```mapping_split2``` (공통)  |
+| ```mouth``` | ```SVM``` | ```mapping_split2``` (공통)  |
+| ```pose```  | ```SVM``` | ```mapping_split2``` (공통)  |
 
 * passed 기준 **(모두 만족)**
   * 각 속성 값 별, **의도한 값 vs. 실제 생성된 이미지에 대해 Property Score CNN 으로 도출한 값** 의 corr-coef (상관계수) 가 다음을 만족 
@@ -32,6 +42,14 @@
   * ```pose``` : 상관계수의 절댓값이 **(TBU) 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
 
 * 최종 이미지 생성 결과
+
+**[ option 1 : ```mixed``` ]**
+
+| n<br>(total samples) | k<br>(top / bottom samples) | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv) |
+|----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
+|                      | / <br>**(% each)**          |                              | ( %)         | ( %)                  |                           |                            |                           |                  |
+
+**[ option 2 : ```svm_ms2``` ]**
 
 | n<br>(total samples) | k<br>(top / bottom samples) | latent vectors<br>(random z) | passed cases | Final Oh-LoRA 적합 case | ```eyes``` mean corr-coef | ```mouth``` mean corr-coef | ```pose``` mean corr-coef | details<br>(csv) |
 |----------------------|-----------------------------|------------------------------|--------------|-----------------------|---------------------------|----------------------------|---------------------------|------------------|
