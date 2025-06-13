@@ -168,7 +168,7 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name, save_gen
     test_result_svm['sum_mean_corr'].append(sum_mean_corr)
 
     test_result_svm_df = pd.DataFrame(test_result_svm)
-    test_result_svm_df.to_csv(f'{test_result_dir}/test_result_svm_{layer_name}.csv')
+    test_result_svm_df.to_csv(f'{test_result_dir}/test_result_final (svm_ms2).csv')
 
     # re-initialize test directories
     if remove_data:
@@ -640,8 +640,9 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
 
 
 if __name__ == '__main__':
-    ns = [160000]
+    ns = [240000]
     ratios = [0.2]
+    layer_name = 'mapping_split2'
 
     for n, ratio in zip(ns, ratios):
-        run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=True, remove_data=False)
+        run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name, save_generator=True, remove_data=False)

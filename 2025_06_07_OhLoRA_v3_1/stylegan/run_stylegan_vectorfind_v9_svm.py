@@ -47,8 +47,8 @@ ORIGINALLY_PROPERTY_DIMS = 7    # 원래 property (eyes, hair_color, hair_length
                                 #               background_mean, background_std) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 100  # 2000
-TEST_IMG_CASES_NEEDED_PASS = 100  # 60
+TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
+TEST_IMG_CASES_NEEDED_PASS = 60
 
 IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/image_generation_report'
 OHLORA_FINAL_VECTORS_TEST_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v9/final_vector_test_report'
