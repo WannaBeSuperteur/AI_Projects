@@ -1,0 +1,2 @@
+,n,k,time,nn_eyes_mse,svm_mouth_acc,svm_pose_acc,eyes_mean_corr,mouth_mean_corr,pose_mean_corr,sum_mean_corr
+0,160000,32000,32572.85,0.1343,0.9809,0.9872,0.9198,0.8159,0.8372,2.5729

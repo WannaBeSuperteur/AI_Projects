@@ -580,13 +580,19 @@ class MappingModuleForV9(nn.Module):
                 w1 = self.__getattr__(f'dense{i}')(w)
                 w2 = self.__getattr__(f'dense_new0')(w)
             elif i == self.num_layers - 1:
-                w = self.__getattr__(f'dense{i}')(w1) + self.__getattr__(f'dense_new1')(w2)
+                w1_ = self.__getattr__(f'dense{i}')(w1)
+                w2_ = self.__getattr__(f'dense_new1')(w2)
+                w = w1_ + w2_
             else:
                 w = self.__getattr__(f'dense{i}')(w)
         results = {
             'z': z,
             'label': label,
             'w': w,
+            'w1': w1,
+            'w2': w2,
+            'w1_': w1_,
+            'w2_': w2_
         }
         if self.label_size:
             results['embedding'] = embedding
