@@ -1,6 +1,6 @@
 ## 1. 개요
 
-* Oh-LoRA 이미지 생성 테스트 결과에 의해 채택된 [최종 Oh-LoRA 이미지 생성 옵션](final_OhLoRA_info_mixed.md#1-최종-oh-lora--오로라-생성-정보) 중 ```mixed``` 옵션의 성능을 평가한다.
+* Oh-LoRA 이미지 생성 테스트 결과에 의해 채택된 [최종 Oh-LoRA 이미지 생성 옵션](image_generation_report.md#1-final-report) 중 ```mixed``` 옵션의 성능을 평가한다.
 * ```mixed``` 옵션 설정
 
 | 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
