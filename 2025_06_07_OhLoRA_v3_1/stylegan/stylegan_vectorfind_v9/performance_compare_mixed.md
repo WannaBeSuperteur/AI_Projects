@@ -18,7 +18,7 @@
 * 실험 결론
   * 모든 핵심 속성 값에 대해, 성능, 즉 mean corr-coef 값은 **original test 결과에 비해 다소 떨어진다.** 
   * 모든 핵심 속성 값에 대해, 총 생성 이미지 개수 (n) 의 증가에 따른 mean corr-coef 값 변화 추이는 **original test 결과와 유사** 하다.
-  * 전체 핵심 속성 값의 mean corr-coef 합산의 경우 **original test 결과 중 최고 수준 결과를 유의미하게 넘어서지 못한다.**
+  * 전체 핵심 속성 값의 mean corr-coef 합산 **(아래 그래프의 녹색 선)** 의 경우 **original test 결과 중 최고 수준 결과를 유의미하게 넘어서지 못한다.**
 
 * 전체 핵심 속성 값의 mean corr-coef 합산
 

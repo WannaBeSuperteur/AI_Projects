@@ -64,6 +64,8 @@
   * ```pose``` : 상관계수의 절댓값이 **0.88 이상** ([v7](../../../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/svm_train_report/img_generation_test_result.md) : 0.92 이상)
 
 * 최종 이미지 생성 결과
+  * 결론: ```mixed```, ```svm_ms2``` 옵션 모두 [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#1-final-report) 의 성능을 **유의미하게 넘지 못함**
+  * StyleGAN-FineTune-vN 모델로 생성되는 Oh-LoRA 얼굴 이미지의 **원본의 품질을 좋게** 하는 것보다, **Segmentation 을 연계한 후처리** 를 통해 매력을 높이는 방향으로 가는 것이 좋을 듯함
 
 **[ option 1 : ```mixed``` ]** [(상세 정보)](#1-1-최종-이미지-생성-테스트-option-1-mixed)
 
