@@ -96,16 +96,18 @@ os.makedirs(test_result_dir, exist_ok=True)
 
 # StyleGAN-VectorFind-v9 자동화 테스트 함수 (SVM 기반)
 # Create Date : 2025.06.10
-# Last Update Date : 2025.06.11
-# - import 된 함수명 수정 반영
+# Last Update Date : 2025.06.13
+# - 모델 저장 여부 및 데이터 (디렉토리/모델) 삭제 여부 변수 추가
 
 # Arguments:
-# - n          (int)   : 총 생성할 이미지 sample 개수
-# - ratio      (float) : 총 생성 이미지 중 SVM 의 학습 데이터로 사용할 TOP, BOTTOM 비율 (각각) (= k / n)
-# - layer_name (str)   : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
-#                        ('mapping_split1', 'mapping_split2' or 'w')
+# - n              (int)   : 총 생성할 이미지 sample 개수
+# - ratio          (float) : 총 생성 이미지 중 SVM 의 학습 데이터로 사용할 TOP, BOTTOM 비율 (각각) (= k / n)
+# - layer_name     (str)   : 이미지를 생성할 intermediate vector 를 추출할 레이어의 이름
+#                            ('mapping_split1', 'mapping_split2' or 'w')
+# - save_generator (bool)  : StyleGAN-VectorFind-v9 모델 저장 여부
+# - remove_data    (bool)  : 실험 종료 후 실험 진행한 디렉토리 및 모델 삭제 여부
 
-def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name):
+def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name, save_generator=False, remove_data=True):
     global finetune_v9_generator
 
     start_at = time.time()
@@ -119,6 +121,10 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name):
     print('Existing StyleGAN-FineTune-v9 Generator load successful!! 😊')
 
     finetune_v9_generator.load_state_dict(generator_state_dict)
+
+    # save StyleGAN-VectorFind-v9 state dict
+    if save_generator:
+        torch.save(finetune_v9_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v9.pth')
 
     # get property score changing vector
     entire_svm_accuracy_dict = stylegan_vectorfind_v9_main_svm(finetune_v9_generator, device, n, ratio, layer_name)
@@ -165,13 +171,14 @@ def run_stylegan_vectorfind_v9_automated_test_svm(n, ratio, layer_name):
     test_result_svm_df.to_csv(f'{test_result_dir}/test_result_svm_{layer_name}.csv')
 
     # re-initialize test directories
-    shutil.rmtree(image_gen_report_dir)
-    shutil.rmtree(vector_save_dir)
-    shutil.rmtree(generated_img_dir)
+    if remove_data:
+        shutil.rmtree(image_gen_report_dir)
+        shutil.rmtree(vector_save_dir)
+        shutil.rmtree(generated_img_dir)
 
-    os.makedirs(image_gen_report_dir)
-    os.makedirs(vector_save_dir)
-    os.makedirs(generated_img_dir)
+        os.makedirs(image_gen_report_dir)
+        os.makedirs(vector_save_dir)
+        os.makedirs(generated_img_dir)
 
 
 # StyleGAN-VectorFind-v9 자동화 테스트 함수 (Gradient Neural Network 기반)
@@ -558,7 +565,6 @@ def run_stylegan_vectorfind_v9_automated_test_final(n, ratio, save_generator=Fal
     # when failed, train new StyleGAN-VectorFind-v9 model
     except Exception as e:
         print(f'Existing StyleGAN-VectorFind-v9 Generator load failed: {e}')
-        time.sleep(1000)
 
         # save StyleGAN-VectorFind-v9 state dict
         if save_generator:
