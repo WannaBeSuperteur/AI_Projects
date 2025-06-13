@@ -1,7 +1,8 @@
 ## 목차
 
 * [1. 개요](#1-개요)
-  * [1-1. 모델 구조](#1-1-모델-구조) 
+  * [1-1. 모델 구조](#1-1-모델-구조)
+  * [1-2. 성능 결과 리포트](#1-2-성능-결과-리포트)
 * [2. 핵심 속성 값](#2-핵심-속성-값)
 * [3. 사용 모델 설명](#3-사용-모델-설명)
   * [3-1. Fine-Tuned StyleGAN (StyleGAN-FineTune-v1)](#3-1-fine-tuned-stylegan-stylegan-finetune-v1)
@@ -27,6 +28,19 @@
 * 전체적으로 [Oh-LoRA v3 (with StyleGAN-VectorFind-v8)](../../2025_05_26_OhLoRA_v3/stylegan/README.md#1-1-모델-구조) 과 유사
 * 단, **StyleGAN-FineTune-v8** 대신 **StyleGAN-FineTune-v9** 적용
 
+### 1-2. 성능 결과 리포트
+
+* [StyleGAN-VectorFind-v9 이미지 생성 결과 리포트](stylegan_vectorfind_v9/image_generation_report.md#2-image-generation-test-result)
+* StyleGAN-VectorFind-v9 최종 이미지 생성 옵션 설명
+  * [```mixed``` 옵션](stylegan_vectorfind_v9/image_generation_report.md#1-1-최종-이미지-생성-테스트-option-1-mixed) (```eyes``` 속성 값에는 [Gradient 방법](#3-4-stylegan-vectorfind-v9-gradient-방법), ```mouth``` ```pose``` 속성 값에는 [SVM 방법](#3-3-stylegan-vectorfind-v9-svm-방법) 적용)
+  * [```svm_ms2``` 옵션](stylegan_vectorfind_v9/image_generation_report.md#1-2-최종-이미지-생성-테스트-option-2-svmms2) (모든 속성 값에 ```svm``` 방법 적용 & ```mapping_split2``` 레이어에서 intermediate vector 추출)
+* 이미지 생성 결과
+
+| 옵션            | Oh-LoRA 이미지 생성 결과                                                | 성능 비교 리포트                                                         |
+|---------------|------------------------------------------------------------------|-------------------------------------------------------------------|
+| ```mixed```   | [이미지 생성 결과](stylegan_vectorfind_v9/final_OhLoRA_info_mixed.md)   | [성능 비교 결과](stylegan_vectorfind_v9/performance_compare_mixed.md)   |
+| ```svm_ms2``` | [이미지 생성 결과](stylegan_vectorfind_v9/final_OhLoRA_info_svm_ms2.md) | [성능 비교 결과](stylegan_vectorfind_v9/performance_compare_svm_ms2.md) |
+
 ## 2. 핵심 속성 값
 
 * [Oh-LoRA v3 의 해당 부분](../../2025_05_26_OhLoRA_v3/stylegan/README.md#2-핵심-속성-값) 참고.
@@ -34,13 +48,17 @@
 
 ## 3. 사용 모델 설명
 
-| 모델                                                                                                                | 최종 채택 | 핵심 아이디어                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 성능 보고서                                            |
-|-------------------------------------------------------------------------------------------------------------------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
-| [StyleGAN-FineTune-v1](#3-1-fine-tuned-stylegan-stylegan-finetune-v1)                                             |       | - StyleGAN-FineTune-v8 모델 학습을 위한 중간 단계 모델                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |                                                   |
-| [StyleGAN-FineTune-v9](#3-2-fine-tuned-stylegan-stylegan-finetune-v9)                                             | ✅     | - StyleGAN-FineTune-v1 을 **Oh-LoRA 컨셉에 맞는 이미지** 로 추가 Fine-Tuning 하여, **Oh-LoRA 컨셉에 맞는 이미지 생성 확률 향상**<br>- 즉, 안경을 쓰지 않은, 고품질의 젊은 여성 이미지 생성 확률 향상                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | [학습 결과 보고서](stylegan_finetune_v9/train_report.md) |
-| [StyleGAN-VectorFind-v9 (SVM 방법)](#3-3-stylegan-vectorfind-v9-svm-방법)                                             |       | - **핵심 속성값을 잘 변화** 시키는, intermediate vector 에 대한 **벡터 찾기** [(논문 스터디 자료)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)<br>- 이때, 이미지를 머리 색 ```hair_color```, 머리 길이 ```hair_length```, 배경색 밝기 평균 ```background_mean```, 직모 vs. 곱슬머리 ```hairstyle```, 에 기반하여 $2^4 = 16$ 그룹으로 나누고, **각 그룹별로 해당 벡터 찾기**<br>- intermediate vector 의 Generator 상의 위치가 [3가지](#4-intermediate-vector-추출-위치) 인 것을 제외하면, [StyleGAN-VectorFind-v8](../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 과 동일 |
-| [StyleGAN-VectorFind-v9 (Gradient 방법)](#3-4-stylegan-vectorfind-v9-gradient-방법)                                   |       | - **핵심 속성값을 잘 변화** 시키는, intermediate vector 에 대한 **벡터 찾기** [(논문 스터디 자료)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)<br>- 이때, intermediate vector 를 입력, ```eyes``` ```mouth``` ```pose``` 핵심 속성 값을 출력으로 하는 **간단한 딥러닝 모델 (Neural Network)** 을 학습, 그 모델을 이용하여 얻은 **Gradient 를 해당 벡터로 간주**                                                                                                                                                                                                                                                                        |
-| [Gender, Quality, Age, Glass Score CNN](#3-5-gender-quality-age-glass-score-cnn-stylegan-finetune-v8-학습-데이터-필터링용) |       | - StyleGAN-FineTune-v8 및 v9 모델의 **학습 데이터 필터링** (4개의 [핵심 속성 값](../../2025_05_26_OhLoRA_v3/stylegan/README.md#2-핵심-속성-값) 이용) 을 위한 모델                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                                   |
+| 모델                                                                                                                | 최종 채택                                       | 핵심 아이디어                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 성능 보고서                                                                                               |
+|-------------------------------------------------------------------------------------------------------------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| [StyleGAN-FineTune-v1](#3-1-fine-tuned-stylegan-stylegan-finetune-v1)                                             |                                             | - StyleGAN-FineTune-v8 모델 학습을 위한 중간 단계 모델                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |                                                                                                      |
+| [StyleGAN-FineTune-v9](#3-2-fine-tuned-stylegan-stylegan-finetune-v9)                                             | ✅                                           | - StyleGAN-FineTune-v1 을 **Oh-LoRA 컨셉에 맞는 이미지** 로 추가 Fine-Tuning 하여, **Oh-LoRA 컨셉에 맞는 이미지 생성 확률 향상**<br>- 즉, 안경을 쓰지 않은, 고품질의 젊은 여성 이미지 생성 확률 향상                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | [학습 결과 보고서](stylegan_finetune_v9/train_report.md)                                                    |
+| [StyleGAN-VectorFind-v9 (SVM 방법)](#3-3-stylegan-vectorfind-v9-svm-방법)                                             | ✅<br>(```eyes``` ```mouth``` ```pose``` 모두) | - **핵심 속성값을 잘 변화** 시키는, intermediate vector 에 대한 **벡터 찾기** [(논문 스터디 자료)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)<br>- 이때, 이미지를 머리 색 ```hair_color```, 머리 길이 ```hair_length```, 배경색 밝기 평균 ```background_mean```, 직모 vs. 곱슬머리 ```hairstyle```, 에 기반하여 $2^4 = 16$ 그룹으로 나누고, **각 그룹별로 해당 벡터 찾기**<br>- intermediate vector 의 Generator 상의 위치가 [3가지](#4-intermediate-vector-추출-위치) 인 것을 제외하면, [StyleGAN-VectorFind-v8](../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 과 동일 | [이미지 생성 결과 종합 리포트](stylegan_vectorfind_v9/image_generation_report.md#2-image-generation-test-result) |
+| [StyleGAN-VectorFind-v9 (Gradient 방법)](#3-4-stylegan-vectorfind-v9-gradient-방법)                                   | ✅<br>(```eyes```)                           | - **핵심 속성값을 잘 변화** 시키는, intermediate vector 에 대한 **벡터 찾기** [(논문 스터디 자료)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)<br>- 이때, intermediate vector 를 입력, ```eyes``` ```mouth``` ```pose``` 핵심 속성 값을 출력으로 하는 **간단한 딥러닝 모델 (Neural Network)** 을 학습, 그 모델을 이용하여 얻은 **Gradient 를 해당 벡터로 간주**                                                                                                                                                                                                                                                                        | [이미지 생성 결과 종합 리포트](stylegan_vectorfind_v9/image_generation_report.md#2-image-generation-test-result) |
+| [Gender, Quality, Age, Glass Score CNN](#3-5-gender-quality-age-glass-score-cnn-stylegan-finetune-v8-학습-데이터-필터링용) |                                             | - StyleGAN-FineTune-v8 및 v9 모델의 **학습 데이터 필터링** (4개의 [핵심 속성 값](../../2025_05_26_OhLoRA_v3/stylegan/README.md#2-핵심-속성-값) 이용) 을 위한 모델                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                                                                                      |
+
+* 전체 구조
+
+![image](../../images/250607_22.PNG)
 
 ### 3-1. Fine-Tuned StyleGAN (StyleGAN-FineTune-v1)
 
@@ -72,14 +90,24 @@
 
 ### 3-3. StyleGAN-VectorFind-v9 (SVM 방법)
 
+![image](../../images/250526_12.png)
+
+* 위 그림의 [StyleGAN-VectorFind-v8](../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 과 동일한 알고리즘
+* 자세한 것은 위 문서 참고.
+
 ### 3-4. StyleGAN-VectorFind-v9 (Gradient 방법)
 
 **0. 전체 요약 그림**
 
+![image](../../images/250607_24.PNG)
+
 **1. 학습 단계**
+
+![image](../../images/250607_23.PNG)
 
 * ```eyes``` ```mouth``` ```pose``` 의 3개 핵심 속성 값에 대해, 
   * **intermediate (= mid) vector** 를 입력, **핵심 속성 값** 을 출력으로 하는 간단한 신경망 (총 3개) 학습 
+* 위 과정에서 학습한 3개의 신경망을 최종 반환
 
 **2. 추론 및 이미지 생성 테스트 단계**
 
@@ -96,9 +124,14 @@
 
 ### 3-5. Gender, Quality, Age, Glass Score CNN (StyleGAN-FineTune-v8 학습 데이터 필터링용)
 
-* [Oh-LoRA v3 프로젝트 문서의 해당 부분](../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-4-gender-quality-age-glass-score-cnn-stylegan-finetune-v8-학습-데이터-필터링용) 참고.
+![image](../../images/250526_2.PNG)
+
+* [Oh-LoRA v3 프로젝트 문서의 해당 부분](../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-4-gender-quality-age-glass-score-cnn-stylegan-finetune-v8-학습-데이터-필터링용) 과 동일한 알고리즘 사용.
+* 자세한 것은 위 링크된 해당 문서 참고.
 
 ## 4. intermediate vector 추출 위치
+
+![image](../../images/250607_11.PNG)
 
 StyleGAN-VectorFind-v9 에서 **mid vector (= intermediate vector)** 를 추출하는 위치는 다음과 같이 구분한다.
 
@@ -107,8 +140,6 @@ StyleGAN-VectorFind-v9 에서 **mid vector (= intermediate vector)** 를 추출�
 | ```w```              | [StyleGAN-VectorFind-v8](../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 과 동일하게, **StyleGAN 의 w 에 해당하는 벡터** | **512**               |
 | ```mapping_split1``` | ```z'``` 를 split 한 두 부분인 **```w1``` 과 ```w2``` 를 concatenate 한 벡터**                                                                                                                              | **2560** = 512 + 2048 |
 | ```mapping_split2``` | ```w1```, ```w2``` 를 각각 mapping 시킨 **```w1'``` 과 ```w2'``` 를 concatenate 한 벡터**                                                                                                                  | **1024** = 512 + 512  |
-
-![image](../../images/250607_11.PNG)
 
 ## 5. 코드 실행 방법
 

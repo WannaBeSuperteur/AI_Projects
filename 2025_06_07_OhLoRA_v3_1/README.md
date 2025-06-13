@@ -11,6 +11,7 @@
 * [4. 프로젝트 상세 설명](#4-프로젝트-상세-설명)
   * [4-1. StyleGAN 을 이용한 이미지 생성](#4-1-stylegan-을-이용한-이미지-생성)
 * [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
+* [6. HuggingFace Link](#6-huggingface-link)
 
 ## 1. 프로젝트 개요
 
@@ -115,6 +116,20 @@
 * [참고 논문 스터디 자료](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.05%5D%20Semantic%20Hierarchy%20Emerges%20in%20Deep%20Generative%20Representations%20for%20Scene%20Synthesis.md)
 * [구현 상세 정보](stylegan/README.md)
 
+----
+
+* 전체 구조
+
+![image](../images/250607_22.PNG)
+
+* [StyleGAN-VectorFind-v9 (with 'Gradient 방법')](stylegan/README.md#3-4-stylegan-vectorfind-v9-gradient-방법) 모델 구조
+
+![image](../images/250607_24.PNG)
+
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
 * 중요 이슈 없음
+
+## 6. HuggingFace Link
+
+* [HuggingFace repo containing ALL Models for Oh-LoRA v3.1](https://huggingface.co/daebakgazua/250607_OhLoRA_StyleGAN_all)
