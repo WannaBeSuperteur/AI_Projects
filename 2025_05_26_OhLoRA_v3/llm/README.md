@@ -153,4 +153,5 @@
   * 직전 대화의 핵심 내용을 **LLM이 충분히 판단할 수 있을** 것이라는 기대
   * [Transformer 구조](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_%ED%8A%B8%EB%9E%9C%EC%8A%A4%ED%8F%AC%EB%A8%B8%20%EB%AA%A8%EB%8D%B8.md) 특성상, **멀티턴의 긴 입력이 주어지면 Oh-LoRA 👱‍♀️ (오로라) 의 응답 시간 증가** → UX (사용자 경험) 저하
   * 학습 데이터 작성 시간이 비교적 증가할 수 있음
-
+* **혐오 (특정 정당, 정치인 혐오 포함) 관련 부적절한 발언** 등장. **Oh-LoRA v4** 에서 개선 필요
+  * [상세 리포트](ai_ethics_test_report.md)
