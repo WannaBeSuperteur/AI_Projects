@@ -30,7 +30,7 @@
 
 ### 1-2. 성능 결과 리포트
 
-* [StyleGAN-VectorFind-v9 이미지 생성 결과 리포트](stylegan_vectorfind_v9/image_generation_report.md#2-image-generation-test-result)
+* [StyleGAN-VectorFind-v9 이미지 생성 결과 통합 리포트](stylegan_vectorfind_v9/image_generation_report.md)
 * StyleGAN-VectorFind-v9 최종 이미지 생성 옵션 설명
   * [```mixed``` 옵션](stylegan_vectorfind_v9/image_generation_report.md#1-1-최종-이미지-생성-테스트-option-1-mixed) (```eyes``` 속성 값에는 [Gradient 방법](#3-4-stylegan-vectorfind-v9-gradient-방법), ```mouth``` ```pose``` 속성 값에는 [SVM 방법](#3-3-stylegan-vectorfind-v9-svm-방법) 적용)
   * [```svm_ms2``` 옵션](stylegan_vectorfind_v9/image_generation_report.md#1-2-최종-이미지-생성-테스트-option-2-svm_ms2) (모든 속성 값에 ```svm``` 방법 적용 & ```mapping_split2``` 레이어에서 intermediate vector 추출)
