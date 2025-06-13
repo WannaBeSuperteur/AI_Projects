@@ -14,16 +14,16 @@
 | ```SVM```      | - [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 과 같이, [SVM (Support Vector Machine)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%AA%A8%EB%8D%B8_SVM.md) 으로 핵심 속성 값 변화 벡터 도출<br>- [grouping](../../../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/image_generation_report.md#2-grouping) (16 groups) 은 **모든 case 에 대해 항상 적용** |       |
 | ```Gradient``` | - 간단한 딥러닝 모델의 Gradient 를 핵심 속성 값 변화 벡터로 사용                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |       |
 
-* 각 핵심 속성 값 별 다음 방법 적용
-  * intermediate vector 로 ```mapping_split1``` 선정 이유
-    * 생성 이미지 개수 (= latent code z 의 개수) 에 따라 **성능이 증가하는 경향성** 이 가장 큼
-    * **dims = 2560** 으로 **입력 데이터의 정보량** 이 가장 많음
-
 **[ option 1 : ```mixed``` ]**
 
-* [이미지 생성 테스트 결과](#2-image-generation-test-result) 에 근거한 선정
-* [최종 선정 Oh-LoRA 얼굴 이미지 정보](final_OhLoRA_info_mixed.md)
-* [본 문서의 이미지 생성 테스트 vs. ```mixed``` 옵션으로 생성 시 성능 비교](performance_compare_mixed.md)
+* 각 속성 값 별 방법 (```SVM``` or ```Gradient```) 사용 근거
+  * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에서 각 속성 값 별 성능 (mean corr-coef) 이 더 우수한 방법 선택
+* 관련 문서
+  * [최종 선정 Oh-LoRA 얼굴 이미지 정보](final_OhLoRA_info_mixed.md)
+  * [본 문서의 이미지 생성 테스트 vs. ```mixed``` 옵션으로 생성 시 성능 비교](performance_compare_mixed.md)
+* intermediate vector 로 ```mapping_split1``` 선정 이유
+  * 생성 이미지 개수 (= latent code z 의 개수) 에 따라 **성능이 증가하는 경향성** 이 가장 큼
+  * **dims = 2560** 으로 **입력 데이터의 정보량** 이 가장 많음
 
 | 속성 값        | 사용한 방법         | intermediate vector 추출 레이어 |
 |-------------|----------------|----------------------------|
@@ -32,6 +32,12 @@
 | ```pose```  | ```SVM```      | ```mapping_split1``` (공통)  |
 
 **[ option 2 : ```svm_ms2``` ]**
+
+* 방법 & intermediate vector 추출 레이어 선정 근거
+  * 핵심 아이디어 
+    * [이미지 생성 테스트 결과](#2-image-generation-test-result) 에서 [StyleGAN-VectorFind-v8](../../../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8) 에서 사용한 ```SVM & w``` 조합을 제외한 가장 좋은 (방법 & intermediate vector 추출 레이어) 조합 선정
+  * 선택한 조합 : ```SVM & mapping_split2```
+  * 해당 조합은 **n = 80K** 일 때 **"모든 속성 값에 대한 mean corr-coef 의 합산"이 가장 큰** 조합임
 
 | 속성 값        | 사용한 방법    | intermediate vector 추출 레이어 |
 |-------------|-----------|----------------------------|
