@@ -510,13 +510,13 @@ if __name__ == '__main__':
 
     # get property score changing vector
     try:
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(vectorfind_version='v8')
         print('Existing "Property Score Changing Vector" info load successful!! 😊')
 
     except Exception as e:
         print(f'"Property Score Changing Vector" info load failed : {e}')
         stylegan_vectorfind_v8_main(finetune_v8_generator, device)
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(vectorfind_version='v8')
 
     # get Merged Property Score CNN
     property_score_cnn = load_merged_property_score_cnn(device)
