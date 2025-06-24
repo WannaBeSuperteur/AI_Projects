@@ -145,6 +145,8 @@
 2025_06_07_OhLoRA_v3_1/stylegan/stylegan_vectorfind_v9/image_generation_report/latent_*.csv
 2025_06_07_OhLoRA_v3_1/stylegan/stylegan_finetune_v9/inference_test_real_fake
 2025_06_07_OhLoRA_v3_1/stylegan/stylegan_finetune_v9/inference_test_real_fake/*
+2025_06_24_OhLoRA_v4/stylegan/models/*.pt
+2025_06_24_OhLoRA_v4/stylegan/models/*.pth
 venv
 venv/*
 requirements_v3.10.11.txt
