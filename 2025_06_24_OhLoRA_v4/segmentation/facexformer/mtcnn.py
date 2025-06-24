@@ -16,7 +16,7 @@ from torch import nn
 import numpy as np
 import os
 
-from segmentation.mtcnn_detect_face import detect_face, extract_face
+from facexformer.mtcnn_detect_face import detect_face, extract_face
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -46,7 +46,7 @@ class PNet(nn.Module):
         self.training = False
 
         if pretrained:
-            pnet_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/mtcnn_pnet.pt'
+            pnet_path = f'{PROJECT_DIR_PATH}/segmentation/models/mtcnn_pnet.pt'
             state_dict = torch.load(pnet_path)
             self.load_state_dict(state_dict)
 
@@ -91,7 +91,7 @@ class RNet(nn.Module):
         self.training = False
 
         if pretrained:
-            rnet_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/mtcnn_rnet.pt'
+            rnet_path = f'{PROJECT_DIR_PATH}/segmentation/models/mtcnn_rnet.pt'
             state_dict = torch.load(rnet_path)
             self.load_state_dict(state_dict)
 
@@ -144,7 +144,7 @@ class ONet(nn.Module):
         self.training = False
 
         if pretrained:
-            onet_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/mtcnn_onet.pt'
+            onet_path = f'{PROJECT_DIR_PATH}/segmentation/models/mtcnn_onet.pt'
             state_dict = torch.load(onet_path)
             self.load_state_dict(state_dict)
 

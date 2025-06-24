@@ -7,16 +7,14 @@ import os
 import numpy as np
 import cv2
 import torch
-import torch.nn as nn
 import torchvision
 from torchvision.transforms import InterpolationMode
-import argparse
 from math import cos, sin
 from PIL import Image
-from segmentation.facexformer import FaceXFormer
+from facexformer.facexformer import FaceXFormer
 
 # from facenet_pytorch import MTCNN
-from segmentation.mtcnn import MTCNN
+from facexformer.mtcnn import MTCNN
 
 
 def visualize_mask(image_tensor, mask):

@@ -1,10 +1,9 @@
 # Original Pre-trained FaceXFormer from https://huggingface.co/kartiknarayan/facexformer/tree/main/ckpts > model.pt
 
-
-from segmentation.facexformer.inference import test
-
 import torch
 import os
+from facexformer.inference import test
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
@@ -20,7 +19,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # - segmentation/segmentation_results 디렉토리에 Face Segmentation 결과 저장
 
 def run_segmentation_with_model(img_paths, model_path):
-    result_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/segmentation_results'
+    result_path = f'{PROJECT_DIR_PATH}/segmentation/segmentation_results'
     os.makedirs(result_path, exist_ok=True)
 
     # check device
@@ -48,10 +47,10 @@ def run_segmentation_with_model(img_paths, model_path):
 if __name__ == '__main__':
 
     # model path
-    model_path = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/segmentation/models/segmentation_model.pt'
+    model_path = f'{PROJECT_DIR_PATH}/segmentation/models/segmentation_model.pt'
 
     # get image path
-    img_dir = f'{PROJECT_DIR_PATH}/stylegan_and_segmentation/stylegan/synthesize_results_filtered'
+    img_dir = f'{PROJECT_DIR_PATH}/stylegan/generated_face_images_filtered'
     img_names = os.listdir(img_dir)
     img_paths = [f'{img_dir}/{img_name}' for img_name in img_names]
 

@@ -6,10 +6,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.models as models
 from typing import Any, Optional, Tuple, Type
 from torchvision.models import swin_b
-from segmentation.transformer import TwoWayTransformer, LayerNorm2d
+from facexformer.transformer import TwoWayTransformer, LayerNorm2d
 
 
 # to solve below error when loading swin_b model :
