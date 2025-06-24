@@ -36,12 +36,8 @@ ORIGINALLY_PROPERTY_DIMS = 7    # 원래 property (eyes, hair_color, hair_length
                                 #               background_mean, background_std) 목적으로 사용된 dimension 값
 
 TEST_IMG_CASES = 1
-TEST_IMG_CASES_FOR_COMPARE_MAX = 2000
-TEST_IMG_CASES_NEEDED_PASS = 60
 
-IMAGE_GENERATION_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/image_generation_report'
 OHLORA_FINAL_VECTORS_TEST_REPORT_PATH = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/final_vector_test_report'
-os.makedirs(IMAGE_GENERATION_REPORT_PATH, exist_ok=True)
 os.makedirs(OHLORA_FINAL_VECTORS_TEST_REPORT_PATH, exist_ok=True)
 
 GROUP_NAMES = ['hhhh', 'hhhl', 'hhlh', 'hhll', 'hlhh', 'hlhl', 'hllh', 'hlll',
@@ -62,9 +58,8 @@ def generate_image_using_w(finetune_v8_generator, w, trunc_psi=1.0, trunc_layers
 
 
 # Property Score 값을 변경하기 위해 intermediate w vector 에 가감할 벡터 정보 반환 ('hhhh', 'hhhl', ..., 'llll' 의 각 그룹 별)
-# Create Date : 2025.05.29
-# Last Update Date : 2025.06.03
-# - StyleGAN-VectorFind-v7 로부터 벡터 정보 반환 추가
+# Create Date : 2025.06.24
+# Last Update Date : -
 
 # Arguments:
 # - vectorfind_version (str) : Oh-LoRA latent z vector & w vector 를 위한 StyleGAN-VectorFind 버전 ('v7' or 'v8')
@@ -104,7 +99,7 @@ def get_property_change_vectors(vectorfind_version):
 
 
 # latent code (z) 로 생성된 이미지의 group 이름 (머리 색, 머리 길이, 배경색 평균 속성값에 근거한 'hhhh', 'hhhl', ..., 'llll') 반환
-# Create Date : 2025.05.29
+# Create Date : 2025.06.24
 # Last Update Date : -
 
 # Arguments:
@@ -144,7 +139,7 @@ def get_group_name(finetune_v8_generator, code_part1, code_part2, save_dir, i, v
 
 
 # intermediate w vector 에 가감할 Property Score Vector 를 이용한 Property Score 값 변화 테스트 (이미지 생성 테스트)
-# Create Date : 2025.05.29
+# Create Date : 2025.06.24
 # Last Update Date : -
 
 # Arguments:
@@ -189,7 +184,7 @@ def run_image_generation_test(finetune_v8_generator, eyes_vectors, mouth_vectors
 
 
 # Oh-LoRA 이미지 생성용 latent z vector 가 저장된 파일을 먼저 불러오기 시도
-# Create Date : 2025.05.29
+# Create Date : 2025.06.24
 # Last Update Date : -
 
 # Arguments:
@@ -200,19 +195,15 @@ def run_image_generation_test(finetune_v8_generator, eyes_vectors, mouth_vectors
 #                                            None (불러오기 실패 시)
 
 def load_ohlora_z_vectors(vector_csv_path):
-    try:
-        ohlora_z_vectors_df = pd.read_csv(vector_csv_path)
-        ohlora_z_vectors = np.array(ohlora_z_vectors_df)
-        print(f'Oh-LoRA z vector load successful!! 👱‍♀️✨')
-        return ohlora_z_vectors
+    ohlora_z_vectors_df = pd.read_csv(vector_csv_path)
+    ohlora_z_vectors = np.array(ohlora_z_vectors_df)
+    print(f'Oh-LoRA z vector (StyleGAN-VectorFind-v8) load successful!! 👱‍♀️✨')
 
-    except Exception as e:
-        print(f'Oh-LoRA z vector load failed ({e}), using random-generated z vectors')
-        return None
+    return ohlora_z_vectors
 
 
 # Oh-LoRA 이미지 생성용 intermediate w vector 각각에 대해, group name 정보를 먼저 불러오기 시도
-# Create Date : 2025.05.29
+# Create Date : 2025.06.24
 # Last Update Date : -
 
 # Arguments:
@@ -223,19 +214,15 @@ def load_ohlora_z_vectors(vector_csv_path):
 #                                     None (불러오기 실패 시)
 
 def load_ohlora_w_group_names(group_name_csv_path):
-    try:
-        ohlora_w_vectors_df = pd.read_csv(group_name_csv_path)
-        group_names = ohlora_w_vectors_df['group_name'].tolist()
-        print(f'group names for each Oh-LoRA w vector load successful!! 👱‍♀️✨')
-        return group_names
+    ohlora_w_vectors_df = pd.read_csv(group_name_csv_path)
+    group_names = ohlora_w_vectors_df['group_name'].tolist()
+    print(f'group names for each Oh-LoRA w vector (StyleGAN-VectorFind-v8) load successful!! 👱‍♀️✨')
 
-    except Exception as e:
-        print(f'group names for each Oh-LoRA w vector load failed ({e}), using Property-Score-CNN-derived group names')
-        return None
+    return group_names
 
 
 # 이미지 50장 생성 후 의도한 property score label 과, 생성된 이미지에 대한 CNN 예측 property score 를 비교 테스트 (corr-coef)
-# Create Date : 2025.05.29
+# Create Date : 2025.06.24
 # Last Update Date : -
 
 # Arguments:
@@ -267,11 +254,7 @@ def run_property_score_compare_test(finetune_v8_generator, property_score_cnn, e
     all_data_dict = {'case': [], 'vector_no': [], 'passed': [], 'group_name': [],
                      'eyes_corr': [], 'mouth_corr': [], 'pose_corr': []}
 
-    if ohlora_z_vectors is not None:
-        count_to_generate = len(ohlora_z_vectors)
-    else:
-        count_to_generate = TEST_IMG_CASES_FOR_COMPARE_MAX
-
+    count_to_generate = len(ohlora_z_vectors)
     code_part1s_np = np.zeros((count_to_generate, ORIGINAL_HIDDEN_DIMS_Z))
     code_part2s_np = np.zeros((count_to_generate, ORIGINALLY_PROPERTY_DIMS))
     generated_count = 0
@@ -281,27 +264,17 @@ def run_property_score_compare_test(finetune_v8_generator, property_score_cnn, e
         save_dir = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/inference_test_after_training/test_{i:04d}'
         os.makedirs(save_dir, exist_ok=True)
 
-        if ohlora_z_vectors is not None:
-            code_part1s_np[i] = ohlora_z_vectors[i][:ORIGINAL_HIDDEN_DIMS_Z]
-            code_part2s_np[i] = ohlora_z_vectors[i][ORIGINAL_HIDDEN_DIMS_Z:]
-            code_part1 = torch.tensor(code_part1s_np[i]).unsqueeze(0).to(torch.float32)  # 512
-            code_part2 = torch.tensor(code_part2s_np[i]).unsqueeze(0).to(torch.float32)  # 7
-
-        else:
-            code_part1 = torch.randn(1, ORIGINAL_HIDDEN_DIMS_Z)    # 512
-            code_part2 = torch.randn(1, ORIGINALLY_PROPERTY_DIMS)  # 7
-            code_part1s_np[i] = code_part1[0]
-            code_part2s_np[i] = code_part2[0]
+        code_part1s_np[i] = ohlora_z_vectors[i][:ORIGINAL_HIDDEN_DIMS_Z]
+        code_part2s_np[i] = ohlora_z_vectors[i][ORIGINAL_HIDDEN_DIMS_Z:]
+        code_part1 = torch.tensor(code_part1s_np[i]).unsqueeze(0).to(torch.float32)  # 512
+        code_part2 = torch.tensor(code_part2s_np[i]).unsqueeze(0).to(torch.float32)  # 7
 
         with torch.no_grad():
             code_w = finetune_v8_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
 
         for vi in range(n_vector_cnt):
-            if ohlora_w_group_names is None:
-                group_name = get_group_name(finetune_v8_generator, code_part1, code_part2, save_dir, i, vi)
-            else:
-                n_vector_idx = i * n_vector_cnt + vi
-                group_name = ohlora_w_group_names[n_vector_idx]
+            n_vector_idx = i * n_vector_cnt + vi
+            group_name = ohlora_w_group_names[n_vector_idx]
 
             eyes_vector = eyes_vectors[group_name]
             mouth_vector = mouth_vectors[group_name]
@@ -358,14 +331,8 @@ def run_property_score_compare_test(finetune_v8_generator, property_score_cnn, e
             print(f'testing idx {i} vector {vi} ... (passed : {passed_count}, current total gap: {round(pass_diff, 4)}, '
                   f'diff: {diff})')
 
-        if ohlora_z_vectors is None and passed_count >= TEST_IMG_CASES_NEEDED_PASS:
-            break
-
-    if ohlora_z_vectors is not None:
-        print('Already loaded "saved z vectors info" for Oh-LoRA face image generation.')
-        image_gen_report_path = OHLORA_FINAL_VECTORS_TEST_REPORT_PATH
-    else:
-        image_gen_report_path = IMAGE_GENERATION_REPORT_PATH
+    print('Already loaded "saved z vectors info" for Oh-LoRA face image generation.')
+    image_gen_report_path = OHLORA_FINAL_VECTORS_TEST_REPORT_PATH
 
     # save all data
     all_data_df = pd.DataFrame(all_data_dict)
@@ -402,7 +369,7 @@ def run_property_score_compare_test(finetune_v8_generator, property_score_cnn, e
 
 
 # 주어진 eyes, mouth, pose 핵심 속성 값 변화 벡터를 이용하여 이미지 생성
-# Create Date : 2025.05.29
+# Create Date : 2025.06.24
 # Last Update Date : -
 
 # Arguments:
@@ -451,7 +418,7 @@ def generate_image(finetune_v8_generator, property_score_cnn, eyes_vector, mouth
 
 
 # 이미지 50장 생성 후 비교 테스트를 위한, property score label (intermediate w vector 에 n vector 를 가감할 때의 가중치) 생성 및 반환
-# Create Date : 2025.05.29
+# Create Date : 2025.06.24
 # Last Update Date : -
 
 # Arguments:
@@ -489,34 +456,13 @@ if __name__ == '__main__':
     finetune_v8_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)  # v1, v8 Generator 는 동일한 구조
 
     # try loading StyleGAN-VectorFind-v8 pre-trained model
-    try:
-        generator_state_dict = load_existing_stylegan_vectorfind_v8(device)
-        print('Existing StyleGAN-VectorFind-v8 Generator load successful!! 😊')
-
-        finetune_v8_generator.load_state_dict(generator_state_dict)
-
-    # when failed, load StyleGAN-FineTune-v8 pre-trained model
-    except Exception as e:
-        print(f'StyleGAN-VectorFind-v8 Generator load failed : {e}')
-
-        generator_state_dict = load_existing_stylegan_finetune_v8(device)
-        print('Existing StyleGAN-FineTune-v8 Generator load successful!! 😊')
-
-        # load state dict (generator)
-        finetune_v8_generator.load_state_dict(generator_state_dict)
-
-        # save state dict
-        torch.save(finetune_v8_generator.state_dict(), f'{fine_tuned_model_path}/stylegan_gen_vector_find_v8.pth')
+    generator_state_dict = load_existing_stylegan_vectorfind_v8(device)
+    finetune_v8_generator.load_state_dict(generator_state_dict)
+    print('Existing StyleGAN-VectorFind-v8 Generator load successful!! 😊')
 
     # get property score changing vector
-    try:
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
-        print('Existing "Property Score Changing Vector" info load successful!! 😊')
-
-    except Exception as e:
-        print(f'"Property Score Changing Vector" info load failed : {e}')
-        stylegan_vectorfind_v8_main(finetune_v8_generator, device)
-        eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+    print('Existing "Property Score Changing Vector" info load successful!! 😊')
 
     # get Merged Property Score CNN
     property_score_cnn = load_merged_property_score_cnn(device)
