@@ -165,13 +165,9 @@ def test(args):
         images, labels, tasks)
     if tasks[0] == 0:
         preds = seg_output.softmax(dim=1)
-        mask = torch.argmax(preds, dim=1)
-        pred_mask = mask[0].detach().cpu().numpy()
-        save_path = os.path.join(args['results_path'], f"parsing_{img_idx:06d}.png")
-        cv2.imwrite(f"{save_path}", pred_mask)
-        mask, face, color_mask = visualize_mask(unnormalize(images[0].detach().cpu()), pred_mask)
-        save_path = os.path.join(args['results_path'], f"parsing_visualization_{img_idx:06d}.png")
-        cv2.imwrite(f"{save_path}", mask[:, :, ::-1])
+        hair_soft_label = (preds[0, 10, :, :] * 255.0).detach().cpu().numpy()
+        save_path = os.path.join(args['results_path'], f"parsing_hair_label_{img_idx:06d}.png")
+        cv2.imwrite(f"{save_path}", hair_soft_label)
     if tasks[0] == 1:
         image = unnormalize(images[0].detach().cpu())
         denorm_landmarks = denorm_points(landmark_output.view(-1, 68, 2)[0], 224, 224)
