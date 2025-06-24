@@ -9,7 +9,7 @@ from stylegan.merged_property_score_cnn import MergedPropertyScoreCNN
 
 
 MODEL_STRUCTURE_PDF_DIR_PATH = f'{PROJECT_DIR_PATH}/stylegan/model_structure_pdf'
-MERGED_PROPERTY_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/property_score_cnn/models/ohlora_v3_merged_property_cnn.pth'
+MERGED_PROPERTY_SCORE_CNN_PATH = f'{PROJECT_DIR_PATH}/stylegan/models/ohlora_v3_merged_property_cnn.pth'
 
 stylegan_transform = transforms.Compose([
     transforms.ToPILImage(),

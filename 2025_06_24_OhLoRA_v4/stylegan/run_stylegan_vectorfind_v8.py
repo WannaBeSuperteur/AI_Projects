@@ -371,7 +371,7 @@ if __name__ == '__main__':
     print('Existing StyleGAN-VectorFind-v8 Generator load successful!! 😊')
 
     # get property score changing vector
-    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors()
+    eyes_vectors, mouth_vectors, pose_vectors = get_property_change_vectors(vectorfind_version='v8')
     print('Existing "Property Score Changing Vector" info load successful!! 😊')
 
     # get Merged Property Score CNN
