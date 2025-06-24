@@ -365,7 +365,7 @@ if __name__ == '__main__':
 
     finetune_v8_generator = gen.StyleGANGenerator(resolution=IMAGE_RESOLUTION)  # v1, v8 Generator 는 동일한 구조
 
-    # try loading StyleGAN-VectorFind-v8 pre-trained model
+    # loading StyleGAN-VectorFind-v8 pre-trained model
     generator_state_dict = load_existing_stylegan_vectorfind_v8(device)
     finetune_v8_generator.load_state_dict(generator_state_dict)
     print('Existing StyleGAN-VectorFind-v8 Generator load successful!! 😊')
