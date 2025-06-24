@@ -135,13 +135,7 @@ def test(args):
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    mtcnn = MTCNN(keep_all=True)
     image = Image.open(args['image_path'])
-    width, height = image.size
-    boxes, probs = mtcnn.detect(image)
-    x_min, y_min, x_max, y_max = boxes[0][0], boxes[0][1], boxes[0][2], boxes[0][3]
-    x_min, y_min, x_max, y_max = adjust_bbox(x_min, y_min, x_max, y_max, width, height)
-    image = image.crop((int(x_min), int(y_min), int(x_max), int(y_max)))
     image = transforms_image(image)
 
     if args['task'] == "parsing":
