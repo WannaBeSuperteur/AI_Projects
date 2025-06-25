@@ -347,14 +347,30 @@ def test_model(model, test_dataloader):
     model.eval()
 
     total = 0
-    test_result_dict = {}
+    tp, tn, fp, fn = 0, 0, 0, 0
+    mse_error_sum = 0
+    mse_error_func = nn.MSELoss(reduction='sum')
 
     with torch.no_grad():
         for batch_idx, (images, masks) in enumerate(test_dataloader):
-
-            # compute valid loss
             images, masks = images.to(device), masks.to(device).to(torch.float32)
             outputs = model(images).to(torch.float32)
+
+            outputs_np = outputs.detach().cpu().numpy()
+            masks_np = masks.detach().cpu().numpy()
+
+            # compute MSE
+            mse_error_batch = mse_error_func(outputs, masks) / (VALID_BATCH_SIZE * SEG_IMAGE_SIZE * SEG_IMAGE_SIZE)
+            mse_error_sum += float(mse_error_batch.detach().cpu().numpy())
+
+            # compute tp, tn, fp, fn
+            output_bin = (outputs_np >= 0.5).astype(int)
+            mask_bin = (masks_np >= 0.5).astype(int)
+
+            tp += np.sum((output_bin == 1) & (mask_bin == 1))
+            tn += np.sum((output_bin == 0) & (mask_bin == 0))
+            fp += np.sum((output_bin == 1) & (mask_bin == 0))
+            fn += np.sum((output_bin == 0) & (mask_bin == 1))
 
             # save visualization images
             current_batch_size = masks.size(0)
@@ -368,6 +384,12 @@ def test_model(model, test_dataloader):
                                               current_epoch=None,
                                               batch_idx=batch_idx,
                                               img_no=img_no)
+
+    test_result_dict = {'mse': mse_error_sum / total,
+                        'iou': tp / (tp + fp + fn + 1e-8),
+                        'dice': (2 * tp) / (2 * tp + fp + fn + 1e-8),
+                        'recall': tp / (tp + fn + 1e-8),
+                        'precision': tp / (tp + fp + 1e-8)}
 
     return test_result_dict
 
@@ -385,5 +407,6 @@ def main():
     print(f'test result: {test_result_dict}')
 
     model_dir_path = f'{PROJECT_DIR_PATH}/segmentation/models'
+    os.makedirs(model_dir_path, exist_ok=True)
     model_save_path = f'{model_dir_path}/segmentation_model_ohlora_v4.pth'
     torch.save(best_epoch_model.state_dict(), model_save_path)
