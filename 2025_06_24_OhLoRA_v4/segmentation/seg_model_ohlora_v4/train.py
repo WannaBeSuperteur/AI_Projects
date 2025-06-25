@@ -264,7 +264,7 @@ def run_valid_step(model, valid_dataloader, loss_func, current_epoch):
             images, masks = images.to(device), masks.to(device).to(torch.float32)
             outputs = model(images).to(torch.float32)
 
-            valid_loss_batch = loss_func(outputs, masks) / (current_batch_size * SEG_IMAGE_SIZE * SEG_IMAGE_SIZE)
+            valid_loss_batch = loss_func(outputs, masks) / (SEG_IMAGE_SIZE * SEG_IMAGE_SIZE)
             valid_loss_sum += float(valid_loss_batch.detach().cpu().numpy())
 
             # save visualization images
