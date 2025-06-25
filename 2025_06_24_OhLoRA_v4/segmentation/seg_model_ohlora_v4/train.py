@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, Dataset, random_split
 
 import os
 import numpy as np
+import pandas as pd
 import cv2
 
 from seg_model_ohlora_v4.model import SegModelForOhLoRAV4
@@ -23,10 +24,11 @@ VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
 SEG_IMAGE_SIZE = 224
 
-MAX_EPOCHS = 1
+MAX_EPOCHS = 1000
 EARLY_STOPPING_ROUNDS = 10
 
 device = None
+valid_loss_log_dict = {'epoch': [], 'valid_loss': []}
 
 
 seg_model_transform = transforms.Compose([
@@ -142,11 +144,20 @@ def train_model(model, train_dataloader, valid_dataloader):
                                             valid_dataloader=valid_dataloader,
                                             current_epoch=current_epoch)
 
+        # record valid loss
         valid_loss_list.append(valid_loss)
         print(f'epoch : {current_epoch}, val_loss : {valid_loss:.6f}')
 
+        valid_loss_log_dict['epoch'].append(current_epoch)
+        valid_loss_log_dict['valid_loss'].append(valid_loss)
+
+        valid_loss_log_path = f'{VALID_RESULT_PATH}/valid_loss.csv'
+        pd.DataFrame(valid_loss_log_dict).to_csv(valid_loss_log_path, index=False)
+
+        # update scheduler
         model.scheduler.step()
 
+        # continue or finish training
         if min_val_loss is None or valid_loss < min_val_loss:
             min_val_loss = valid_loss
             min_val_loss_epoch = current_epoch
@@ -250,7 +261,7 @@ def run_valid_step(model, valid_dataloader, loss_func, current_epoch):
             images, masks = images.to(device), masks.to(device).to(torch.float32)
             outputs = model(images).to(torch.float32)
             valid_loss_batch = loss_func(outputs, masks) / (VALID_BATCH_SIZE * SEG_IMAGE_SIZE * SEG_IMAGE_SIZE)
-            valid_loss_sum += valid_loss_batch
+            valid_loss_sum += float(valid_loss_batch.detach().cpu().numpy())
 
             # save visualization images
             current_batch_size = masks.size(0)
