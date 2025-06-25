@@ -192,7 +192,9 @@ def train_model(model, train_dataloader, valid_dataloader):
 def train_model_each_epoch(model, train_dataloader, valid_dataloader, current_epoch):
 
     # loss function
-    loss_func = nn.MSELoss(reduction='sum')  # pred, ground-truth 모두 float 이므로 BCE Loss 사용 불가
+    loss_func = nn.BCELoss(reduction='sum')  # pred, ground-truth 모두 float 이므로 BCE Loss 는 Soft BCE Loss 로 사용 가능
+    if current_epoch == 0:
+        print(f'loss function: {loss_func}')
 
     # run train and validation
     run_train_step(model=model,
@@ -256,15 +258,16 @@ def run_valid_step(model, valid_dataloader, loss_func, current_epoch):
 
     with torch.no_grad():
         for batch_idx, (images, masks) in enumerate(valid_dataloader):
+            current_batch_size = masks.size(0)
 
             # compute valid loss
             images, masks = images.to(device), masks.to(device).to(torch.float32)
             outputs = model(images).to(torch.float32)
-            valid_loss_batch = loss_func(outputs, masks) / (VALID_BATCH_SIZE * SEG_IMAGE_SIZE * SEG_IMAGE_SIZE)
+
+            valid_loss_batch = loss_func(outputs, masks) / (current_batch_size * SEG_IMAGE_SIZE * SEG_IMAGE_SIZE)
             valid_loss_sum += float(valid_loss_batch.detach().cpu().numpy())
 
             # save visualization images
-            current_batch_size = masks.size(0)
             total += current_batch_size
 
             # generate visualization image (mask by teacher seg model: blue / output of student seg model: green)
