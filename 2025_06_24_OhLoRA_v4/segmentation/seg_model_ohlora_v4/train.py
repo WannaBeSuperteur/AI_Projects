@@ -2,6 +2,7 @@
 import cv2
 import torch
 from torch.utils.data import DataLoader, Dataset, random_split
+from seg_model_ohlora_v4.model import SegModelForOhLoRAV4
 
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -38,7 +39,15 @@ class OhLoRAV4SegmentationModelDataset(Dataset):
 # - model (nn.Module) : 경량화 모델
 
 def define_segmentation_model():
-    raise NotImplementedError
+    model = SegModelForOhLoRAV4()
+    model.optimizer = torch.optim.AdamW(model.parameters(), lr=0.0001)
+    model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=model.optimizer, gamma=0.975)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+    model.device = device
+
+    return model
 
 
 # Oh-LoRA v4 용 경량화된 Segmentation Model 의 데이터셋 생성
