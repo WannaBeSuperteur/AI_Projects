@@ -157,8 +157,8 @@
 2025_06_24_OhLoRA_v4/stylegan/generated_face_images_filtered/*
 2025_06_24_OhLoRA_v4/segmentation/models
 2025_06_24_OhLoRA_v4/segmentation/models/*
-2025_06_24_OhLoRA_v4/segmentation/segmentation_results
-2025_06_24_OhLoRA_v4/segmentation/segmentation_results/*
+2025_06_24_OhLoRA_v4/segmentation/segmentation_results_facexformer
+2025_06_24_OhLoRA_v4/segmentation/segmentation_results_facexformer/*
 venv
 venv/*
 requirements_v3.10.11.txt
