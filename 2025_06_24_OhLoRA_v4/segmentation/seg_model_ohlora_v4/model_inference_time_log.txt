@@ -1,0 +1,5 @@
+max        inference time : 0.12498354911804199
+min        inference time : 0.015623807907104492
+mean    of inference time : 0.030466916561126708
+std-dev of inference time : 0.011346911879491729
+median  of inference time : 0.031248092651367188
