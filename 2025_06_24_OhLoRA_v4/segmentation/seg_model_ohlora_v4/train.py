@@ -24,8 +24,8 @@ VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
 SEG_IMAGE_SIZE = 224
 
-MAX_EPOCHS = 1000
-EARLY_STOPPING_ROUNDS = 10
+MAX_EPOCHS = 240
+EARLY_STOPPING_ROUNDS = 20
 
 device = None
 valid_loss_log_dict = {'epoch': [], 'valid_loss': []}
