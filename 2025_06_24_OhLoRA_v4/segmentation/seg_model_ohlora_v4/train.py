@@ -141,7 +141,7 @@ def train_model(model, train_dataloader, valid_dataloader):
                                             current_epoch=current_epoch)
 
         valid_loss_list.append(valid_loss)
-        print(f'epoch : {current_epoch}, val_loss : {valid_loss:.4f}')
+        print(f'epoch : {current_epoch}, val_loss : {valid_loss:.6f}')
 
         model.scheduler.step()
 
@@ -209,7 +209,8 @@ def run_train_step(model, train_dataloader, loss_func):
     model.train()
 
     for idx, (images, masks) in enumerate(train_dataloader):
-        print(idx)
+        if idx % 10 == 0:
+            print(idx)
         images, masks = images.to(device), masks.to(device).to(torch.float32)
 
         # train 실시

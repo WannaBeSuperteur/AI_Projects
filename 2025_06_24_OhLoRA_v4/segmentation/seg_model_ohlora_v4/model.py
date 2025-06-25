@@ -202,4 +202,5 @@ class SegModelForOhLoRAV4(nn.Module):
 
             return x, [x0, x1, x2, x3, x4]
 
+        x = torch.sigmoid(x)  # force 0 ~ 1 output
         return x
