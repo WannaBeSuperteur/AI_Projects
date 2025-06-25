@@ -5,3 +5,7 @@
 * **FaceXFormer** 모델 실행
   * Segmentation 대상 : [Oh-LoRA 👱‍♀️ StyleGAN-FineTune-v8 학습 데이터 4,930 장](../../2025_05_26_OhLoRA_v3/stylegan/README.md#1-1-모델-구조)
   * ```python segmentation/run_segmentation.py```
+
+* Oh-LoRA v4 용 경량화된 Segmentation 모델 실행
+  * Segmentation 대상 : [Oh-LoRA 👱‍♀️ StyleGAN-FineTune-v8 학습 데이터 4,930 장](../../2025_05_26_OhLoRA_v3/stylegan/README.md#1-1-모델-구조)
+  * ```python segmentation/run_seg_model_ohlora_v4.py```
