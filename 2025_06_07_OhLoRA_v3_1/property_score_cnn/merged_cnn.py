@@ -4,10 +4,10 @@ import torch.nn as nn
 import os
 
 try:
-    from train_cnn import HairstyleScoreCNN, get_dataloader
+    from train_cnn import HairstyleScoreCNN
     from common import save_model_structure_pdf
 except:
-    from property_score_cnn.train_cnn import HairstyleScoreCNN, get_dataloader
+    from property_score_cnn.train_cnn import HairstyleScoreCNN
     from property_score_cnn.common import save_model_structure_pdf
 
 

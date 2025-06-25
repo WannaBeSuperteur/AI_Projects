@@ -10,6 +10,7 @@ import os
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMG_RESOLUTION = 256
+TRAIN_BATCH_SIZE = 16
 
 stylegan_transform = transforms.Compose([
     transforms.ToPILImage(),
