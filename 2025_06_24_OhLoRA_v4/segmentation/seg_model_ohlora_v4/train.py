@@ -13,7 +13,9 @@ from seg_model_ohlora_v4.model import SegModelForOhLoRAV4
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 VALID_RESULT_PATH = f'{PROJECT_DIR_PATH}/segmentation/segmentation_results_ohlora_v4/valid'
+TEST_RESULT_PATH = f'{PROJECT_DIR_PATH}/segmentation/segmentation_results_ohlora_v4/test'
 os.makedirs(VALID_RESULT_PATH, exist_ok=True)
+os.makedirs(TEST_RESULT_PATH, exist_ok=True)
 
 
 TRAIN_BATCH_SIZE = 16
@@ -21,7 +23,7 @@ VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
 SEG_IMAGE_SIZE = 224
 
-MAX_EPOCHS = 1000
+MAX_EPOCHS = 1
 EARLY_STOPPING_ROUNDS = 10
 
 device = None
@@ -209,8 +211,6 @@ def run_train_step(model, train_dataloader, loss_func):
     model.train()
 
     for idx, (images, masks) in enumerate(train_dataloader):
-        if idx % 10 == 0:
-            print(idx)
         images, masks = images.to(device), masks.to(device).to(torch.float32)
 
         # train 실시
@@ -238,16 +238,6 @@ def run_train_step(model, train_dataloader, loss_func):
 def run_valid_step(model, valid_dataloader, loss_func, current_epoch):
     global device
 
-    def convert_to_numpy_img(item):
-        item_ = item.detach().cpu().unsqueeze(dim=0)
-        item_ = np.array(item_[0])
-        item_ = np.transpose(item_, (1, 2, 0))
-
-        item_ = item_ * 0.5 + 0.5  # de-normalize
-        item_ = item_ * 255.0
-        item_ = item_[:, :, ::-1]
-        return item_
-
     model.eval()
 
     total = 0
@@ -262,34 +252,63 @@ def run_valid_step(model, valid_dataloader, loss_func, current_epoch):
             valid_loss_batch = loss_func(outputs, masks) / (VALID_BATCH_SIZE * SEG_IMAGE_SIZE * SEG_IMAGE_SIZE)
             valid_loss_sum += valid_loss_batch
 
-            # test code (save visualization image)
+            # save visualization images
             current_batch_size = masks.size(0)
             total += current_batch_size
 
+            # generate visualization image (mask by teacher seg model: blue / output of student seg model: green)
             for img_no in range(current_batch_size):
-
-                # generate visualization image (mask by teacher seg model: blue / output of student seg model: green)
-                image_ = convert_to_numpy_img(images[img_no])
-                mask_ = masks[img_no].detach().cpu().numpy()[0, :, :] * 255.0
-                mask_ = np.expand_dims(mask_, axis=2)
-                output_ = outputs[img_no].detach().cpu().numpy()[0, :, :] * 255.0
-                output_ = np.expand_dims(output_, axis=2)
-
-                overlay_y_pred = np.concatenate([mask_, output_, np.zeros((SEG_IMAGE_SIZE, SEG_IMAGE_SIZE, 1))],
-                                                axis=2)
-                overlay_x_y_pred = 0.55 * image_ + 0.45 * overlay_y_pred
-
-                # save image
-                img_no = batch_idx * VALID_BATCH_SIZE + img_no
-                current_epoch_viz_dir_path = f'{VALID_RESULT_PATH}/{current_epoch}'
-                os.makedirs(current_epoch_viz_dir_path, exist_ok=True)
-
-                write_img(image_, f'{current_epoch_viz_dir_path}/img_{img_no:04d}_original_x.jpg')
-                write_img(overlay_y_pred, f'{current_epoch_viz_dir_path}/img_{img_no:04d}_overlay_y_pred.jpg')
-                write_img(overlay_x_y_pred, f'{current_epoch_viz_dir_path}/img_{img_no:04d}_overlay_x_y_pred.jpg')
+                generate_visualization_images(images, masks, outputs, current_epoch, batch_idx, img_no)
 
     valid_loss = valid_loss_sum / total
     return valid_loss
+
+
+# valid, test 결과에 대한 visualization image 생성
+# Create Date: 2025.06.25
+# Last Update Date: -
+
+# Arguments:
+# - images        (Tensor) : Segmentation 대상 얼굴 이미지
+# - masks         (Tensor) : Segmentation Result (soft result of Teacher Model, for Knowledge Distillation)
+# - outputs       (Tensor) : Segmentation Result (of Student Model)
+# - current_epoch (int)    : 현재 epoch No. (None 이면 valid, test 중 test)
+# - batch_idx     (int)    : batch No.
+# - img_no        (int)    : 각 batch 안에서의 image No.
+
+def generate_visualization_images(images, masks, outputs, current_epoch, batch_idx, img_no):
+    def convert_to_numpy_img(item):
+        item_ = item.detach().cpu().unsqueeze(dim=0)
+        item_ = np.array(item_[0])
+        item_ = np.transpose(item_, (1, 2, 0))
+
+        item_ = item_ * 0.5 + 0.5  # de-normalize
+        item_ = item_ * 255.0
+        item_ = item_[:, :, ::-1]
+        return item_
+
+    # generate visualization images
+    image_ = convert_to_numpy_img(images[img_no])
+    mask_ = masks[img_no].detach().cpu().numpy()[0, :, :] * 255.0
+    mask_ = np.expand_dims(mask_, axis=2)
+    output_ = outputs[img_no].detach().cpu().numpy()[0, :, :] * 255.0
+    output_ = np.expand_dims(output_, axis=2)
+
+    overlay_y_pred = np.concatenate([mask_, output_, np.zeros((SEG_IMAGE_SIZE, SEG_IMAGE_SIZE, 1))],
+                                    axis=2)
+    overlay_x_y_pred = 0.55 * image_ + 0.45 * overlay_y_pred
+
+    # save image
+    img_no = batch_idx * VALID_BATCH_SIZE + img_no
+    if current_epoch is None:  # test
+        current_epoch_viz_dir_path = TEST_RESULT_PATH
+    else:  # valid
+        current_epoch_viz_dir_path = f'{VALID_RESULT_PATH}/{current_epoch}'
+    os.makedirs(current_epoch_viz_dir_path, exist_ok=True)
+
+    write_img(image_, f'{current_epoch_viz_dir_path}/img_{img_no:04d}_original_x.jpg')
+    write_img(overlay_y_pred, f'{current_epoch_viz_dir_path}/img_{img_no:04d}_overlay_y_pred.jpg')
+    write_img(overlay_x_y_pred, f'{current_epoch_viz_dir_path}/img_{img_no:04d}_overlay_x_y_pred.jpg')
 
 
 # NumPy image 로 변환된 이미지를 파일로 저장
@@ -323,7 +342,34 @@ def write_img(image, save_path):
 #                             {'mse': float, 'iou': float, 'dice': float, 'recall': float, 'precision': float}
 
 def test_model(model, test_dataloader):
-    raise NotImplementedError
+    global device
+
+    model.eval()
+
+    total = 0
+    test_result_dict = {}
+
+    with torch.no_grad():
+        for batch_idx, (images, masks) in enumerate(test_dataloader):
+
+            # compute valid loss
+            images, masks = images.to(device), masks.to(device).to(torch.float32)
+            outputs = model(images).to(torch.float32)
+
+            # save visualization images
+            current_batch_size = masks.size(0)
+            total += current_batch_size
+
+            # generate visualization image (mask by teacher seg model: blue / output of student seg model: green)
+            for img_no in range(current_batch_size):
+                generate_visualization_images(images=images,
+                                              masks=masks,
+                                              outputs=outputs,
+                                              current_epoch=None,
+                                              batch_idx=batch_idx,
+                                              img_no=img_no)
+
+    return test_result_dict
 
 
 def main():
@@ -336,6 +382,8 @@ def main():
 
     valid_loss_list, best_epoch_model = train_model(model, train_dataloader, valid_dataloader)
     test_result_dict = test_model(model, test_dataloader)
+    print(f'test result: {test_result_dict}')
 
-    model_save_path = f'{PROJECT_DIR_PATH}/segmenation/models/segmentation_model_ohlora_v4'
+    model_dir_path = f'{PROJECT_DIR_PATH}/segmentation/models'
+    model_save_path = f'{model_dir_path}/segmentation_model_ohlora_v4.pth'
     torch.save(best_epoch_model.state_dict(), model_save_path)
