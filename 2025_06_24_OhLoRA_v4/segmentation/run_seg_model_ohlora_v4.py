@@ -4,6 +4,7 @@ import numpy as np
 import torch
 
 from seg_model_ohlora_v4.model import SegModelForOhLoRAV4
+from seg_model_ohlora_v4.train import main as main_train
 from common import save_model_structure_pdf
 from torchinfo import summary
 
@@ -61,3 +62,5 @@ if __name__ == '__main__':
     save_model_structure_pdf_files(seg_model)
     measure_inference_time(seg_model)
 
+    # train Segmentation Model for Oh-LoRA v4
+    main_train()

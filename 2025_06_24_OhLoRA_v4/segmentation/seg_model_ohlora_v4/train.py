@@ -1,10 +1,14 @@
 
 import cv2
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, random_split
 
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+
+TRAIN_BATCH_SIZE = 16
+VALID_BATCH_SIZE = 4
+TEST_BATCH_SIZE = 4
 
 
 class OhLoRAV4SegmentationModelDataset(Dataset):
@@ -50,7 +54,27 @@ def define_segmentation_model():
 # - test_dataloader  (DataLoader) : 경량화 모델의 Test Data Loader
 
 def generate_dataset(dataset_path):
-    raise NotImplementedError
+    image_paths = list(filter(lambda x: x.startswith('face'), os.listdir(dataset_path)))
+    mask_paths = list(filter(lambda x: x.startswith('parsing_hair_label'), os.listdir(dataset_path)))
+
+    image_paths = [f'{dataset_path}/{image_path}' for image_path in image_paths]
+    mask_paths = [f'{dataset_path}/{mask_path}' for mask_path in mask_paths]
+
+    # define dataset
+    dataset = OhLoRAV4SegmentationModelDataset(image_paths, mask_paths)
+
+    # define dataloader
+    dataset_size = len(dataset)
+    train_size = int(dataset_size * 0.8)
+    valid_size = int(dataset_size * 0.1)
+    test_size = dataset_size - (train_size + valid_size)
+
+    train_dataset, valid_dataset, test_dataset = random_split(dataset, [train_size, valid_size, test_size])
+    train_dataloader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    valid_dataloader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
+
+    return train_dataloader, valid_dataloader, test_dataloader
 
 
 # Oh-LoRA v4 용 경량화된 Segmentation Model 학습
@@ -122,8 +146,8 @@ def test_model(model, test_dataloader):
     raise NotImplementedError
 
 
-if __name__ == '__main__':
-    dataset_path = f'{PROJECT_DIR_PATH}/stylegan/generated_face_images_filtered'
+def main():
+    dataset_path = f'{PROJECT_DIR_PATH}/segmentation/segmentation_results_facexformer'
     train_dataloader, valid_dataloader, test_dataloader = generate_dataset(dataset_path)
     model = define_segmentation_model()
 
