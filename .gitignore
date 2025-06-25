@@ -160,6 +160,8 @@
 2025_06_24_OhLoRA_v4/segmentation/segmentation_results_facexformer
 2025_06_24_OhLoRA_v4/segmentation/segmentation_results_facexformer/*
 2025_06_24_OhLoRA_v4/segmentation/model_structure_pdf/*.gv
+2025_06_24_OhLoRA_v4/segmentation/segmentation_results_ohlora_v4
+2025_06_24_OhLoRA_v4/segmentation/segmentation_results_ohlora_v4/*
 venv
 venv/*
 requirements_v3.10.11.txt
