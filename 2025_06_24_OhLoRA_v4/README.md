@@ -154,7 +154,8 @@ TBU
 
 ### 4-1. Segmentation 을 이용한 옴브레 염색 구현
 
-* 아래와 같이 **경량화된 Segmentation Model** 을 이용하여 **실시간에 가깝게 Hair 영역 추출**
+* **경량화된 Segmentation Model** 을 이용하여 **실시간에 가깝게 Hair 영역 추출**
+  * [FaceXFormer](https://kartik-3004.github.io/facexformer/) 모델을 Teacher 로 하여 [Response-based Knowledge Distillation](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Knowledge_Distillation.md#3-1-response-based-knowledge-distillation) 실시
 * 해당 hair 영역 픽셀 정보가 주어지면, 그 정보를 바탕으로 **옴브레 염색** 을 **pre-defined algorithm (NOT AI)** 으로 구현
 * 옴브레 염색 적용 대상 Oh-LoRA 얼굴
   * [Oh-LoRA v2 (StyleGAN-VectorFind-v7) 얼굴 27 종](../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md) 
