@@ -1,5 +1,9 @@
 ## 목차
 
+* [1. 개요](#1-개요)
+* [2. 테스트 결과 요약](#2-테스트-결과-요약)
+* [3. 테스트 결과 상세](#3-테스트-결과-상세)
+
 ## 1. 개요
 
 * FaceXFormer 를 Knowledge Distillation 을 통해 경량화한, **Oh-LoRA v4 얼굴 생성용** Segmentation 모델 ([EffiSegNet](https://github.com/WannaBeSuperteur/AI-study/blob/main/Paper%20Study/Vision%20Model/%5B2025.05.22%5D%20EffiSegNet%20-%20Gastrointestinal%20Polyp%20Segmentation%20through%20a%20Pre-Trained%20EfficientNet-based%20Network%20with%20a%20Simplified%20Decoder.md) 기반) 의 **각 Loss Function 별** 성능을 평가한다.
@@ -11,16 +15,16 @@
 ## 2. 테스트 결과 요약
 
 * 결론
-  * Soft BCE Loss 가 성능이 가장 좋음
+  * **Soft BCE Loss** 가 성능이 가장 좋음
   * KL Divergence Loss 는 다른 Loss Function 에 비해 성능이 매우 떨어짐
 
 * 실험 결과 테이블
 
-| Loss Function                                                                                                                                                                                                           | MSE Error    | IoU Score  | DICE Score | Recall     | Precision  |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|------------|------------|------------|------------|
-| [MSE Loss](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-1-mean-squared-error-mse)                      | 0.000794     | 0.9680     | **0.9838** | 0.9833     | **0.9842** |
-| [Soft BCE Loss](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-9-soft-bce-loss--kl-divergence-loss)      | **0.000738** | **0.9681** | **0.9838** | 0.9836     | 0.9840     |
-| [KL Divergence Loss](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-9-soft-bce-loss--kl-divergence-loss) | 0.076325     | 0.5673     | 0.7239     | **1.0000** | 0.5673     |
+| Loss Function                                                                                                                                                                                                                             | MSE Error    | IoU Score  | DICE Score | Recall     | Precision  |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|------------|------------|------------|------------|
+| [MSE Loss](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-1-mean-squared-error-mse)                                        | 0.000794     | 0.9680     | **0.9838** | 0.9833     | **0.9842** |
+| [Soft BCE Loss](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-9-soft-bce-loss--kl-divergence-loss) **(best 성능, ✅ 최종 채택)** | **0.000738** | **0.9681** | **0.9838** | 0.9836     | 0.9840     |
+| [KL Divergence Loss](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Loss_function.md#2-9-soft-bce-loss--kl-divergence-loss)                   | 0.076325     | 0.5673     | 0.7239     | **1.0000** | 0.5673     |
 
 * test result 원본 ([원본 파일](seg_model_ohlora_v4/test_result.txt))
 
