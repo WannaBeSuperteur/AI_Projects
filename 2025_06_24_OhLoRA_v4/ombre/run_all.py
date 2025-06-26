@@ -78,6 +78,7 @@ if __name__ == '__main__':
     os.makedirs(f'{gif_save_dir_path}/v7', exist_ok=True)
     os.makedirs(f'{gif_save_dir_path}/v8', exist_ok=True)
 
+    """
     for v7_test_ohlora_no in v7_test_ohlora_nos:
         generate_gif(vectorfind_generator=stylegan_vectorfind_v7_generator,
                      hair_seg_model=hair_seg_model,
@@ -101,10 +102,34 @@ if __name__ == '__main__':
                      pms_list=pms_list,
                      gif_save_path=f'{gif_save_dir_path}/v8/{v8_test_ohlora_no}.gif',
                      duration=0.05)
+    """
 
     # OpenCV 움직이는 화면 생성 테스트
+    color_list_opencv_test = [0.0125 * x for x in range(80)]
+    ombre_height_list_opencv_test = [0.1 + 0.005 * x for x in range(80)]
+    ombre_grad_height_list_opencv_test = [0.05 + 0.0075 * x for x in range(80)]
+    pms_list_opencv_test = {
+        'eyes': [-1.2 + 0.06 * x for x in range(40)] + [1.2 - 0.06 * x for x in range(40)],
+        'mouth': [1.2 - 0.03 * x for x in range(80)],
+        'pose': [0.6 - 0.045 * x for x in range(40)] + [-1.2 for _ in range(40)]
+    }
+
     for v7_test_ohlora_no in v7_test_ohlora_nos:
-        create_opencv_screen(vectorfind_ver='v7', ohlora_no=v7_test_ohlora_no)
+        create_opencv_screen(vectorfind_generator=stylegan_vectorfind_v7_generator,
+                             hair_seg_model=hair_seg_model,
+                             vectorfind_ver='v7',
+                             ohlora_no=v7_test_ohlora_no,
+                             color_list=color_list_opencv_test,
+                             ombre_height_list=ombre_height_list_opencv_test,
+                             ombre_grad_height_list=ombre_grad_height_list_opencv_test,
+                             pms_list=pms_list_opencv_test)
 
     for v8_test_ohlora_no in v8_test_ohlora_nos:
-        create_opencv_screen(vectorfind_ver='v8', ohlora_no=v8_test_ohlora_no)
+        create_opencv_screen(vectorfind_generator=stylegan_vectorfind_v8_generator,
+                             hair_seg_model=hair_seg_model,
+                             vectorfind_ver='v8',
+                             ohlora_no=v8_test_ohlora_no,
+                             color_list=color_list_opencv_test,
+                             ombre_height_list=ombre_height_list_opencv_test,
+                             ombre_grad_height_list=ombre_grad_height_list_opencv_test,
+                             pms_list=pms_list_opencv_test)

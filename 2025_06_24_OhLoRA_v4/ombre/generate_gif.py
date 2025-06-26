@@ -12,6 +12,7 @@ import numpy as np
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
+
 OHLORA_Z_VECTOR_CSV_PATH_V7 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
 OHLORA_W_GROUP_NAME_CSV_PATH_V7 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
 OHLORA_Z_VECTOR_CSV_PATH_V8 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_z_vectors.csv'
