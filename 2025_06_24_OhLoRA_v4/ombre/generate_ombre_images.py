@@ -3,7 +3,6 @@ import torchvision.transforms as transforms
 
 import os
 import sys
-import time
 
 import numpy as np
 import cv2
@@ -38,6 +37,18 @@ ORIGINALLY_PROPERTY_DIMS_V7 = 3  # 원래 property (eyes, mouth, pose) 목적으
 ORIGINALLY_PROPERTY_DIMS_V8 = 7  # 원래 property (eyes, hair_color, hair_length, mouth, pose,
                                  #               background_mean, background_std) 목적으로 사용된 dimension 값
 TEST_IMG_CASES = 1
+
+OHLORA_Z_VECTOR_CSV_PATH_V7 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
+OHLORA_W_GROUP_NAME_CSV_PATH_V7 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
+OHLORA_Z_VECTOR_CSV_PATH_V8 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_z_vectors.csv'
+OHLORA_W_GROUP_NAME_CSV_PATH_V8 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_w_group_names.csv'
+
+CASE_NO_TO_IDX_V7 = { 127:  0,  672:  1,  709:  2,  931:  3, 1017:  4, 1073:  5, 1162:  6, 1211:  7, 1277:  8, 1351:  9,
+                     1359: 10, 1409: 11, 1591: 12, 1646: 13, 1782: 14, 1788: 15, 1819: 16, 1836: 17, 1905: 18, 1918: 19,
+                     2054: 20, 2089: 21, 2100: 22, 2111: 23, 2137: 24, 2185: 25, 2240: 26}
+
+CASE_NO_TO_IDX_V8 = {  83:  0,  143:  1,  194:  2,  214:  3,  285:  4,  483:  5,  536:  6,  679:  7,  853:  8,  895:  9,
+                      986: 10,  991: 11, 1064: 12, 1180: 13, 1313: 14, 1535: 15, 1750: 16, 1792: 17, 1996: 18}
 
 GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
@@ -79,9 +90,13 @@ def generate_image_using_w(vectorfind_generator, w, trunc_psi=1.0, trunc_layers=
 # - color                (float)       : 색상 값 (0.0 - 1.0 범위)
 # - ombre_height         (float)       : 옴브레 염색 부분의 세로 길이 (0.0 - 1.0 범위)
 # - ombre_grad_height    (float)       : 옴브레 염색 부분의 그라데이션 부분의 세로 길이 비율 (0.0 - 1.0 범위)
+# - instruct             (str)         : 'save' (이미지 저장) or 'return' (이미지 반환)
+
+# Returns:
+# - ombre_image (Numpy array) : 옴브레 염색 적용된 이미지 (instruct == 'return' 일 때)
 
 def generate_ombre_img(vectorfind_generator, hair_seg_model, eyes_vector, mouth_vector, pose_vector, code_w, save_dir,
-                       img_file_name, pms, color=0.0, ombre_height=0.3, ombre_grad_height=0.4):
+                       img_file_name, pms, color=0.0, ombre_height=0.3, ombre_grad_height=0.4, instruct='save'):
 
     eyes_pm, mouth_pm, pose_pm = pms['eyes'], pms['mouth'], pms['pose']
 
@@ -95,7 +110,12 @@ def generate_ombre_img(vectorfind_generator, hair_seg_model, eyes_vector, mouth_
         images = generate_image_using_w(vectorfind_generator, code_w_)
 
     ombre_image = apply_ombre(hair_seg_model, images[0], color, ombre_height, ombre_grad_height)
-    save_image(os.path.join(save_dir, img_file_name), ombre_image)
+
+    if instruct == 'save':
+        save_image(os.path.join(save_dir, img_file_name), ombre_image)
+
+    elif instruct == 'return':
+        return ombre_image
 
 
 # 옴브레 스타일 적용
@@ -167,18 +187,57 @@ def apply_ombre(hair_seg_model, original_image, color, ombre_height, ombre_grad_
 # Last Update Date : -
 
 # Arguments:
-# - vectorfind_generator (nn.Module) : StyleGAN-VectorFind-v7 or v8 의 Generator
-# - hair_seg_model       (nn.Module) : Hair 영역 추출용 Segmentation Model
-# - vectorfind_ver       (str)       : StyleGAN-VectorFind 버전 ('v7' or 'v8')
-# - ohlora_no            (int)       : Oh-LoRA 이미지 번호 ('v7'의 경우 127, 672, 709, ...)
-# - color                (float)     : 색상 값 (0.0 - 1.0 범위)
-# - ombre_height         (float)     : 옴브레 염색 부분의 세로 길이 (0.0 - 1.0 범위)
-# - ombre_grad_height    (float)     : 옴브레 염색 부분의 그라데이션 부분의 세로 길이 비율 (0.0 - 1.0 범위)
+# - vectorfind_generator (nn.Module)         : StyleGAN-VectorFind-v7 or v8 의 Generator
+# - hair_seg_model       (nn.Module)         : Hair 영역 추출용 Segmentation Model
+# - eyes_vectors         (dict(NumPy Array)) : eyes (눈을 뜬 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - mouth_vectors        (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - pose_vectors         (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
+# - vectorfind_ver       (str)               : StyleGAN-VectorFind 버전 ('v7' or 'v8')
+# - ohlora_no            (int)               : Oh-LoRA 이미지 번호 ('v7'의 경우 127, 672, 709, ...)
+# - color                (float)             : 색상 값 (0.0 - 1.0 범위)
+# - ombre_height         (float)             : 옴브레 염색 부분의 세로 길이 (0.0 - 1.0 범위)
+# - ombre_grad_height    (float)             : 옴브레 염색 부분의 그라데이션 부분의 세로 길이 비율 (0.0 - 1.0 범위)
+# - pms                  (dict)              : 핵심 속성 값 가감 가중치
+#                                              {'eyes': float, 'mouth': float, 'pose': float}
 
-def generate_ombre_image(vectorfind_generator, hair_seg_model, vectorfind_ver, ohlora_no,
-                         color, ombre_height, ombre_grad_height):
+def generate_ombre_image(vectorfind_generator, hair_seg_model, eyes_vectors, mouth_vectors, pose_vectors,
+                         vectorfind_ver, ohlora_no, color, ombre_height, ombre_grad_height, pms):
 
-    raise NotImplementedError
+    if vectorfind_ver == 'v7':
+        ohlora_z_vectors = load_ohlora_z_vectors_v7(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V7)
+        ohlora_w_group_names = load_ohlora_w_group_names_v7(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V7)
+        ohlora_idx = CASE_NO_TO_IDX_V7[ohlora_no]
+    else:  # v8
+        ohlora_z_vectors = load_ohlora_z_vectors_v8(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V8)
+        ohlora_w_group_names = load_ohlora_w_group_names_v8(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V8)
+        ohlora_idx = CASE_NO_TO_IDX_V8[ohlora_no]
+
+    code_part1s_np = np.zeros((1, ORIGINAL_HIDDEN_DIMS_Z))
+    if vectorfind_ver == 'v7':
+        code_part2s_np = np.zeros((1, ORIGINALLY_PROPERTY_DIMS_V7))
+    else:  # v8
+        code_part2s_np = np.zeros((1, ORIGINALLY_PROPERTY_DIMS_V8))
+
+    # image generation
+    code_part1s_np[0] = ohlora_z_vectors[ohlora_idx][:ORIGINAL_HIDDEN_DIMS_Z]
+    code_part2s_np[0] = ohlora_z_vectors[ohlora_idx][ORIGINAL_HIDDEN_DIMS_Z:]
+    code_part1 = torch.tensor(code_part1s_np[0]).unsqueeze(0).to(torch.float32)  # 512
+    code_part2 = torch.tensor(code_part2s_np[0]).unsqueeze(0).to(torch.float32)  # 3 (VectorFind-v7), 7 (VectorFind-v8)
+
+    with torch.no_grad():
+        code_w = vectorfind_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
+
+        group_name = ohlora_w_group_names[ohlora_idx]
+        eyes_vector = eyes_vectors[group_name]
+        mouth_vector = mouth_vectors[group_name]
+        pose_vector = pose_vectors[group_name]
+
+        ombre_image = generate_ombre_img(vectorfind_generator, hair_seg_model, eyes_vector, mouth_vector, pose_vector,
+                                         code_w, save_dir=None, img_file_name=None, pms=pms,
+                                         color=color, ombre_height=ombre_height, ombre_grad_height=ombre_grad_height,
+                                         instruct='return')
+
+    return ombre_image
 
 
 # StyleGAN-VectorFind-v7 옴브레 염색 적용 이미지 생성 테스트
@@ -195,10 +254,8 @@ def generate_ombre_image(vectorfind_generator, hair_seg_model, vectorfind_ver, o
 def generate_ombre_image_using_v7(vectorfind_v7_generator, hair_seg_model, eyes_vectors, mouth_vectors, pose_vectors):
     n_vector_cnt = len(eyes_vectors['hhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
 
-    ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
-    ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
-    ohlora_z_vectors = load_ohlora_z_vectors_v7(vector_csv_path=ohlora_z_vector_csv_path)
-    ohlora_w_group_names = load_ohlora_w_group_names_v7(group_name_csv_path=ohlora_w_group_name_csv_path)
+    ohlora_z_vectors = load_ohlora_z_vectors_v7(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V7)
+    ohlora_w_group_names = load_ohlora_w_group_names_v7(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V7)
 
     # label: 'eyes', 'mouth', 'pose'
     eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels_v7()
@@ -286,10 +343,8 @@ def generate_ombre_image_using_v7_all_process(hair_seg_model):
 def generate_ombre_image_using_v8(vectorfind_v8_generator, hair_seg_model, eyes_vectors, mouth_vectors, pose_vectors):
     n_vector_cnt = len(eyes_vectors['hhhh'])  # equal to pre-defined SVMS_PER_EACH_PROPERTY value
 
-    ohlora_z_vector_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_z_vectors.csv'
-    ohlora_w_group_name_csv_path = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_w_group_names.csv'
-    ohlora_z_vectors = load_ohlora_z_vectors_v8(vector_csv_path=ohlora_z_vector_csv_path)
-    ohlora_w_group_names = load_ohlora_w_group_names_v8(group_name_csv_path=ohlora_w_group_name_csv_path)
+    ohlora_z_vectors = load_ohlora_z_vectors_v8(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V8)
+    ohlora_w_group_names = load_ohlora_w_group_names_v8(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V8)
 
     # label: 'eyes', 'mouth', 'pose'
     eyes_pm_order, mouth_pm_order, pose_pm_order = get_pm_labels_v8()
