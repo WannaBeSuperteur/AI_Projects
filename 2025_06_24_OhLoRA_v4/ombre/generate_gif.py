@@ -1,8 +1,28 @@
 from generate_ombre_images import generate_ombre_image
+
 from stylegan.run_stylegan_vectorfind_v7 import get_property_change_vectors as get_property_change_vectors_v7
+from stylegan.run_stylegan_vectorfind_v7 import load_ohlora_z_vectors as load_ohlora_z_vectors_v7
+from stylegan.run_stylegan_vectorfind_v7 import load_ohlora_w_group_names as load_ohlora_w_group_names_v7
+
 from stylegan.run_stylegan_vectorfind_v8 import get_property_change_vectors as get_property_change_vectors_v8
+from stylegan.run_stylegan_vectorfind_v8 import load_ohlora_z_vectors as load_ohlora_z_vectors_v8
+from stylegan.run_stylegan_vectorfind_v8 import load_ohlora_w_group_names as load_ohlora_w_group_names_v8
 
 import imageio
+import os
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+
+OHLORA_Z_VECTOR_CSV_PATH_V7 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_z_vectors.csv'
+OHLORA_W_GROUP_NAME_CSV_PATH_V7 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v7/ohlora_w_group_names.csv'
+OHLORA_Z_VECTOR_CSV_PATH_V8 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_z_vectors.csv'
+OHLORA_W_GROUP_NAME_CSV_PATH_V8 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_w_group_names.csv'
+
+CASE_NO_TO_IDX_V7 = { 127:  0,  672:  1,  709:  2,  931:  3, 1017:  4, 1073:  5, 1162:  6, 1211:  7, 1277:  8, 1351:  9,
+                     1359: 10, 1409: 11, 1591: 12, 1646: 13, 1782: 14, 1788: 15, 1819: 16, 1836: 17, 1905: 18, 1918: 19,
+                     2054: 20, 2089: 21, 2100: 22, 2111: 23, 2137: 24, 2185: 25, 2240: 26}
+
+CASE_NO_TO_IDX_V8 = {  83:  0,  143:  1,  194:  2,  214:  3,  285:  4,  483:  5,  536:  6,  679:  7,  853:  8,  895:  9,
+                      986: 10,  991: 11, 1064: 12, 1180: 13, 1313: 14, 1535: 15, 1750: 16, 1792: 17, 1996: 18}
 
 
 # GIF 이미지 생성
@@ -31,6 +51,15 @@ def generate_gif(vectorfind_generator, hair_seg_model, vectorfind_ver, ohlora_no
     ohlora_images = []
     n_frames = len(color_list)
 
+    if vectorfind_ver == 'v7':
+        ohlora_z_vectors = load_ohlora_z_vectors_v7(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V7)
+        ohlora_w_group_names = load_ohlora_w_group_names_v7(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V7)
+        ohlora_idx = CASE_NO_TO_IDX_V7[ohlora_no]
+    else:  # v8
+        ohlora_z_vectors = load_ohlora_z_vectors_v8(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V8)
+        ohlora_w_group_names = load_ohlora_w_group_names_v8(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V8)
+        ohlora_idx = CASE_NO_TO_IDX_V8[ohlora_no]
+
     for idx in range(n_frames):
         color = color_list[idx]
         ombre_height = ombre_height_list[idx]
@@ -39,7 +68,8 @@ def generate_gif(vectorfind_generator, hair_seg_model, vectorfind_ver, ohlora_no
 
         ohlora_image = generate_ombre_image(vectorfind_generator, hair_seg_model,
                                             eyes_vectors, mouth_vectors, pose_vectors,
-                                            vectorfind_ver, ohlora_no, color, ombre_height, ombre_grad_height, pms)
+                                            vectorfind_ver, color, ombre_height, ombre_grad_height, pms,
+                                            ohlora_z_vectors, ohlora_w_group_names, ohlora_idx)
         ohlora_images.append(ohlora_image)
 
     imageio.mimsave(gif_save_path, ohlora_images, duration=duration)

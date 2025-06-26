@@ -43,13 +43,6 @@ OHLORA_W_GROUP_NAME_CSV_PATH_V7 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorf
 OHLORA_Z_VECTOR_CSV_PATH_V8 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_z_vectors.csv'
 OHLORA_W_GROUP_NAME_CSV_PATH_V8 = f'{PROJECT_DIR_PATH}/stylegan/stylegan_vectorfind_v8/ohlora_w_group_names.csv'
 
-CASE_NO_TO_IDX_V7 = { 127:  0,  672:  1,  709:  2,  931:  3, 1017:  4, 1073:  5, 1162:  6, 1211:  7, 1277:  8, 1351:  9,
-                     1359: 10, 1409: 11, 1591: 12, 1646: 13, 1782: 14, 1788: 15, 1819: 16, 1836: 17, 1905: 18, 1918: 19,
-                     2054: 20, 2089: 21, 2100: 22, 2111: 23, 2137: 24, 2185: 25, 2240: 26}
-
-CASE_NO_TO_IDX_V8 = {  83:  0,  143:  1,  194:  2,  214:  3,  285:  4,  483:  5,  536:  6,  679:  7,  853:  8,  895:  9,
-                      986: 10,  991: 11, 1064: 12, 1180: 13, 1313: 14, 1535: 15, 1750: 16, 1792: 17, 1996: 18}
-
 GROUP_NAMES = ['hhh', 'hhl', 'hlh', 'hll', 'lhh', 'lhl', 'llh', 'lll']
 PROPERTY_NAMES = ['eyes', 'mouth', 'pose']
 
@@ -193,24 +186,18 @@ def apply_ombre(hair_seg_model, original_image, color, ombre_height, ombre_grad_
 # - mouth_vectors        (dict(NumPy Array)) : mouth (입을 벌린 정도) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - pose_vectors         (dict(NumPy Array)) : pose (고개 돌림) 속성값을 변화시키는 벡터 정보 (각 그룹 별)
 # - vectorfind_ver       (str)               : StyleGAN-VectorFind 버전 ('v7' or 'v8')
-# - ohlora_no            (int)               : Oh-LoRA 이미지 번호 ('v7'의 경우 127, 672, 709, ...)
 # - color                (float)             : 색상 값 (0.0 - 1.0 범위)
 # - ombre_height         (float)             : 옴브레 염색 부분의 세로 길이 (0.0 - 1.0 범위)
 # - ombre_grad_height    (float)             : 옴브레 염색 부분의 그라데이션 부분의 세로 길이 비율 (0.0 - 1.0 범위)
 # - pms                  (dict)              : 핵심 속성 값 가감 가중치
 #                                              {'eyes': float, 'mouth': float, 'pose': float}
+# - ohlora_z_vectors     (NumPy array)       : Oh-LoRA 이미지 생성용 latent z vector
+# - ohlora_w_group_names (list)              : Oh-LoRA 이미지 생성을 위한 intermediate w vector 에 대한 group name
+# - ohlora_idx           (int)               : 최종 Oh-LoRA 이미지 생성용으로 선정된 vector 의 인덱스 (0, 1, 2, ...)
 
 def generate_ombre_image(vectorfind_generator, hair_seg_model, eyes_vectors, mouth_vectors, pose_vectors,
-                         vectorfind_ver, ohlora_no, color, ombre_height, ombre_grad_height, pms):
-
-    if vectorfind_ver == 'v7':
-        ohlora_z_vectors = load_ohlora_z_vectors_v7(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V7)
-        ohlora_w_group_names = load_ohlora_w_group_names_v7(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V7)
-        ohlora_idx = CASE_NO_TO_IDX_V7[ohlora_no]
-    else:  # v8
-        ohlora_z_vectors = load_ohlora_z_vectors_v8(vector_csv_path=OHLORA_Z_VECTOR_CSV_PATH_V8)
-        ohlora_w_group_names = load_ohlora_w_group_names_v8(group_name_csv_path=OHLORA_W_GROUP_NAME_CSV_PATH_V8)
-        ohlora_idx = CASE_NO_TO_IDX_V8[ohlora_no]
+                         vectorfind_ver, color, ombre_height, ombre_grad_height, pms,
+                         ohlora_z_vectors, ohlora_w_group_names, ohlora_idx):
 
     code_part1s_np = np.zeros((1, ORIGINAL_HIDDEN_DIMS_Z))
     if vectorfind_ver == 'v7':
