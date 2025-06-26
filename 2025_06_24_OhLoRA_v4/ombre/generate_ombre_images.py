@@ -3,6 +3,8 @@ import torchvision.transforms as transforms
 
 import os
 import sys
+import time
+
 import numpy as np
 import cv2
 
@@ -26,6 +28,8 @@ from stylegan.common import (load_existing_stylegan_vectorfind_v7,
                              load_existing_stylegan_vectorfind_v8,
                              load_merged_property_score_cnn)
 
+from hue_added_colors import get_hue_added_colors_list
+
 
 IMAGE_RESOLUTION = 256
 ORIGINAL_HIDDEN_DIMS_Z = 512
@@ -46,6 +50,15 @@ seg_model_transform = transforms.Compose([
     transforms.Normalize(mean=0.5, std=0.5)
 ])
 
+hue_added_colors = get_hue_added_colors_list()
+
+
+def generate_image_using_w(vectorfind_generator, w, trunc_psi=1.0, trunc_layers=0, randomize_noise=False, lod=None):
+    with torch.no_grad():
+        wp = vectorfind_generator.truncation(w, trunc_psi, trunc_layers)
+        images = vectorfind_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
+        images = postprocess_image(images.detach().cpu().numpy())
+    return images
 
 
 # 옴브레 염색 적용된 이미지 생성
@@ -69,13 +82,6 @@ seg_model_transform = transforms.Compose([
 
 def generate_ombre_img(vectorfind_generator, hair_seg_model, eyes_vector, mouth_vector, pose_vector, code_w, save_dir,
                        img_file_name, pms, color=0.0, ombre_height=0.3, ombre_grad_height=0.4):
-
-    def generate_image_using_w(vectorfind_generator, w, trunc_psi=1.0, trunc_layers=0, randomize_noise=False, lod=None):
-        with torch.no_grad():
-            wp = vectorfind_generator.truncation(w, trunc_psi, trunc_layers)
-            images = vectorfind_generator.synthesis(wp.cuda(), lod, randomize_noise)['image']
-            images = postprocess_image(images.detach().cpu().numpy())
-        return images
 
     eyes_pm, mouth_pm, pose_pm = pms['eyes'], pms['mouth'], pms['pose']
 
@@ -107,6 +113,8 @@ def generate_ombre_img(vectorfind_generator, hair_seg_model, eyes_vector, mouth_
 # - ombre_image (Numpy array) : 옴브레 스타일 적용된 이미지
 
 def apply_ombre(hair_seg_model, original_image, color, ombre_height, ombre_grad_height):
+    global hue_added_colors
+
     original_image_tensor = seg_model_transform(original_image)
 
     # load image & generate hair area map
@@ -143,15 +151,13 @@ def apply_ombre(hair_seg_model, original_image, color, ombre_height, ombre_grad_
         hair_area_map = hair_area_map * weights[:, np.newaxis]
 
     # apply ombre style
-    image_hsv = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV).astype(np.float32)
-    image_hsv[:, :, 0] = 30
-    image_hsv = image_hsv.astype(np.uint8)
-    converted_image = cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR)
-    save_image('converted_image.jpg', converted_image)
+    hue_value_360 = int(color * 360.0)
+    hue_added_color = 0.35 * original_image + 0.25 * np.array(hue_added_colors[hue_value_360]) - 0.15 * 255.0
+    color_added_image = np.clip(original_image + hue_added_color, 0, 255).astype(np.uint8)
 
     # generate final ombre image
     hair_area_map_ = np.expand_dims(hair_area_map, axis=2) / 255.0
-    ombre_image = (1.0 - hair_area_map_) * original_image + hair_area_map_ * converted_image
+    ombre_image = (1.0 - hair_area_map_) * original_image + hair_area_map_ * color_added_image
 
     return ombre_image
 
@@ -231,7 +237,7 @@ def generate_ombre_image_using_v7(vectorfind_v7_generator, hair_seg_model, eyes_
 
                 generate_ombre_img(vectorfind_v7_generator, hair_seg_model, eyes_vector, mouth_vector, pose_vector,
                                    code_w, save_dir, img_file_name, pms,
-                                   color=0.0, ombre_height=0.3, ombre_grad_height=0.4)
+                                   color=(pm_idx / pm_cnt), ombre_height=0.4, ombre_grad_height=0.6)
 
 
 # StyleGAN-VectorFind-v7 옴브레 염색 적용 이미지 생성 테스트 (모델 로딩을 포함한 전 과정)
@@ -322,7 +328,7 @@ def generate_ombre_image_using_v8(vectorfind_v8_generator, hair_seg_model, eyes_
 
                 generate_ombre_img(vectorfind_v8_generator, hair_seg_model, eyes_vector, mouth_vector, pose_vector,
                                    code_w, save_dir, img_file_name, pms,
-                                   color=0.0, ombre_height=0.3, ombre_grad_height=0.4)
+                                   color=(pm_idx / pm_cnt), ombre_height=0.4, ombre_grad_height=0.6)
 
 
 # StyleGAN-VectorFind-v8 옴브레 염색 적용 이미지 생성 테스트 (모델 로딩을 포함한 전 과정)
