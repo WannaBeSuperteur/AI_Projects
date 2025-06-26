@@ -71,7 +71,7 @@ if __name__ == '__main__':
     pms_list = {
         'eyes': [-1.2 + 0.12 * x for x in range(20)] + [1.2 - 0.12 * x for x in range(20)],
         'mouth': [1.2 - 0.06 * x for x in range(40)],
-        'pose': [1.2 - 0.09 * x for x in range(20)] + [-0.6 for _ in range(20)]
+        'pose': [0.6 - 0.09 * x for x in range(20)] + [-1.2 for _ in range(20)]
     }
 
     gif_save_dir_path = f'{PROJECT_DIR_PATH}/ombre/test_gif'
@@ -87,7 +87,8 @@ if __name__ == '__main__':
                      ombre_height_list=ombre_height_list,
                      ombre_grad_height_list=ombre_grad_height_list,
                      pms_list=pms_list,
-                     gif_save_path=f'{gif_save_dir_path}/v7/{v7_test_ohlora_no}_gif.gif')
+                     gif_save_path=f'{gif_save_dir_path}/v7/{v7_test_ohlora_no}.gif',
+                     duration=0.05)
 
     for v8_test_ohlora_no in v8_test_ohlora_nos:
         generate_gif(vectorfind_generator=stylegan_vectorfind_v8_generator,
@@ -98,7 +99,8 @@ if __name__ == '__main__':
                      ombre_height_list=ombre_height_list,
                      ombre_grad_height_list=ombre_grad_height_list,
                      pms_list=pms_list,
-                     gif_save_path=f'{gif_save_dir_path}/v8/{v8_test_ohlora_no}_gif.gif')
+                     gif_save_path=f'{gif_save_dir_path}/v8/{v8_test_ohlora_no}.gif',
+                     duration=0.05)
 
     # OpenCV 움직이는 화면 생성 테스트
     for v7_test_ohlora_no in v7_test_ohlora_nos:

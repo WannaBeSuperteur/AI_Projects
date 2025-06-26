@@ -9,6 +9,8 @@ from stylegan.run_stylegan_vectorfind_v8 import load_ohlora_z_vectors as load_oh
 from stylegan.run_stylegan_vectorfind_v8 import load_ohlora_w_group_names as load_ohlora_w_group_names_v8
 
 import imageio
+import numpy as np
+
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
@@ -44,7 +46,7 @@ CASE_NO_TO_IDX_V8 = {  83:  0,  143:  1,  194:  2,  214:  3,  285:  4,  483:  5,
 # - duration               (float)             : 프레임 당 시간 (초)
 
 def generate_gif(vectorfind_generator, hair_seg_model, vectorfind_ver, ohlora_no,
-                 color_list, ombre_height_list, ombre_grad_height_list, pms_list, gif_save_path, duration=0.1):
+                 color_list, ombre_height_list, ombre_grad_height_list, pms_list, gif_save_path, duration=0.05):
 
     print(f'generating GIF image for {vectorfind_ver} / {ohlora_no} ...')
     eyes_vectors, mouth_vectors, pose_vectors = get_property_score_change_vectors(vectorfind_ver)
@@ -70,9 +72,9 @@ def generate_gif(vectorfind_generator, hair_seg_model, vectorfind_ver, ohlora_no
                                             eyes_vectors, mouth_vectors, pose_vectors,
                                             vectorfind_ver, color, ombre_height, ombre_grad_height, pms,
                                             ohlora_z_vectors, ohlora_w_group_names, ohlora_idx)
-        ohlora_images.append(ohlora_image)
+        ohlora_images.append(ohlora_image.astype(np.uint8))
 
-    imageio.mimsave(gif_save_path, ohlora_images, duration=duration)
+    imageio.mimsave(gif_save_path, ohlora_images, duration=duration, loop=0)
 
 
 # GIF 이미지 생성
