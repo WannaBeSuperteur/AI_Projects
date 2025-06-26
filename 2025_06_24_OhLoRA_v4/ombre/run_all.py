@@ -47,8 +47,8 @@ if __name__ == '__main__':
 
     # load segmentation model
     hair_seg_model = load_existing_hair_seg_model(device)
-#    generate_ombre_image_using_v7_all_process(hair_seg_model)
-#    generate_ombre_image_using_v8_all_process(hair_seg_model)
+    generate_ombre_image_using_v7_all_process(hair_seg_model)
+    generate_ombre_image_using_v8_all_process(hair_seg_model)
 
     # load StyleGAN-VectorFind-v7 and v8
     stylegan_vectorfind_v7_generator = gen.StyleGANGeneratorForV6(resolution=IMAGE_RESOLUTION)
@@ -78,7 +78,6 @@ if __name__ == '__main__':
     os.makedirs(f'{gif_save_dir_path}/v7', exist_ok=True)
     os.makedirs(f'{gif_save_dir_path}/v8', exist_ok=True)
 
-    """
     for v7_test_ohlora_no in v7_test_ohlora_nos:
         generate_gif(vectorfind_generator=stylegan_vectorfind_v7_generator,
                      hair_seg_model=hair_seg_model,
@@ -102,7 +101,6 @@ if __name__ == '__main__':
                      pms_list=pms_list,
                      gif_save_path=f'{gif_save_dir_path}/v8/{v8_test_ohlora_no}.gif',
                      duration=0.05)
-    """
 
     # OpenCV 움직이는 화면 생성 테스트
     color_list_opencv_test = [0.0125 * x for x in range(80)]
