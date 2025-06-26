@@ -39,11 +39,11 @@ test result: {'mse': 0.0763248957799366, 'iou': 0.5672963002993653, 'dice': 0.72
 
 * 범례
 
-| 색깔       | 의미             | Teacher Model (FaceXFormer) 에 의한 hair 영역 | Student Model (EffiSegNet 기반 경량화 모델) 에 의한 hair 영역 |
-|----------|----------------|------------------------------------------|---------------------------------------------------|
-| Green    | False Positive | ❌                                        | ✅                                                 |
-| Sky Blue | True Positive  | ✅                                        | ✅                                                 |
-| Blue     | False Negative | ✅                                        | ❌                                                 |
+| 색깔       | 의미             | Teacher Model<br>(FaceXFormer)<br>에 의한 hair 영역 | Student Model<br>(EffiSegNet 기반 경량화 모델)<br>에 의한 hair 영역 |
+|----------|----------------|------------------------------------------------|---------------------------------------------------------|
+| Green    | False Positive | ❌                                              | ✅                                                       |
+| Sky Blue | True Positive  | ✅                                              | ✅                                                       |
+| Blue     | False Negative | ✅                                              | ❌                                                       |
 
 * MSE Loss 결과
 
