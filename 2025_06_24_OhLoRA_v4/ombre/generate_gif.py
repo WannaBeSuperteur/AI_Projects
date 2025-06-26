@@ -77,7 +77,7 @@ def generate_gif(vectorfind_generator, hair_seg_model, vectorfind_ver, ohlora_no
     imageio.mimsave(gif_save_path, ohlora_images, duration=duration, loop=0)
 
 
-# GIF 이미지 생성
+# Property Score Change Vector 의 값을 찾아서 반환
 # Create Date : 2025.06.26
 # Last Update Date : -
 
