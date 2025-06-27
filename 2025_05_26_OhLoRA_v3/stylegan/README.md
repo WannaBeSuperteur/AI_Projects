@@ -126,7 +126,7 @@
 ![image](../../images/250526_3.PNG)
 
 * 개요
-  * StyleGAN-FineTune-v1 으로 생성된 15,000 장의 이미지 중 **Oh-LoRA 👱‍♀️ (오로라) 의 컨셉** 에 맞는, **안경을 쓰지 않은 고품질의 젊은 여성 이미지** 4,903 장을 필터링
+  * StyleGAN-FineTune-v1 으로 생성된 15,000 장의 이미지 중 **Oh-LoRA 👱‍♀️ (오로라) 의 컨셉** 에 맞는, **안경을 쓰지 않은 고품질의 젊은 여성 이미지** 4,930 장을 필터링
   * 해당 필터링된 이미지로 **StyleGAN-FineTune-v1 을 추가 Fine-Tuning**
   * [StyleGAN-FineTune-v1 을 위한 필터링 프로세스](../../2025_04_08_OhLoRA/stylegan_and_segmentation/README.md#1-개요) 에서 **나이 (젊음) + 안경 (쓰지 않음)** 조건을 추가한 것과 같음
 
@@ -223,7 +223,7 @@ OhLoRA-v3 프로젝트에서 오로라 (Oh-LoRA) 👱‍♀️ 이미지 생성�
 ![image](../../images/250526_2.PNG)
 
 * 개요
-  * StyleGAN-FineTune-v1 으로 생성된 15,000 장의 이미지 중 **Oh-LoRA 👱‍♀️ (오로라) 의 컨셉** 에 맞는, **안경을 쓰지 않은 고품질의 젊은 여성 이미지** 4,903 장을 필터링하기 위한 CNN
+  * StyleGAN-FineTune-v1 으로 생성된 15,000 장의 이미지 중 **Oh-LoRA 👱‍♀️ (오로라) 의 컨셉** 에 맞는, **안경을 쓰지 않은 고품질의 젊은 여성 이미지** 4,930 장을 필터링하기 위한 CNN
 
 * 학습 방법
   * ```gender``` ```quality``` ```age``` ```glass``` 의 각 핵심 속성 값별 **5 개의 CNN 을 [Stratified K-fold](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Machine%20Learning%20Models/%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%B0%A9%EB%B2%95%EB%A1%A0_Cross_Validation.md#4-stratified-k-fold-cross-validation) 로 학습** 
