@@ -5,33 +5,16 @@ from datetime import datetime
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
-def get_answer_start_mark(output_col):
-    if output_col == 'output_message':
-        return ' (답변 시작)'
-    elif output_col == 'summary':
-        return ' (요약 시작)'
-    elif output_col == 'memory':
-        return ' (요약 시작)'
-    else:  # eyes_mouth_pose
-        return ' (표정 출력 시작)'
+def get_answer_start_mark():
+    return ' (답변 시작)'
 
 
-def get_answer_end_mark(output_col):
-    if output_col == 'output_message':
-        return ' (답변 종료)'
-    elif output_col == 'summary':
-        return ' (요약 종료)'
-    elif output_col == 'memory':
-        return ' (요약 종료)'
-    else:  # eyes_mouth_pose
-        return ' (표정 출력 종료)'
+def get_answer_end_mark():
+    return ' (답변 종료)'
 
 
-def get_temperature(output_col, llm_name):
-    if output_col == 'eyes_mouth_pose' and llm_name == 'polyglot':
-        return 1.0
-    else:
-        return 0.6
+def get_temperature():
+    return 0.6
 
 
 def preview_dataset(dataset, tokenizer, print_encoded_tokens=False):
@@ -77,9 +60,8 @@ def add_inference_log(inference_result, inference_log_dict):
 
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
-# Create Date : 2025.05.31
-# Last Update Date : 2025.05.31
-# - 학습 대상 데이터셋 v2.2 -> v3 으로 수정
+# Create Date : 2025.06.27
+# Last Update Date : -
 
 # Arguments:
 # - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
@@ -88,7 +70,7 @@ def add_inference_log(inference_result, inference_log_dict):
 # - valid_final_prompts (list(str)) : Valid Dataset 로부터 가져온 final LLM input prompt 의 리스트
 
 def load_valid_final_prompts(output_col):
-    dataset_csv_path = 'llm/fine_tuning_dataset/OhLoRA_fine_tuning_v3.csv'
+    dataset_csv_path = 'llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv'
     dataset_csv_path = f'{PROJECT_DIR_PATH}/{dataset_csv_path}'
     dataset_df = pd.read_csv(dataset_csv_path)
     dataset_df_valid = dataset_df[dataset_df['data_type'] == 'valid']

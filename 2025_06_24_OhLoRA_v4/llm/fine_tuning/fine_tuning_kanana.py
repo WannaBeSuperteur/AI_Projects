@@ -68,15 +68,14 @@ class OhLoRACustomCallback(TrainerCallback):
         for final_input_prompt in valid_final_prompts:
             start_at = time.time()
             stop_token_list = get_stop_token_list(self.output_col)
-            answer_start_mark = get_answer_start_mark(self.output_col)
+            answer_start_mark = get_answer_start_mark()
 
             llm_answer, trial_count, output_token_cnt = run_inference_kanana(lora_llm,
                                                                              final_input_prompt,
                                                                              tokenizer,
                                                                              output_col=self.output_col,
                                                                              stop_token_list=stop_token_list,
-                                                                             answer_start_mark=answer_start_mark,
-                                                                             instruct_version=self.instruct_version)
+                                                                             answer_start_mark=answer_start_mark)
             elapsed_time = time.time() - start_at
 
             print(f'final input prompt : {final_input_prompt}')
@@ -97,9 +96,8 @@ class OhLoRACustomCallback(TrainerCallback):
 
 
 # Original LLM (Kanana-1.5 2.1B) 가져오기 (Fine-Tuning 실시할)
-# Create Date : 2025.05.31
-# Last Update Date : 2025.06.04
-# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가
+# Create Date : 2025.06.27
+# Last Update Date : -
 
 # Arguments:
 # - kanana_llm_name (str) : 'kananai' for Kanana-1.5-2.1B instruct, 'kanana' for Kanana-1.5-2.1B base
@@ -117,9 +115,8 @@ def get_original_llm(kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
-# Create Date : 2025.05.31
-# Last Update Date : 2025.06.04
-# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가에 따른 kanana_llm_name 변수 추가
+# Create Date : 2025.06.27
+# Last Update Date : -
 
 # Arguments:
 # - output_col      (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
@@ -149,9 +146,8 @@ def get_training_args(output_col, kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
-# Create Date : 2025.05.31
-# Last Update Date : 2025.06.04
-# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가에 따른 instruct_version 변수 추가
+# Create Date : 2025.06.27
+# Last Update Date : -
 
 # Arguments:
 # - dataset          (Dataset)      : LLM 학습 데이터셋
@@ -180,7 +176,7 @@ def get_sft_trainer(dataset, collator, training_args, output_col, instruct_versi
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
-# Create Date : 2025.05.31
+# Create Date : 2025.06.27
 # Last Update Date : -
 
 # Arguments:
@@ -210,12 +206,11 @@ def get_lora_llm(llm, lora_rank):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
-# Create Date : 2025.05.31
+# Create Date : 2025.06.27
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame
-#                                   (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_{v2_2|v3}.csv)
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv)
 #                                   columns = ['data_type', 'input_data', ...]
 
 # Returns:
@@ -233,19 +228,17 @@ def generate_llm_trainable_dataset(dataset_df):
 
 
 # LLM (Kanana-1.5 2.1B) Fine-Tuning 실시
-# Create Date : 2025.05.31
-# Last Update Date : 2025.06.04
-# - Kanana-1.5-2.1B instruct LLM (kananai) 옵션 추가
+# Create Date : 2025.06.27
+# Last Update Date : -
 
 # Arguments:
 # - output_col       (str)  : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
-# - dataset_version  (str)  : 학습 데이터셋 버전 ('v2_2' or 'v3')
 # - instruct_version (bool) : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
 
 # Returns:
 # - llm/models/kanana_{output_col}_fine_tuned 또는 llm/models/kananai_{output_col}_fine_tuned 에 Fine-Tuning 된 모델 저장
 
-def fine_tune_model(output_col, dataset_version, instruct_version):
+def fine_tune_model(output_col, instruct_version):
     global lora_llm, tokenizer, valid_final_prompts
     valid_final_prompts = load_valid_final_prompts(output_col=output_col)
     kanana_llm_name = 'kananai' if instruct_version else 'kanana'
@@ -262,7 +255,7 @@ def fine_tune_model(output_col, dataset_version, instruct_version):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_{dataset_version}.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
