@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
     llm_names_list = llm_names.split(',')
 
-    for llm_name, in llm_names_list:
+    for llm_name in llm_names_list:
         assert llm_name in ['kanana', 'kananai'], "LLM name must be 'kanana', 'kananai'."
 
         print(f'\n=== 🚀 Fine-Tune LLM {llm_name} START 🚀 ===')

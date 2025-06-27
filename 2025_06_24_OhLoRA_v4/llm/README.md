@@ -7,6 +7,6 @@
 
 지정된 경로에 해당 LLM 이 이미 존재하는 경우, Fine-Tuning 대신 **inference test 실행됨**
 
-| LLM                         | Fine-Tuning 코드 실행 방법                                            |
-|-----------------------------|-----------------------------------------------------------------|
-| 답변 메시지 ```output_message``` | ```python llm/run_fine_tuning.py -output_cols output_message``` |
+| LLM                         | Fine-Tuning 코드 실행 방법                |
+|-----------------------------|-------------------------------------|
+| 답변 메시지 ```output_message``` | ```python llm/run_fine_tuning.py``` |

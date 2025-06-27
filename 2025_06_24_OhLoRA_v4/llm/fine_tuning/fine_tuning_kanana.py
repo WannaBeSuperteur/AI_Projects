@@ -208,8 +208,8 @@ def generate_llm_trainable_dataset(dataset_df):
     global tokenizer
 
     dataset = DatasetDict()
-    dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'train'][['text']])
-    dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'valid'][['text']])
+    dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'].str.startswith('train')][['text']])
+    dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'].str.startswith('valid')][['text']])
     preview_dataset(dataset, tokenizer)
 
     return dataset

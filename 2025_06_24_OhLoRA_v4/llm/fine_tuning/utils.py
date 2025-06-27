@@ -73,7 +73,7 @@ def load_valid_final_prompts():
     dataset_csv_path = 'llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv'
     dataset_csv_path = f'{PROJECT_DIR_PATH}/{dataset_csv_path}'
     dataset_df = pd.read_csv(dataset_csv_path)
-    dataset_df_valid = dataset_df[dataset_df['data_type'] == 'valid']
+    dataset_df_valid = dataset_df[dataset_df['data_type'].str.startswith('valid')]
 
     valid_final_prompts = dataset_df_valid['input_data'].tolist()
     return valid_final_prompts
