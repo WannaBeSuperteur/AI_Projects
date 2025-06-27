@@ -64,22 +64,16 @@ def add_inference_log(inference_result, inference_log_dict):
 # Last Update Date : -
 
 # Arguments:
-# - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
+# - 없음
 
 # Returns:
 # - valid_final_prompts (list(str)) : Valid Dataset 로부터 가져온 final LLM input prompt 의 리스트
 
-def load_valid_final_prompts(output_col):
+def load_valid_final_prompts():
     dataset_csv_path = 'llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv'
     dataset_csv_path = f'{PROJECT_DIR_PATH}/{dataset_csv_path}'
     dataset_df = pd.read_csv(dataset_csv_path)
     dataset_df_valid = dataset_df[dataset_df['data_type'] == 'valid']
 
-    if output_col == 'summary':
-        valid_final_prompts = (dataset_df_valid['input_data'] + ' (오로라 답변) ' + dataset_df_valid['output_message']).tolist()
-    elif output_col == 'eyes_mouth_pose':
-        valid_final_prompts = dataset_df_valid['output_message'].tolist()
-    else:
-        valid_final_prompts = dataset_df_valid['input_data'].tolist()
-
+    valid_final_prompts = dataset_df_valid['input_data'].tolist()
     return valid_final_prompts

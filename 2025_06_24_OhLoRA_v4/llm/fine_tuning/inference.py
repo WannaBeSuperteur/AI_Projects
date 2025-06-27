@@ -35,7 +35,6 @@ class StopOnTokens(StoppingCriteria):
 # - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
 # - final_input_prompt (str)           : LLM 에 최종 입력되는 프롬프트 (경우에 따라 사용자 프롬프트 + alpha)
 # - tokenizer          (AutoTokenizer) : LLM 의 Tokenizer
-# - output_col         (str)           : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 # - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(답변 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
 # - stop_token_list    (list)          : stopping token ('(답변 종료)', '(요약 종료)' 등) 에 해당하는 token 의 list
 # - max_trials         (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
@@ -45,7 +44,7 @@ class StopOnTokens(StoppingCriteria):
 # - trial_count      (int) : LLM 이 empty answer 가 아닌 답변을 출력하기까지의 시도 횟수
 # - output_token_cnt (int) : LLM output 의 token 개수
 
-def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, output_col, answer_start_mark,
+def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, answer_start_mark,
                          stop_token_list, max_trials=30):
 
     tokenizer.pad_token = tokenizer.eos_token
@@ -62,11 +61,7 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, output_c
     stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # '(답변 종료)', '(요약 종료)' 등
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
     answer_end_mark = get_answer_end_mark()
-
-    if output_col == 'summary':
-        max_length = 192
-    else:
-        max_length = 128
+    max_length = 128
 
     while trial_count < max_trials:
         outputs = fine_tuned_llm.generate(**inputs,
@@ -84,7 +79,7 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, output_c
         is_bracketed = llm_answer.startswith('[') and llm_answer.endswith(']')
         is_non_empty = (not is_bracketed) and llm_answer.replace('\n', '').replace(answer_end_mark, '').replace(' ', '') != ''
 
-        if (is_non_empty or output_col == 'memory') and 'http' not in llm_answer:
+        if is_non_empty and 'http' not in llm_answer:
             break
 
     # remove new-lines

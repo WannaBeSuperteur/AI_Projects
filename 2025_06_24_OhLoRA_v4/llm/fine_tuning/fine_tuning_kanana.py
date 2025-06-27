@@ -38,22 +38,14 @@ log_dir_path = f'{PROJECT_DIR_PATH}/llm/fine_tuning/logs'
 os.makedirs(log_dir_path, exist_ok=True)
 
 
-def get_stop_token_list(output_col):
-    if output_col == 'output_message':
-        return [109659, 104449, 99458, 64356, 8, 220]  # (답변 종료)
-    elif output_col == 'summary':
-        return [36811, 103168, 99458, 64356, 8, 220]  # (요약 종료)
-    elif output_col == 'memory':
-        return [36811, 103168, 99458, 64356, 8, 220]  # (요약 종료)
-    else:  # eyes_mouth_pose
-        return [320, 102260, 30381, 62226, 99458, 64356, 8, 220]  # (표정 출력 종료)
+def get_stop_token_list():
+    return [109659, 104449, 99458, 64356, 8, 220]  # (답변 종료)
 
 
 class OhLoRACustomCallback(TrainerCallback):
 
-    def __init__(self, output_col, instruct_version):
+    def __init__(self, instruct_version):
         super(OhLoRACustomCallback, self).__init__()
-        self.output_col = output_col
         self.instruct_version = instruct_version
 
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
@@ -61,19 +53,18 @@ class OhLoRACustomCallback(TrainerCallback):
 
         kanana_llm_name = 'kananai' if self.instruct_version else 'kanana'
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_{self.output_col}_train_log.csv')
+        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_output_message_train_log.csv')
 
         print('=== INFERENCE TEST ===')
 
         for final_input_prompt in valid_final_prompts:
             start_at = time.time()
-            stop_token_list = get_stop_token_list(self.output_col)
+            stop_token_list = get_stop_token_list()
             answer_start_mark = get_answer_start_mark()
 
             llm_answer, trial_count, output_token_cnt = run_inference_kanana(lora_llm,
                                                                              final_input_prompt,
                                                                              tokenizer,
-                                                                             output_col=self.output_col,
                                                                              stop_token_list=stop_token_list,
                                                                              answer_start_mark=answer_start_mark)
             elapsed_time = time.time() - start_at
@@ -86,7 +77,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_{self.output_col}_inference_log_dict.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_output_message_inference_log_dict.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
@@ -119,16 +110,14 @@ def get_original_llm(kanana_llm_name):
 # Last Update Date : -
 
 # Arguments:
-# - output_col      (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 # - kanana_llm_name (str) : 'kananai' for Kanana-1.5-2.1B instruct, 'kanana' for Kanana-1.5-2.1B base
 
 # Returns:
 # - training_args (SFTConfig) : Training Arguments
 
-def get_training_args(output_col, kanana_llm_name):
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_{output_col}_fine_tuned'
-    num_train_epochs_dict = {'output_message': 5, 'memory': 20, 'summary': 10, 'eyes_mouth_pose': 30}
-    num_train_epochs = num_train_epochs_dict[output_col]
+def get_training_args(kanana_llm_name):
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_output_message_fine_tuned'
+    num_train_epochs = 5
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
@@ -153,13 +142,12 @@ def get_training_args(output_col, kanana_llm_name):
 # - dataset          (Dataset)      : LLM 학습 데이터셋
 # - collator         (DataCollator) : Data Collator
 # - training_args    (SFTConfig)    : Training Arguments
-# - output_col       (str)          : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 # - instruct_version (bool)         : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
 
 # Returns:
 # - trainer (SFTTrainer) : SFT (Supervised Fine-Tuning) Trainer
 
-def get_sft_trainer(dataset, collator, training_args, output_col, instruct_version):
+def get_sft_trainer(dataset, collator, training_args, instruct_version):
     global lora_llm, tokenizer
 
     trainer = SFTTrainer(
@@ -169,7 +157,7 @@ def get_sft_trainer(dataset, collator, training_args, output_col, instruct_versi
         processing_class=tokenizer,     # LLM tokenizer / renamed : tokenizer -> processing_class from trl 0.12.0
         args=training_args,
         data_collator=collator,
-        callbacks=[OhLoRACustomCallback(output_col, instruct_version)]
+        callbacks=[OhLoRACustomCallback(instruct_version)]
     )
 
     return trainer
@@ -232,15 +220,14 @@ def generate_llm_trainable_dataset(dataset_df):
 # Last Update Date : -
 
 # Arguments:
-# - output_col       (str)  : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 # - instruct_version (bool) : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
 
 # Returns:
-# - llm/models/kanana_{output_col}_fine_tuned 또는 llm/models/kananai_{output_col}_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - llm/models/{kanana|kananai}_output_message_fine_tuned 에 Fine-Tuning 된 모델 저장
 
-def fine_tune_model(output_col, instruct_version):
+def fine_tune_model(instruct_version):
     global lora_llm, tokenizer, valid_final_prompts
-    valid_final_prompts = load_valid_final_prompts(output_col=output_col)
+    valid_final_prompts = load_valid_final_prompts()
     kanana_llm_name = 'kananai' if instruct_version else 'kanana'
 
     print('Oh-LoRA LLM Fine Tuning start.')
@@ -261,42 +248,21 @@ def fine_tune_model(output_col, instruct_version):
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=16)
 
-    if output_col == 'output_message':
-        dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x[output_col]} (답변 종료) <|end_of_text|>",
-            axis=1)
-
-    elif output_col == 'summary':
-        dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data'] + ' (오로라 답변) ' + x['output_message']} (요약 시작) ### 답변: {x[output_col]} (요약 종료) <|end_of_text|>",
-            axis=1)
-
-    elif output_col == 'memory':
-        dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data']} (요약 시작) ### 답변: {'' if str(x[output_col]) == 'nan' else x[output_col]} (요약 종료) <|end_of_text|>",
-            axis=1)
-
-    else:  # eyes_mouth_pose
-        dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['output_message']} (표정 출력 시작) ### 답변: {x[output_col]} (표정 출력 종료) <|end_of_text|>",
-            axis=1)
-
+    dataset_df['text'] = dataset_df.apply(
+        lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_message']} (답변 종료) <|end_of_text|>",
+        axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
 
     response_template = [8, 17010, 111964, 25]  # '### 답변 :'
 
-    if output_col == 'output_message':
-        collator = AugmentCollator(response_template, llm_name=kanana_llm_name, tokenizer=tokenizer)
-    else:
-        collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
-
-    training_args = get_training_args(output_col, kanana_llm_name)
-    trainer = get_sft_trainer(dataset, collator, training_args, output_col, instruct_version)
+    collator = AugmentCollator(response_template, llm_name=kanana_llm_name, tokenizer=tokenizer)
+    training_args = get_training_args(kanana_llm_name)
+    trainer = get_sft_trainer(dataset, collator, training_args, instruct_version)
 
     # run Fine-Tuning
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_{output_col}_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_output_message_fine_tuned'
     trainer.save_model(output_dir_path)

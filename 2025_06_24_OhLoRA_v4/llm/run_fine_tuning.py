@@ -23,23 +23,22 @@ ANSWER_CNT = 4
 
 # Arguments:
 # - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai')
-# - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
 # Returns:
 # - fine_tuned_llm (LLM) : Fine-Tuning 된 LLM
 
-def load_fine_tuned_llm(llm_name, output_col):
+def load_fine_tuned_llm(llm_name):
     fine_tuned_llm = None
 
     if llm_name == 'kanana':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/llm/models/kanana_{output_col}_fine_tuned',
+            f'{PROJECT_DIR_PATH}/llm/models/kanana_output_message_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
     elif llm_name == 'kananai':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/llm/models/kananai_{output_col}_fine_tuned',
+            f'{PROJECT_DIR_PATH}/llm/models/kananai_output_message_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
@@ -52,40 +51,39 @@ def load_fine_tuned_llm(llm_name, output_col):
 
 # Arguments:
 # - llm_name   (str) : Inference 또는 Fine-Tuning 할 LLM 의 이름 ('kanana', 'kananai')
-# - output_col (str) : 학습 데이터 csv 파일의 LLM output 에 해당하는 column name
 
-def inference_or_fine_tune_llm(llm_name, output_col):
+def inference_or_fine_tune_llm(llm_name):
 
     # load valid dataset
-    valid_final_input_prompts = load_valid_final_prompts(output_col=output_col)
+    valid_final_input_prompts = load_valid_final_prompts()
 
     for final_input_prompt in valid_final_input_prompts:
         print(f'final input prompt for validation : {final_input_prompt}')
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
-        fine_tuned_llm = load_fine_tuned_llm(llm_name, output_col)
-        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{output_col}_fine_tuned')
+        fine_tuned_llm = load_fine_tuned_llm(llm_name)
+        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_output_message_fine_tuned')
         print(f'Fine-Tuned LLM ({llm_name}) - Load SUCCESSFUL! 👱‍♀️')
 
     except Exception as e:
         print(f'Fine-Tuned LLM ({llm_name}) load failed : {e}')
 
         if llm_name == 'kanana':
-            fine_tune_kanana(output_col=output_col, instruct_version=False)
+            fine_tune_kanana(instruct_version=False)
 
         elif llm_name == 'kananai':
-            fine_tune_kanana(output_col=output_col, instruct_version=True)
+            fine_tune_kanana(instruct_version=True)
 
-        fine_tuned_llm = load_fine_tuned_llm(llm_name, output_col)
-        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_{output_col}_fine_tuned')
+        fine_tuned_llm = load_fine_tuned_llm(llm_name)
+        tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{llm_name}_output_message_fine_tuned')
 
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
     inference_temperature = get_temperature()
     llm_log_path = f'{PROJECT_DIR_PATH}/llm/fine_tuning/logs'
-    inference_log_path = f'{llm_log_path}/{llm_name}_{output_col}_inference_log_{inference_temperature}.txt'
+    inference_log_path = f'{llm_log_path}/{llm_name}_output_message_inference_log_{inference_temperature}.txt'
     inference_log = ''
 
     # run inference using Fine-Tuned LLM
@@ -106,11 +104,10 @@ def inference_or_fine_tune_llm(llm_name, output_col):
             inference_start_at = time.time()
 
             if llm_name == 'kanana' or llm_name == 'kananai':
-                stop_token_list = get_stop_token_list_kanana(output_col)
+                stop_token_list = get_stop_token_list_kanana()
                 llm_answer, trial_count, output_token_cnt = run_inference_kanana(fine_tuned_llm,
                                                                                  final_input_prompt,
                                                                                  tokenizer,
-                                                                                 output_col,
                                                                                  stop_token_list=stop_token_list,
                                                                                  answer_start_mark=answer_start_mark)
 
@@ -145,15 +142,8 @@ if __name__ == '__main__':
     parser.add_argument('-llm_names',
                         help="name of LLMs (separated by comma)",
                         default='kanana')
-
-    parser.add_argument('-output_cols',
-                        help="output column names (separated by comma) from dataset csv",
-                        default='output_message')
-
     args = parser.parse_args()
-
     llm_names = args.llm_names
-    output_cols = args.output_cols
 
     # CUDA OOM test
     # Kanana-1.5 2.1B  : (separated = True  -> Result : max  (9155, 8461) MiB / 12288 MiB)
@@ -161,10 +151,9 @@ if __name__ == '__main__':
 #    test_cuda_oom_kanana(is_separate=True, version='original')
 
     llm_names_list = llm_names.split(',')
-    output_cols_list = output_cols.split(',')
 
-    for llm_name, output_col in zip(llm_names_list, output_cols_list):
+    for llm_name, in llm_names_list:
         assert llm_name in ['kanana', 'kananai'], "LLM name must be 'kanana', 'kananai'."
 
-        print(f'\n=== 🚀 Fine-Tune LLM {llm_name} with column {output_col} START 🚀 ===')
-        inference_or_fine_tune_llm(llm_name, output_col)
+        print(f'\n=== 🚀 Fine-Tune LLM {llm_name} START 🚀 ===')
+        inference_or_fine_tune_llm(llm_name)
