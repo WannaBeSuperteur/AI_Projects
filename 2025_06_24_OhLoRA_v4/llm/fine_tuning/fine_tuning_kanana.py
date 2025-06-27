@@ -97,11 +97,14 @@ class OhLoRACustomCallback(TrainerCallback):
 # - original_llm (LLM) : Original Kanana-1.5 2.1B LLM
 
 def get_original_llm(kanana_llm_name):
+    original_llm_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_original'
+
     original_llm = AutoModelForCausalLM.from_pretrained(
-        f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_original',
+        pretrained_model_name_or_path=original_llm_path,
         trust_remote_code=True,
         torch_dtype=torch.bfloat16).cuda()
 
+    print(f'Original LLM load successful : {original_llm_path}')
     return original_llm
 
 
