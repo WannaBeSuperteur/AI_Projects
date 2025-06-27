@@ -120,7 +120,7 @@ def get_original_llm(kanana_llm_name):
 
 def get_training_args(kanana_llm_name):
     output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_output_message_fine_tuned'
-    num_train_epochs = 10
+    num_train_epochs = 5
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
