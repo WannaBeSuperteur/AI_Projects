@@ -141,7 +141,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-llm_names',
                         help="name of LLMs (separated by comma)",
-                        default='kanana')
+                        default='kananai')
     args = parser.parse_args()
     llm_names = args.llm_names
 
