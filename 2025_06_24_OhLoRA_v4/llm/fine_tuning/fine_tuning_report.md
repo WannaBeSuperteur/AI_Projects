@@ -8,11 +8,13 @@
   * LoRA Rank : **16**
   * LoRA alpha : **16**
   * LoRA dropout : **0.05**
-  * total training epochs : **5 epochs**
+  * total training epochs : **5 epochs (✅ 최종 채택) / 10 epochs**
 * 학습 데이터셋
   * [OhLoRA_fine_tuning_v4.csv](../fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv)
   * train rows : **632**
   * validation rows : **120**
+* 답변 생성 기본 설정
+  * temperature : **0.6** 
 
 ## 2. LLM Fine-Tuning 결과 요약
 
