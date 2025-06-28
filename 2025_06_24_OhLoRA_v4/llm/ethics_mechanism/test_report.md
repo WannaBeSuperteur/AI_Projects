@@ -5,6 +5,7 @@
   * [1-2. Confusion Matrix 및 오답 분석](#1-2-confusion-matrix-및-오답-분석)
 * [2. 각 불량 언어 Category 별 테스트 결과 & 실제 사용자 프로그램에 적용할 threshold](#2-각-불량-언어-category-별-테스트-결과--실제-사용자-프로그램에-적용할-threshold)
 * [3. Detailed Test Result](#3-detailed-test-result)
+* [4. 학습 데이터 버전 별 '혐오/기타' 카테고리 예측 정확도 비교](#4-학습-데이터-버전-별-혐오기타-카테고리-예측-정확도-비교)
 
 ## 1. 정량적 성능 평가
 
@@ -102,3 +103,12 @@
 * [Confusion Matrix (test_3_confusion_matrix.csv)](test_results/test_3_confusion_matrix.csv)
 * [Test Result (test_3_result.csv)](test_results/test_3_result.csv)
 * [Prediction Table of Test Result (test_3_result_prediction_table.csv)](test_results/test_3_result_prediction_table.csv)
+
+## 4. 학습 데이터 버전 별 '혐오/기타' 카테고리 예측 정확도 비교
+
+* 성능지표 산출 대상 카테고리 : **혐오/기타** vs. **일반**
+
+| 학습 & 테스트 데이터 버전                                                                                                                                                                | True Positive | True Negative | False Positive | False Negative | Accuracy   | Precision | Recall     | 상세 로그                                                                                                                              |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|---------------|----------------|----------------|------------|-----------|------------|------------------------------------------------------------------------------------------------------------------------------------|
+| [1차 데이터셋](https://github.com/WannaBeSuperteur/AI_Projects/blob/9eb4b7016063b00e52160d35f8394bf2ed39be6c/2025_06_24_OhLoRA_v4/llm/ethics_mechanism/train_test_dataset.csv)      | 23            | 73            | 6              | 2              | 0.9231     | 0.7931    | 0.92       | [Confusion Matrix](test_results/test_1_confusion_matrix.csv) / [Prediction Table](test_results/test_1_result_prediction_table.csv) |
+| [최종 (현재) 데이터셋](https://github.com/WannaBeSuperteur/AI_Projects/blob/3c6ebfd5a44754b769db7ecd83582441c8194bad/2025_06_24_OhLoRA_v4/llm/ethics_mechanism/train_test_dataset.csv) | 28            | 84            | 0              | 2              | **0.9825** | **1.0**   | **0.9333** | [Confusion Matrix](test_results/test_3_confusion_matrix.csv) / [Prediction Table](test_results/test_3_result_prediction_table.csv) |
