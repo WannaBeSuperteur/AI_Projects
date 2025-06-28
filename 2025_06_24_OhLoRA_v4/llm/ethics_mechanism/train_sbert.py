@@ -66,6 +66,14 @@ def train_sbert(train_dataset_df):
     print(f'train         size : {n_train_size}')
     print(f'valid         size : {n_valid_size}')
 
+    # save readme file
+    os.makedirs(SBERT_MODEL_SAVE_PATH, exist_ok=True)
+    readme_path = f'{SBERT_MODEL_SAVE_PATH}/readme_ethics.txt'
+
+    with open(readme_path, 'w') as f:
+        f.write('Oh-LoRA v4 ETHICS model (S-BERT, roberta-based)')
+        f.close()
+
     # load pre-trained S-BERT model
     pretrained_sbert_model = load_pretrained_sbert_model()
 
