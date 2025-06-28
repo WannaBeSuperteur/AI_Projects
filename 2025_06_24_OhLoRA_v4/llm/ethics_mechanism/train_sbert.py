@@ -47,9 +47,8 @@ class EthicsSBERTDataset(Dataset):
 
 # Ethics Mechanism 을 위한 S-BERT (Sentence BERT) 모델 학습
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.06.02
-# Last Update Date : 2025.06.02
-# - Train, Valid 데이터셋 크기 출력 추가
+# Create Date : 2025.06.28
+# Last Update Date : -
 
 # Arguments:
 # - train_dataset_df (Pandas DataFrame) : S-BERT 학습을 위한 학습 데이터셋

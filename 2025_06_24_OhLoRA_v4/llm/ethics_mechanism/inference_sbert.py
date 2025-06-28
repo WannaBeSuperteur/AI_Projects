@@ -4,14 +4,13 @@ import pandas as pd
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
-categories = ['사랑 고백/만남', '일반', '정치', '패드립']
+categories = ['사랑 고백/만남', '일반', '정치', '패드립', '혐오/기타']
 n_categories = len(categories)
 
 
 # Ethics Mechanism 을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "데이터셋 전체에 대한" inference 실시
-# Create Date : 2025.06.02
-# Last Update Date : 2025.06.02
-# - Confusion Matrix, Prediction Table 등 테스트 결과 관련 부가 정보 추가
+# Create Date : 2025.06.28
+# Last Update Date : -
 
 # Arguments:
 # - sbert_model     (S-BERT Model)     : 학습된 Sentence BERT 모델
@@ -71,7 +70,7 @@ def run_inference(sbert_model, test_dataset_df):
 
 
 # Test Result 를 각 Category 별 예측값 표 형식으로 수정
-# Create Date : 2025.06.02
+# Create Date : 2025.06.28
 # Last Update Date : -
 
 # Arguments:
@@ -106,7 +105,7 @@ def convert_to_prediction_table(test_result_dict):
 
 
 # Confusion Matrix 도출
-# Create Date : 2025.06.02
+# Create Date : 2025.06.28
 # Last Update Date : -
 
 # Arguments:
@@ -179,7 +178,7 @@ def compute_confusion_matrix(test_result_dict):
 
 
 # Ethics Mechanism 을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "각 example 에 대한" inference 실시
-# Create Date : 2025.06.02
+# Create Date : 2025.06.28
 # Last Update Date : -
 
 # Arguments:
