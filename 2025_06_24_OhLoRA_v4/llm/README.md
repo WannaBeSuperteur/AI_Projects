@@ -10,3 +10,8 @@
 | LLM                         | Fine-Tuning 코드 실행 방법                |
 |-----------------------------|-------------------------------------|
 | 답변 메시지 ```output_message``` | ```python llm/run_fine_tuning.py``` |
+
+### Ethics Mechanism
+
+* **Ethics Mechanism (S-BERT)** 모델 실행 (해당 모델 없을 시, Training 먼저 실행)
+  * ```python llm/run_ethics_mechanism.py```
