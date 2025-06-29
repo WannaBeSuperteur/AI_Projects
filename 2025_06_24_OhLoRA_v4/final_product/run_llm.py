@@ -2,13 +2,44 @@ import torch
 from transformers import StoppingCriteriaList
 
 from llm.fine_tuning.inference import StopOnTokens
-from llm.fine_tuning.fine_tuning_kanana import get_stop_token_list as get_kanana_stop_token_list
-from llm.fine_tuning.fine_tuning_polyglot import get_stop_token_list as get_polyglot_stop_token_list
 
 from datetime import datetime
 import os
 import random
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+
+
+# LLM 별 Stop Token List 반환
+# Create Date : 2025.06.29
+# Last Update Date : -
+
+# Arguments :
+# - llm_name   (str) : LLM 이름 ('kanana', 'kananai', 'polyglot' 중 하나)
+# - output_col (str) : LLM 출력에 해당하는 column 이름 ('output_message', 'summary', 'memory', 'eyes_mouth_pose' 중 하나)
+
+def get_stop_token_list(llm_name, output_col):
+    assert llm_name in ['kanana', 'kananai', 'polyglot']
+    assert output_col in ['output_message', 'summary', 'memory', 'eyes_mouth_pose']
+
+    if llm_name in ['kanana', 'kananai']:
+        if output_col == 'output_message':
+            return [109659, 104449, 99458, 64356, 8, 220]  # (답변 종료)
+        elif output_col == 'summary':
+            return [36811, 103168, 99458, 64356, 8, 220]  # (요약 종료)
+        elif output_col == 'memory':
+            return [36811, 103168, 99458, 64356, 8, 220]  # (요약 종료)
+        else:  # eyes_mouth_pose
+            return [320, 102260, 30381, 62226, 99458, 64356, 8, 220]  # (표정 출력 종료)
+
+    else:  # polyglot
+        if output_col == 'output_message':
+            return [1477, 1078, 4833, 12]  # (답변 종료)
+        elif output_col == 'summary':
+            return [445, 779, 4833, 12]  # (요약 종료)
+        elif output_col == 'memory':
+            return [445, 779, 4833, 12]  # (요약 종료)
+        else:  # eyes_mouth_pose
+            return [1585, 22520, 12571, 4833, 12]  # (표정 출력 종료)
 
 
 # Oh-LoRA (오로라) 답변 생성 시 요일 정보 환각 현상 여부 확인
@@ -98,7 +129,8 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
               'attention_mask': inputs['attention_mask'].to(ohlora_llm.device)}
 
     # for stopping criteria
-    stop_token_ids = torch.tensor(get_kanana_stop_token_list('output_message')).to(ohlora_llm.device)  # '(답변 종료)'
+    stop_token_ids = torch.tensor(get_stop_token_list(llm_name='kananai',
+                                                      output_col='output_message')).to(ohlora_llm.device)  # '(답변 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:
@@ -173,7 +205,8 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
               'attention_mask': inputs['attention_mask'].to(memory_llm.device)}
 
     # for stopping criteria
-    stop_token_ids = torch.tensor(get_polyglot_stop_token_list('memory')).to(memory_llm.device)  # '(요약 종료)'
+    stop_token_ids = torch.tensor(get_stop_token_list(llm_name='polyglot',
+                                                      output_col='memory')).to(memory_llm.device)  # '(요약 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:
@@ -294,7 +327,8 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
               'attention_mask': inputs['attention_mask'].to(summary_llm.device)}
 
     # for stopping criteria
-    stop_token_ids = torch.tensor(get_kanana_stop_token_list('summary')).to(summary_llm.device)  # '(요약 종료)'
+    stop_token_ids = torch.tensor(get_stop_token_list(llm_name='kanana',
+                                                      output_col='summary')).to(summary_llm.device)  # '(요약 종료)'
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
     while trial_count < max_trials:
@@ -353,7 +387,8 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
               'attention_mask': inputs['attention_mask'].to(eyes_mouth_pose_llm.device)}
 
     # for stopping criteria
-    eyes_mouth_pose_stop_tokens = get_polyglot_stop_token_list('eyes_mouth_pose')  # '(표정 출력 종료)'
+    eyes_mouth_pose_stop_tokens = get_stop_token_list(llm_name='polyglot',
+                                                      output_col='eyes_mouth_pose')  # '(표정 출력 종료)'
     stop_token_ids = torch.tensor(eyes_mouth_pose_stop_tokens).to(eyes_mouth_pose_llm.device)
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
 
