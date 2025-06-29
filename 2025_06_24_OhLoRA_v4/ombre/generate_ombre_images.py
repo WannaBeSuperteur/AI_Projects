@@ -27,7 +27,10 @@ from stylegan.common import (load_existing_stylegan_vectorfind_v7,
                              load_existing_stylegan_vectorfind_v8,
                              load_merged_property_score_cnn)
 
-from hue_added_colors import get_hue_added_colors_list
+try:
+    from hue_added_colors import get_hue_added_colors_list
+except:
+    from ombre.hue_added_colors import get_hue_added_colors_list
 
 
 IMAGE_RESOLUTION = 256
