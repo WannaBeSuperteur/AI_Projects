@@ -141,7 +141,7 @@ TBU
 | 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(Oh-LoRA 답변 생성 LLM만)** | 06.27 금 (1d)           | ```P007-005-train-LLM```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/34) | ✅  |
 | 📝 데이터셋 작성 | S-BERT (부적절한 언어 여부 파악) 학습 데이터 증량                       | 06.27 금 - 06.28 토 (2d) | ```P007-006-BERT-ethics``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/35) | ✅  |
 | 🧪 모델 학습   | S-BERT (부적절한 언어 여부 파악) 학습 (roberta-base 기반)            | 06.28 토 (1d)           | ```P007-006-BERT-ethics``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/35) | ✅  |
-| 📃 문서화     | LLM 개발 내용 문서화                                          | 06.29 일 (1d)           |                            |                                                                    | ⬜  |
+| 📃 문서화     | LLM 개발 내용 문서화                                          | 06.29 일 (1d)           |                            |                                                                    | 💨 |
 
 ## 4. 프로젝트 상세 설명
 
