@@ -4,7 +4,7 @@ import cv2
 
 
 # Oh-LoRA (오로라) 이미지 생성 및 표시
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -29,4 +29,4 @@ def generate_and_show_ohlora_image(vectorfind_generator, ohlora_z_vector, eyes_v
                                               eyes_pm=eyes_score, mouth_pm=mouth_score, pose_pm=pose_score)
 
     cv2.imshow('Oh-LoRA', ohlora_image_to_display[:, :, ::-1])
-    _ = cv2.waitKey(10)
+    _ = cv2.waitKey(1)

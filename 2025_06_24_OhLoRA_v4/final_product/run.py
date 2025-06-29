@@ -78,7 +78,7 @@ paedrip_block_periods = {1: 7 * 24 * 60 * 60,
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator,
 #                  4 LLMs (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned),
 #                  S-BERT (RoBERTa-based) 2개 (for memory & ethics mechanism)
-# Create Date : 2025.06.04
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:
@@ -101,7 +101,7 @@ def load_models(vectorfind_version):
 
     output_types = ['output_message', 'memory', 'eyes_mouth_pose', 'summary']
     device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_1, 'summary': gpu_1}
-    llm_mapping = {'output_message': 'kanana', 'memory': 'polyglot', 'eyes_mouth_pose': 'polyglot', 'summary': 'kanana'}
+    llm_mapping = {'output_message': 'kananai', 'memory': 'polyglot', 'eyes_mouth_pose': 'polyglot', 'summary': 'kanana'}
 
     # load StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 generator model
     stylegan_model_dir = f'{PROJECT_DIR_PATH}/stylegan/models'
@@ -144,7 +144,7 @@ def load_models(vectorfind_version):
 
 
 # Oh-LoRA (오로라) 답변 직후 이미지 생성
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:
@@ -163,7 +163,7 @@ def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
 
 
 # Oh-LoRA (오로라) 실시간 이미지 생성 핸들링 (+ 장시간 waiting 시 강제 종료 처리)
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:
@@ -226,7 +226,7 @@ def realtime_ohlora_generate():
 
 
 # 사용자 프롬프트에 시간 관련 단어 포함 시, 현재 시간 정보 추가
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:
@@ -273,7 +273,7 @@ def add_time_info(user_prompt):
 
 
 # Oh-LoRA (오로라) 의 Ethics mechanism 을 이용한 사용자 제재 처리
-# Create Date : 2025.06.04
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:
@@ -383,7 +383,7 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
 
 
 # Oh-LoRA (오로라) 실행
-# Create Date : 2025.06.04
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:
@@ -484,13 +484,13 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:
 # - vectorfind_version (str)         : Oh-LoRA latent z vector & w vector 를 위한 StyleGAN-VectorFind 버전 ('v7' or 'v8')
 # - ohlora_no          (int or None) : 오로라 얼굴 생성용 latent z vector 의 번호 (index, case No.)
-#                                      참고1: 2025_05_02_OhLoRA_v3/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md
+#                                      참고1: 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md
 #                                      참고2: 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/final_OhLoRA_info.md
 
 # Returns:
@@ -535,7 +535,7 @@ def get_vectors(vectorfind_version, ohlora_no):
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 차단 여부 검사
-# Create Date : 2025.06.04
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments:

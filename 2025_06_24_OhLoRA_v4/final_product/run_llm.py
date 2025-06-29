@@ -12,7 +12,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
 # Oh-LoRA (오로라) 답변 생성 시 요일 정보 환각 현상 여부 확인
-# Create Date : 2025.06.04
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -74,7 +74,7 @@ def is_dow_hallucination(ohlora_answer):
 
 
 # Oh-LoRA (오로라) 의 답변 생성
-# Create Date : 2025.06.04
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -136,7 +136,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input):
 
 
 # Oh-LoRA (오로라) 의 답변을 clean 처리
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -150,7 +150,7 @@ def clean_llm_answer(ohlora_answer):
 
 
 # Oh-LoRA (오로라) 의 생성된 답변으로부터 memory 정보를 parsing
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -236,7 +236,7 @@ def parse_memory(memory_llm, memory_llm_tokenizer, final_ohlora_input):
 
 
 # Oh-LoRA (오로라) 의 메모리 정보를 llm/memory_mechanism/saved_memory/ohlora_memory.txt 에 저장
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -270,7 +270,7 @@ def save_memory_list(memory_list):
 
 
 # Oh-LoRA (오로라) 의 답변 요약
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -324,7 +324,7 @@ def summarize_llm_answer(summary_llm, summary_llm_tokenizer, final_ohlora_input,
 
 
 # Oh-LoRA (오로라) 의 답변에 따라 눈을 뜬 정도 (eyes), 입을 벌린 정도 (mouth), 고개 돌림 (pose) 텍스트 산출
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
@@ -404,7 +404,7 @@ def decide_property_score_texts(eyes_mouth_pose_llm, eyes_mouth_pose_llm_tokeniz
 
 
 # Oh-LoRA (오로라) 의 답변에 따라 눈을 뜬 정도 (eyes), 입을 벌린 정도 (mouth), 고개 돌림 (pose) 점수 산출
-# Create Date : 2025.06.03
+# Create Date : 2025.06.29
 # Last Update Date : -
 
 # Arguments :
