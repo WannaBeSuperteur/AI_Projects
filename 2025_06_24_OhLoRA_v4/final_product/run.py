@@ -54,10 +54,10 @@ mouth_vector_queue = []
 pose_vector_queue = []
 
 # 0 --> 1 --> 1 --> 0 cosine line values
-cosine_line_values_up = [math.cos((1.0 + (x / 30.0)) * math.pi) for x in range(30)]
-cosine_line_values_down = [math.cos((2.0 + (x / 30.0)) * math.pi) for x in range(30)]
+cosine_line_values_up = [math.cos((1.0 + (x / 50.0)) * math.pi) for x in range(50)]
+cosine_line_values_down = [math.cos((2.0 + (x / 50.0)) * math.pi) for x in range(50)]
 cosine_line_values = cosine_line_values_up + [1.0 for _ in range(10)] + cosine_line_values_down
-cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]
+cosine_line_values = [(x + 1.0) / 2.0 for x in cosine_line_values]  # -1.0 ~ +1.0 -> 0.0 ~ +1.0
 
 
 # block periods
@@ -195,29 +195,30 @@ def realtime_ohlora_generate():
         pose_score = pose_vector_queue.pop(-1) if len(pose_vector_queue) > 0 else pose_current_score
 
         # random very-small eyes, mouth, pose change
-        eyes_current_score = eyes_current_score + 0.07 * random.random() - 0.035
-        eyes_current_score = np.clip(eyes_current_score, EYES_BASE_SCORE - 0.25, EYES_BASE_SCORE + 0.25)
+        eyes_current_score = eyes_current_score + 0.04 * random.random() - 0.02
+        eyes_current_score = np.clip(eyes_current_score, EYES_BASE_SCORE - 0.15, EYES_BASE_SCORE + 0.15)
 
-        mouth_current_score = mouth_current_score + 0.05 * random.random() - 0.025
-        mouth_current_score = np.clip(mouth_current_score, MOUTH_BASE_SCORE - 0.15, MOUTH_BASE_SCORE + 0.15)
+        mouth_current_score = mouth_current_score + 0.03 * random.random() - 0.015
+        mouth_current_score = np.clip(mouth_current_score, MOUTH_BASE_SCORE - 0.1, MOUTH_BASE_SCORE + 0.1)
 
-        pose_current_score = pose_current_score + 0.09 * random.random() - 0.045
-        pose_current_score = np.clip(pose_current_score, POSE_BASE_SCORE - 0.4, POSE_BASE_SCORE + 0.4)
+        pose_current_score = pose_current_score + 0.05 * random.random() - 0.025
+        pose_current_score = np.clip(pose_current_score, POSE_BASE_SCORE - 0.2, POSE_BASE_SCORE + 0.2)
 
         # random eyes open/close change
-        if (time.time() - last_answer_generate >= 5.0 and
-                (last_eyes_close is None or time.time() - last_eyes_close >= 1.0)):
+        if (time.time() - last_answer_generate >= 15.0 and
+                (last_eyes_close is None or time.time() - last_eyes_close >= 2.0)):
 
             if random.random() < 0.025:
                 eyes_magnitude = 1.1 + random.random() * 0.4
                 r = random.random()
 
                 if r < 0.4:
-                    eyes_change_np = np.array([0.4, 0.6, 0.8, 0.8, 0.6, 0.4]) * eyes_magnitude
+                    eyes_change_list = [0.25, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.8, 0.7, 0.6, 0.5, 0.4, 0.25]
                 elif r < 0.7:
-                    eyes_change_np = np.array([0.4, 0.6, 0.8, 0.6, 0.4]) * eyes_magnitude
+                    eyes_change_list = [0.25, 0.4, 0.5, 0.6, 0.7, 0.75, 0.7, 0.6, 0.5, 0.4, 0.25]
                 else:
-                    eyes_change_np = np.array([0.4, 0.7, 0.7, 0.4]) * eyes_magnitude
+                    eyes_change_list = [0.25, 0.4, 0.6, 0.7, 0.7, 0.6, 0.4, 0.25]
+                eyes_change_np = np.array(eyes_change_list) * eyes_magnitude
 
                 eyes_change_list = list(eyes_change_np)
                 eyes_vector_queue += eyes_change_list
@@ -225,8 +226,8 @@ def realtime_ohlora_generate():
                 last_eyes_close = time.time()
 
         # handling long time waiting
-        if status == 'waiting' and time.time() - last_answer_generate >= 120.0:
-            if random.random() < 0.001:
+        if status == 'waiting' and time.time() - last_answer_generate >= 180.0:
+            if random.random() < 0.0007:
                 status = 'finished'
 
                 ohlora_waiting_time = time.time() - last_answer_generate
