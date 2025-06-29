@@ -32,6 +32,8 @@ import pandas as pd
 
 
 EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE = 0.2, 1.0, 0.0
+ombre_scene_no = 0
+OMBRE_PERIOD = 360
 
 
 ohlora_z_vector = None
@@ -183,6 +185,7 @@ def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
 
 def realtime_ohlora_generate():
     global stylegan_generator, hair_seg_model
+    global ombre_scene_no
 
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     global eyes_vector_queue, mouth_vector_queue, pose_vector_queue
@@ -190,6 +193,8 @@ def realtime_ohlora_generate():
     global status, last_eyes_close, last_pose_right, last_answer_generate
 
     while status == 'waiting' or status == 'generating':
+        ombre_scene_no = (ombre_scene_no + 1) % OMBRE_PERIOD
+
         eyes_score = eyes_vector_queue.pop(-1) if len(eyes_vector_queue) > 0 else eyes_current_score
         mouth_score = mouth_vector_queue.pop(-1) if len(mouth_vector_queue) > 0 else mouth_current_score
         pose_score = pose_vector_queue.pop(-1) if len(pose_vector_queue) > 0 else pose_current_score
@@ -236,10 +241,14 @@ def realtime_ohlora_generate():
                 raise Exception('finished_by_ohlora')
 
         # generate Oh-LoRA image
+        period_progress = ombre_scene_no / OMBRE_PERIOD
+
         generate_and_show_ohlora_image(stylegan_generator, hair_seg_model,
                                        ohlora_z_vector, eyes_vector, mouth_vector, pose_vector,
                                        eyes_score, mouth_score, pose_score,
-                                       color=0.0, ombre_height=0.6, ombre_grad_height=0.7)
+                                       color=period_progress,
+                                       ombre_height=(0.6 + 0.2 * math.cos(6 * math.pi * period_progress)),
+                                       ombre_grad_height=(0.5 + 0.2 * math.cos(8 * math.pi * period_progress)))
 
 
 # 사용자 프롬프트에 시간 관련 단어 포함 시, 현재 시간 정보 추가
