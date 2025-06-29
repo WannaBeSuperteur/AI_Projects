@@ -68,6 +68,7 @@ def generate_and_show_ohlora_image(vectorfind_generator, hair_seg_model,
                                          ombre_height=ombre_height,
                                          ombre_grad_height=ombre_grad_height,
                                          instruct='return')
+        ombre_image = ombre_image / 255.0
 
     cv2.imshow('Oh-LoRA', ombre_image[:, :, ::-1])
     _ = cv2.waitKey(1)

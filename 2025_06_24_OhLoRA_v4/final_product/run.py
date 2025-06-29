@@ -336,8 +336,6 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
         similarity_score = compute_cosine_similarity(user_prompt_embedding[0], category_embedding[0])
         similarity_scores[category] = similarity_score
 
-    print(similarity_scores)
-
     is_love = similarity_scores['사랑 고백/만남'] >= 0.98 and ('미안' in llm_answer_cleaned or '부담' in llm_answer_cleaned)
     is_normal = similarity_scores['일반'] >= 0.5
     is_politics = similarity_scores['정치'] >= 0.95 and ('미안' in llm_answer_cleaned or '부담' in llm_answer_cleaned)
