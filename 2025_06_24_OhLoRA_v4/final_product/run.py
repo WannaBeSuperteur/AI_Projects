@@ -74,6 +74,11 @@ paedrip_block_periods = {1: 7 * 24 * 60 * 60,
                          2: 30 * 24 * 60 * 60,
                          3: 1461 * 24 * 60 * 60}
 
+hate_block_periods = {1: 24 * 60 * 60,
+                      2: 7 * 24 * 60 * 60,
+                      3: 90 * 24 * 60 * 60,
+                      4: 1461 * 24 * 60 * 60}
+
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator,
 #                  4 LLMs (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned),
@@ -286,9 +291,9 @@ def add_time_info(user_prompt):
 # - block_period   (int) : 차단 기간 (초), 0초 차단은 경고
 
 def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned):
-    global love_block_periods, politics_block_periods, paedrip_block_periods
+    global love_block_periods, politics_block_periods, paedrip_block_periods, hate_block_periods
 
-    categories = ['사랑 고백/만남', '일반', '정치', '패드립']
+    categories = ['사랑 고백/만남', '일반', '정치', '패드립', '혐오/기타']
     block_log_path = f'{ALL_PROJECTS_DIR_PATH}/ohlora_block_log.csv'
 
     def compute_cosine_similarity(vector0, vector1):
@@ -320,18 +325,22 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
         similarity_score = compute_cosine_similarity(user_prompt_embedding[0], category_embedding[0])
         similarity_scores[category] = similarity_score
 
+    print(similarity_scores)
+
     is_love = similarity_scores['사랑 고백/만남'] >= 0.98 and ('미안' in llm_answer_cleaned or '부담' in llm_answer_cleaned)
     is_normal = similarity_scores['일반'] >= 0.5
     is_politics = similarity_scores['정치'] >= 0.95 and ('미안' in llm_answer_cleaned or '부담' in llm_answer_cleaned)
     is_paedrip = similarity_scores['패드립'] >= 0.9
+    is_hate = similarity_scores['혐오/기타'] >= 0.9
 
     is_block_for_love = is_love and not is_normal
     is_block_for_politics = is_politics and not is_normal
     is_block_for_paedrip = is_paedrip and not is_normal
+    is_block_for_hate = is_hate and not is_normal
 
     # load user warning & block log -> decide block period
     block_log = pd.read_csv(block_log_path)
-    love_block_period, politics_block_period, paedrip_block_period = 0, 0, 0
+    love_block_period, politics_block_period, paedrip_block_period, hate_block_period = 0, 0, 0, 0
     block_reasons = []
 
     if is_block_for_love:
@@ -355,7 +364,14 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
         paedrip_block_period = paedrip_block_periods.get(new_paedrip_block_level, 1461 * 24 * 60 * 60)
         block_reasons.append('패드립')
 
-    block_period = love_block_period + politics_block_period + paedrip_block_period
+    if is_block_for_hate:
+        hate_block_log = block_log[block_log['block_reason'] == 'hate']['block_level']
+        max_hate_block_level = hate_block_log.max() if len(hate_block_log) >= 1 else 0
+        new_hate_block_level = max_hate_block_level + 1
+        hate_block_period = hate_block_periods.get(new_hate_block_level, 1461 * 24 * 60 * 60)
+        block_reasons.append('혐오/기타')
+
+    block_period = love_block_period + politics_block_period + paedrip_block_period + hate_block_period
     if block_period > 1461 * 24 * 60 * 60:
         block_period = 1461 * 24 * 60 * 60
 
@@ -369,8 +385,11 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
     if is_block_for_paedrip:
         log_block(block_log, block_period, 'paedrip', new_paedrip_block_level)
 
+    if is_block_for_hate:
+        log_block(block_log, block_period, 'hate', new_hate_block_level)
+
     # final resturn
-    if not (is_block_for_love or is_block_for_politics or is_block_for_paedrip):
+    if not (is_block_for_love or is_block_for_politics or is_block_for_paedrip or is_block_for_hate):
         system_message = ''
     elif block_period == 0:
         system_message = (f"🚨 {','.join(block_reasons)} 발언으로 Oh-LoRA 👱‍♀️ (오로라) 에게 경고를 받았습니다. 🚨\n"
@@ -551,7 +570,10 @@ def get_vectors(vectorfind_version, ohlora_no):
 def is_blocked_by_ohlora():
     block_log_path = f'{ALL_PROJECTS_DIR_PATH}/ohlora_block_log.csv'
     block_log = pd.read_csv(block_log_path)
-    block_reason_mapping = {'love': '오로라 👱‍♀️ 에게 사랑 고백/만남 요구', 'politics': '정치 발언', 'paedrip': '패드립'}
+    block_reason_mapping = {'love': '오로라 👱‍♀️ 에게 사랑 고백/만남 요구',
+                            'politics': '정치 발언',
+                            'paedrip': '패드립',
+                            'hate': '혐오 발언 / 기타 (부적절한 요청 등)'}
 
     for idx, row in block_log.iterrows():
         block_start = int(row['blocked_at'])

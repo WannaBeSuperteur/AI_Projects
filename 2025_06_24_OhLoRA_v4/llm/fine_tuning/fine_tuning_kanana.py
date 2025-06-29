@@ -4,7 +4,6 @@ import time
 import peft
 from peft import LoraConfig
 from trl import SFTTrainer, SFTConfig
-from trl import DataCollatorForCompletionOnlyLM
 from datasets import DatasetDict, Dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, TrainingArguments, TrainerState, \
                          TrainerControl
