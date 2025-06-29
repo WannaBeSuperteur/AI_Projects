@@ -51,6 +51,8 @@
 | 메모리 (사용자에 대해 기억 필요한 내용) ```memory``` | Polyglot-Ko 1.3B | 64        | 20     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
 | 표정 및 고개 돌림 제어 ```eyes_mouth_pose```  | Polyglot-Ko 1.3B | 64        | 30     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
 
+* 보고서
+  * [LLM Fine-Tuning 결과 보고서](fine_tuning/fine_tuning_report.md)
 * 참고
   * [오로라 v1 ('25.04.08 - 04.25) 에서의 LLM Fine-Tuning 방법](../../2025_04_08_OhLoRA/llm/README.md#2-how-to-run-fine-tuning) 
   * [오로라 v2 ('25.05.02 - 05.21) 에서의 LLM Fine-Tuning 방법](../../2025_05_02_OhLoRA_v2/llm/README.md#3-ohlora-v2-llm-fine-tuning) 
