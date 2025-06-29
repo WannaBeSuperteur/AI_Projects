@@ -24,8 +24,8 @@ from stylegan.run_stylegan_vectorfind_v8 import (load_ohlora_z_vectors,
                                                  load_ohlora_w_group_names,
                                                  get_property_change_vectors)
 
-from llm.memory_mechanism.load_sbert_model import load_pretrained_sbert_model
-from llm.run_memory_mechanism import pick_best_memory_item
+from llm.common import load_pretrained_sbert_model
+from llm.memory_mechanism import pick_best_memory_item
 
 import pandas as pd
 
