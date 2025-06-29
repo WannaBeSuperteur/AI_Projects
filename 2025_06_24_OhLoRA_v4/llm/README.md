@@ -32,7 +32,7 @@
 ## 2. OhLoRA-v4 LLM Fine-Tuning
 
 * 학습 모델
-  * **Kanana-1.5 2.1B (by Kakao, 2.09 B params) (✅ for ```output_message```)** [(HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base)
+  * **Kanana-1.5-2.1B-instruct-2505 (by Kakao, 2.32 B params) (✅ for ```output_message```)** [(HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505)
 * 학습 방법 
   * [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)
   * [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md), LoRA Rank = **16**
@@ -46,10 +46,10 @@
 
 | 모델 (task)                            | 학습에 사용한 LLM      | LoRA rank | epochs | 비고                                                                                           |
 |--------------------------------------|------------------|-----------|--------|----------------------------------------------------------------------------------------------|
-| 답변 메시지 ```output_message```          | Kanana-1.5 2.1B  | 16        | 5      | LLM 이 어느 정도 학습되면서도 환각 현상이 충분히 적을 것으로 예상되는 최적의 epoch count                                    |
-| 최근 대화 내용 요약 ```summary```            | Kanana-1.5 2.1B  | 64        | 10     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
-| 메모리 (사용자에 대해 기억 필요한 내용) ```memory``` | Polyglot-Ko 1.3B | 64        | 20     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
-| 표정 및 고개 돌림 제어 ```eyes_mouth_pose```  | Polyglot-Ko 1.3B | 64        | 30     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
+| 답변 메시지 ```output_message```          | Kanana-1.5-2.1B-instruct  | 16        | 5      | LLM 이 어느 정도 학습되면서도 환각 현상이 충분히 적을 것으로 예상되는 최적의 epoch count                                    |
+| 최근 대화 내용 요약 ```summary```            | Kanana-1.5-2.1B-base  | 64        | 10     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
+| 메모리 (사용자에 대해 기억 필요한 내용) ```memory``` | Polyglot-Ko-1.3B | 64        | 20     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
+| 표정 및 고개 돌림 제어 ```eyes_mouth_pose```  | Polyglot-Ko-1.3B | 64        | 30     | [Oh-LoRA v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 모델 그대로 사용 |
 
 * 보고서
   * [LLM Fine-Tuning 결과 보고서](fine_tuning/fine_tuning_report.md)
