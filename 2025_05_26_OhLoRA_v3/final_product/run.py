@@ -490,7 +490,7 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
 # Arguments:
 # - vectorfind_version (str)         : Oh-LoRA latent z vector & w vector 를 위한 StyleGAN-VectorFind 버전 ('v7' or 'v8')
 # - ohlora_no          (int or None) : 오로라 얼굴 생성용 latent z vector 의 번호 (index, case No.)
-#                                      참고1: 2025_05_02_OhLoRA_v3/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md
+#                                      참고1: 2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md
 #                                      참고2: 2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/final_OhLoRA_info.md
 
 # Returns:
