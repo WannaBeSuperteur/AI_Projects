@@ -1,7 +1,14 @@
 
-from generate_ombre_images import generate_ombre_image_using_v7_all_process, generate_ombre_image_using_v8_all_process
-from generate_gif import generate_gif
-from generate_opencv_screen import create_opencv_screen
+try:
+    from generate_ombre_images import (generate_ombre_image_using_v7_all_process,
+                                       generate_ombre_image_using_v8_all_process)
+    from generate_gif import generate_gif
+    from generate_opencv_screen import create_opencv_screen
+except:
+    from ombre.generate_ombre_images import (generate_ombre_image_using_v7_all_process,
+                                             generate_ombre_image_using_v8_all_process)
+    from ombre.generate_gif import generate_gif
+    from ombre.generate_opencv_screen import create_opencv_screen
 
 import torch
 

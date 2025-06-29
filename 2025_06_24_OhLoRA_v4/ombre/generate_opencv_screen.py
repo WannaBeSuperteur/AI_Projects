@@ -1,5 +1,10 @@
-from generate_ombre_images import generate_ombre_image
-from common import get_property_score_change_vectors
+try:
+    from generate_ombre_images import generate_ombre_image
+    from common import get_property_score_change_vectors
+except:
+    from ombre.generate_ombre_images import generate_ombre_image
+    from ombre.common import get_property_score_change_vectors
+
 import cv2
 
 from stylegan.run_stylegan_vectorfind_v7 import load_ohlora_z_vectors as load_ohlora_z_vectors_v7
