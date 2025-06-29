@@ -182,7 +182,7 @@ def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
 # - 없음
 
 def realtime_ohlora_generate():
-    global stylegan_generator, hair_seg_model, vectorfind_ver
+    global stylegan_generator, hair_seg_model
 
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     global eyes_vector_queue, mouth_vector_queue, pose_vector_queue
@@ -235,7 +235,7 @@ def realtime_ohlora_generate():
                 raise Exception('finished_by_ohlora')
 
         # generate Oh-LoRA image
-        generate_and_show_ohlora_image(stylegan_generator, hair_seg_model, vectorfind_ver,
+        generate_and_show_ohlora_image(stylegan_generator, hair_seg_model,
                                        ohlora_z_vector, eyes_vector, mouth_vector, pose_vector,
                                        eyes_score, mouth_score, pose_score,
                                        color=0.0, ombre_height=0.6, ombre_grad_height=0.7)
