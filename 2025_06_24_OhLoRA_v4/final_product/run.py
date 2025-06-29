@@ -412,18 +412,18 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
     thread.start()
 
     while True:
-        user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
-        user_prompt = add_time_info(user_prompt)
+        original_user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
+        user_prompt = add_time_info(original_user_prompt)
         status = 'generating'
 
         # check user prompt length
-        encoded_user_prompt = ohlora_llms_tokenizer['output_message'].encode(user_prompt)
-        if len(encoded_user_prompt) > 48:
+        encoded_user_prompt = ohlora_llms_tokenizer['output_message'].encode(original_user_prompt)
+        if len(encoded_user_prompt) > 40:
             print('[SYSTEM MESSAGE] 너무 긴 질문은 오로라👱‍♀️ 에게 부담 돼요! 그런 질문은 오로라의 절친 혜나 🌹 (LLM Hyena) 에게 해 주세요! 😢')
             continue
 
         best_memory_item = pick_best_memory_item(sbert_model_memory,
-                                                 user_prompt,
+                                                 original_user_prompt,
                                                  memory_file_name='ohlora_memory.txt',
                                                  threshold=0.95,
                                                  verbose=False)
@@ -443,7 +443,10 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
         llm_answer_cleaned = clean_llm_answer(llm_answer)
 
         # check ethics of user prompt
-        system_message, block_period = check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned)
+        system_message, block_period = check_and_process_ethics(sbert_model_ethics,
+                                                                original_user_prompt,
+                                                                llm_answer_cleaned)
+
         if system_message != '':
             print(f'[SYSTEM MESSAGE]\n{system_message}')
 
