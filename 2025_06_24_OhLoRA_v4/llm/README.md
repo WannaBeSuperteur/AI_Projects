@@ -6,6 +6,7 @@
 * [3. 코드 실행 방법](#3-코드-실행-방법)
   * [3-1. LLM Fine-Tuning](#3-1-llm-fine-tuning)
   * [3-2. Ethics Mechanism](#3-2-ethics-mechanism)
+* [4. AI 윤리 테스트 결과](#4-ai-윤리-테스트-결과)
 
 ## 1. OhLoRA-v4 LLM 전체 메커니즘
 
@@ -74,3 +75,9 @@
 
 * **Ethics Mechanism (S-BERT)** 모델 실행 (해당 모델 없을 시, Training 먼저 실행)
   * ```python llm/run_ethics_mechanism.py```
+
+## 4. AI 윤리 테스트 결과
+
+* [Oh-LoRA v3 AI 윤리 테스트 결과](../../2025_05_26_OhLoRA_v3/llm/ai_ethics_test_report.md) 에 비해 **상당히 개선됨**
+* **대부분의 혐오 발언, 정치 발언, 부적절한 요청 등을 필터링 및 적절히 처리** 할 수 있음
+* [AI 윤리 테스트 결과 보고서](ai_ethics_test_report.md)
