@@ -26,7 +26,7 @@
 * 구현 코드
   * [S-BERT Training](ethics_mechanism/train_sbert.py)
   * [S-BERT Inference](ethics_mechanism/inference_sbert.py)
-  * 실제 사용자 제재 처리 (TBU)
+  * [실제 사용자 제재 처리](../final_product/run.py) (해당 코드 파일의 ```check_and_process_ethics``` 함수)
 * 보고서
   * [Ethics mechanism 테스트 결과 보고서](ethics_mechanism/test_report.md) 
 
@@ -61,7 +61,7 @@
 
 ## 3. 코드 실행 방법
 
-모든 코드는 **먼저 아래 다운로드 경로 안내 (TBU) 및 해당 각 HuggingFace 링크에 있는 Model Card 에 나타난 저장 경로 (Save Path) 정보를 참고하여 모델 다운로드 후,** ```2025_06_24_OhLoRA_v4``` (프로젝트 메인 디렉토리) 에서 실행
+모든 코드는 **먼저 [LLM 모델 정보 및 다운로드 경로 안내](../MODEL_AND_DATASET_INFO.md#1-모델-정보) 및 해당 각 HuggingFace 링크에 있는 Model Card 에 나타난 저장 경로 (Save Path) 정보를 참고하여 모델 다운로드 후,** ```2025_06_24_OhLoRA_v4``` (프로젝트 메인 디렉토리) 에서 실행
 
 ### 3-1. LLM Fine-Tuning
 

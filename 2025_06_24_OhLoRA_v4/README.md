@@ -9,8 +9,9 @@
   * [2-1. 사용한 Python 라이브러리 및 시스템 환경](#2-1-사용한-python-라이브러리-및-시스템-환경)
 * [3. 프로젝트 일정](#3-프로젝트-일정)
 * [4. 프로젝트 상세 설명](#4-프로젝트-상세-설명)
-  * [4-1. Segmentation 을 이용한 옴브레 염색 구현](#4-1-segmentation-을-이용한-옴브레-염색-구현)
-  * [4-2. LLM Fine-Tuning 을 이용한 사용자 대화 구현](#4-2-llm-fine-tuning-을-이용한-사용자-대화-구현)
+  * [4-1. Oh-LoRA 얼굴 이미지 생성](#4-1-oh-lora-얼굴-이미지-생성) 
+  * [4-2. Segmentation 을 이용한 옴브레 염색 구현](#4-2-segmentation-을-이용한-옴브레-염색-구현)
+  * [4-3. LLM Fine-Tuning 을 이용한 사용자 대화 구현](#4-3-llm-fine-tuning-을-이용한-사용자-대화-구현)
 * [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
 * [6. 사용자 가이드](#6-사용자-가이드)
 
@@ -57,7 +58,7 @@
   * 사람이 아닌 AI 가상 인간만이 가질 수 있음
 * 기타 잡다한 TMI
   * 오로라 Fine-Tuning 에 사용한 데이터셋 (직접 제작) 을 보면 알 수 있어요!
-  * Fine-Tuning 데이터셋 : (TBU)
+  * Fine-Tuning 데이터셋 : [Oh-LoRA v4 Fine-Tuning Dataset](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv)
 
 <details><summary>(스포일러) 오로라👱‍♀️ 가 2003년 10월 11일 생인 이유 [ 펼치기 / 접기 ] </summary>
 
@@ -106,14 +107,14 @@
   * Python : **Python 3.10.11**
   * Dev Tool : PyCharm 2024.1 Community Edition
 * Python Libraries
-  * 주요 파이썬 라이브러리 (TBU)
-  * 실험 환경의 전체 파이썬 라이브러리 목록 (TBU)
+  * [주요 파이썬 라이브러리](system_info_and_user_guide.md#1-1-주요-python-라이브러리)
+  * [실험 환경의 전체 파이썬 라이브러리 목록](system_info_and_user_guide.md#1-2-시스템에-설치된-전체-python-라이브러리)
 * OS & CPU & GPU
   * OS : **Windows 10**
   * CPU : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
   * GPU : 2 x **Quadro M6000** (12 GB each)
   * **CUDA 12.4** (NVIDIA-SMI 551.61)
-* 시스템 환경 상세 정보 (TBU)
+* [시스템 환경 상세 정보](system_info_and_user_guide.md#1-시스템-환경)
 
 ## 3. 프로젝트 일정
 
@@ -128,7 +129,7 @@
 | 🔍 최종 검토 | 최종 사용자 실행용 코드 작성           | 06.29 일 (1d)           | ```P007-007-ForUser``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/36) | ✅  |
 | 🔍 최종 검토 | 최종 QA (버그 유무 검사)           | 06.29 일 (1d)           |                        |                                                                    | ✅  |
 | 📃 문서화   | 데이터셋 및 모델 HuggingFace 에 등록 | 06.29 일 (1d)           |                        |                                                                    | ✅  |
-| 📃 문서화   | 프로젝트 문서 정리 및 마무리           | 06.29 일 - 06.30 월 (2d) |                        |                                                                    | 💨 |
+| 📃 문서화   | 프로젝트 문서 정리 및 마무리           | 06.29 일 - 06.30 월 (2d) |                        |                                                                    | ✅  |
 
 **2. Segmentation 모델 경량화 & hair 영역 추출 & 옴브레 헤어스타일 구현**
 
@@ -162,7 +163,20 @@
 * Oh-LoRA 의 답변 내용에 따라 가상 인간 여성 이미지 생성
   * **"눈을 뜬 정도, 입을 벌린 정도, 고개 돌림" 의 3가지 속성 값** 을, LLM 의 답변에 기반하여 LLM 으로 생성한 표정 정보 (자연어) 에 따라 적절히 결정
 
-### 4-1. Segmentation 을 이용한 옴브레 염색 구현
+### 4-1. Oh-LoRA 얼굴 이미지 생성
+
+* 다음과 같이 **StyleGAN-VectorFind-v7** 및 **StyleGAN-VectorFind-v8** 을 이용하여 **Oh-LoRA 👱‍♀️ (오로라)** 얼굴 이미지 생성
+  * [StyleGAN-VectorFind-v7](../2025_05_02_OhLoRA_v2/stylegan/README.md#3-3-stylegan-finetune-v1-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v7)
+  * [StyleGAN-VectorFind-v8](../2025_05_26_OhLoRA_v3/stylegan/README.md#3-3-stylegan-finetune-v8-기반-핵심-속성값-변환-intermediate-w-vector-탐색-stylegan-vectorfind-v8)
+* **StyleGAN-VectorFind-v7** 구조 개념도
+
+![image](../images/250502_23.PNG)
+
+* **StyleGAN-VectorFind-v8** 구조 개념도
+
+![image](../images/250526_12.png)
+
+### 4-2. Segmentation 을 이용한 옴브레 염색 구현
 
 * **경량화된 Segmentation Model** 을 이용하여 **실시간에 가깝게 Hair 영역 추출**
   * [FaceXFormer](https://kartik-3004.github.io/facexformer/) 모델을 Teacher 로 하여 [Response-based Knowledge Distillation](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Knowledge_Distillation.md#3-1-response-based-knowledge-distillation) 실시
@@ -170,13 +184,22 @@
 * 옴브레 염색 적용 대상 Oh-LoRA 얼굴
   * [Oh-LoRA v2 (StyleGAN-VectorFind-v7) 얼굴 27 종](../2025_05_02_OhLoRA_v2/stylegan/stylegan_vectorfind_v7/final_OhLoRA_info.md) 
   * [Oh-LoRA v3 (StyleGAN-VectorFind-v8) 얼굴 19 종](../2025_05_26_OhLoRA_v3/stylegan/stylegan_vectorfind_v8/final_OhLoRA_info.md) 
+* [상세 정보](segmentation/README.md)
 
-### 4-2. LLM Fine-Tuning 을 이용한 사용자 대화 구현
+![image](../images/250624_4.PNG)
 
-* 모델을 (TBU) rows 규모의 학습 데이터셋으로 Fine-Tuning
+### 4-3. LLM Fine-Tuning 을 이용한 사용자 대화 구현
+
+* 모델을 **632 rows** 규모의 학습 데이터셋으로 Fine-Tuning
 * [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) 과 유사한 컨셉으로 LLM 의 memory 구현
 * **Oh-LoRA 👱‍♀️ (오로라) v4 에서 AI 윤리 강화 (부적절한 프롬프트에 대해 응답 거부 & 경고 & 차단 메커니즘 개선)**
-* 상세 정보 (TBU)
+* [상세 정보](llm/README.md)
+
+![image](../images/250526_21.png)
+
+* **LLM 윤리 메커니즘** 구조도
+
+![image](../images/250624_13.PNG)
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
