@@ -67,7 +67,17 @@
 
 ### 1-2. 실행 스크린샷
 
-TBU
+![image](../images/250624_14.PNG)
+
+<details><summary>스크린샷 더보기 (3장) [ 펼치기 / 접기 ] </summary>
+
+![image](../images/250624_15.PNG)
+
+![image](../images/250624_16.PNG)
+
+![image](../images/250624_17.PNG)
+
+</details>
 
 ### 1-3. Oh-LoRA 얼굴 변화 애니메이션
 
