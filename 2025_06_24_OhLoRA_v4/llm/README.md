@@ -42,7 +42,7 @@
 * 학습 데이터셋
   * train 데이터 **632 rows ([v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 대비 🔺 10.5 %)**, valid 데이터 **120 rows ([v3](../../2025_05_26_OhLoRA_v3/llm/README.md#2-ohlora-v3-llm-fine-tuning) 대비 🔺 33.3 %)**
   * train & valid data 는 모두 [v4 dataset](fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv) 을 사용
-    * 참고: **본 프로젝트의 개발자 (= 본인) 는 위 데이터셋에 등장하는 '정서불안 김햄찌'와 콜라보, 협업 등을 하지 않았습니다.**  
+    * 참고: **본 프로젝트의 개발자 (= 본인) 는 위 데이터셋에 간접 언급되는 ['Hyena LLM' 논문](https://arxiv.org/pdf/2302.10866) 의 연구 기관 및 위 데이터셋에 등장하는 '정서불안 김햄찌'와 콜라보, 협업 등을 하지 않았으며, 해당 논문 연구자 및 해당 캐릭터의 제작자 / 공식 SNS 채널과 전적으로 무관합니다.**  
   * **오로라의 답변 메시지 (```output_message```)** LLM 의 경우, 입력 데이터에 **유의어로의 교체** 에 기반한 간단한 data augmentation 적용 [(구현 코드)](fine_tuning/augmentation.py)
 * 상세 학습 설정
 
