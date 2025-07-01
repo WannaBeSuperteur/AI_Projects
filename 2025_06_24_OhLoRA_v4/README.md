@@ -29,6 +29,7 @@
 * [Oh-LoRA v1](../2025_04_08_OhLoRA) 및 [Oh-LoRA v3](../2025_05_26_OhLoRA_v3) 에서 사용했던 Pre-trained Segmentation 모델인 [FaceXFormer](https://kartik-3004.github.io/facexformer/) 모델 사용
 * **(Oh-LoRA 가상 얼굴, FaceXFormer hair 영역 추출 결과)** 쌍을 학습 데이터로 하는, **비교적 경량화된** Segmentation Model 개발 ([Knowledge Distillation](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/Deep%20Learning%20Basics/%EB%94%A5%EB%9F%AC%EB%8B%9D_%EA%B8%B0%EC%B4%88_Knowledge_Distillation.md))
 * 해당 Segmentation Model 에 **hair 영역으로 인식된 부분** 에 대해 옴브레 염색 적용
+* ✨ 이제 Oh-LoRA 👱‍♀️ (오로라) 는 **극지방 밤하늘을 비추는 오로라 (Aurora) 의 의인화** ✨
 
 **3. LLM 관련 기술**
 
