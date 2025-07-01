@@ -96,6 +96,7 @@
 * 학습 데이터셋
   * train 데이터 **572 rows ([v2](../../2025_05_02_OhLoRA_v2/llm/README.md#3-ohlora-v2-llm-fine-tuning) 대비 🔺 25.4 %)**, valid 데이터 **90 rows ([v2](../../2025_05_02_OhLoRA_v2/llm/README.md#3-ohlora-v2-llm-fine-tuning) 대비 🔺 28.6 %)**
   * train & valid data 는 모두 [v3 dataset](fine_tuning_dataset/OhLoRA_fine_tuning_v3.csv) 을 사용
+    * 참고: **본 프로젝트의 개발자 (= 본인) 는 위 데이터셋에 등장하는 '정서불안 김햄찌'와 콜라보, 협업 등을 하지 않았습니다.**  
   * **오로라의 답변 메시지 (```output_message```)** LLM 의 경우, 입력 데이터에 **유의어로의 교체** 에 기반한 간단한 data augmentation 적용 [(구현 코드)](fine_tuning/augmentation.py)
 * 상세 학습 설정
 

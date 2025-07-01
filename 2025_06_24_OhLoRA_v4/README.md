@@ -60,6 +60,7 @@
 * 기타 잡다한 TMI
   * 오로라 Fine-Tuning 에 사용한 데이터셋 (직접 제작) 을 보면 알 수 있어요!
   * Fine-Tuning 데이터셋 : [Oh-LoRA v4 Fine-Tuning Dataset](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv)
+    * 참고: **본 프로젝트의 개발자 (= 본인) 는 위 데이터셋에 등장하는 '정서불안 김햄찌'와 콜라보, 협업 등을 하지 않았습니다.**
 
 <details><summary>(스포일러) 오로라👱‍♀️ 가 2003년 10월 11일 생인 이유 [ 펼치기 / 접기 ] </summary>
 
