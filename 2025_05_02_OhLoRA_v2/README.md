@@ -67,6 +67,8 @@
   * 오로라 Fine-Tuning 에 사용한 데이터셋 (직접 제작) 을 보면 알 수 있어요!
   * [dataset v2](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2.csv), [dataset v2.1](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_1.csv), [dataset v2.2](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v2_2.csv)
 
+> 참고: **본 프로젝트의 개발자 (= 본인) 는 위 Oh-LoRA Fine-Tuning 데이터셋에 간접 언급되는 ['Hyena LLM' 논문](https://arxiv.org/pdf/2302.10866) 의 연구 기관과 협업 등을 하지 않았으며, 해당 논문 연구자와 전적으로 무관합니다.**
+
 <details><summary>(스포일러) 오로라👱‍♀️ 가 2003년 10월 11일 생인 이유 [ 펼치기 / 접기 ] </summary>
 
 오로라를 개발한 [개발자 (wannabesuperteur)](https://github.com/WannaBeSuperteur) 가 개발할 때 Python 3.10.11 을 사용했기 때문이다.
