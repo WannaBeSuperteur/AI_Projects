@@ -244,11 +244,11 @@ def fine_tune_model(instruct_version):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
-    get_lora_llm(llm=original_llm, lora_rank=16)
+    get_lora_llm(llm=original_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
         lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_message']} (답변 종료) <|end_of_text|>",
@@ -266,5 +266,5 @@ def fine_tune_model(instruct_version):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm_original_models/{kanana_llm_name}_output_message_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_output_message_fine_tuned'
     trainer.save_model(output_dir_path)
