@@ -117,12 +117,13 @@ TBU
   * LLM (Large Language Model)
 * 사용 기술
 
-| 기술 분야           | 사용 기술                                                                                                                                                                                    | 설명                                                            |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
-| LLM             | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)                                | 가상 인간이 적절한 말투로 사용자와 대화 **(질의응답, 퀴즈 해설, 멀티턴 면접)** 할 수 있게 하는 기술 |
-| LLM             | [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)                             | 가상 인간의 LLM 을 효율적으로 Fine-Tuning 하는 기술                          |
-| LLM             | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) | 퀴즈의 사용자 답변을 **대표 모범 답안** 과 비교하여 **유사도 계산** → 사용자 답변 채점        |
-| LLM             | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) | 가상 인간이 사용자의 질문이 **부적절한 언어를 사용했는지** 판단                         |
+| 기술 분야 | 사용 기술                                                                                                                                                                                    | 설명                                                            |
+|-------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| LLM   | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)                                | 가상 인간이 적절한 말투로 사용자와 대화 **(질의응답, 퀴즈 해설, 멀티턴 면접)** 할 수 있게 하는 기술 |
+| LLM   | [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md)                             | 가상 인간의 LLM 을 효율적으로 Fine-Tuning 하는 기술                          |
+| LLM   | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) | 퀴즈의 사용자 답변을 **대표 모범 답안** 과 비교하여 **유사도 계산** → 사용자 답변 채점        |
+| LLM   | [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) | 가상 인간이 사용자의 질문이 **부적절한 언어를 사용했는지** 판단                         |
+| LLM   | [RAG (Retrieval Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md)                                    | LLM 의 **질의응답 및 멀티턴 면접** 기능에서 **머신러닝 지식 전달에서의 환각 현상** 최소화 목적   |
 
 ### 2-1. 사용한 Python 라이브러리 및 시스템 환경
 
