@@ -90,7 +90,7 @@
   * 사람이 아닌 AI 가상 인간만이 가질 수 있음
 * 기타 잡다한 TMI
   * 오로라 Fine-Tuning 에 사용한 데이터셋 (직접 제작) 을 보면 알 수 있어요!
-  * Fine-Tuning 데이터셋 : [Oh-LoRA v4 Fine-Tuning Dataset](llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv)
+  * Fine-Tuning 데이터셋 : [Oh-LoRA v4 Fine-Tuning Dataset](../2025_06_24_OhLoRA_v4/llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv)
 
 > 참고: **본 프로젝트의 개발자 (= 본인) 는 위 Oh-LoRA Fine-Tuning 데이터셋에 간접 언급되는 ['Hyena LLM' 논문](https://arxiv.org/pdf/2302.10866) 의 연구 기관 및 위 데이터셋에 등장하는 '정서불안 김햄찌'와 콜라보, 협업 등을 하지 않았으며, 해당 논문 연구자 및 해당 캐릭터의 제작자 / 공식 SNS 채널과 전적으로 무관합니다.**
 
