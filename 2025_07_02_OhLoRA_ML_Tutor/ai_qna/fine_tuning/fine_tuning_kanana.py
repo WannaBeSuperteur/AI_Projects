@@ -33,7 +33,7 @@ train_log_dict = {'epoch': [], 'time': [], 'loss': [], 'grad_norm': [], 'learnin
 inference_log_dict = {'epoch': [], 'elapsed_time (s)': [], 'prompt': [], 'llm_answer': [],
                       'trial_cnt': [], 'output_tkn_cnt': []}
 
-log_dir_path = f'{PROJECT_DIR_PATH}/llm/fine_tuning/logs'
+log_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning/logs'
 os.makedirs(log_dir_path, exist_ok=True)
 
 
@@ -86,7 +86,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
 
 # Original LLM (Kanana-1.5 2.1B) 가져오기 (Fine-Tuning 실시할)
-# Create Date : 2025.06.27
+# Create Date : 2025.07.02
 # Last Update Date : -
 
 # Arguments:
@@ -96,7 +96,7 @@ class OhLoRACustomCallback(TrainerCallback):
 # - original_llm (LLM) : Original Kanana-1.5 2.1B LLM
 
 def get_original_llm(kanana_llm_name):
-    original_llm_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_original'
+    original_llm_path = f'{PROJECT_DIR_PATH}/llm_original_models/{kanana_llm_name}_original'
 
     original_llm = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=original_llm_path,
@@ -108,7 +108,7 @@ def get_original_llm(kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
-# Create Date : 2025.06.27
+# Create Date : 2025.07.02
 # Last Update Date : -
 
 # Arguments:
@@ -118,7 +118,7 @@ def get_original_llm(kanana_llm_name):
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args(kanana_llm_name):
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_output_message_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_output_message_fine_tuned'
     num_train_epochs = 5
 
     training_args = SFTConfig(
@@ -137,7 +137,7 @@ def get_training_args(kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
-# Create Date : 2025.06.27
+# Create Date : 2025.07.02
 # Last Update Date : -
 
 # Arguments:
@@ -166,7 +166,7 @@ def get_sft_trainer(dataset, collator, training_args, instruct_version):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
-# Create Date : 2025.06.27
+# Create Date : 2025.07.02
 # Last Update Date : -
 
 # Arguments:
@@ -196,11 +196,11 @@ def get_lora_llm(llm, lora_rank):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
-# Create Date : 2025.06.27
+# Create Date : 2025.07.02
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from llm/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv)
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from ai_qna/fine_tuning_dataset/ai_qna_fine_tuning.csv)
 #                                   columns = ['data_type', 'input_data', ...]
 
 # Returns:
@@ -218,14 +218,14 @@ def generate_llm_trainable_dataset(dataset_df):
 
 
 # LLM (Kanana-1.5 2.1B) Fine-Tuning 실시
-# Create Date : 2025.06.27
+# Create Date : 2025.07.02
 # Last Update Date : -
 
 # Arguments:
 # - instruct_version (bool) : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
 
 # Returns:
-# - llm/models/{kanana|kananai}_output_message_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - ai_qna/models/{kanana|kananai}_output_message_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model(instruct_version):
     global lora_llm, tokenizer, valid_final_prompts
@@ -238,7 +238,7 @@ def fine_tune_model(instruct_version):
     # Kanana-1.5 2.1B original model is from https://huggingface.co/kakaocorp/kanana-1.5-2.1b-base (base)
     #                                     or https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505 (instruct)
     original_llm = get_original_llm(kanana_llm_name)
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_original')
+    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm_original_models/{kanana_llm_name}_original')
 
     tokenizer.pad_token = tokenizer.eos_token
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
@@ -266,5 +266,5 @@ def fine_tune_model(instruct_version):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/{kanana_llm_name}_output_message_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/llm_original_models/{kanana_llm_name}_output_message_fine_tuned'
     trainer.save_model(output_dir_path)
