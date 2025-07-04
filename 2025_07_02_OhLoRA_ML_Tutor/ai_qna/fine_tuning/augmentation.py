@@ -2,7 +2,7 @@ from trl import DataCollatorForCompletionOnlyLM
 from copy import deepcopy
 import random
 
-
+"""
 augment_lists = [[' 나는 ', ' 난 '],
                  ['나에게 ', '내게 '],
                  ['인공지능 ', 'AI '],
@@ -15,6 +15,9 @@ augment_lists = [[' 나는 ', ' 난 '],
                  ['음악 ', '노래 '],
                  ['음악은', '노래는'],
                  ['축하해', '축하축하', 'ㅊㅋㅊㅋ']]
+"""
+
+augment_lists = []
 
 
 class AugmentCollator(DataCollatorForCompletionOnlyLM):
