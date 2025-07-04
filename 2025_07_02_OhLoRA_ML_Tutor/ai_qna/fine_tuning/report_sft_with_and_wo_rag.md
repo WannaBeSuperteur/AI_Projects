@@ -21,7 +21,7 @@
 | LoRA alpha            | 16                                                                                              | 16                                                                                              |
 | LoRA dropout          | 0.05                                                                                            | 0.05                                                                                            |
 | total training epochs | 20                                                                                              | 20                                                                                              |
-| 학습 데이터셋               | [SFT_with_RAG_concept.csv](../fine_tuning_dataset/SFT_with_RAG_concept.csv)<br>(train rows: 30) | [SFT_wo_RAG_concept.csv](../fine_tuning_dataset/SFT_wo_RAG_concept.csv)<br>(train rows: 30)     |
+| 학습 데이터셋               | [SFT_**with**_RAG_concept.csv](../fine_tuning_dataset/SFT_with_RAG_concept.csv)<br>(train rows: 30) | [SFT_**wo**_RAG_concept.csv](../fine_tuning_dataset/SFT_wo_RAG_concept.csv)<br>(train rows: 30)     |
 | 답변 생성 temperature     | 0.6                                                                                             | 0.6                                                                                             |
 
 ## 3. Fine-Tuning 결과
