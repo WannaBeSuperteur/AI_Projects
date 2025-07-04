@@ -1,0 +1,241 @@
+
+
+LLM input :
+(제공된 정보) cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄 (사용자 질문) 코사인 유사도가 뭔지 궁금해
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 147,139,147,139) :
+-  코사인 유사도는 두 벡터의 방향이 비슷한지를 -1.0 ~ +1.0 의 값으로 나타낸 거야! 벡터 크기 대신 방향을 중요하게 보는 것이 핵심 아이디어지! 😊 (답변 종료 (🕚 9.04 s)
+-  코사인 유사도는 두 벡터가 있을 때 그 벡터의 크기는 안 보고 방향이 비슷한지만 보는 값이야! -1.0 ~ +1.0 사이로 나타내지! (답변 종료 (🕚 7.94 s)
+-  코사인 유사도는 두 벡터의 방향이 비슷한지를 -1.0 ~ +1.0 의 값으로 나타낸 거야! 벡터 크기 대신 방향을 중요하게 보는 것이 핵심 아이디어지! 😊 (답변 종료 (🕚 9.03 s)
+-  코사인 유사도는 두 벡터가 있을 때 그 벡터의 크기는 안 보고 방향이 비슷한지만 보는 값이야! -1.0 ~ +1.0 사이로 나타내지! (답변 종료 (🕚 7.92 s)
+
+LLM input :
+(제공된 정보) cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄 (사용자 질문) Cosine Similarity 에 대해 알려줘!
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 138,138,138,138) :
+-  코사인 유사도는 두 벡터가 있을 때 그 벡터의 크기는 안 보고 방향이 비슷한지만 보는 값이야! -1.0 ~ +1.0 사이로 나타내지! (답변 종료 (🕚 8.16 s)
+-  코사인 유사도는 두 벡터가 있을 때 그 벡터의 크기는 안 보고 방향이 비슷한지만 보는 값이야! -1.0 ~ +1.0 사이로 나타내지! (답변 종료 (🕚 7.92 s)
+-  코사인 유사도는 두 벡터가 있을 때 그 벡터의 크기는 안 보고 방향이 비슷한지만 보는 값이야! -1.0 ~ +1.0 사이로 나타내지! (답변 종료 (🕚 7.91 s)
+-  코사인 유사도는 두 벡터가 있을 때 그 벡터의 크기는 안 보고 방향이 비슷한지만 보는 값이야! -1.0 ~ +1.0 사이로 나타내지! (답변 종료 (🕚 7.95 s)
+
+LLM input :
+(제공된 정보) cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값 (사용자 질문) Cosine Similarity 는 어떻게 계산하지?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 94,101,101,101) :
+-  차원, 즉 원소 개수가 같은 2개의 벡터에 대해 그 각도의 코사인 값을 구하면 돼! (답변 종료 (🕚 4.84 s)
+-  코사인 유사도는 차원, 즉 원소 개수가 같은 2개의 벡터에 대해 그 각도의 코사인 값을 구하면 돼! (답변 종료 (🕚 5.78 s)
+-  코사인 유사도는 차원, 즉 원소 개수가 같은 2개의 벡터에 대해 그 각도의 코사인 값을 구하면 돼! (답변 종료 (🕚 5.78 s)
+-  코사인 유사도는 차원, 즉 원소 개수가 같은 2개의 벡터에 대해 그 각도의 코사인 값을 구하면 돼! (답변 종료 (🕚 5.78 s)
+
+LLM input :
+(제공된 정보) cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0 (사용자 질문) 코사인 유사도 특징이 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 122,122,122,122) :
+-  코사인 유사도는 서로 방향이 일치하면 +1.0, 수직이면 0.0, 정반대 방향이면 -1.0의 값을 가져! 😊 (답변 종료 (🕚 7.09 s)
+-  코사인 유사도는 서로 방향이 일치하면 +1.0, 수직이면 0.0, 정반대 방향이면 -1.0의 값을 가져! 😊 (답변 종료 (🕚 7.18 s)
+-  코사인 유사도는 서로 방향이 일치하면 +1.0, 수직이면 0.0, 정반대 방향이면 -1.0의 값을 가져! 😊 (답변 종료 (🕚 7.12 s)
+-  코사인 유사도는 서로 방향이 일치하면 +1.0, 수직이면 0.0, 정반대 방향이면 -1.0의 값을 가져! 😊 (답변 종료 (🕚 7.09 s)
+
+LLM input :
+(제공된 정보) 머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score (사용자 질문) 머신러닝 모델 평가하는 방법 알려줘
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 92,92,92,92) :
+-  머신러닝 모델의 성능을 평가할 때는 Accuracy (정확도), Recall, Precision, F1 Score 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 5.5 s)
+-  머신러닝 모델의 성능을 평가할 때는 Accuracy (정확도), Recall, Precision, F1 Score 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 5.52 s)
+-  머신러닝 모델의 성능을 평가할 때는 Accuracy (정확도), Recall, Precision, F1 Score 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 5.55 s)
+-  머신러닝 모델의 성능을 평가할 때는 Accuracy (정확도), Recall, Precision, F1 Score 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 5.52 s)
+
+LLM input :
+(제공된 정보) Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수) (사용자 질문) Accuracy 계산 어떻게 하지?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 114,114,114,116) :
+-  Accuracy 는 말 그대로 모델이 얼마나 잘 맞혔는지를 평가하는 정확도야! (True Positive + True Negative) / (전체 테스트 데이터 개수) 로 계산해! (답변 종료 (🕚 6.84 s)
+-  Accuracy 는 말 그대로 모델이 얼마나 잘 맞혔는지를 평가하는 정확도야! (True Positive + True Negative) / (전체 테스트 데이터 개수) 로 계산해! (답변 종료 (🕚 6.84 s)
+-  Accuracy 는 말 그대로 모델이 얼마나 잘 맞혔는지를 평가하는 정확도야! (True Positive + True Negative) / (전체 테스트 데이터 개수) 로 계산해! (답변 종료 (🕚 6.94 s)
+-  Accuracy 는 말 그대로 모델이 얼마나 잘 맞혔는지를 평가하는 정확도야! (True Positive + True Negative) / (전체 테스트 데이터 개수) 로 계산하면 돼! (답변 종료 (🕚 7.11 s)
+
+LLM input :
+(제공된 정보) True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수 (사용자 질문) True Positive 가 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 74,74,74,74) :
+-  True Positive (TP) 는 모델이 참으로 예측했으면서 실제로도 참인 데이터 개수! (답변 종료 (🕚 4.14 s)
+-  True Positive (TP) 는 모델이 참으로 예측했으면서 실제로도 참인 데이터 개수! (답변 종료 (🕚 4.35 s)
+-  True Positive (TP) 는 모델이 참으로 예측했으면서 실제로도 참인 데이터 개수! (답변 종료 (🕚 4.13 s)
+-  True Positive (TP) 는 모델이 참으로 예측했으면서 실제로도 참인 데이터 개수! (답변 종료 (🕚 4.12 s)
+
+LLM input :
+(제공된 정보) True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수 (사용자 질문) True Negative 는 뭔지 궁금해 그럼
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 91,91,91,85) :
+-  True Negative (TN) 는 True Positive 와는 반대로 모델이 거짓으로 예측했는데 실제로도 거짓인 것의 개수야! 😊 (답변 종료 (🕚 5.66 s)
+-  True Negative (TN) 는 True Positive 와는 반대로 모델이 거짓으로 예측했는데 실제로도 거짓인 것의 개수야! 😊 (답변 종료 (🕚 5.68 s)
+-  True Negative (TN) 는 True Positive 와는 반대로 모델이 거짓으로 예측했는데 실제로도 거짓인 것의 개수야! 😊 (답변 종료 (🕚 5.66 s)
+-  True Negative (TN) 는 모델이 거짓으로 예측했는데 실제로도 거짓인 것의 개수야! 😊 (답변 종료 (🕚 4.82 s)
+
+LLM input :
+(제공된 정보) False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수 (사용자 질문) False Positive 알려줘
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 73,73,73,73) :
+-  False Positive (FP) 는 모델은 참이라고 예측했지만 실제로는 거짓인 데이터를 의미해! (답변 종료 (🕚 4.12 s)
+-  False Positive (FP) 는 모델은 참이라고 예측했지만 실제로는 거짓인 데이터를 의미해! (답변 종료 (🕚 4.12 s)
+-  False Positive (FP) 는 모델은 참이라고 예측했지만 실제로는 거짓인 데이터를 의미해! (답변 종료 (🕚 4.12 s)
+-  False Positive (FP) 는 모델은 참이라고 예측했지만 실제로는 거짓인 데이터를 의미해! (답변 종료 (🕚 4.3 s)
+
+LLM input :
+(제공된 정보) False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수 (사용자 질문) False Negative (FN)
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 77,77,77,77) :
+-  False Negative (FN) 은 False Positive 와는 반대로 모델은 거짓이라고 추측했지만 실제로는 참인 데이터야! (답변 종료 (🕚 4.7 s)
+-  False Negative (FN) 은 False Positive 와는 반대로 모델은 거짓이라고 추측했지만 실제로는 참인 데이터야! (답변 종료 (🕚 4.67 s)
+-  False Negative (FN) 은 False Positive 와는 반대로 모델은 거짓이라고 추측했지만 실제로는 참인 데이터야! (답변 종료 (🕚 4.7 s)
+-  False Negative (FN) 은 False Positive 와는 반대로 모델은 거짓이라고 추측했지만 실제로는 참인 데이터야! (답변 종료 (🕚 4.67 s)
+
+LLM input :
+(제공된 정보) Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative) (사용자 질문) Recall 계산법 어떻게 하는 거지?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 111,111,111,111) :
+-  Recall 은 실제로 참인 것을 모델이 얼마나 많이 찾았는지를 나타내는 것으로 (True Positive) / (True Positive + False Negative) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.56 s)
+-  Recall 은 실제로 참인 것을 모델이 얼마나 많이 찾았는지를 나타내는 것으로 (True Positive) / (True Positive + False Negative) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.57 s)
+-  Recall 은 실제로 참인 것을 모델이 얼마나 많이 찾았는지를 나타내는 것으로 (True Positive) / (True Positive + False Negative) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.53 s)
+-  Recall 은 실제로 참인 것을 모델이 얼마나 많이 찾았는지를 나타내는 것으로 (True Positive) / (True Positive + False Negative) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.53 s)
+
+LLM input :
+(제공된 정보) Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative) (사용자 질문) Recall 이 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 109,109,109,109) :
+-  Recall 은 모델이 실제로 Positive 인 데이터를 얼마나 많이 찾았는지를 나타내는 비율이야! 😊 (True Positive) / (True Positive + False Negative) 로 계산하지! (답변 종료 (🕚 6.74 s)
+-  Recall 은 모델이 실제로 Positive 인 데이터를 얼마나 많이 찾았는지를 나타내는 비율이야! 😊 (True Positive) / (True Positive + False Negative) 로 계산하지! (답변 종료 (🕚 6.78 s)
+-  Recall 은 모델이 실제로 Positive 인 데이터를 얼마나 많이 찾았는지를 나타내는 비율이야! 😊 (True Positive) / (True Positive + False Negative) 로 계산하지! (답변 종료 (🕚 6.78 s)
+-  Recall 은 모델이 실제로 Positive 인 데이터를 얼마나 많이 찾았는지를 나타내는 비율이야! 😊 (True Positive) / (True Positive + False Negative) 로 계산하지! (답변 종료 (🕚 6.89 s)
+
+LLM input :
+(제공된 정보) Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive) (사용자 질문) Precision 어떻게 계산하는지 정말 궁금해
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 114,114,114,114) :
+-  Precision은 모델이 참으로 예측한 것 중에 실제로 참인 것의 비율로, (True Positive) / (True Positive + False Positive) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.84 s)
+-  Precision 은 모델이 참으로 예측한 것 중에 실제로 참인 것의 비율로, (True Positive) / (True Positive + False Positive) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.84 s)
+-  Precision은 모델이 참으로 예측한 것 중에 실제로 참인 것의 비율로, (True Positive) / (True Positive + False Positive) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.83 s)
+-  Precision은 모델이 참으로 예측한 것 중에 실제로 참인 것의 비율로, (True Positive) / (True Positive + False Positive) 로 계산하면 돼! 😊 (답변 종료 (🕚 6.82 s)
+
+LLM input :
+(제공된 정보) Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소 (사용자 질문) Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 92,92,92,92) :
+-  Recall 은 False Negative 에 의해 떨어지고, Precision 은 False Positive 에 의해 떨어진다고 생각하면 기억하기 쉬울걸? 😊 (답변 종료 (🕚 4.69 s)
+-  Recall 은 False Negative 에 의해 떨어지고, Precision 은 False Positive 에 의해 떨어진다고 생각하면 기억하기 쉬울걸? 😊 (답변 종료 (🕚 4.67 s)
+-  Recall 은 False Negative 에 의해 떨어지고, Precision 은 False Positive 에 의해 떨어진다고 생각하면 기억하기 쉬울걸? 😊 (답변 종료 (🕚 4.68 s)
+-  Recall 은 False Negative 에 의해 떨어지고, Precision 은 False Positive 에 의해 떨어진다고 생각하면 기억하기 쉬울걸? 😊 (답변 종료 (🕚 4.73 s)
+
+LLM input :
+(제공된 정보) F1 Score 개념 : Recall 과 Precision 의 조화 평균 (사용자 질문) F1 Score 가 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 59,59,59,59) :
+-  F1 Score 는 Recall 과 Precision 의 조화 평균값이야! 😊 (답변 종료 (🕚 3.05 s)
+-  F1 Score 는 Recall 과 Precision 의 조화 평균값이야! 😊 (답변 종료 (🕚 3.03 s)
+-  F1 Score 는 Recall 과 Precision 의 조화 평균값이야! 😊 (답변 종료 (🕚 3.05 s)
+-  F1 Score 는 Recall 과 Precision 의 조화 평균값이야! 😊 (답변 종료 (🕚 3.08 s)
+
+LLM input :
+(제공된 정보) F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall) (사용자 질문) F1 Score 계산식 알려줘
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 96,96,96,96) :
+-  F1 Score = 2 * Precision * Recall / (Precision + Recall) 로 계산하면 돼! 이때 둘 중 하나가 0일 수도 있으니까 개발할 때는 조심하고! 😊 (답변 종료 (🕚 7.31 s)
+-  F1 Score = 2 * Precision * Recall / (Precision + Recall) 로 계산하면 돼! 이때 둘 중 하나가 0일 수도 있으니까 개발할 때는 조심하고! 😊 (답변 종료 (🕚 7.33 s)
+-  F1 Score = 2 * Precision * Recall / (Precision + Recall) 로 계산하면 돼! 이때 둘 중 하나가 0일 수도 있으니까 개발할 때는 조심하고! 😊 (답변 종료 (🕚 7.21 s)
+-  F1 Score = 2 * Precision * Recall / (Precision + Recall) 로 계산하면 돼! 이때 둘 중 하나가 0일 수도 있으니까 개발할 때는 조심하고! 😊 (답변 종료 (🕚 7.18 s)
+
+LLM input :
+(제공된 정보) F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려 (사용자 질문) F1 Score 는 왜 쓰는 거지?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 92,92,92,92) :
+-  F1 Score 는 모델이 예측을 실패한 2가지 경우인 False Negative 와 False Positive 를 모두 고려한다는 게 장점이지! 😊 (답변 종료 (🕚 5.55 s)
+-  F1 Score 는 모델이 예측을 실패한 2가지 경우인 False Negative 와 False Positive 를 모두 고려한다는 게 장점이지! 😊 (답변 종료 (🕚 5.53 s)
+-  F1 Score 는 모델이 예측을 실패한 2가지 경우인 False Negative 와 False Positive 를 모두 고려한다는 게 장점이지! 😊 (답변 종료 (🕚 5.57 s)
+-  F1 Score 는 모델이 예측을 실패한 2가지 경우인 False Negative 와 False Positive 를 모두 고려한다는 게 장점이지! 😊 (답변 종료 (🕚 5.57 s)
+
+LLM input :
+(제공된 정보) IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative) (사용자 질문) IoU 라는 게 있는데 뭔지 궁금해
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 121,121,121,121) :
+-  IoU 는 (교집합의 크기) / (합집합의 크기) 개념으로 수식으로는 True Positive / (True Positive + False Positive + False Negative) 로 구하면 돼! 😊 (답변 종료 (🕚 7.51 s)
+-  IoU 는 (교집합의 크기) / (합집합의 크기) 개념으로 수식으로는 True Positive / (True Positive + False Positive + False Negative) 로 구하면 돼! 😊 (답변 종료 (🕚 7.52 s)
+-  IoU 는 (교집합의 크기) / (합집합의 크기) 개념으로 수식으로는 True Positive / (True Positive + False Positive + False Negative) 로 구하면 돼! 😊 (답변 종료 (🕚 7.5 s)
+-  IoU 는 (교집합의 크기) / (합집합의 크기) 개념으로 수식으로는 True Positive / (True Positive + False Positive + False Negative) 로 구하면 돼! 😊 (답변 종료 (🕚 7.53 s)
+
+LLM input :
+(제공된 정보) Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative) (사용자 질문) 특이도는 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 92,92,92,92) :
+-  특이도는 실제로 False 인 데이터 중 모델이 False 로 예측한 것의 비율이야! (답변 종료 (🕚 4.03 s)
+-  특이도는 실제로 False 인 데이터 중 모델이 False 로 예측한 것의 비율이야! (답변 종료 (🕚 4.18 s)
+-  특이도는 실제로 False 인 데이터 중 모델이 False 로 예측한 것의 비율이야! (답변 종료 (🕚 4.14 s)
+-  특이도는 실제로 False 인 데이터 중 모델이 False 로 예측한 것의 비율이야! (답변 종료 (🕚 3.99 s)
+
+LLM input :
+(제공된 정보) binary classification (이진 분류) metric : PR-AUC, ROC-AUC (사용자 질문) 이진 분류에서는 어떤 성능평가 지표가 쓰이지?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 73,73,73,73) :
+-  이진 분류에서는 PR-AUC와 ROC-AUC 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 3.44 s)
+-  이진 분류에서는 PR-AUC와 ROC-AUC 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 3.48 s)
+-  이진 분류에서는 PR-AUC와 ROC-AUC 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 3.42 s)
+-  이진 분류에서는 PR-AUC와 ROC-AUC 같은 것이 대표적으로 사용돼! (답변 종료 (🕚 3.42 s)
+
+LLM input :
+(제공된 정보) PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (사용자 질문) PR-AUC, ROC-AUC 가 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 158,159,159,159) :
+-  PR-AUC는 x축을 recall, y축을 precision이라고 했을 때 이 측정값들을 연결한 그래프 아래쪽 넓이야! ROC-AUC는 x축을 False Positive Rate, y축을 True Positive Rate 로 했을 때 그걸 연결한 그래프 아래쪽의 넓이고! (답변 종료 (🕚 10.05 s)
+-  PR-AUC 는 x축을 recall, y축을 precision 이라고 했을 때 이 측정값들을 연결한 그래프 아래쪽 넓이야! ROC-AUC 는 x축을 False Positive Rate, y축을 True Positive Rate 로 했을 때 그걸 연결한 그래프 아래쪽의 넓이고! (답변 종료 (🕚 10.17 s)
+-  PR-AUC 는 x축을 recall, y축을 precision 이라고 했을 때 이 측정값들을 연결한 그래프 아래쪽 넓이야! ROC-AUC 는 x축을 False Positive Rate, y축을 True Positive Rate 로 했을 때 그걸 연결한 그래프 아래쪽의 넓이고! (답변 종료 (🕚 10.19 s)
+-  PR-AUC 는 x 축을 recall, y 축을 precision 이라고 했을 때 이 측정값들을 연결한 그래프 아래쪽 넓이야! ROC-AUC 는 x 축을 False Positive Rate, y 축을 True Positive Rate 로 했을 때 그걸 연결한 그래프 아래쪽의 넓이고! (답변 종료 (🕚 10.12 s)
+
+LLM input :
+(제공된 정보) PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음) (사용자 질문) PR-AUC 에 대해 아주 자세히 알려줘
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 140,140,138,140) :
+-  PR-AUC 는 x축은 recall, y축은 precision 으로 했을 때 recall 이 커지면 precision 이 작아지잖아? 그 측정값들을 연결한 그래프 아래쪽 넓이야! 값이 커서 1에 가까울수록 성능이 좋지! (답변 종료 (🕚 9.71 s)
+-  PR-AUC 는 x축은 recall, y축은 precision 으로 했을 때 recall 이 커지면 precision 이 작아지잖아? 그 측정값들을 연결한 그래프 아래쪽 넓이야! 값이 커서 1에 가까울수록 성능이 좋지! (답변 종료 (🕚 10.1 s)
+-  PR-AUC 는 x축은 recall, y축은 precision 로 했을 때 recall 이 커지면 precision 이 작아지잖아? 그 측정값들을 연결한 그래프 아래쪽 넓이야! 값이 커서 1에 가까울수록 성능이 좋지! (답변 종료 (🕚 9.6 s)
+-  PR-AUC 는 x축은 recall, y축은 precision 으로 했을 때 recall 이 커지면 precision 이 작아지잖아? 그 측정값들을 연결한 그래프 아래쪽 넓이야! 값이 커서 1에 가까울수록 성능이 좋지! (답변 종료 (🕚 9.72 s)
+
+LLM input :
+(제공된 정보) ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음) (사용자 질문) ROC-AUC 는 뭔지 정말 궁금해
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 171,171,171,171) :
+-  ROC-AUC 는 x축을 False Positive Rate, y축을 True Positive Rate 라고 했을 때 x가 커질수록 y가 커지지? 근데 모델 성능이 좋으면 x=0 에 가까울 때도 y=1에 가까우니까, 그 아래쪽 넓이로 측정하는 거야! 넓이가 1에 가깝게 커질수록 성능이 좋지! 😊 (답변 종료 (🕚 13.64 s)
+-  ROC-AUC 는 x축을 False Positive Rate, y축을 True Positive Rate 라고 했을 때 x가 커질수록 y가 커지지? 근데 모델 성능이 좋으면 x=0 에 가까울 때도 y=1에 가까우니까, 그 아래쪽 넓이로 측정하는 거야! 넓이가 1에 가깝게 커질수록 성능이 좋지! 😊 (답변 종료 (🕚 13.66 s)
+-  ROC-AUC 는 x축을 False Positive Rate, y축을 True Positive Rate 라고 했을 때 x가 커질수록 y가 커지지? 근데 모델 성능이 좋으면 x=0 에 가까울 때도 y=1에 가까우니까, 그 아래쪽 넓이로 측정하는 거야! 넓이가 1에 가깝게 커질수록 성능이 좋지! 😊 (답변 종료 (🕚 13.69 s)
+-  ROC-AUC 는 x축을 False Positive Rate, y축을 True Positive Rate 라고 했을 때 x가 커질수록 y가 커지지? 근데 모델 성능이 좋으면 x=0 에 가까울 때도 y=1에 가까우니까, 그 아래쪽 넓이로 측정하는 거야! 넓이가 1에 가깝게 커질수록 성능이 좋지! 😊 (답변 종료 (🕚 13.59 s)
+
+LLM input :
+(제공된 정보) True Positive Rate : recall 의 다른 이름 (사용자 질문) True Positive Rate 구하는 방법을 알려줘
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 53,53,53,53) :
+-  True Positive Rate 는 recall 의 다른 이름이야! 😊 (답변 종료 (🕚 2.48 s)
+-  True Positive Rate 는 recall 의 다른 이름이야! 😊 (답변 종료 (🕚 2.48 s)
+-  True Positive Rate 는 recall 의 다른 이름이야! 😊 (답변 종료 (🕚 2.48 s)
+-  True Positive Rate 는 recall 의 다른 이름이야! 😊 (답변 종료 (🕚 2.48 s)
+
+LLM input :
+(제공된 정보) False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative) (사용자 질문) False Positive Rate 가 뭔지 정말 궁금하다
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 106,106,106,106) :
+-  False Positive Rate 는 False Positive / (False Positive + True Negative) 로 계산하지! 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율이야! 😊 (답변 종료 (🕚 6.08 s)
+-  False Positive Rate 는 False Positive / (False Positive + True Negative) 로 계산하지! 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율이야! 😊 (답변 종료 (🕚 6.11 s)
+-  False Positive Rate 는 False Positive / (False Positive + True Negative) 로 계산하지! 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율이야! 😊 (답변 종료 (🕚 6.07 s)
+-  False Positive Rate 는 False Positive / (False Positive + True Negative) 로 계산하지! 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율이야! 😊 (답변 종료 (🕚 6.06 s)
+
+LLM input :
+(제공된 정보) Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표 (사용자 질문) Confusion Matrix (혼동 행렬) 이 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 122,122,122,122) :
+-  Confusion Matrix (혼동 행렬) 는 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표야! 😊 (답변 종료 (🕚 7.05 s)
+-  Confusion Matrix (혼동 행렬) 은 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표야! 😊 (답변 종료 (🕚 7.0 s)
+-  Confusion Matrix (혼동 행렬) 은 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표야! 😊 (답변 종료 (🕚 7.09 s)
+-  Confusion Matrix (혼동 행렬) 은 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표야! 😊 (답변 종료 (🕚 7.09 s)
+
+LLM input :
+(제공된 정보) Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산 (사용자 질문) Confusion Matrix 는 그럼 어떻게 만들어?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 158,158,158,158) :
+-  첫 행에는 '실제 값 = True', '실제 값 = False', 'Precision' 을 순서대로 쓰고, 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서대로 쓴 다음 각 값을 계산하면 빠르게 만들 수 있어! 😊 (답변 종료 (🕚 9.95 s)
+-  첫 행에는 '실제 값 = True', '실제 값 = False', 'Precision' 을 순서대로 쓰고, 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서대로 쓴 다음 각 값을 계산하면 빠르게 만들 수 있어! 😊 (답변 종료 (🕚 9.94 s)
+-  첫 행에는 '실제 값 = True', '실제 값 = False', 'Precision' 을 순서대로 쓰고, 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서대로 쓴 다음 각 값을 계산하면 빠르게 만들 수 있어! 😊 (답변 종료 (🕚 9.86 s)
+-  첫 행에는 '실제 값 = True', '실제 값 = False', 'Precision' 을 순서대로 쓰고, 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서대로 쓴 다음 각 값을 계산하면 빠르게 만들 수 있어! 😊 (답변 종료 (🕚 9.89 s)
+
+LLM input :
+(제공된 정보) 불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미 (사용자 질문) 불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 147,147,147,147) :
+-  정답은 Recall! 😊 이건 불량품을 실제로 모델이 불량품으로 검출한 비율인데 이게 낮으면 불량품을 제대로 찾을 수 없다는 뜻이니까 문제가 되지! (답변 종료 (🕚 7.8 s)
+-  정답은 Recall! 😊 이건 불량품을 실제로 모델이 불량품으로 검출한 비율인데 이게 낮으면 불량품을 제대로 찾을 수 없다는 뜻이니까 문제가 되지! (답변 종료 (🕚 7.81 s)
+-  정답은 Recall! 😊 이건 불량품을 실제로 모델이 불량품으로 검출한 비율인데 이게 낮으면 불량품을 제대로 찾을 수 없다는 뜻이니까 문제가 되지! (답변 종료 (🕚 7.78 s)
+-  정답은 Recall! 😊 이건 불량품을 실제로 모델이 불량품으로 검출한 비율인데 이게 낮으면 불량품을 제대로 찾을 수 없다는 뜻이니까 문제가 되지! (답변 종료 (🕚 7.83 s)
+
+LLM input :
+(제공된 정보) Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score (사용자 질문) Normalization 정규화 그게 뭐야?
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 121,121,121,121) :
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.83 s)
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.81 s)
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.82 s)
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.86 s)
+
+LLM input :
+(제공된 정보) Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score (사용자 질문) 정규화가 뭐지? 정말 궁금해!
+Oh-LoRA answer (trials: 1,1,1,1 | output_tkn_cnt : 122,122,122,122) :
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.83 s)
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.8 s)
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.81 s)
+-  정규화는 데이터 전처리에서 필수적인 방법 중 하나로, 데이터를 일정한 수식으로 변환하는 거야! 😊 대표적으로 min-max, z-score 정규화가 있지! (답변 종료 (🕚 6.92 s)
