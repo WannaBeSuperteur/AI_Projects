@@ -33,7 +33,7 @@
 
 **3. LLM 관련 기술**
 
-* 아래 [Oh-LoRA v2](../2025_05_02_OhLoRA_v2), [Oh-LoRA v3](../2025_05_26_OhLoRA_v3) 구현 컨셉 기반
+* [Oh-LoRA v2](../2025_05_02_OhLoRA_v2), [Oh-LoRA v3](../2025_05_26_OhLoRA_v3) 의 LLM 구현 컨셉 기반
   * 총 4 개의 LLM 에 대해 [Supervised Fine-Tuning](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md) 적용
     * 표정 생성을 위한 핵심 속성 값 역시, LLM 출력 답변 (예: ```눈: 크게 뜸```) 을 이용하여 결정
   * 메모리 메커니즘
