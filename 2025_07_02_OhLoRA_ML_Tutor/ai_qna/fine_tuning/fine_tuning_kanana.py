@@ -119,7 +119,7 @@ def get_original_llm(kanana_llm_name):
 
 def get_training_args(kanana_llm_name):
     output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_wo_rag_fine_tuned'
-    num_train_epochs = 5
+    num_train_epochs = 20
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
@@ -244,7 +244,7 @@ def fine_tune_model(instruct_version):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning_dataset/OhLoRA_fine_tuning_v4.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning_dataset/SFT_wo_RAG_concept.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
