@@ -124,7 +124,7 @@ def get_training_args(kanana_llm_name):
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
         num_train_epochs=num_train_epochs,
-        logging_steps=20,                   # logging frequency
+        logging_steps=5,                    # logging frequency
         gradient_checkpointing=False,
         output_dir=output_dir_path,
         save_total_limit=3,                 # max checkpoint count to save
