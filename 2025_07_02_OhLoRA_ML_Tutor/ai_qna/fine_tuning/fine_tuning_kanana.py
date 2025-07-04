@@ -52,7 +52,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
         kanana_llm_name = 'kananai' if self.instruct_version else 'kanana'
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_output_message_train_log.csv')
+        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_wo_rag_train_log.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -76,7 +76,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_output_message_inference_log_dict.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_wo_rag_inference_log_dict.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
@@ -118,7 +118,7 @@ def get_original_llm(kanana_llm_name):
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args(kanana_llm_name):
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_output_message_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_wo_rag_fine_tuned'
     num_train_epochs = 5
 
     training_args = SFTConfig(
@@ -225,7 +225,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # - instruct_version (bool) : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
 
 # Returns:
-# - ai_qna/models/{kanana|kananai}_output_message_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - ai_qna/models/{kanana|kananai}_sft_wo_rag_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model(instruct_version):
     global lora_llm, tokenizer, valid_final_prompts
@@ -266,5 +266,5 @@ def fine_tune_model(instruct_version):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_output_message_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_wo_rag_fine_tuned'
     trainer.save_model(output_dir_path)
