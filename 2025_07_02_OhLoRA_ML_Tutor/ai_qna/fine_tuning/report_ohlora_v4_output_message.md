@@ -55,5 +55,6 @@
 
 ## 3. Fine-Tuning 결과 평가
 
-* Oh-LoRA v4 의 **LoRA rank = 64** 로 하여 Fine-Tuning 했으면 더 좋은 사용자 경험을 제공했을 수 있을 것으로 추정됨
+* Oh-LoRA v4 개발 당시, **LoRA rank = 64** 로 하여 Fine-Tuning 했으면 더 좋은 사용자 경험을 제공했을 수 있을 것으로 추정됨
 * 향후 Oh-LoRA 챗봇 업그레이드 기회가 있을 때 반영 예정
+  * [KT의 한국어 LLM '믿음 2.0'](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Trend/AI_TREND_Jul_2025.md#20250703-%EB%AA%A9) HuggingFace 정식 공개 시?
