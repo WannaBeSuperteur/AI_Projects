@@ -5,6 +5,9 @@ from sentence_transformers.readers import InputExample
 from torch.utils.data import Dataset, DataLoader, random_split
 import os
 
+# to prevent force system off during S-BERT training
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 # remove warning "UserWarning: PyTorch is not compiled with NCCL support"
 import warnings
 warnings.filterwarnings('ignore')
