@@ -14,7 +14,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 
 SBERT_TRAIN_BATCH_SIZE = 16
 SBERT_VALID_BATCH_SIZE = 4
-SBERT_EPOCHS = 10
+SBERT_EPOCHS = 7
 
 SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
 SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/checkpoints'
