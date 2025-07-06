@@ -13,7 +13,7 @@ import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
-# Q&A LLM 을 위한 RAG S-BERT 모델을 이용하여, DB에서 가장 적절한 1개의 항목 반환 (단, Cos-similarity >= 0.75 인 것들만)
+# Q&A LLM 을 위한 RAG S-BERT 모델을 이용하여, DB에서 가장 적절한 1개의 항목 반환 (단, Cos-similarity >= 0.5 인 것들만)
 # Create Date : 2025.07.06
 # Last Update Date : -
 
@@ -21,13 +21,13 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # - sbert_model  (S-BERT Model) : 학습된 Sentence BERT 모델
 # - user_prompt  (str)          : Oh-LoRA 에게 전달할 사용자 프롬프트
 # - db_file_name (str)          : DB 파일 (txt) 의 이름 (예: rag_data_text.txt)
-# - threshold    (float)        : minimum cosine similarity threshold (default: 0.75)
+# - threshold    (float)        : minimum cosine similarity threshold (default: 0.5)
 # - verbose      (bool)         : 각 DB item 에 대한 score 출력 여부
 
 # Returns:
 # - best_db_item (str) : DB 파일에서 찾은 best DB item
 
-def pick_best_db_item(sbert_model, user_prompt, db_file_name='rag_data_text.txt', threshold=0.75, verbose=False):
+def pick_best_db_item(sbert_model, user_prompt, db_file_name='rag_data_text.txt', threshold=0.5, verbose=False):
     db_file_path = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/db/{db_file_name}'
 
     # read DB file
