@@ -48,7 +48,7 @@ def run_inference(sbert_model, test_dataset_df):
                         'absolute_error': absolute_errors}
 
     test_result_df = pd.DataFrame(test_result_dict)
-    result_dir = f'{PROJECT_DIR_PATH}/rag_sbert/result'
+    result_dir = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/result'
     os.makedirs(result_dir, exist_ok=True)
     test_result_df.to_csv(f'{result_dir}/test_result.csv', index=False)
 
