@@ -79,7 +79,7 @@ def load_sbert_model():
 
 if __name__ == '__main__':
 
-    # load test dataset
+    # load train & test dataset
     train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/dataset/train_final.csv'
     train_dataset_df = pd.read_csv(train_dataset_csv_path)
 
