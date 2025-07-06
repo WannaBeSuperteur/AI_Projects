@@ -1,9 +1,11 @@
 try:
     from rag_sbert.inference_sbert import run_inference, run_inference_each_example
     from rag_sbert.load_sbert_model import load_pretrained_sbert_model
+    from rag_sbert.train_sbert import train_sbert
 except:
     from ai_qna.rag_sbert.inference_sbert import run_inference, run_inference_each_example
     from ai_qna.rag_sbert.load_sbert_model import load_pretrained_sbert_model
+    from ai_qna.rag_sbert.train_sbert import train_sbert
 
 import pandas as pd
 
@@ -78,12 +80,21 @@ def load_sbert_model():
 if __name__ == '__main__':
 
     # load test dataset
+    train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/dataset/train_final.csv'
+    train_dataset_df = pd.read_csv(train_dataset_csv_path)
+
     test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/dataset/test_final.csv'
     test_dataset_df = pd.read_csv(test_dataset_csv_path)
 
     # load S-BERT Model
-    sbert_model = load_sbert_model()
-    print('S-BERT Model (for DB mechanism) - Load SUCCESSFUL! 👱‍♀️')
+    try:
+        sbert_model = load_sbert_model()
+        print('S-BERT Model (for DB mechanism) - Load SUCCESSFUL! 👱‍♀️')
+
+    except Exception as e:
+        print(f'S-BERT Model (for DB mechanism) load failed : {e}')
+        train_sbert(train_dataset_df)
+        sbert_model = load_sbert_model()
 
     # run inference on test dataset
     run_inference(sbert_model, test_dataset_df)

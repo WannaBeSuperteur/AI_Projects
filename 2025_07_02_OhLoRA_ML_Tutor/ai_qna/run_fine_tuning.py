@@ -22,7 +22,7 @@ ANSWER_CNT = 4
 # Last Update Date : -
 
 # Arguments:
-# - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai')
+# - llm_name (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai')
 
 # Returns:
 # - fine_tuned_llm (LLM) : Fine-Tuning 된 LLM
