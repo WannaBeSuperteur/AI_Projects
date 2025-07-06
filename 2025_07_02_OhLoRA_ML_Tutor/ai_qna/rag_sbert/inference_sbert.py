@@ -20,15 +20,15 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 def run_inference(sbert_model, test_dataset_df):
     n = len(test_dataset_df)
 
-    memory_info_list = test_dataset_df['memory_0'].tolist()
-    user_prompt_list = test_dataset_df['user_prompt_1'].tolist()
+    user_question_list = test_dataset_df['user_question'].tolist()
+    rag_retrieved_data_list = test_dataset_df['rag_retrieved_data'].tolist()
 
     ground_truth_scores = test_dataset_df['similarity_score'].tolist()
     predicted_scores = []
 
     # run prediction using trained S-BERT
-    for memory_info, user_prompt in zip(memory_info_list, user_prompt_list):
-        predicted_score = run_inference_each_example(sbert_model, memory_info, user_prompt)
+    for user_question, rag_retrieved_data in zip(user_question_list, rag_retrieved_data_list):
+        predicted_score = run_inference_each_example(sbert_model, user_question, rag_retrieved_data)
         predicted_scores.append(predicted_score)
 
     # compute errors
@@ -43,7 +43,7 @@ def run_inference(sbert_model, test_dataset_df):
     print(f'Corr-coef : {corr_coef:.4f}')
 
     # save test result
-    test_result_dict = {'memory': memory_info_list, 'user_prompt': user_prompt_list,
+    test_result_dict = {'user_question': user_question_list, 'rag_retrieved_data': rag_retrieved_data_list,
                         'predicted_score': predicted_scores, 'ground_truth_score': ground_truth_scores,
                         'absolute_error': absolute_errors}
 
