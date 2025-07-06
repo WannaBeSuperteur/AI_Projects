@@ -160,16 +160,16 @@ TBU
 
 **2. 머신러닝 분야 질의응답 기능**
 
-| 구분         | 계획 내용                                                              | 일정                     | branch                        | issue                                                              | 상태 |
-|------------|--------------------------------------------------------------------|------------------------|-------------------------------|--------------------------------------------------------------------|----|
-| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 작성 **(질의응답 LLM, w/o RAG 유사 컨셉)** | 07.02 수 (1d)           | ```P008-001-train-LLM1```     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/37) | ✅  |
-| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(질의응답 LLM, w/o RAG 유사 컨셉)**        | 07.02 수 - 07.04 금 (3d) | ```P008-001-train-LLM1```     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/37) | ✅  |
-| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 작성 **(질의응답 LLM, RAG 유사 컨셉)**     | 07.04 금 + 07.06 일 (2d) | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
-| 📝 데이터셋 작성 | RAG 학습 데이터 작성 **(질의응답 LLM, RAG 유사 컨셉)**                            | 07.04 금 - 07.05 토 (2d) | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
-| 🔨 모델 구현   | RAG 유사 컨셉 구현 (질의응답 LLM 용)                                          | 07.06 일 (1d)           | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
-| 🧪 모델 학습   | RAG 유사 컨셉 용 S-BERT 모델 학습 (질의응답 LLM 용)                              | 07.06 일 (1d)           | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
-| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(질의응답 LLM, RAG 유사 컨셉)**            | 07.05 토 - 07.06 일 (2d) | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | 💨 |
-| 📃 문서화     | "머신러닝 분야 질의응답" 개발 내용 문서화                                           | 07.04 금 + 07.06 일 (2d) |                               |                                                                    | 💨 |
+| 구분         | 계획 내용                                                              | 일정                               | branch                        | issue                                                              | 상태 |
+|------------|--------------------------------------------------------------------|----------------------------------|-------------------------------|--------------------------------------------------------------------|----|
+| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 작성 **(질의응답 LLM, w/o RAG 유사 컨셉)** | 07.02 수 (1d)                     | ```P008-001-train-LLM1```     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/37) | ✅  |
+| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(질의응답 LLM, w/o RAG 유사 컨셉)**        | 07.02 수 - 07.04 금 (3d)           | ```P008-001-train-LLM1```     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/37) | ✅  |
+| 📝 데이터셋 작성 | LLM Supervised Fine-Tuning 학습 데이터 작성 **(질의응답 LLM, RAG 유사 컨셉)**     | 07.04 금 + 07.06 일 (2d)           | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
+| 📝 데이터셋 작성 | RAG 학습 데이터 작성 **(질의응답 LLM, RAG 유사 컨셉)**                            | 07.04 금 - 07.05 토 (2d)           | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
+| 🔨 모델 구현   | RAG 유사 컨셉 구현 (질의응답 LLM 용)                                          | 07.06 일 (1d)                     | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
+| 🧪 모델 학습   | RAG 유사 컨셉 용 S-BERT 모델 학습 (질의응답 LLM 용)                              | 07.06 일 (1d)                     | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
+| 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습 **(질의응답 LLM, RAG 유사 컨셉)**            | 07.05 토 - 07.06 일 (2d)           | ```P008-002-train-LLM1-RAG``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/38) | ✅  |
+| 📃 문서화     | "머신러닝 분야 질의응답" 개발 내용 문서화                                           | 07.04 금 + 07.06 일 + 07.08 화 (3d) |                               |                                                                    | 💨 |
 
 **3. 머신러닝 분야 퀴즈 기능**
 
