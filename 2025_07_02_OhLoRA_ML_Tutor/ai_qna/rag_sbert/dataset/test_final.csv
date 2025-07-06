@@ -1,0 +1,1051 @@
+data_type,user_question,rag_retrieved_data,similarity_score
+test,코사인 유사도가 뭔지 궁금해,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,1.0
+test,Cosine Similarity 에 대해 알려줘!,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,1.0
+test,Cosine Similarity 는 어떻게 계산하지?,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,1.0
+test,코사인 유사도 특징이 뭐야?,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",1.0
+test,머신러닝 모델 평가하는 방법 알려줘,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",1.0
+test,Accuracy 계산 어떻게 하지?,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),1.0
+test,True Positive 가 뭐야?,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,1.0
+test,True Negative 는 뭔지 궁금해 그럼,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,1.0
+test,False Positive 알려줘,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,1.0
+test,False Negative (FN),False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,1.0
+test,Recall 계산법 어떻게 하는 거지?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),1.0
+test,Recall 이 뭐야?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),1.0
+test,Precision 어떻게 계산하는지 정말 궁금해,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),1.0
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",1.0
+test,F1 Score 가 뭐야?,F1 Score 개념 : Recall 과 Precision 의 조화 평균,1.0
+test,F1 Score 계산식 알려줘,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),1.0
+test,F1 Score 는 왜 쓰는 거지?,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",1.0
+test,IoU 라는 게 있는데 뭔지 궁금해,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),1.0
+test,특이도는 뭐야?,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),1.0
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",1.0
+test,"PR-AUC, ROC-AUC 가 뭐야?","PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",1.0
+test,PR-AUC 에 대해 아주 자세히 알려줘,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",1.0
+test,ROC-AUC 는 뭔지 정말 궁금해,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",1.0
+test,True Positive Rate 구하는 방법을 알려줘,True Positive Rate : recall 의 다른 이름,1.0
+test,False Positive Rate 가 뭔지 정말 궁금하다,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),1.0
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",1.0
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",1.0
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",1.0
+test,Normalization 정규화 그게 뭐야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",1.0
+test,정규화가 뭐지? 정말 궁금해!,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",1.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),1.0
+test,Z 스코어 정규화가 뭐야?,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,1.0
+test,Clipping? 클리핑? 그게 뭐지?,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",1.0
+test,클리핑 이거 쓸데없이 하는 거 아니야?,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,1.0
+test,로그 스케일링도 정규화 같은데 뭐야?,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,1.0
+test,Outlier 개념,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,1.0
+test,이상치가 뭐야?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,1.0
+test,Outlier 없애야 되는 이유가 뭐야?,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,1.0
+test,Outlier 없애려면 어떻게 해야 되지?,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",1.0
+test,PCA에 대해 알려줘,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",1.0
+test,주성분 분석?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",1.0
+test,PCA 그거 왜 하는 건지 모르겠어,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,1.0
+test,데이터가 불균형하다고? 그게 뭐지,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,1.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",1.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",1.0
+test,학습 환경만 바꾸는 방법도 알려줘,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",1.0
+test,데이터 증강이 뭐지?,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",1.0
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,1.0
+test,Undersampling 에 대해서 알려줘,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,1.0
+test,oversampling 이 뭐지?,Oversampling : 데이터가 적은 Class 의 데이터 증가,1.0
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",1.0
+test,undersampling 방법은 뭐가 있어?,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",1.0
+test,Oversampling 하는 방법,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),1.0
+test,차원의 저주가 뭔지 궁금해,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",1.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",1.0
+test,의사결정 나무가 뭔지 알려줘,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,1.0
+test,Decision Tree 가 뭐야?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,1.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,1.0
+test,앙상블이 뭐지?,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,1.0
+test,앙상블 하는 이유,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,1.0
+test,앙상블 방법,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",1.0
+test,Ensemble 정확히 어떻게 하지,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",1.0
+test,Voting? 그게 뭐지,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,1.0
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,1.0
+test,보팅 방법 구체적으로 알려줘,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",1.0
+test,배깅이뭐야,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",1.0
+test,부스팅이 뭐지 그러면,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",1.0
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",1.0
+test,가우시안 혼합? 그게 뭐야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,1.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,1.0
+test,K-means Clustering 너 알지?,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",1.0
+test,K-means Clustering 방법,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",1.0
+test,KNN 알고리즘 알려줘,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",1.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",1.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",1.0
+test,머신러닝 방법 종류 알려줘,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",1.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",1.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",1.0
+test,머신러닝 문제에는 뭐가 있지?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",1.0
+test,분류랑 회귀가 뭐야?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",1.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",1.0
+test,Naïve Bayes 뭐야,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",1.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",1.0
+test,SVM 제발 알려줘 제발,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",1.0
+test,K-fold Cross Validation 정의,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",1.0
+test,K-fold Cross Validation 하는 이유는?,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,1.0
+test,Hyper parameter 가 대체 뭐지,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",1.0
+test,One-hot? 그것도 머신러닝 모델이야?,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",1.0
+test,Valid 데이터 쓰는 이유가 궁금해,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,1.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",1.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",1.0
+test,인공지능 정의,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",1.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",1.0
+test,딥러닝이 뭔지 알려줘,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,1.0
+test,딥러닝의 learning rate 그게 뭐지?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,1.0
+test,학습률? Learning rate? 뭐야?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,1.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",1.0
+test,오버피팅이 뭐야,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,1.0
+test,Overfitting 대체 어떻게 해결하지?,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",1.0
+test,전이학습? 그게 뭐야 도대체?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,1.0
+test,Transfer Learning 요즘 대세라던데 뭐야,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,1.0
+test,활성화 함수? 뭐야?,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",1.0
+test,굳이 활성화 함수 왜 써?,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,1.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",1.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",1.0
+test,Cosine Similarity 에 대해 알려줘!,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,1.0
+test,Cosine Similarity 는 어떻게 계산하지?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.5
+test,코사인 유사도 특징이 뭐야?,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.5
+test,머신러닝 모델 평가하는 방법 알려줘,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,Accuracy 계산 어떻게 하지?,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.25
+test,True Positive 가 뭐야?,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.1
+test,True Negative 는 뭔지 궁금해 그럼,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.25
+test,False Positive 알려줘,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.25
+test,False Negative (FN),False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.25
+test,Recall 계산법 어떻게 하는 거지?,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.25
+test,Recall 이 뭐야?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),1.0
+test,Precision 어떻게 계산하는지 정말 궁금해,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.25
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.5
+test,F1 Score 가 뭐야?,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.25
+test,F1 Score 계산식 알려줘,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.5
+test,F1 Score 는 왜 쓰는 거지?,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.5
+test,IoU 라는 게 있는데 뭔지 궁금해,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.25
+test,특이도는 뭐야?,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.25
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.25
+test,"PR-AUC, ROC-AUC 가 뭐야?","binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.25
+test,PR-AUC 에 대해 아주 자세히 알려줘,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.5
+test,ROC-AUC 는 뭔지 정말 궁금해,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.25
+test,True Positive Rate 구하는 방법을 알려줘,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.25
+test,False Positive Rate 가 뭔지 정말 궁금하다,True Positive Rate : recall 의 다른 이름,0.25
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.25
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.5
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.25
+test,Normalization 정규화 그게 뭐야?,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,정규화가 뭐지? 정말 궁금해!,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",1.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.25
+test,Z 스코어 정규화가 뭐야?,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.25
+test,Clipping? 클리핑? 그게 뭐지?,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.25
+test,클리핑 이거 쓸데없이 하는 거 아니야?,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.5
+test,로그 스케일링도 정규화 같은데 뭐야?,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.25
+test,Outlier 개념,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,이상치가 뭐야?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,1.0
+test,Outlier 없애야 되는 이유가 뭐야?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.5
+test,Outlier 없애려면 어떻게 해야 되지?,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.5
+test,PCA에 대해 알려줘,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,주성분 분석?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",1.0
+test,PCA 그거 왜 하는 건지 모르겠어,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.5
+test,데이터가 불균형하다고? 그게 뭐지,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.5
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.5
+test,학습 환경만 바꾸는 방법도 알려줘,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.25
+test,데이터 증강이 뭐지?,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.1
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.1
+test,Undersampling 에 대해서 알려줘,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.5
+test,oversampling 이 뭐지?,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.25
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.1
+test,undersampling 방법은 뭐가 있어?,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.1
+test,Oversampling 하는 방법,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.25
+test,차원의 저주가 뭔지 궁금해,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.5
+test,의사결정 나무가 뭔지 알려줘,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,Decision Tree 가 뭐야?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,1.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.5
+test,앙상블이 뭐지?,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,앙상블 하는 이유,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.5
+test,앙상블 방법,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.5
+test,Ensemble 정확히 어떻게 하지,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",1.0
+test,Voting? 그게 뭐지,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.25
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,1.0
+test,보팅 방법 구체적으로 알려줘,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.5
+test,배깅이뭐야,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.25
+test,부스팅이 뭐지 그러면,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.25
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.25
+test,가우시안 혼합? 그게 뭐야?,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,1.0
+test,K-means Clustering 너 알지?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,K-means Clustering 방법,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.5
+test,KNN 알고리즘 알려줘,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",1.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,머신러닝 방법 종류 알려줘,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",1.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",1.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.5
+test,머신러닝 문제에는 뭐가 있지?,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,분류랑 회귀가 뭐야?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",1.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",1.0
+test,Naïve Bayes 뭐야,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,SVM 제발 알려줘 제발,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",1.0
+test,K-fold Cross Validation 정의,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,K-fold Cross Validation 하는 이유는?,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.5
+test,Hyper parameter 가 대체 뭐지,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,One-hot? 그것도 머신러닝 모델이야?,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,Valid 데이터 쓰는 이유가 궁금해,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.25
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,인공지능 정의,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.5
+test,머신러닝은 인공지능에 속하는 거 맞지?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.25
+test,딥러닝이 뭔지 알려줘,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.25
+test,딥러닝의 learning rate 그게 뭐지?,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.1
+test,학습률? Learning rate? 뭐야?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,1.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,오버피팅이 뭐야,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,Overfitting 대체 어떻게 해결하지?,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.5
+test,전이학습? 그게 뭐야 도대체?,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,1.0
+test,활성화 함수? 뭐야?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,굳이 활성화 함수 왜 써?,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.5
+test,CNN이 뭐야? 이미지 인식에 좋다던데,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,코사인 유사도가 뭔지 궁금해,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,Cosine Similarity 는 어떻게 계산하지?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.5
+test,코사인 유사도 특징이 뭐야?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.5
+test,머신러닝 모델 평가하는 방법 알려줘,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,Accuracy 계산 어떻게 하지?,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,True Positive 가 뭐야?,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.25
+test,True Negative 는 뭔지 궁금해 그럼,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.25
+test,False Positive 알려줘,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.25
+test,False Negative (FN),True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.25
+test,Recall 계산법 어떻게 하는 거지?,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.25
+test,Recall 이 뭐야?,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.25
+test,Precision 어떻게 계산하는지 정말 궁금해,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.25
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.25
+test,F1 Score 가 뭐야?,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.25
+test,F1 Score 계산식 알려줘,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.25
+test,F1 Score 는 왜 쓰는 거지?,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.5
+test,IoU 라는 게 있는데 뭔지 궁금해,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.25
+test,특이도는 뭐야?,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.25
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.25
+test,"PR-AUC, ROC-AUC 가 뭐야?",Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.25
+test,PR-AUC 에 대해 아주 자세히 알려줘,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.25
+test,ROC-AUC 는 뭔지 정말 궁금해,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.25
+test,True Positive Rate 구하는 방법을 알려줘,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.25
+test,False Positive Rate 가 뭔지 정말 궁금하다,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.25
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,True Positive Rate : recall 의 다른 이름,0.1
+test,Confusion Matrix 는 그럼 어떻게 만들어?,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.1
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.1
+test,Normalization 정규화 그게 뭐야?,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,정규화가 뭐지? 정말 궁금해!,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.25
+test,Z 스코어 정규화가 뭐야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.25
+test,Clipping? 클리핑? 그게 뭐지?,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.25
+test,클리핑 이거 쓸데없이 하는 거 아니야?,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.25
+test,로그 스케일링도 정규화 같은데 뭐야?,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.25
+test,Outlier 개념,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.25
+test,이상치가 뭐야?,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,Outlier 없애야 되는 이유가 뭐야?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.5
+test,Outlier 없애려면 어떻게 해야 되지?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.5
+test,PCA에 대해 알려줘,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,주성분 분석?,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,PCA 그거 왜 하는 건지 모르겠어,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.5
+test,데이터가 불균형하다고? 그게 뭐지,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.25
+test,학습 환경만 바꾸는 방법도 알려줘,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.25
+test,데이터 증강이 뭐지?,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.25
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.25
+test,Undersampling 에 대해서 알려줘,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.1
+test,oversampling 이 뭐지?,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.25
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.1
+test,undersampling 방법은 뭐가 있어?,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.25
+test,Oversampling 하는 방법,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.1
+test,차원의 저주가 뭔지 궁금해,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,의사결정 나무가 뭔지 알려줘,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,Decision Tree 가 뭐야?,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.5
+test,앙상블이 뭐지?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,앙상블 하는 이유,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,앙상블 방법,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.5
+test,Ensemble 정확히 어떻게 하지,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.5
+test,Voting? 그게 뭐지,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.25
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.25
+test,보팅 방법 구체적으로 알려줘,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.5
+test,배깅이뭐야,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.25
+test,부스팅이 뭐지 그러면,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.25
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.25
+test,가우시안 혼합? 그게 뭐야?,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,K-means Clustering 너 알지?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,K-means Clustering 방법,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,KNN 알고리즘 알려줘,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,머신러닝 방법 종류 알려줘,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",1.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.5
+test,머신러닝 문제에는 뭐가 있지?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,분류랑 회귀가 뭐야?,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",1.0
+test,Naïve Bayes 뭐야,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,SVM 제발 알려줘 제발,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,K-fold Cross Validation 정의,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,K-fold Cross Validation 하는 이유는?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,Hyper parameter 가 대체 뭐지,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,One-hot? 그것도 머신러닝 모델이야?,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,Valid 데이터 쓰는 이유가 궁금해,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,인공지능 정의,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.25
+test,딥러닝이 뭔지 알려줘,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.25
+test,딥러닝의 learning rate 그게 뭐지?,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,학습률? Learning rate? 뭐야?,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,오버피팅이 뭐야,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,Overfitting 대체 어떻게 해결하지?,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,전이학습? 그게 뭐야 도대체?,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,활성화 함수? 뭐야?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,굳이 활성화 함수 왜 써?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,코사인 유사도가 뭔지 궁금해,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,Cosine Similarity 에 대해 알려줘!,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,코사인 유사도 특징이 뭐야?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.5
+test,머신러닝 모델 평가하는 방법 알려줘,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,Accuracy 계산 어떻게 하지?,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,True Positive 가 뭐야?,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,True Negative 는 뭔지 궁금해 그럼,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.25
+test,False Positive 알려줘,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.25
+test,False Negative (FN),True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.25
+test,Recall 계산법 어떻게 하는 거지?,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.25
+test,Recall 이 뭐야?,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.25
+test,Precision 어떻게 계산하는지 정말 궁금해,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.25
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.5
+test,F1 Score 가 뭐야?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.25
+test,F1 Score 계산식 알려줘,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.25
+test,F1 Score 는 왜 쓰는 거지?,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.25
+test,IoU 라는 게 있는데 뭔지 궁금해,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.25
+test,특이도는 뭐야?,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.25
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.25
+test,"PR-AUC, ROC-AUC 가 뭐야?",IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.25
+test,PR-AUC 에 대해 아주 자세히 알려줘,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.25
+test,ROC-AUC 는 뭔지 정말 궁금해,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.25
+test,True Positive Rate 구하는 방법을 알려줘,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.25
+test,False Positive Rate 가 뭔지 정말 궁금하다,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.25
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.1
+test,Confusion Matrix 는 그럼 어떻게 만들어?,True Positive Rate : recall 의 다른 이름,0.1
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.1
+test,Normalization 정규화 그게 뭐야?,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.0
+test,정규화가 뭐지? 정말 궁금해!,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,Z 스코어 정규화가 뭐야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.25
+test,Clipping? 클리핑? 그게 뭐지?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.25
+test,클리핑 이거 쓸데없이 하는 거 아니야?,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.25
+test,로그 스케일링도 정규화 같은데 뭐야?,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.25
+test,Outlier 개념,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.0
+test,이상치가 뭐야?,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.0
+test,Outlier 없애야 되는 이유가 뭐야?,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,Outlier 없애려면 어떻게 해야 되지?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.5
+test,PCA에 대해 알려줘,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,주성분 분석?,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,PCA 그거 왜 하는 건지 모르겠어,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,데이터가 불균형하다고? 그게 뭐지,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,학습 환경만 바꾸는 방법도 알려줘,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.25
+test,데이터 증강이 뭐지?,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.25
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.25
+test,Undersampling 에 대해서 알려줘,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.25
+test,oversampling 이 뭐지?,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.1
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.1
+test,undersampling 방법은 뭐가 있어?,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.25
+test,Oversampling 하는 방법,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.25
+test,차원의 저주가 뭔지 궁금해,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,의사결정 나무가 뭔지 알려줘,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,Decision Tree 가 뭐야?,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,앙상블이 뭐지?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,앙상블 하는 이유,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,앙상블 방법,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,Ensemble 정확히 어떻게 하지,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.5
+test,Voting? 그게 뭐지,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.25
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.25
+test,보팅 방법 구체적으로 알려줘,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.25
+test,배깅이뭐야,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.25
+test,부스팅이 뭐지 그러면,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.25
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.25
+test,가우시안 혼합? 그게 뭐야?,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,K-means Clustering 너 알지?,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,K-means Clustering 방법,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,KNN 알고리즘 알려줘,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,머신러닝 방법 종류 알려줘,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.5
+test,머신러닝 문제에는 뭐가 있지?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,분류랑 회귀가 뭐야?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,Naïve Bayes 뭐야,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,SVM 제발 알려줘 제발,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,K-fold Cross Validation 정의,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,K-fold Cross Validation 하는 이유는?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,Hyper parameter 가 대체 뭐지,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,One-hot? 그것도 머신러닝 모델이야?,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,Valid 데이터 쓰는 이유가 궁금해,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,인공지능 정의,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,딥러닝이 뭔지 알려줘,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.25
+test,딥러닝의 learning rate 그게 뭐지?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.0
+test,학습률? Learning rate? 뭐야?,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,오버피팅이 뭐야,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,Overfitting 대체 어떻게 해결하지?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,전이학습? 그게 뭐야 도대체?,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,활성화 함수? 뭐야?,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,굳이 활성화 함수 왜 써?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,코사인 유사도가 뭔지 궁금해,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,Cosine Similarity 에 대해 알려줘!,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,Cosine Similarity 는 어떻게 계산하지?,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,머신러닝 모델 평가하는 방법 알려줘,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,Accuracy 계산 어떻게 하지?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,True Positive 가 뭐야?,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,True Negative 는 뭔지 궁금해 그럼,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,False Positive 알려줘,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.25
+test,False Negative (FN),Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.25
+test,Recall 계산법 어떻게 하는 거지?,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.25
+test,Recall 이 뭐야?,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.25
+test,Precision 어떻게 계산하는지 정말 궁금해,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.25
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.25
+test,F1 Score 가 뭐야?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.25
+test,F1 Score 계산식 알려줘,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.25
+test,F1 Score 는 왜 쓰는 거지?,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.25
+test,IoU 라는 게 있는데 뭔지 궁금해,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.25
+test,특이도는 뭐야?,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.25
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.25
+test,"PR-AUC, ROC-AUC 가 뭐야?","F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.25
+test,PR-AUC 에 대해 아주 자세히 알려줘,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.25
+test,ROC-AUC 는 뭔지 정말 궁금해,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.25
+test,True Positive Rate 구하는 방법을 알려줘,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.25
+test,False Positive Rate 가 뭔지 정말 궁금하다,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.25
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.1
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.1
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,True Positive Rate : recall 의 다른 이름,0.25
+test,Normalization 정규화 그게 뭐야?,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.0
+test,정규화가 뭐지? 정말 궁금해!,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,Z 스코어 정규화가 뭐야?,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,Clipping? 클리핑? 그게 뭐지?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.25
+test,클리핑 이거 쓸데없이 하는 거 아니야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.25
+test,로그 스케일링도 정규화 같은데 뭐야?,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.25
+test,Outlier 개념,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.0
+test,이상치가 뭐야?,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.0
+test,Outlier 없애야 되는 이유가 뭐야?,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.0
+test,Outlier 없애려면 어떻게 해야 되지?,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,PCA에 대해 알려줘,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,주성분 분석?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,PCA 그거 왜 하는 건지 모르겠어,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,데이터가 불균형하다고? 그게 뭐지,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,학습 환경만 바꾸는 방법도 알려줘,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,데이터 증강이 뭐지?,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.25
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.25
+test,Undersampling 에 대해서 알려줘,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.25
+test,oversampling 이 뭐지?,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.25
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.1
+test,undersampling 방법은 뭐가 있어?,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.5
+test,Oversampling 하는 방법,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.25
+test,차원의 저주가 뭔지 궁금해,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.0
+test,의사결정 나무가 뭔지 알려줘,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,Decision Tree 가 뭐야?,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,앙상블이 뭐지?,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,앙상블 하는 이유,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,앙상블 방법,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,Ensemble 정확히 어떻게 하지,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,Voting? 그게 뭐지,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.25
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.25
+test,보팅 방법 구체적으로 알려줘,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.25
+test,배깅이뭐야,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.25
+test,부스팅이 뭐지 그러면,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.25
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.25
+test,가우시안 혼합? 그게 뭐야?,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.0
+test,K-means Clustering 너 알지?,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,K-means Clustering 방법,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,KNN 알고리즘 알려줘,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,머신러닝 방법 종류 알려줘,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,머신러닝 문제에는 뭐가 있지?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,분류랑 회귀가 뭐야?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Naïve Bayes 뭐야,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,SVM 제발 알려줘 제발,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,K-fold Cross Validation 정의,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,K-fold Cross Validation 하는 이유는?,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,Hyper parameter 가 대체 뭐지,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,One-hot? 그것도 머신러닝 모델이야?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,Valid 데이터 쓰는 이유가 궁금해,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,인공지능 정의,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,딥러닝이 뭔지 알려줘,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,딥러닝의 learning rate 그게 뭐지?,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.1
+test,학습률? Learning rate? 뭐야?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,오버피팅이 뭐야,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,Overfitting 대체 어떻게 해결하지?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,전이학습? 그게 뭐야 도대체?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,활성화 함수? 뭐야?,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,굳이 활성화 함수 왜 써?,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,코사인 유사도가 뭔지 궁금해,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,Cosine Similarity 에 대해 알려줘!,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,Cosine Similarity 는 어떻게 계산하지?,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,코사인 유사도 특징이 뭐야?,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,Z 스코어 정규화가 뭐야?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,Clipping? 클리핑? 그게 뭐지?,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,클리핑 이거 쓸데없이 하는 거 아니야?,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,로그 스케일링도 정규화 같은데 뭐야?,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.0
+test,Outlier 개념,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.0
+test,이상치가 뭐야?,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.0
+test,Outlier 없애야 되는 이유가 뭐야?,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.0
+test,Outlier 없애려면 어떻게 해야 되지?,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.0
+test,PCA에 대해 알려줘,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.0
+test,주성분 분석?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,PCA 그거 왜 하는 건지 모르겠어,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,데이터가 불균형하다고? 그게 뭐지,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.0
+test,학습 환경만 바꾸는 방법도 알려줘,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.0
+test,데이터 증강이 뭐지?,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.0
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.0
+test,Undersampling 에 대해서 알려줘,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.0
+test,oversampling 이 뭐지?,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.0
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.0
+test,undersampling 방법은 뭐가 있어?,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,Oversampling 하는 방법,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,차원의 저주가 뭔지 궁금해,True Positive Rate : recall 의 다른 이름,0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.0
+test,의사결정 나무가 뭔지 알려줘,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.0
+test,Decision Tree 가 뭐야?,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,앙상블이 뭐지?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,앙상블 하는 이유,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,앙상블 방법,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.0
+test,Ensemble 정확히 어떻게 하지,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.0
+test,Voting? 그게 뭐지,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.0
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.0
+test,보팅 방법 구체적으로 알려줘,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,배깅이뭐야,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,부스팅이 뭐지 그러면,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,가우시안 혼합? 그게 뭐야?,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,K-means Clustering 너 알지?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,K-means Clustering 방법,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,KNN 알고리즘 알려줘,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.0
+test,머신러닝 방법 종류 알려줘,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.0
+test,머신러닝 문제에는 뭐가 있지?,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.0
+test,분류랑 회귀가 뭐야?,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.0
+test,Naïve Bayes 뭐야,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,SVM 제발 알려줘 제발,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,K-fold Cross Validation 정의,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,K-fold Cross Validation 하는 이유는?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,Hyper parameter 가 대체 뭐지,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,One-hot? 그것도 머신러닝 모델이야?,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,Valid 데이터 쓰는 이유가 궁금해,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,인공지능 정의,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,딥러닝이 뭔지 알려줘,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,딥러닝의 learning rate 그게 뭐지?,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.0
+test,학습률? Learning rate? 뭐야?,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,오버피팅이 뭐야,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,Overfitting 대체 어떻게 해결하지?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,전이학습? 그게 뭐야 도대체?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,활성화 함수? 뭐야?,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,굳이 활성화 함수 왜 써?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,코사인 유사도가 뭔지 궁금해,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Cosine Similarity 에 대해 알려줘!,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Cosine Similarity 는 어떻게 계산하지?,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,코사인 유사도 특징이 뭐야?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,머신러닝 모델 평가하는 방법 알려줘,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,Accuracy 계산 어떻게 하지?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,True Positive 가 뭐야?,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,True Negative 는 뭔지 궁금해 그럼,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,False Positive 알려줘,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,False Negative (FN),"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,Recall 계산법 어떻게 하는 거지?,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,Recall 이 뭐야?,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,Precision 어떻게 계산하는지 정말 궁금해,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,F1 Score 가 뭐야?,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,F1 Score 계산식 알려줘,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.0
+test,F1 Score 는 왜 쓰는 거지?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.0
+test,IoU 라는 게 있는데 뭔지 궁금해,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,특이도는 뭐야?,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,"PR-AUC, ROC-AUC 가 뭐야?",Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,PR-AUC 에 대해 아주 자세히 알려줘,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,ROC-AUC 는 뭔지 정말 궁금해,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,True Positive Rate 구하는 방법을 알려줘,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,False Positive Rate 가 뭔지 정말 궁금하다,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,Normalization 정규화 그게 뭐야?,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,정규화가 뭐지? 정말 궁금해!,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,주성분 분석?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,PCA 그거 왜 하는 건지 모르겠어,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,데이터가 불균형하다고? 그게 뭐지,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.0
+test,학습 환경만 바꾸는 방법도 알려줘,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.0
+test,데이터 증강이 뭐지?,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.0
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.0
+test,Undersampling 에 대해서 알려줘,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.0
+test,oversampling 이 뭐지?,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.0
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,undersampling 방법은 뭐가 있어?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,Oversampling 하는 방법,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.0
+test,차원의 저주가 뭔지 궁금해,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.0
+test,의사결정 나무가 뭔지 알려줘,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.0
+test,Decision Tree 가 뭐야?,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.0
+test,앙상블이 뭐지?,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.0
+test,앙상블 하는 이유,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.0
+test,앙상블 방법,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.0
+test,Ensemble 정확히 어떻게 하지,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,Voting? 그게 뭐지,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,True Positive Rate : recall 의 다른 이름,0.0
+test,보팅 방법 구체적으로 알려줘,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.0
+test,배깅이뭐야,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.0
+test,부스팅이 뭐지 그러면,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,가우시안 혼합? 그게 뭐야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,K-means Clustering 너 알지?,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.0
+test,K-means Clustering 방법,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.0
+test,KNN 알고리즘 알려줘,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,머신러닝 방법 종류 알려줘,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,머신러닝 문제에는 뭐가 있지?,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,분류랑 회귀가 뭐야?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,Naïve Bayes 뭐야,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.0
+test,SVM 제발 알려줘 제발,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.0
+test,K-fold Cross Validation 정의,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.0
+test,K-fold Cross Validation 하는 이유는?,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.0
+test,Hyper parameter 가 대체 뭐지,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.0
+test,One-hot? 그것도 머신러닝 모델이야?,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.0
+test,Valid 데이터 쓰는 이유가 궁금해,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.0
+test,인공지능 정의,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,딥러닝이 뭔지 알려줘,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,딥러닝의 learning rate 그게 뭐지?,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,학습률? Learning rate? 뭐야?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,오버피팅이 뭐야,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,Overfitting 대체 어떻게 해결하지?,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.0
+test,전이학습? 그게 뭐야 도대체?,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,활성화 함수? 뭐야?,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,굳이 활성화 함수 왜 써?,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.0
+test,코사인 유사도가 뭔지 궁금해,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.0
+test,Cosine Similarity 에 대해 알려줘!,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,Cosine Similarity 는 어떻게 계산하지?,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,코사인 유사도 특징이 뭐야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,머신러닝 모델 평가하는 방법 알려줘,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,Accuracy 계산 어떻게 하지?,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,True Positive 가 뭐야?,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,True Negative 는 뭔지 궁금해 그럼,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,False Positive 알려줘,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,False Negative (FN),"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Recall 계산법 어떻게 하는 거지?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Recall 이 뭐야?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Precision 어떻게 계산하는지 정말 궁금해,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,F1 Score 가 뭐야?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,F1 Score 계산식 알려줘,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,F1 Score 는 왜 쓰는 거지?,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,IoU 라는 게 있는데 뭔지 궁금해,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,특이도는 뭐야?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,"PR-AUC, ROC-AUC 가 뭐야?",K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,PR-AUC 에 대해 아주 자세히 알려줘,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,ROC-AUC 는 뭔지 정말 궁금해,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,True Positive Rate 구하는 방법을 알려줘,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,False Positive Rate 가 뭔지 정말 궁금하다,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.0
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.0
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,Normalization 정규화 그게 뭐야?,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,정규화가 뭐지? 정말 궁금해!,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,Z 스코어 정규화가 뭐야?,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,Clipping? 클리핑? 그게 뭐지?,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,클리핑 이거 쓸데없이 하는 거 아니야?,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,로그 스케일링도 정규화 같은데 뭐야?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,Outlier 개념,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,이상치가 뭐야?,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,Outlier 없애야 되는 이유가 뭐야?,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,Outlier 없애려면 어떻게 해야 되지?,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,PCA에 대해 알려줘,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,undersampling 방법은 뭐가 있어?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,Oversampling 하는 방법,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,차원의 저주가 뭔지 궁금해,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.0
+test,의사결정 나무가 뭔지 알려줘,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.0
+test,Decision Tree 가 뭐야?,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.0
+test,앙상블이 뭐지?,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.0
+test,앙상블 하는 이유,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.0
+test,앙상블 방법,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,Ensemble 정확히 어떻게 하지,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,Voting? 그게 뭐지,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.0
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.0
+test,보팅 방법 구체적으로 알려줘,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.0
+test,배깅이뭐야,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.0
+test,부스팅이 뭐지 그러면,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.0
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.0
+test,가우시안 혼합? 그게 뭐야?,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.0
+test,K-means Clustering 너 알지?,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.0
+test,K-means Clustering 방법,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,KNN 알고리즘 알려줘,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,True Positive Rate : recall 의 다른 이름,0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.0
+test,머신러닝 방법 종류 알려줘,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,머신러닝 문제에는 뭐가 있지?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,분류랑 회귀가 뭐야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.0
+test,Naïve Bayes 뭐야,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.0
+test,SVM 제발 알려줘 제발,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.0
+test,K-fold Cross Validation 정의,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,K-fold Cross Validation 하는 이유는?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,Hyper parameter 가 대체 뭐지,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,One-hot? 그것도 머신러닝 모델이야?,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,Valid 데이터 쓰는 이유가 궁금해,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,인공지능 정의,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.0
+test,딥러닝이 뭔지 알려줘,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.0
+test,딥러닝의 learning rate 그게 뭐지?,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.0
+test,학습률? Learning rate? 뭐야?,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.0
+test,오버피팅이 뭐야,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.0
+test,Overfitting 대체 어떻게 해결하지?,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.0
+test,전이학습? 그게 뭐야 도대체?,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.0
+test,활성화 함수? 뭐야?,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,굳이 활성화 함수 왜 써?,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,코사인 유사도가 뭔지 궁금해,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,Cosine Similarity 에 대해 알려줘!,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,Cosine Similarity 는 어떻게 계산하지?,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,코사인 유사도 특징이 뭐야?,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.0
+test,머신러닝 모델 평가하는 방법 알려줘,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.0
+test,Accuracy 계산 어떻게 하지?,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,True Positive 가 뭐야?,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,True Negative 는 뭔지 궁금해 그럼,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,False Positive 알려줘,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,False Negative (FN),"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.0
+test,Recall 계산법 어떻게 하는 거지?,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.0
+test,Recall 이 뭐야?,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,Precision 어떻게 계산하는지 정말 궁금해,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,F1 Score 가 뭐야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,F1 Score 계산식 알려줘,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,F1 Score 는 왜 쓰는 거지?,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,IoU 라는 게 있는데 뭔지 궁금해,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,특이도는 뭐야?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,"PR-AUC, ROC-AUC 가 뭐야?","지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,PR-AUC 에 대해 아주 자세히 알려줘,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,ROC-AUC 는 뭔지 정말 궁금해,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,True Positive Rate 구하는 방법을 알려줘,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,False Positive Rate 가 뭔지 정말 궁금하다,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,Normalization 정규화 그게 뭐야?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,정규화가 뭐지? 정말 궁금해!,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,Z 스코어 정규화가 뭐야?,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,Clipping? 클리핑? 그게 뭐지?,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,클리핑 이거 쓸데없이 하는 거 아니야?,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,로그 스케일링도 정규화 같은데 뭐야?,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,Outlier 개념,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.0
+test,이상치가 뭐야?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.0
+test,Outlier 없애야 되는 이유가 뭐야?,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,Outlier 없애려면 어떻게 해야 되지?,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,PCA에 대해 알려줘,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,주성분 분석?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,PCA 그거 왜 하는 건지 모르겠어,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,데이터가 불균형하다고? 그게 뭐지,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,학습 환경만 바꾸는 방법도 알려줘,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,데이터 증강이 뭐지?,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,Undersampling 에 대해서 알려줘,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,oversampling 이 뭐지?,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,앙상블 방법,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,Ensemble 정확히 어떻게 하지,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,Voting? 그게 뭐지,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,보팅 방법 구체적으로 알려줘,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.0
+test,배깅이뭐야,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.0
+test,부스팅이 뭐지 그러면,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.0
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.0
+test,가우시안 혼합? 그게 뭐야?,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.0
+test,K-means Clustering 너 알지?,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,K-means Clustering 방법,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,KNN 알고리즘 알려줘,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.0
+test,머신러닝 방법 종류 알려줘,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.0
+test,머신러닝 문제에는 뭐가 있지?,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.0
+test,분류랑 회귀가 뭐야?,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.0
+test,Naïve Bayes 뭐야,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,SVM 제발 알려줘 제발,True Positive Rate : recall 의 다른 이름,0.0
+test,K-fold Cross Validation 정의,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.0
+test,K-fold Cross Validation 하는 이유는?,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.0
+test,Hyper parameter 가 대체 뭐지,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,One-hot? 그것도 머신러닝 모델이야?,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,Valid 데이터 쓰는 이유가 궁금해,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.0
+test,인공지능 정의,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.0
+test,딥러닝이 뭔지 알려줘,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.0
+test,딥러닝의 learning rate 그게 뭐지?,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,학습률? Learning rate? 뭐야?,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,오버피팅이 뭐야,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,Overfitting 대체 어떻게 해결하지?,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,전이학습? 그게 뭐야 도대체?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,활성화 함수? 뭐야?,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,굳이 활성화 함수 왜 써?,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.0
+test,코사인 유사도가 뭔지 궁금해,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.0
+test,Cosine Similarity 에 대해 알려줘!,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.0
+test,Cosine Similarity 는 어떻게 계산하지?,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.0
+test,코사인 유사도 특징이 뭐야?,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.0
+test,머신러닝 모델 평가하는 방법 알려줘,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.0
+test,Accuracy 계산 어떻게 하지?,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.0
+test,True Positive 가 뭐야?,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,True Negative 는 뭔지 궁금해 그럼,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,False Positive 알려줘,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,False Negative (FN),"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,Recall 계산법 어떻게 하는 거지?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,Recall 이 뭐야?,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,Precision 어떻게 계산하는지 정말 궁금해,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.0
+test,F1 Score 가 뭐야?,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.0
+test,F1 Score 계산식 알려줘,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,F1 Score 는 왜 쓰는 거지?,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,IoU 라는 게 있는데 뭔지 궁금해,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,특이도는 뭐야?,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.0
+test,"PR-AUC, ROC-AUC 가 뭐야?","Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.0
+test,PR-AUC 에 대해 아주 자세히 알려줘,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,ROC-AUC 는 뭔지 정말 궁금해,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,True Positive Rate 구하는 방법을 알려줘,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,False Positive Rate 가 뭔지 정말 궁금하다,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,Normalization 정규화 그게 뭐야?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,정규화가 뭐지? 정말 궁금해!,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Z 스코어 정규화가 뭐야?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,Clipping? 클리핑? 그게 뭐지?,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,클리핑 이거 쓸데없이 하는 거 아니야?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,로그 스케일링도 정규화 같은데 뭐야?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,Outlier 개념,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,이상치가 뭐야?,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,Outlier 없애야 되는 이유가 뭐야?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,Outlier 없애려면 어떻게 해야 되지?,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,PCA에 대해 알려줘,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,주성분 분석?,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,PCA 그거 왜 하는 건지 모르겠어,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,데이터가 불균형하다고? 그게 뭐지,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,학습 환경만 바꾸는 방법도 알려줘,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.0
+test,데이터 증강이 뭐지?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.0
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,Undersampling 에 대해서 알려줘,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,oversampling 이 뭐지?,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,undersampling 방법은 뭐가 있어?,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,Oversampling 하는 방법,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,차원의 저주가 뭔지 궁금해,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,의사결정 나무가 뭔지 알려줘,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,Decision Tree 가 뭐야?,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,앙상블이 뭐지?,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,앙상블 하는 이유,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0
+test,K-means Clustering 너 알지?,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,K-means Clustering 방법,cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄,0.0
+test,KNN 알고리즘 알려줘,cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값,0.0
+test,k Nearest Neighbor 가 도대체 어떤 알고리즘이야?,"cosine similarity (코사인 유사도) 특징 : 방향 일치하면 +1.0, 수직이면 0.0, 반대 방향이면 -1.0",0.0
+test,지도학습 강화학습 비지도학습 이런게 뭐지,"머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, Precision, F1 Score",0.0
+test,머신러닝 방법 종류 알려줘,Accuracy (정확도) : 모델이 얼마나 잘 맞혔는지를 평가하는 정확도 | 수식: (True Positive + True Negative) / (전체 테스트 데이터 개수),0.0
+test,지도학습? 강화학습? 이게 도대체 뭐야? 처음 들어 보는데,True Positive (TP) : 모델 예측이 참이면서 실제로도 참인 데이터 개수,0.0
+test,지도학습이랑 비지도랑 뭐가 달라 그러면?,True Negative (TN) : 모델 예측이 거짓이면서 실제로도 거짓인 데이터 개수,0.0
+test,머신러닝 문제에는 뭐가 있지?,False Positive (FP) : 모델 예측이 참이지만 실제로는 거짓인 데이터 개수,0.0
+test,분류랑 회귀가 뭐야?,False Negative (FN) : 모델 예측이 거짓이지만 실제로는 참인 데이터 개수,0.0
+test,머신러닝에 분류랑 회귀가 있다는데 그게 뭐야,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,Naïve Bayes 뭐야,Recall (재현율) : 실제로 참인 것을 모델이 얼마나 찾았는지의 비율 | 수식: (True Positive) / (True Positive + False Negative),0.0
+test,서포트 벡터 머신? 그게 뭐지? 알려줘!,Precision (정밀도) : 모델이 참으로 예측한 것 중 실제 참인 것의 비율 | 수식: (True Positive) / (True Positive + False Positive),0.0
+test,SVM 제발 알려줘 제발,"Recall 과 Precision 차이 : Recall 은 False Negative 에 의해서, Precision 은 False Positive 에 의해서 감소",0.0
+test,K-fold Cross Validation 정의,F1 Score 개념 : Recall 과 Precision 의 조화 평균,0.0
+test,K-fold Cross Validation 하는 이유는?,F1 Score 수식 : 2 * Precision * Recall / (Precision + Recall),0.0
+test,Hyper parameter 가 대체 뭐지,"F1 Score 장점 : 모델의 2가지 예측 실패 (False Negative, False Positive) 를 모두 고려",0.0
+test,One-hot? 그것도 머신러닝 모델이야?,IoU : (교집합의 크기) / (합집합의 크기) | 수식 : (True Positive) / (True Positive + False Positive + False Negative),0.0
+test,Valid 데이터 쓰는 이유가 궁금해,Specificity (특이도) : 실제로 False 인 데이터 중 모델이 False 로 예측한 비율 | 수식: (True Negative) / (False Positive + True Negative),0.0
+test,Train 데이터셋 순서 섞잖아. 왜 그러는 거야?,"binary classification (이진 분류) metric : PR-AUC, ROC-AUC",0.0
+test,인공지능 머신러닝 딥러닝의 관계는?,"PR-AUC 와 ROC-AUC : PR-AUC는 x축이 recall, y축이 precision 일 때, ROC-AUC는 x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이",0.0
+test,인공지능 정의,"PR-AUC : x축이 recall, y축이 precision 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,머신러닝은 인공지능에 속하는 거 맞지?,"ROC-AUC : x축이 False Positive Rate, y축이 True Positive Rate 일 때 이 측정값들을 연결한 그래프 아래쪽의 넓이 (1에 가까울수록 성능 좋음)",0.0
+test,딥러닝이 뭔지 알려줘,True Positive Rate : recall 의 다른 이름,0.0
+test,딥러닝의 learning rate 그게 뭐지?,False Positive Rate : 실제 Negative 인 것들 중 모델이 Positive 로 예측한 비율 | 수식: (False Positive) / (False Positive + True Negative),0.0
+test,학습률? Learning rate? 뭐야?,"Confusion Matrix (혼동 행렬) : 모델의 예측 중 True Positive, True Negative, False Positive, False Negative 의 개수와 Recall, Precision 을 알기 쉽게 나타낸 표",0.0
+test,자주 쓰이는 손실 함수는 뭐가 있을까,"Confusion Matrix (혼동 행렬) 작성 방법 : 첫 행은 '실제 값 = True', '실제 값 = False', 'Precision', 첫 열에는 '예측 = True', '예측 = False', 'Recall' 순서로 쓴 후 각 값을 계산",0.0
+test,오버피팅이 뭐야,"불량품 예측에서의 Recall, Precision 사용 : Recall 은 불량품을 모델이 불량품으로 검출한 비율 | 해당 비율이 낮으면 불량품 검출 성능이 떨어짐을 의미",0.0
+test,Overfitting 대체 어떻게 해결하지?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,전이학습? 그게 뭐야 도대체?,"Normalization (정규화) : 데이터를 모델이 학습할 수 있도록 일정한 규칙에 따라 값을 변환하는 것 | 데이터 전처리에서 필수적 | 예시: min-max, z-score",0.0
+test,Transfer Learning 요즘 대세라던데 뭐야,Min-max normalization (Min-max 정규화) : 데이터의 최솟값과 최댓값을 기준으로 정규화 | 수식: y = (x - MIN) / (MAX - MIN),0.0
+test,활성화 함수? 뭐야?,Z score normalization (Z score 정규화) : 데이터를 평균과 표준편차를 이용한 Z score 값으로 정규화 | 수식: y = (x - MEAN) / STD,0.0
+test,굳이 활성화 함수 왜 써?,"Clipping : 데이터를 특정 범위의 값에 속하도록 변환하는 것 (x > MAX 인 경우 MAX, x < MIN 인 경우 MIN 으로 변환)",0.0
+test,CNN이 뭐야? 이미지 인식에 좋다던데,Clipping 장점 : Outlier 의 영향을 잘 받지 않음,0.0
+test,LLM이 정확히 뭐야? 나도 AI 트렌드 따라잡자!!,Log Scaling : 주어진 데이터 x를 log(x) 또는 log(1+x) 값으로 변환하는 것,0.0
+test,코사인 유사도가 뭔지 궁금해,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,Cosine Similarity 에 대해 알려줘!,Outlier (이상치) : 데이터셋에서 일반적인 분포 범위를 크게 벗어난 데이터,0.0
+test,Cosine Similarity 는 어떻게 계산하지?,Outlier (이상치) 제거 이유 : 데이터 시각화 결과의 가독성 향상 및 머신러닝 학습에 지장이 없게 함,0.0
+test,코사인 유사도 특징이 뭐야?,"Outlier (이상치) 제거 방법 : 상자 수염 그림 이용, 평균 및 표준편차 이용 등",0.0
+test,머신러닝 모델 평가하는 방법 알려줘,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,Accuracy 계산 어떻게 하지?,"PCA (주성분 분석) : Principal Component Analysis 라고 하며, 데이터셋의 분산을 최대한 보존하는 특징의 결합을 추출",0.0
+test,True Positive 가 뭐야?,PCA (주성분 분석) 사용 이유 : 데이터 압축 및 차원 축소 목적,0.0
+test,True Negative 는 뭔지 궁금해 그럼,Data Imbalance (데이터 불균형) : Classification Task 에서 Class 간 데이터 개수가 유의미하게 차이 나는 것,0.0
+test,False Positive 알려줘,"Data Imbalance (데이터 불균형) 해결 방법 : 데이터를 새로 추가/제거하거나, 학습 환경만 바꾸는 방법",0.0
+test,False Negative (FN),"Data Imbalance (데이터 불균형) 데이터 추가/제거 : Minority Class 데이터 추가 수집, Data Augmentation, Undersampling, Oversampling 등",0.0
+test,Recall 계산법 어떻게 하는 거지?,"Data Imbalance (데이터 불균형) 학습 환경 변경 : 적절한 성능 평가 지표 선택, Loss Function 에서 Class 별 가중치 조정",0.0
+test,Recall 이 뭐야?,"Data Augmentation (데이터 증강) : 학습 데이터 부족, 데이터 불균형 해결 목적으로 학습 데이터에 기존과 유사한 데이터를 추가하여 늘리는 것",0.0
+test,Precision 어떻게 계산하는지 정말 궁금해,Undersampling 과 Oversampling : Undersampling은 데이터가 많은 Class 의 일부 데이터를 제거 | Oversampling 은 데이터가 적은 Class 의 데이터 증가,0.0
+test,Recall Precision 이거 헷갈리는데 잘 외우는 법 없을까?,Undersampling : 데이터가 많은 Class 의 일부 데이터를 제거,0.0
+test,F1 Score 가 뭐야?,Oversampling : 데이터가 적은 Class 의 데이터 증가,0.0
+test,F1 Score 계산식 알려줘,"Data Imbalance (데이터 불균형) 고려 성능지표 : F1 Score, AUROC, ROC-AUC",0.0
+test,F1 Score 는 왜 쓰는 거지?,"Undersampling 방법 : Tomek Links (Class 경계선 상의 데이터 삭제), Random Sampling (랜덤 샘플링)",0.0
+test,IoU 라는 게 있는데 뭔지 궁금해,Oversampling 방법 : SMOTE (Minority Class 데이터 2개의 벡터의 중간값 계산),0.0
+test,특이도는 뭐야?,"차원의 저주 : 학습 데이터의 차원, 즉 feature 개수가 너무 많아서 학습에 문제가 발생하는 것",0.0
+test,이진 분류에서는 어떤 성능평가 지표가 쓰이지?,"차원의 저주의 문제점 : 계산량, 학습 시간, 메모리 사용량 증가, 성능 감소",0.0
+test,"PR-AUC, ROC-AUC 가 뭐야?",Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,PR-AUC 에 대해 아주 자세히 알려줘,Decision Tree (의사결정 나무) : 학습 데이터의 feature 조건에 따라 가지치기를 하여 Tree 를 만드는 학습 방식,0.0
+test,ROC-AUC 는 뭔지 정말 궁금해,Decision Tree (의사결정 나무) 의 추론 : 입력 데이터가 주어졌을 때 학습된 조건에 따라 판단하는 것을 반복,0.0
+test,True Positive Rate 구하는 방법을 알려줘,Ensemble (앙상블) : 머신러닝에서 여러 알고리즘 또는 모델을 결합하여 학습하는 것,0.0
+test,False Positive Rate 가 뭔지 정말 궁금하다,Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상,0.0
+test,Confusion Matrix (혼동 행렬) 이 뭐야?,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,Confusion Matrix 는 그럼 어떻게 만들어?,"Ensemble (앙상블) 방법 : Voting (보팅), Bagging (배깅), Boosting (부스팅), Stacking (스태킹)",0.0
+test,불량품 최소화해야 하면 불량이 Positive 일 때 Recall 이랑 Precision 중에 뭐가 더 좋지?,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,Normalization 정규화 그게 뭐야?,Voting (보팅) : 여러 모델의 예측 결과를 종합하여 최종 결론 도출,0.0
+test,정규화가 뭐지? 정말 궁금해!,"Voting (보팅) 방법 : Hard Voting (다수결 투표), Soft Voting (예측 결과 평균)",0.0
+test,Min-Max 정규화가 뭔지 잘 모르겠어,"Bagging (배깅) : 원본 데이터셋에서 랜덤 샘플링된 다수의 데이터셋을 각 모델로 학습, 해당 모델들의 결과 종합",0.0
+test,Z 스코어 정규화가 뭐야?,"Boosting (부스팅) : 랜덤 샘플링된 데이터셋 여러 개로 여러 개의 모델 학습, 직전 모델이 오답을 한 데이터의 가중치를 높여서 순차 학습",0.0
+test,Clipping? 클리핑? 그게 뭐지?,"Stacking (스태킹) : 학습 데이터의 개별 모델들의 예측값을 입력, 실제 출력값을 출력하는 메타 모델을 만들고, 메타 모델 예측값을 최종 예측값으로 사용",0.0
+test,클리핑 이거 쓸데없이 하는 거 아니야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,로그 스케일링도 정규화 같은데 뭐야?,Gaussian Mixture (가우시안 혼합) : 가우시안 분포 (정규분포) 의 혼합을 통해 데이터를 근사하는 머신러닝 알고리즘,0.0
+test,Outlier 개념,"K-means Clustering : 비지도학습 방법으로, 데이터를 K개의 클러스터 (집단) 으로 나누는 방법",0.0
+test,이상치가 뭐야?,"K-means Clustering 방법 : feature space 에서 K개의 점을 임의 지정 후, 각 data point 를 가장 가까운 점에 할당 -> K개의 각 점을 매칭되는 data point 의 값으로 갱신을 수렴할 때까지 반복",0.0
+test,Outlier 없애야 되는 이유가 뭐야?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,Outlier 없애려면 어떻게 해야 되지?,"kNN (k-Nearest-Neighbor) : 어떤 data point 를 분류할 때, 가장 가까운 k개의 data point 의 Class 값 중 빈도가 가장 큰 Class 로 예측",0.0
+test,PCA에 대해 알려줘,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,주성분 분석?,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,PCA 그거 왜 하는 건지 모르겠어,"지도학습, 비지도학습, 강화학습 : 지도학습은 입력값 및 출력값을 학습 데이터로 하며, 출력값 (label) 필요 | 비지도학습은 출력값 (label) 이 없는 방식의 학습 | 강화학습은 AI 모델이 환경에서 어떤 행동을 하고, 그 보상을 받아서 보상을 최대화하는 방식의 학습",0.0
+test,데이터가 불균형하다고? 그게 뭐지,"지도학습과 비지도학습의 차이 : 지도학습은 모델이 입력 값에 대해 특정 출력을 하도록 학습시키기 위한 출력값 (label) 이 있지만, 비지도학습은 출력값이 없음",0.0
+test,데이터 불균형 어떻게 하면 해결할 수 있지?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,그러면 데이터 추가 제거해서 불균형 어떻게 해결해?,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,학습 환경만 바꾸는 방법도 알려줘,"Classification (분류) 및 Regression (회귀) : Classification 문제는 대상의 Class 를 분류 (예: 개, 고양이, 뱀) 하는 것 | Regression 문제는 연속적인 숫자 값 (예: 강수량) 을 예측하는 것",0.0
+test,데이터 증강이 뭐지?,"Naïve Bayes : 확률 기반 지도학습 분류 모델 | 핵심 아이디어: 각 Class 별 (전체 데이터 중 해당 Class 의 비율) x (새로운 데이터의 각 특징 조건 별 해당 Class 의 데이터의 비율의 곱) 을 계산하고, 그 값이 가장 큰 Class 로 예측",0.0
+test,언더샘플링이랑 오버샘플링이 뭔지 궁금해,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,Undersampling 에 대해서 알려줘,"SVM (Support Vector Machine) : 2개의 Class 가 있을 때, 각 Class 에 속하는 원소들과의 거리가 가장 큰 '구분선'을 찾는 방식의 지도학습 알고리즘",0.0
+test,oversampling 이 뭐지?,"K-fold Cross Validation : 학습 데이터셋을 크기가 같은 K 개의 fold 로 나누고, 각 fold 를 validation data 로, 나머지 fold 를 train data 로 하는 학습 방법",0.0
+test,데이터 불균형 생각해서 어떤 성능지표 할지 추천해 줘,K-fold Cross Validation 사용 이유 : valid data 가 부족할 때 그 양을 늘리는 효과가 있음,0.0
+test,undersampling 방법은 뭐가 있어?,"하이퍼파라미터 : 머신러닝 알고리즘을 통해 적절한 값을 찾는 것인 파라미터가 아니라, 그 알고리즘 설계 단계에서의 설정값",0.0
+test,Oversampling 하는 방법,"One-hot Encoding : 데이터셋의 각 데이터 (row) 를 특정 index 는 1, 나머지 index 는 모두 0으로 처리하는 방법",0.0
+test,차원의 저주가 뭔지 궁금해,Valid dataset 사용 이유 : 모델 학습 중 성능 평가 및 성능 개선을 위한 하이퍼파라미터 조정 등의 목적으로 사용,0.0
+test,차원의 저주는 저주인데 정확히 뭐가 문제야?,"Train dataset 순서 섞기 이유 : 딥러닝에서 batch 단위로 학습 시 각 batch 가 전체 데이터셋 특징을 반영하게 함, 데이터 순서 자체에 대한 학습 방지",0.0
+test,의사결정 나무가 뭔지 알려줘,"인공지능, 머신러닝, 딥러닝 포함 관계 : 머신러닝은 인공지능에 포함, 딥러닝은 머신러닝에 포함",0.0
+test,Decision Tree 가 뭐야?,"인공지능 정의 : 사람의 인지 능력 (학습, 추론 등) 을 컴퓨터 알고리즘으로 구현하는 기술",0.0
+test,Decision Tree 로 새로운 데이터를 어떻게 예측해?,"머신러닝 정의 : 컴퓨터 알고리즘을 통해, 데이터의 패턴을 학습하여 새로운 데이터에 대해 추론하게 하는 기술",0.0
+test,앙상블이 뭐지?,딥러닝 정의 : 사람의 두뇌를 모방한 인공신경망을 이용한 머신러닝 기술,0.0
+test,앙상블 하는 이유,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,앙상블 방법,Learning Rate (학습률) : 딥러닝 모델에서 오차 역전파를 하기 위한 미분값 (기울기) 에 곱하는 배수,0.0
+test,Ensemble 정확히 어떻게 하지,"Loss Function (손실 함수) 예시 : MSE (Mean-Squared Error), Binary Cross Entropy, Categorical Cross Entropy",0.0
+test,Voting? 그게 뭐지,Overfitting (과적합) : 딥러닝 모델 학습이 과도하게 train data 에 최적화되어 오히려 성능이 떨어지는 현상,0.0
+test,앙상블 중에서 보팅 있잖아 그게 뭐야,"Overfitting (과적합) 해결 방법 : Early Stopping, Cross Validation, Batch Normalization, Dropout 등",0.0
+test,보팅 방법 구체적으로 알려줘,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,배깅이뭐야,Transfer Learning (전이학습) : 이미 학습된 모델을 다른 문제에 최적화하도록 추가 학습시키는 것,0.0
+test,부스팅이 뭐지 그러면,"Activation Function (활성화 함수) : 딥러닝 신경망의 특정 층에서, 데이터의 총합을 변형하여 다음 층으로 전달하기 위한 함수",0.0
+test,Stacking 이라고 아주 복잡한 방법인 거 같은데 정확히 알려줘,Activation Function (활성화 함수) 사용 이유 : 비선형의 활성화 함수가 없으면 아무리 학습해도 선형 결합만 학습 가능,0.0
+test,가우시안 혼합? 그게 뭐야?,"CNN (합성곱 신경망) : 인간의 시각 지능을 모방한 딥러닝 알고리즘으로, 이미지 인식을 위해 주로 사용 | 핵심 가정 : 이미지에서 이웃한 픽셀의 값이 서로 비슷함",0.0
+test,Gaussian Mixture 어려운 것 같은데 뭐야?,"Large Language Model (LLM, 거대 언어 모델) : 텍스트로 주어지는 사용자의 질문에 대해 적절한 답변을 생성하는 생성형 AI 모델",0.0

@@ -22,7 +22,7 @@ ANSWER_CNT = 4
 # Last Update Date : -
 
 # Arguments:
-# - llm_name   (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai')
+# - llm_name (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai')
 
 # Returns:
 # - fine_tuned_llm (LLM) : Fine-Tuning 된 LLM
@@ -32,13 +32,13 @@ def load_fine_tuned_llm(llm_name):
 
     if llm_name == 'kanana':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/ai_qna/models/kanana_sft_with_rag_fine_tuned',
+            f'{PROJECT_DIR_PATH}/ai_qna/models/kanana_sft_final_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
     elif llm_name == 'kananai':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/ai_qna/models/kananai_sft_with_rag_fine_tuned',
+            f'{PROJECT_DIR_PATH}/ai_qna/models/kananai_sft_final_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
@@ -64,7 +64,7 @@ def inference_or_fine_tune_llm(llm_name):
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
         fine_tuned_llm = load_fine_tuned_llm(llm_name)
-        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_with_rag_fine_tuned')
+        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_final_fine_tuned')
         print(f'Fine-Tuned LLM ({llm_name}) - Load SUCCESSFUL! 👱‍♀️')
 
     except Exception as e:
@@ -77,14 +77,14 @@ def inference_or_fine_tune_llm(llm_name):
             fine_tune_kanana(instruct_version=True)
 
         fine_tuned_llm = load_fine_tuned_llm(llm_name)
-        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_with_rag_fine_tuned')
+        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_final_fine_tuned')
 
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
     inference_temperature = get_temperature()
     llm_log_path = f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning/logs'
-    inference_log_path = f'{llm_log_path}/{llm_name}_sft_with_rag_inference_log_{inference_temperature}.txt'
+    inference_log_path = f'{llm_log_path}/{llm_name}_sft_final_inference_log_{inference_temperature}.txt'
     inference_log = ''
 
     # run inference using Fine-Tuned LLM

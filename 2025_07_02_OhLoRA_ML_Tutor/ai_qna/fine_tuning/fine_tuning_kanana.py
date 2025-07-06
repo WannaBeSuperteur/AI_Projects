@@ -52,7 +52,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
         kanana_llm_name = 'kananai' if self.instruct_version else 'kanana'
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_with_rag_train_log.csv')
+        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_train_log.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -76,7 +76,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_with_rag_inference_log_dict.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_inference_log_dict.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
@@ -118,8 +118,8 @@ def get_original_llm(kanana_llm_name):
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args(kanana_llm_name):
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_with_rag_fine_tuned'
-    num_train_epochs = 20
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_final_fine_tuned'
+    num_train_epochs = 15
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
@@ -225,7 +225,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # - instruct_version (bool) : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
 
 # Returns:
-# - ai_qna/models/{kanana|kananai}_sft_with_rag_fine_tuned 에 Fine-Tuning 된 모델 저장
+# - ai_qna/models/{kanana|kananai}_sft_final_fine_tuned 에 Fine-Tuning 된 모델 저장
 
 def fine_tune_model(instruct_version):
     global lora_llm, tokenizer, valid_final_prompts
@@ -244,7 +244,7 @@ def fine_tune_model(instruct_version):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning_dataset/SFT_with_RAG_concept.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning_dataset/SFT_final.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
@@ -266,5 +266,5 @@ def fine_tune_model(instruct_version):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_with_rag_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_final_fine_tuned'
     trainer.save_model(output_dir_path)
