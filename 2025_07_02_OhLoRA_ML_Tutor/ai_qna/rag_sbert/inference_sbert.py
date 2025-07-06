@@ -52,6 +52,11 @@ def run_inference(sbert_model, test_dataset_df):
     os.makedirs(result_dir, exist_ok=True)
     test_result_df.to_csv(f'{result_dir}/test_result.csv', index=False)
 
+    # save MSE, MAE error and Corr-coef
+    metric_values_dict = {'mse': [mse_error], 'mae': [mae_error], 'corr': [corr_coef]}
+    metric_values_df = pd.DataFrame(metric_values_dict)
+    metric_values_df.to_csv(f'{result_dir}/test_metric_values.csv', index=False)
+
 
 # Q&A LLM 의 RAG 컨셉을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "각 example 에 대한" inference 실시
 # Create Date : 2025.07.06

@@ -8,3 +8,9 @@
 지정된 경로에 해당 LLM 이 이미 존재하는 경우, Fine-Tuning 대신 **inference test 실행됨**
 
 ```python ai_qna/run_fine_tuning.py```
+
+### RAG Concept S-BERT Fine-Tuning
+
+지정된 경로에 해당 S-BERT 모델이 이미 존재하는 경우, Fine-Tuning 대신 **inference test 실행됨**
+
+```python ai_qna/run_rag_concept.py```
