@@ -25,6 +25,9 @@
 |--------------------------|---------------------------|-----------|
 | 0.0274                   | 0.1992                    | 0.8681    |
 
+* Prediction - Ground Truth 분포
+  * [상세 데이터](rag_sbert/result/test_result.csv)
+
 ![image](../../images/250702_3.PNG)
 
 ## 3. Fine-Tuned LLM 성능
