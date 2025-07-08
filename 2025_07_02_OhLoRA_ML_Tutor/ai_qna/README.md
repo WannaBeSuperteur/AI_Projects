@@ -17,9 +17,28 @@
 | LLM Fine-Tuning          | - RAG 을 통해 DB에서 정보 추출<br>- 이 정보를 결합한 final input 을 LLM 에 입력 후 LLM 답변 반환 | [데이터셋](fine_tuning_dataset/SFT_final.csv)                                                    | [구현 코드 디렉토리](fine_tuning) |
 | S-BERT (for RAG concept) | - 사용자 질문 (user question) 과 DB 에 저장된 정보의 유사도 계산 (RAG 목적)                 | [학습 데이터셋](rag_sbert/dataset/train_final.csv)<br>[테스트 데이터셋](rag_sbert/dataset/test_final.csv) | [구현 코드 디렉토리](rag_sbert)   |
 
+* [종합 성능 리포트](comprehensive_report.md)
+
 ## 2. LLM Fine-Tuning
 
+* LLM 전체 구조
+
+![image](../../images/250702_1.PNG)
+
+* 작동 방식
+  * **1.** 사용자 질문을 S-BERT 모델의 BERT + Pooling Layer 에 입력
+  * **2.** 사용자 질문을 임베딩한 vector 도출
+  * **3.** 사용자 질문을 임베딩한 vector 와 **RAG concept DB 에 저장된 각 vector 중 유사도가 가장 높은 vector** 를 추출
+  * **4.** 해당 **유사도가 가장 높은 vector** 에 대응되는 Plain Text 를 **사용자 질문과 concatenate**
+  * **5.** 최종적으로 Oh-LoRA 👱‍♀️ (오로라) LLM 에 전달
+  * **6.** Oh-LoRA 👱‍♀️ (오로라) LLM 이 생성한 답변을 **최종적으로 사용자에게 표시**
+
 ## 3. S-BERT (for RAG concept)
+
+* 아래와 같이 학습 데이터를 구성하여 RAG 컨셉을 위한 [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 모델 구현
+* [학습 데이터 원본](rag_sbert/dataset/train_final.csv)
+
+![image](../../images/250702_2.PNG)
 
 ## 4. 코드 실행 방법
 
