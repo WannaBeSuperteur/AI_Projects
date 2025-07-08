@@ -4,15 +4,16 @@ from sentence_transformers import SentenceTransformer, models
 # Pre-trained (or Fine-Tuned) S-BERT Model 로딩
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
 # Create Date : 2025.07.06
-# Last Update Date : -
+# Last Update Date : 2025.07.08
+# - pretrained -> trained 로 수정
 
 # Arguments:
 # - model_path (str) : Pre-trained (or Fine-Tuned) S-BERT Model 의 경로
 
 # Returns:
-# - pretrained_sbert_model (S-BERT Model) : Pre-train 된 Sentence-BERT 모델
+# - trained_sbert_model (S-BERT Model) : Pre-train 된 Sentence-BERT 모델
 
-def load_pretrained_sbert_model(model_path):
+def load_trained_sbert_model(model_path):
     embedding_model = models.Transformer(
         model_name_or_path=model_path,
         max_seq_length=64,
@@ -26,5 +27,5 @@ def load_pretrained_sbert_model(model_path):
         pooling_mode_max_tokens=False
     )
 
-    pretrained_sbert_model = SentenceTransformer(modules=[embedding_model, pooling_model])
-    return pretrained_sbert_model
+    trained_sbert_model = SentenceTransformer(modules=[embedding_model, pooling_model])
+    return trained_sbert_model

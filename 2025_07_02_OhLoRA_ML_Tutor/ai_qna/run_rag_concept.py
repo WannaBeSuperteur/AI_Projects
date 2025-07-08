@@ -1,10 +1,10 @@
 try:
     from rag_sbert.inference_sbert import run_inference, run_inference_each_example
-    from rag_sbert.load_sbert_model import load_pretrained_sbert_model
+    from rag_sbert.load_sbert_model import load_trained_sbert_model
     from rag_sbert.train_sbert import train_sbert
 except:
     from ai_qna.rag_sbert.inference_sbert import run_inference, run_inference_each_example
-    from ai_qna.rag_sbert.load_sbert_model import load_pretrained_sbert_model
+    from ai_qna.rag_sbert.load_sbert_model import load_trained_sbert_model
     from ai_qna.rag_sbert.train_sbert import train_sbert
 
 import pandas as pd
@@ -62,7 +62,8 @@ def pick_best_db_item(sbert_model, user_prompt, db_file_name='rag_data_text.txt'
 
 # Q&A LLM 을 위한 RAG 컨셉 Mechanism 학습된 모델 로딩
 # Create Date : 2025.07.06
-# Last Update Date : -
+# Last Update Date : 2025.07.08
+# - pretrained -> trained 로 수정
 
 # Arguments:
 # - 없음
@@ -72,7 +73,7 @@ def pick_best_db_item(sbert_model, user_prompt, db_file_name='rag_data_text.txt'
 
 def load_sbert_model():
     model_path = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
-    sbert_model = load_pretrained_sbert_model(model_path)
+    sbert_model = load_trained_sbert_model(model_path)
 
     return sbert_model
 
