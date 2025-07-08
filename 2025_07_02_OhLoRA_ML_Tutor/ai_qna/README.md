@@ -32,6 +32,8 @@
   * **4.** 해당 **유사도가 가장 높은 vector** 에 대응되는 Plain Text 를 **사용자 질문과 concatenate**
   * **5.** 최종적으로 Oh-LoRA 👱‍♀️ (오로라) LLM 에 전달
   * **6.** Oh-LoRA 👱‍♀️ (오로라) LLM 이 생성한 답변을 **최종적으로 사용자에게 표시**
+* RAG 유사 컨셉 DB
+  * [RAG 유사 컨셉 DB](rag_sbert/db/rag_data_text.csv)
 
 ## 3. S-BERT (for RAG concept)
 
