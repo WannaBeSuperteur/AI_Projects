@@ -35,7 +35,7 @@
 
 ## 3. S-BERT (for RAG concept)
 
-* 아래와 같이 학습 데이터를 구성하여 RAG 컨셉을 위한 [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 모델 구현
+* 아래와 같이 학습 데이터를 구성하여 RAG 컨셉을 위한 [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md#sbert-%EB%AA%A8%EB%8D%B8) 모델 학습
 * [학습 데이터 원본](rag_sbert/dataset/train_final.csv)
 
 ![image](../../images/250702_2.PNG)
