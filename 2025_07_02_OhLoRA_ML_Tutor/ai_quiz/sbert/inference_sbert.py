@@ -15,7 +15,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 
 # Returns:
 # - 반환값 없음
-# - 테스트 결과 (성능지표 값) 출력 및 해당 결과를 rag_sbert/result/test_result.csv 로 저장
+# - 테스트 결과 (성능지표 값) 출력 및 해당 결과를 sbert/result/test_result.csv 로 저장
 
 def run_inference(sbert_model, test_dataset_df):
     n = len(test_dataset_df)
@@ -48,7 +48,7 @@ def run_inference(sbert_model, test_dataset_df):
                         'absolute_error': absolute_errors}
 
     test_result_df = pd.DataFrame(test_result_dict)
-    result_dir = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/result'
+    result_dir = f'{PROJECT_DIR_PATH}/ai_quiz/sbert/result'
     os.makedirs(result_dir, exist_ok=True)
     test_result_df.to_csv(f'{result_dir}/test_result.csv', index=False)
 

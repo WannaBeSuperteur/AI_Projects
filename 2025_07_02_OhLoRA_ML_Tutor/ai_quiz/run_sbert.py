@@ -24,7 +24,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 # - sbert_model (S-BERT Model) : 학습된 Sentence BERT 모델
 
 def load_sbert_model():
-    model_path = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
+    model_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/trained_sbert_model'
     sbert_model = load_trained_sbert_model(model_path)
 
     return sbert_model

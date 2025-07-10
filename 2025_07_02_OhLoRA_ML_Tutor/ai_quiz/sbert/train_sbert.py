@@ -19,8 +19,8 @@ SBERT_TRAIN_BATCH_SIZE = 16
 SBERT_VALID_BATCH_SIZE = 4
 SBERT_EPOCHS = 7
 
-SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
-SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/checkpoints'
+SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/trained_sbert_model'
+SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/checkpoints'
 
 
 class RagSBERTDataset(Dataset):
@@ -81,7 +81,7 @@ def load_pretrained_sbert_model(model_path="klue/roberta-base"):
 
 # Returns:
 # - 직접 반환되는 값 없음
-# - 학습된 Sentence-BERT 모델을 ai_qna/models/rag_sbert/trained_sbert_model 디렉토리에 저장
+# - 학습된 Sentence-BERT 모델을 ai_quiz/models/sbert/trained_sbert_model 디렉토리에 저장
 
 def train_sbert(train_dataset_df):
     n_train_examples = len(train_dataset_df)
@@ -94,10 +94,10 @@ def train_sbert(train_dataset_df):
 
     # save readme file
     os.makedirs(SBERT_MODEL_SAVE_PATH, exist_ok=True)
-    readme_path = f'{SBERT_MODEL_SAVE_PATH}/readme_QNA.txt'
+    readme_path = f'{SBERT_MODEL_SAVE_PATH}/readme_AI_QUIZ_SBERT.txt'
 
     with open(readme_path, 'w') as f:
-        f.write('Oh-LoRA AI Tutor Q&A model (defined: 20250706132519) (S-BERT, roberta-based)')
+        f.write('Oh-LoRA AI Tutor Quiz scoring S-BERT model (defined: 20250720234217) (S-BERT, roberta-based)')
         f.close()
 
     # load pre-trained S-BERT model
