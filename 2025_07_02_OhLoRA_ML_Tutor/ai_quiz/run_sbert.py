@@ -33,10 +33,10 @@ def load_sbert_model():
 if __name__ == '__main__':
 
     # load train & test dataset
-    train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/dataset/train_final.csv'
+    train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/train_final.csv'
     train_dataset_df = pd.read_csv(train_dataset_csv_path)
 
-    test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/dataset/test_final.csv'
+    test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/valid_test_final.csv'
     test_dataset_df = pd.read_csv(test_dataset_csv_path)
 
     # load S-BERT Model
