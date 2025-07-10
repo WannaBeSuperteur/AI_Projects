@@ -44,7 +44,7 @@ class RagSBERTDataset(Dataset):
 
 # Pre-trained (or Fine-Tuned) S-BERT Model 로딩
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.07.06
+# Create Date : 2025.07.10
 # Last Update Date : -
 
 # Arguments:
@@ -71,9 +71,9 @@ def load_pretrained_sbert_model(model_path="klue/roberta-base"):
     return pretrained_sbert_model
 
 
-# Q&A LLM RAG 컨셉 Mechanism 을 위한 S-BERT (Sentence BERT) 모델 학습
+# 사용자 답변 채점을 위한 Mechanism 을 위한 S-BERT (Sentence BERT) 모델 학습
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.07.06
+# Create Date : 2025.07.10
 # Last Update Date : -
 
 # Arguments:

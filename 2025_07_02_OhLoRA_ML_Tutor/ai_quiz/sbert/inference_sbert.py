@@ -5,8 +5,8 @@ import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
-# Q&A LLM 의 RAG 컨셉을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "데이터셋 전체에 대한" inference 실시
-# Create Date : 2025.07.06
+# 사용자 답변 채점을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "데이터셋 전체에 대한" inference 실시
+# Create Date : 2025.07.10
 # Last Update Date : -
 
 # Arguments:
@@ -58,8 +58,8 @@ def run_inference(sbert_model, test_dataset_df):
     metric_values_df.to_csv(f'{result_dir}/test_metric_values.csv', index=False)
 
 
-# Q&A LLM 의 RAG 컨셉을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "각 example 에 대한" inference 실시
-# Create Date : 2025.07.06
+# 사용자 답변 채점을 위한 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "각 example 에 대한" inference 실시
+# Create Date : 2025.07.10
 # Last Update Date : -
 
 # Arguments:
