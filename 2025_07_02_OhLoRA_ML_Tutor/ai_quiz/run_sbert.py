@@ -100,7 +100,7 @@ if __name__ == '__main__':
     test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/valid_test_final.csv'
     test_dataset_df = convert_into_filled_df(test_dataset_csv_path)
 
-    model_path = 'klue/roberta-base'
+    model_path = 'sentence-transformers/all-mpnet-base-v2'
 
     # load S-BERT Model
     try:

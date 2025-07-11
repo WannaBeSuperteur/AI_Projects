@@ -54,7 +54,7 @@ class QuizSBERTDataset(Dataset):
 # Returns:
 # - pretrained_sbert_model (S-BERT Model) : Pre-train 된 Sentence-BERT 모델
 
-def load_sbert_model(model_path="klue/roberta-base"):
+def load_sbert_model(model_path):
     embedding_model = models.Transformer(
         model_name_or_path=model_path,
         max_seq_length=64,
@@ -99,7 +99,7 @@ def train_sbert(train_dataset_df, model_path):
     readme_path = f'{SBERT_MODEL_SAVE_PATH}/readme_AI_QUIZ_SBERT.txt'
 
     with open(readme_path, 'w') as f:
-        f.write('Oh-LoRA AI Tutor Quiz scoring S-BERT model (defined: 20250720234217) (S-BERT, roberta-based)')
+        f.write('Oh-LoRA AI Tutor Quiz scoring S-BERT model (defined: 20250720234217) (S-BERT)')
         f.close()
 
     # load pre-trained S-BERT model
