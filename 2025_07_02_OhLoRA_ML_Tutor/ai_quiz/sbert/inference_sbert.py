@@ -21,15 +21,14 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 def run_inference(sbert_model, test_dataset_df, model_path):
     n = len(test_dataset_df)
 
-    user_question_list = test_dataset_df['user_question'].tolist()
-    rag_retrieved_data_list = test_dataset_df['rag_retrieved_data'].tolist()
-
+    user_answer_list = test_dataset_df['user_answer'].tolist()
+    good_answer_list = test_dataset_df['good_answer'].tolist()
     ground_truth_scores = test_dataset_df['similarity_score'].tolist()
     predicted_scores = []
 
     # run prediction using trained S-BERT
-    for user_question, rag_retrieved_data in zip(user_question_list, rag_retrieved_data_list):
-        predicted_score = run_inference_each_example(sbert_model, user_question, rag_retrieved_data)
+    for user_answer, good_answer in zip(user_answer_list, good_answer_list):
+        predicted_score = run_inference_each_example(sbert_model, user_answer, good_answer)
         predicted_scores.append(predicted_score)
 
     # compute errors
@@ -44,7 +43,7 @@ def run_inference(sbert_model, test_dataset_df, model_path):
     print(f'Corr-coef : {corr_coef:.4f}')
 
     # save test result
-    test_result_dict = {'user_question': user_question_list, 'rag_retrieved_data': rag_retrieved_data_list,
+    test_result_dict = {'user_answer': user_answer_list, 'good_answer': good_answer_list,
                         'predicted_score': predicted_scores, 'ground_truth_score': ground_truth_scores,
                         'absolute_error': absolute_errors}
 
@@ -64,19 +63,19 @@ def run_inference(sbert_model, test_dataset_df, model_path):
 # Last Update Date : -
 
 # Arguments:
-# - sbert_model        (S-BERT Model) : 학습된 Sentence BERT 모델
-# - user_question      (str)          : 사용자 질문 (예: "머신러닝에서 많이 쓰이는 평가지표 알려줘")
-# - rag_retrieved_data (str)          : DB에 저장된 데이터 (예: "머신러닝 모델 성능 평가 지표 : Accuracy (정확도), Recall, ...")
+# - sbert_model (S-BERT Model) : 학습된 Sentence BERT 모델
+# - user_answer (str)          : 사용자 답변 (예: "코사인 유사도는 벡터의 방향을 ...")
+# - good_answer (str)          : 모범 답안 (예: "Cosine Similarity (코사인 유사도) 는 벡터의 크기가 아닌 방향을 ...")
 
 # Returns:
-# - similarity_score (float) : 학습된 S-BERT 모델이 계산한 similarity score (RAG 유사 메커니즘 용)
+# - similarity_score (float) : 학습된 S-BERT 모델이 계산한 similarity score
 
-def run_inference_each_example(sbert_model, user_question, rag_retrieved_data):
+def run_inference_each_example(sbert_model, user_answer, good_answer):
     def compute_cosine_similarity(vector0, vector1):
         return np.dot(vector0, vector1) / (np.linalg.norm(vector0) * np.linalg.norm(vector1))
 
-    user_question_embedding = sbert_model.encode([user_question])
-    rag_retrieved_data_embedding = sbert_model.encode([rag_retrieved_data])
+    user_answer_embedding = sbert_model.encode([user_answer])
+    good_answer_embedding = sbert_model.encode([good_answer])
 
-    similarity_score = compute_cosine_similarity(user_question_embedding[0], rag_retrieved_data_embedding[0])
+    similarity_score = compute_cosine_similarity(user_answer_embedding[0], good_answer_embedding[0])
     return similarity_score

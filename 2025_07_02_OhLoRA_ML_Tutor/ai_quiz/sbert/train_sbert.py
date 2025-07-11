@@ -24,21 +24,21 @@ SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/trained_sbert_
 SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/checkpoints'
 
 
-class RagSBERTDataset(Dataset):
+class QuizSBERTDataset(Dataset):
     def __init__(self, dataset_df):
-        self.user_question_info = dataset_df['user_question'].tolist()
-        self.rag_retrieved_data_info = dataset_df['rag_retrieved_data'].tolist()
+        self.user_answer_info = dataset_df['user_answer'].tolist()
+        self.good_answer_info = dataset_df['good_answer'].tolist()
         self.similarity_score_info = dataset_df['similarity_score'].tolist()
 
     def __len__(self):
-        return len(self.user_question_info)
+        return len(self.user_answer_info)
 
     def __getitem__(self, idx):
-        user_question = self.user_question_info[idx]
-        rag_retrieved_data = self.rag_retrieved_data_info[idx]
+        user_answer = self.user_answer_info[idx]
+        good_answer = self.good_answer_info[idx]
         similarity_score = self.similarity_score_info[idx]
 
-        input_example = InputExample(texts=[user_question, rag_retrieved_data],
+        input_example = InputExample(texts=[user_answer, good_answer],
                                      label=similarity_score)
         return input_example
 
@@ -54,7 +54,7 @@ class RagSBERTDataset(Dataset):
 # Returns:
 # - pretrained_sbert_model (S-BERT Model) : Pre-train 된 Sentence-BERT 모델
 
-def load_pretrained_sbert_model(model_path="klue/roberta-base"):
+def load_sbert_model(model_path="klue/roberta-base"):
     embedding_model = models.Transformer(
         model_name_or_path=model_path,
         max_seq_length=64,
@@ -94,7 +94,7 @@ def train_sbert(train_dataset_df, model_path):
     print(f'train         size : {n_train_size}')
     print(f'valid         size : {n_valid_size}')
 
-    # save readme file
+    # save readme file (for S-BERT model distinguish)
     os.makedirs(SBERT_MODEL_SAVE_PATH, exist_ok=True)
     readme_path = f'{SBERT_MODEL_SAVE_PATH}/readme_AI_QUIZ_SBERT.txt'
 
@@ -103,7 +103,7 @@ def train_sbert(train_dataset_df, model_path):
         f.close()
 
     # load pre-trained S-BERT model
-    pretrained_sbert_model = load_pretrained_sbert_model(model_path)
+    pretrained_sbert_model = load_sbert_model(model_path)
 
     # train configurations
     train_loss = losses.CosineSimilarityLoss(model=pretrained_sbert_model)
@@ -111,7 +111,7 @@ def train_sbert(train_dataset_df, model_path):
     warmup_steps = int(0.1 * total_steps)  # first 10% of entire training process as warm-up
 
     # prepare train data & valid evaluator
-    train_valid_dataset = RagSBERTDataset(train_dataset_df)
+    train_valid_dataset = QuizSBERTDataset(train_dataset_df)
     train_dataset, valid_dataset = random_split(train_valid_dataset, [n_train_size, n_valid_size])
 
     train_dataloader = DataLoader(train_dataset, batch_size=SBERT_TRAIN_BATCH_SIZE, shuffle=True)

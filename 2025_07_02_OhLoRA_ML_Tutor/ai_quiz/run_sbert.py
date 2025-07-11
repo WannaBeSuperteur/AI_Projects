@@ -98,8 +98,8 @@ if __name__ == '__main__':
     train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/train_final.csv'
     train_dataset_df = convert_into_filled_df(train_dataset_csv_path)
 
-    valid_test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/valid_test_final.csv'
-    valid_test_dataset_df = convert_into_filled_df(valid_test_dataset_csv_path)
+    test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/valid_test_final.csv'
+    test_dataset_df = convert_into_filled_df(test_dataset_csv_path)
 
     model_path = 'klue/roberta-base'
 
@@ -114,4 +114,4 @@ if __name__ == '__main__':
         sbert_model = load_sbert_model()
 
     # run inference on test dataset
-    run_inference(sbert_model, valid_test_dataset_df, model_path)
+    run_inference(sbert_model, test_dataset_df, model_path)
