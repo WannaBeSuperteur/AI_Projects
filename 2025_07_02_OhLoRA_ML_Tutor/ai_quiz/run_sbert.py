@@ -105,13 +105,7 @@ if __name__ == '__main__':
 
     # experiment mode
     if experiment_mode:
-        model_path_list = ['klue/roberta-base',
-                           'sentence-transformers/all-mpnet-base-v2',
-                           'sentence-transformers/multi-qa-mpnet-base-dot-v1',
-                           'sentence-transformers/all-distilroberta-v1',
-                           'sentence-transformers/all-MiniLM-L12-v2',
-                           'sentence-transformers/multi-qa-distilbert-cos-v1',
-                           'sentence-transformers/all-MiniLM-L6-v2']
+        model_path_list = ['sentence-transformers/all-MiniLM-L12-v2']
         epochs_list = [1, 2, 3, 5, 7, 10, 15]
 
         for model_path in model_path_list:
