@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer, models, losses
-from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
+from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator, SentenceEvaluator
 from sentence_transformers.readers import InputExample
 
 from torch.utils.data import Dataset, DataLoader, random_split
@@ -18,7 +18,6 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 
 SBERT_TRAIN_BATCH_SIZE = 16
 SBERT_VALID_BATCH_SIZE = 4
-SBERT_EPOCHS = 15
 
 SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/trained_sbert_model'
 SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/checkpoints'
@@ -80,12 +79,13 @@ def load_sbert_model(model_path):
 # Arguments:
 # - train_dataset_df (Pandas DataFrame) : S-BERT 학습을 위한 학습 데이터셋
 # - model_path       (str)              : S-BERT 모델 경로
+# - epochs           (int)              : S-BERT 학습 epoch 횟수
 
 # Returns:
 # - 직접 반환되는 값 없음
 # - 학습된 Sentence-BERT 모델을 ai_quiz/models/sbert/trained_sbert_model 디렉토리에 저장
 
-def train_sbert(train_dataset_df, model_path):
+def train_sbert(train_dataset_df, model_path, epochs):
     n_train_examples = len(train_dataset_df)
     n_train_size = int(0.9 * n_train_examples)
     n_valid_size = n_train_examples - n_train_size
@@ -107,7 +107,7 @@ def train_sbert(train_dataset_df, model_path):
 
     # train configurations
     train_loss = losses.CosineSimilarityLoss(model=pretrained_sbert_model)
-    total_steps = SBERT_EPOCHS * (n_train_examples / SBERT_TRAIN_BATCH_SIZE)
+    total_steps = epochs * (n_train_examples / SBERT_TRAIN_BATCH_SIZE)
     warmup_steps = int(0.1 * total_steps)  # first 10% of entire training process as warm-up
 
     # prepare train data & valid evaluator
@@ -126,7 +126,7 @@ def train_sbert(train_dataset_df, model_path):
     pretrained_sbert_model.fit(
         train_objectives=[(train_dataloader, train_loss)],
         evaluator=valid_evaluator,
-        epochs=SBERT_EPOCHS,
+        epochs=epochs,
         evaluation_steps=evaluation_steps,
         warmup_steps=warmup_steps,
         output_path=SBERT_MODEL_SAVE_PATH,

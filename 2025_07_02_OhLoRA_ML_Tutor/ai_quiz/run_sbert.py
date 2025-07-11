@@ -1,3 +1,4 @@
+
 try:
     from sbert.inference_sbert import run_inference, run_inference_each_example
     from sbert.load_sbert_model import load_trained_sbert_model
@@ -10,6 +11,7 @@ except:
 import pandas as pd
 
 import os
+import shutil
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
@@ -92,6 +94,7 @@ def convert_into_filled_df(csv_path):
 
 
 if __name__ == '__main__':
+    experiment_mode = True
 
     # load train & test dataset
     train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/train_final.csv'
@@ -100,17 +103,42 @@ if __name__ == '__main__':
     test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/valid_test_final.csv'
     test_dataset_df = convert_into_filled_df(test_dataset_csv_path)
 
-    model_path = 'sentence-transformers/all-mpnet-base-v2'
+    # experiment mode
+    if experiment_mode:
+        model_path_list = ['klue/roberta-base',
+                           'sentence-transformers/all-mpnet-base-v2',
+                           'sentence-transformers/multi-qa-mpnet-base-dot-v1',
+                           'sentence-transformers/all-distilroberta-v1',
+                           'sentence-transformers/all-MiniLM-L12-v2',
+                           'sentence-transformers/multi-qa-distilbert-cos-v1',
+                           'sentence-transformers/all-MiniLM-L6-v2']
+        epochs_list = [1, 2, 3, 5, 7, 10, 15]
 
-    # load S-BERT Model
-    try:
-        sbert_model = load_sbert_model()
-        print('S-BERT Model (for DB mechanism) - Load SUCCESSFUL! 👱‍♀️')
+        for model_path in model_path_list:
+            for epochs in epochs_list:
+                train_sbert(train_dataset_df, model_path, epochs)
+                sbert_model = load_sbert_model()
+                run_inference(sbert_model, test_dataset_df, model_path, epochs)
 
-    except Exception as e:
-        print(f'S-BERT Model (for DB mechanism) load failed : {e}')
-        train_sbert(train_dataset_df, model_path)
-        sbert_model = load_sbert_model()
+                models_dir = f'{PROJECT_DIR_PATH}/ai_quiz/models'
+                shutil.rmtree(models_dir)
 
-    # run inference on test dataset
-    run_inference(sbert_model, test_dataset_df, model_path)
+    # NOT experiment mode
+    else:
+
+        # final decision
+        model_path = 'sentence-transformers/all-mpnet-base-v2'
+        epochs = 15
+
+        # load S-BERT Model
+        try:
+            sbert_model = load_sbert_model()
+            print('S-BERT Model (for DB mechanism) - Load SUCCESSFUL! 👱‍♀️')
+
+        except Exception as e:
+            print(f'S-BERT Model (for DB mechanism) load failed : {e}')
+            train_sbert(train_dataset_df, model_path, epochs)
+            sbert_model = load_sbert_model()
+
+        # run inference on test dataset
+        run_inference(sbert_model, test_dataset_df, model_path, epochs)
