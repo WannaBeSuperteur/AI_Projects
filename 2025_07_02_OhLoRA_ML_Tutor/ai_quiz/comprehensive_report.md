@@ -3,6 +3,9 @@
 
 * [1. 개요](#1-개요)
 * [2. S-BERT 모델 성능 (사용자 답변 채점용)](#2-s-bert-모델-성능-사용자-답변-채점용)
+  * [2-1. 최종 실험 결과](#2-1-최종-실험-결과)
+  * [2-2. 최종 실험 결과 상세](#2-2-최종-실험-결과-상세)
+  * [2-3. 실험 옵션 (모델 종류, epochs) 별 결과](#2-3-실험-옵션-모델-종류-epochs-별-결과)
 * [3. LLM Fine-Tuning 성능 (해설용)](#3-llm-fine-tuning-성능-해설용)
 
 ## 1. 개요
@@ -36,6 +39,8 @@
 |--------------------------|---------------------------|-----------|
 | 0.0553                   | 0.1698                    | 0.7166    |
 
+### 2-2. 최종 실험 결과 상세
+
 * Prediction - Ground Truth 분포
   * [상세 데이터](sbert/result/test_result.csv)
 
@@ -57,7 +62,7 @@
 | ```Xavier 와 He 는 특정 레이어와 관련된 node 의 개수의 합이 많을수록 해당 레이어를 초기화할 때 파라미터의 평균적인 절댓값 크기가 작아지도록 초기화하는 것이다. 이때 Xavier 는 입력+출력 노드 개수의 합, He 는 입력 노드 개수만을 고려한다.```                                                                                                                                                                                                                                                                                             | ```Xavier initialization 은 Glorot initialization 이라고도 하며, 특정 레이어의 input node + output node 의 개수의 합이 많을수록 해당 레이어의 평균적인 절댓값 크기를 줄이는 것이다. He initialization 은 Kaiming initialization 이라고도 하며, 특정 레이어의 input node 개수가 많을수록 평균 절댓값 크기를 줄이는 것이다. 즉, 차이점은 input node 와 output node 개수를 모두 고려하는지, input node 개수만을 고려하는지이다.```                                                                                                                                          | +0.3158      | 1.0   | **0.6842** |
 | ```Encoder Self-Attention, Decoder Self-Attention, Encoder-Decoder Self-Attention 이 있다. Encoder Self-Attention 은 입력되는 문장 (LLM 의 프롬프트) 에서 각 단어의 관계를 (자기 자신 포함) 고려하는 로직이다. Decoder Self Attention은 출력 시퀀스의 각 단어에 대해 입력 시퀀스의 각 단어와의 관계를 고려한다.```                                                                                                                                                                                                       | ```트랜스포머 모델의 Attention 방법에는 Encoder Self-Attention, Masked Decoder Self-Attention, Encoder-Decoder Attention 이 있다. 먼저 Encoder Self-Attention 은 입력되는 문장 (LLM 의 프롬프트) 에서 각 단어의 관계를 (자기 자신 포함), Masked Decoder Self Attention 은 출력되는 답변 문장에서 각 단어의 관계를 (특정 단어에 대해 해당 단어 이전의 단어만을 고려), Encoder-Decoder Attention은 출력 시퀀스의 각 단어에 대해 입력 시퀀스의 각 단어와의 관계를 고려하는 Attention 메커니즘이다.```                                                                                    | +0.9722      | 0.35  | **0.6222** |
 
-### 2-2. 실험 옵션 (모델 종류, epochs) 별 결과
+### 2-3. 실험 옵션 (모델 종류, epochs) 별 결과
 
 * notations
 
