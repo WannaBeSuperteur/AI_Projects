@@ -3,8 +3,8 @@ from sentence_transformers import SentenceTransformer, models
 
 # Pre-trained (or Fine-Tuned) S-BERT Model 로딩
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.07.06
-# Last Update Date : 2025.07.10
+# Create Date : 2025.07.11
+# Last Update Date : -
 
 # Arguments:
 # - model_path (str) : Pre-trained (or Fine-Tuned) S-BERT Model 의 경로

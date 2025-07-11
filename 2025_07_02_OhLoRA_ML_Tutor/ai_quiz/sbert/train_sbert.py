@@ -44,7 +44,7 @@ class RagSBERTDataset(Dataset):
 
 # Pre-trained (or Fine-Tuned) S-BERT Model 로딩
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.07.10
+# Create Date : 2025.07.11
 # Last Update Date : -
 
 # Arguments:
@@ -73,17 +73,18 @@ def load_pretrained_sbert_model(model_path="klue/roberta-base"):
 
 # 사용자 답변 채점을 위한 Mechanism 을 위한 S-BERT (Sentence BERT) 모델 학습
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.07.10
+# Create Date : 2025.07.11
 # Last Update Date : -
 
 # Arguments:
 # - train_dataset_df (Pandas DataFrame) : S-BERT 학습을 위한 학습 데이터셋
+# - model_path       (str)              : S-BERT 모델 경로
 
 # Returns:
 # - 직접 반환되는 값 없음
 # - 학습된 Sentence-BERT 모델을 ai_quiz/models/sbert/trained_sbert_model 디렉토리에 저장
 
-def train_sbert(train_dataset_df):
+def train_sbert(train_dataset_df, model_path):
     n_train_examples = len(train_dataset_df)
     n_train_size = int(0.9 * n_train_examples)
     n_valid_size = n_train_examples - n_train_size
@@ -101,7 +102,7 @@ def train_sbert(train_dataset_df):
         f.close()
 
     # load pre-trained S-BERT model
-    pretrained_sbert_model = load_pretrained_sbert_model()
+    pretrained_sbert_model = load_pretrained_sbert_model(model_path)
 
     # train configurations
     train_loss = losses.CosineSimilarityLoss(model=pretrained_sbert_model)

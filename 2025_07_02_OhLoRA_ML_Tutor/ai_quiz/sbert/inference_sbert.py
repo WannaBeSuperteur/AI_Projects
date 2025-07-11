@@ -6,18 +6,19 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 
 
 # 사용자 답변 채점을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "데이터셋 전체에 대한" inference 실시
-# Create Date : 2025.07.10
+# Create Date : 2025.07.11
 # Last Update Date : -
 
 # Arguments:
 # - sbert_model     (S-BERT Model)     : 학습된 Sentence BERT 모델
 # - test_dataset_df (Pandas DataFrame) : 테스트 데이터셋
+# - model_path      (str)              : Pre-trained S-BERT Model 의 경로 (logging 목적으로 사용)
 
 # Returns:
 # - 반환값 없음
 # - 테스트 결과 (성능지표 값) 출력 및 해당 결과를 sbert/result/test_result.csv 로 저장
 
-def run_inference(sbert_model, test_dataset_df):
+def run_inference(sbert_model, test_dataset_df, model_path):
     n = len(test_dataset_df)
 
     user_question_list = test_dataset_df['user_question'].tolist()
@@ -50,16 +51,16 @@ def run_inference(sbert_model, test_dataset_df):
     test_result_df = pd.DataFrame(test_result_dict)
     result_dir = f'{PROJECT_DIR_PATH}/ai_quiz/sbert/result'
     os.makedirs(result_dir, exist_ok=True)
-    test_result_df.to_csv(f'{result_dir}/test_result.csv', index=False)
+    test_result_df.to_csv(f'{result_dir}/test_result_{model_path}.csv', index=False)
 
     # save MSE, MAE error and Corr-coef
     metric_values_dict = {'mse': [mse_error], 'mae': [mae_error], 'corr': [corr_coef]}
     metric_values_df = pd.DataFrame(metric_values_dict)
-    metric_values_df.to_csv(f'{result_dir}/test_metric_values.csv', index=False)
+    metric_values_df.to_csv(f'{result_dir}/test_metric_values_{model_path}.csv', index=False)
 
 
 # 사용자 답변 채점을 위한 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "각 example 에 대한" inference 실시
-# Create Date : 2025.07.10
+# Create Date : 2025.07.11
 # Last Update Date : -
 
 # Arguments:
