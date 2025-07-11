@@ -42,6 +42,9 @@ def run_inference(sbert_model, test_dataset_df, model_path):
     print(f'MAE error : {mae_error:.4f}')
     print(f'Corr-coef : {corr_coef:.4f}')
 
+    # remove '/' from model path
+    model_path_ = model_path.replace('/', '_')
+
     # save test result
     test_result_dict = {'user_answer': user_answer_list, 'good_answer': good_answer_list,
                         'predicted_score': predicted_scores, 'ground_truth_score': ground_truth_scores,
@@ -50,12 +53,12 @@ def run_inference(sbert_model, test_dataset_df, model_path):
     test_result_df = pd.DataFrame(test_result_dict)
     result_dir = f'{PROJECT_DIR_PATH}/ai_quiz/sbert/result'
     os.makedirs(result_dir, exist_ok=True)
-    test_result_df.to_csv(f'{result_dir}/test_result_{model_path}.csv', index=False)
+    test_result_df.to_csv(f'{result_dir}/test_result_{model_path_}.csv', index=False)
 
     # save MSE, MAE error and Corr-coef
     metric_values_dict = {'mse': [mse_error], 'mae': [mae_error], 'corr': [corr_coef]}
     metric_values_df = pd.DataFrame(metric_values_dict)
-    metric_values_df.to_csv(f'{result_dir}/test_metric_values_{model_path}.csv', index=False)
+    metric_values_df.to_csv(f'{result_dir}/test_metric_values_{model_path_}.csv', index=False)
 
 
 # 사용자 답변 채점을 위한 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "각 example 에 대한" inference 실시
