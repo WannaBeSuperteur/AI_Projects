@@ -94,7 +94,7 @@ def convert_into_filled_df(csv_path):
 
 
 if __name__ == '__main__':
-    experiment_mode = True
+    experiment_mode = False
 
     # load train & test dataset
     train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/train_final.csv'
@@ -112,7 +112,7 @@ if __name__ == '__main__':
             for epochs in epochs_list:
                 train_sbert(train_dataset_df, model_path, epochs)
                 sbert_model = load_sbert_model()
-                run_inference(sbert_model, test_dataset_df, model_path, epochs)
+                run_inference(sbert_model, test_dataset_df, model_path, epochs, is_experiment_mode=True)
 
                 models_dir = f'{PROJECT_DIR_PATH}/ai_quiz/models'
                 shutil.rmtree(models_dir)
@@ -121,8 +121,8 @@ if __name__ == '__main__':
     else:
 
         # final decision
-        model_path = 'sentence-transformers/all-mpnet-base-v2'
-        epochs = 15
+        model_path = 'klue/roberta-base'
+        epochs = 100
 
         # load S-BERT Model
         try:
