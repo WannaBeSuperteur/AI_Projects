@@ -64,7 +64,6 @@ def convert_into_filled_df(csv_path):
     for quiz in quiz_list:
         if not pd.isna(quiz) and quiz != '':
             current_quiz = quiz
-        print(current_quiz)
         filled_quiz_list.append(current_quiz)
 
     for keyword in keyword_list:
