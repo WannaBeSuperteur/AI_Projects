@@ -106,7 +106,7 @@ if __name__ == '__main__':
     # experiment mode
     if experiment_mode:
         model_path_list = ['klue/roberta-base']
-        epochs_list = [55, 60, 70, 80, 90, 100]
+        epochs_list = [110, 120, 130, 140, 150]
 
         for model_path in model_path_list:
             for epochs in epochs_list:
