@@ -105,8 +105,8 @@ if __name__ == '__main__':
 
     # experiment mode
     if experiment_mode:
-        model_path_list = ['sentence-transformers/all-MiniLM-L12-v2']
-        epochs_list = [1, 2, 3, 5, 7, 10, 15]
+        model_path_list = ['klue/roberta-base']
+        epochs_list = [20, 25, 30, 35, 40, 45, 50]
 
         for model_path in model_path_list:
             for epochs in epochs_list:
