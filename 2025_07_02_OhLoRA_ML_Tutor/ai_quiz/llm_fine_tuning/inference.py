@@ -28,7 +28,7 @@ class StopOnTokens(StoppingCriteria):
 
 
 # Fine Tuning 된 LLM 을 이용한 inference 실시 (Kanana-1.5 2.1B)
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:

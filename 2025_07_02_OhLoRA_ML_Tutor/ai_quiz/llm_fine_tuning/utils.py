@@ -60,7 +60,7 @@ def add_inference_log(inference_result, inference_log_dict):
 
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:

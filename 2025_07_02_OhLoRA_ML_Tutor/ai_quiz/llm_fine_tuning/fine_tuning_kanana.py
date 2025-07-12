@@ -86,7 +86,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
 
 # Original LLM (Kanana-1.5 2.1B) 가져오기 (Fine-Tuning 실시할)
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:
@@ -108,7 +108,7 @@ def get_original_llm(kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:
@@ -137,7 +137,7 @@ def get_training_args(kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:
@@ -166,7 +166,7 @@ def get_sft_trainer(dataset, collator, training_args, instruct_version):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:
@@ -196,7 +196,7 @@ def get_lora_llm(llm, lora_rank):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:
@@ -218,7 +218,7 @@ def generate_llm_trainable_dataset(dataset_df):
 
 
 # LLM (Kanana-1.5 2.1B) Fine-Tuning 실시
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:

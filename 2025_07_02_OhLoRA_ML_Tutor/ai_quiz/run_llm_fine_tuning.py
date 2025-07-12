@@ -18,7 +18,7 @@ ANSWER_CNT = 4
 
 
 # Fine-Tuning 된 LLM 로딩
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:
@@ -46,7 +46,7 @@ def load_fine_tuned_llm(llm_name):
 
 
 # LLM inference (해당 LLM 이 없거나 로딩 실패 시 Fine-Tuning 학습) 실시
-# Create Date : 2025.07.02
+# Create Date : 2025.07.12
 # Last Update Date : -
 
 # Arguments:
@@ -145,12 +145,6 @@ if __name__ == '__main__':
                         default='kananai')
     args = parser.parse_args()
     llm_names = args.llm_names
-
-    # CUDA OOM test
-    # Kanana-1.5 2.1B : (separated = True  -> Result : max  (9155, 8461) MiB / 12288 MiB)
-
-#    test_cuda_oom_kanana(is_separate=True, version='original')
-
     llm_names_list = llm_names.split(',')
 
     for llm_name in llm_names_list:
