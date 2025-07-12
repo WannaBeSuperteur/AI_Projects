@@ -59,7 +59,7 @@ def inference_or_fine_tune_llm(llm_name):
     valid_final_input_prompts = load_valid_final_prompts()
 
     for final_input_prompt in valid_final_input_prompts:
-        print(f'final input prompt for validation : {final_input_prompt}\n')
+        print(f'final input prompt for validation :\n{final_input_prompt}\n')
 
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:

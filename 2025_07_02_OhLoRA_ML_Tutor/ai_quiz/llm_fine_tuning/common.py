@@ -30,7 +30,7 @@ def convert_into_filled_df(csv_path):
     filled_good_answer_list = []
     input_data = []
 
-    for quiz, good_answer in zip(quiz_list, good_answer_list):
+    for quiz, good_answer, user_answer in zip(quiz_list, good_answer_list, user_answer_list):
         if not pd.isna(quiz) and quiz != '':
             current_quiz = quiz
         filled_quiz_list.append(current_quiz)
@@ -39,7 +39,7 @@ def convert_into_filled_df(csv_path):
             current_good_answer = good_answer
         filled_good_answer_list.append(current_good_answer)
 
-        input_data.append(f'(퀴즈 문제) {current_quiz} (모범 답안) {current_good_answer}')
+        input_data.append(f'(퀴즈 문제) {current_quiz} (모범 답안) {current_good_answer} (사용자 답안) {user_answer}')
 
     # create final filled DataFrame
     filled_dataset_dict = {
