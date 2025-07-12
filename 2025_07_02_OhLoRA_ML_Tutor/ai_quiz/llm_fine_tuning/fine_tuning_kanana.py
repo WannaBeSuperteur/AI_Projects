@@ -12,15 +12,15 @@ import torch
 import pandas as pd
 
 try:
-    from fine_tuning.inference import run_inference_kanana
-    from fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
+    from llm_fine_tuning.inference import run_inference_kanana
+    from llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
                                   get_answer_start_mark
-    from fine_tuning.augmentation import AugmentCollator
+    from llm_fine_tuning.augmentation import AugmentCollator
 except:
-    from llm.fine_tuning.inference import run_inference_kanana
-    from llm.fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
-        get_answer_start_mark
-    from llm.fine_tuning.augmentation import AugmentCollator
+    from ai_quiz.llm_fine_tuning.inference import run_inference_kanana
+    from ai_quiz.llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, \
+        add_inference_log, get_answer_start_mark
+    from ai_quiz.llm_fine_tuning.augmentation import AugmentCollator
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))

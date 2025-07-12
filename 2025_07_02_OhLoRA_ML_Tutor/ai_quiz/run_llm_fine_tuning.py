@@ -6,11 +6,11 @@ import torch
 import time
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from fine_tuning.fine_tuning_kanana import fine_tune_model as fine_tune_kanana
-from fine_tuning.fine_tuning_kanana import get_stop_token_list as get_stop_token_list_kanana
-from fine_tuning.inference import run_inference_kanana
+from llm_fine_tuning.fine_tuning_kanana import fine_tune_model as fine_tune_kanana
+from llm_fine_tuning.fine_tuning_kanana import get_stop_token_list as get_stop_token_list_kanana
+from llm_fine_tuning.inference import run_inference_kanana
 
-from fine_tuning.utils import load_valid_final_prompts, get_answer_start_mark, get_temperature
+from llm_fine_tuning.utils import load_valid_final_prompts, get_answer_start_mark, get_temperature
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))

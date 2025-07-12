@@ -2,9 +2,9 @@
 from transformers import StoppingCriteria, StoppingCriteriaList
 
 try:
-    from fine_tuning.utils import get_temperature, get_answer_end_mark
+    from llm_fine_tuning.utils import get_temperature, get_answer_end_mark
 except:
-    from llm.fine_tuning.utils import get_temperature, get_answer_end_mark
+    from ai_quiz.llm_fine_tuning.utils import get_temperature, get_answer_end_mark
 
 import torch
 import os
