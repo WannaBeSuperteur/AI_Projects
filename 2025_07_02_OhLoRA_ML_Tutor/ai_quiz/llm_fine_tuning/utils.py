@@ -28,11 +28,11 @@ def preview_dataset(dataset, tokenizer, print_encoded_tokens=False):
     print(f"dataset size : [train: {len(dataset['train']['text'])}, valid: {len(dataset['valid']['text'])}]")
 
     for i in range(10):
-        print(f"\ntrain data {i} : {dataset['train']['text'][i]}")
+        print(f"\ntrain data {i} :\n{dataset['train']['text'][i]}")
         if print_encoded_tokens:
             print(f"train data {i} tokenized : {tokenizer.encode(dataset['train']['text'][i])}")
 
-        print(f"valid data {i} : {dataset['valid']['text'][i].split('###')[0]}")
+        print(f"\nvalid data {i} :\n{dataset['valid']['text'][i].split('###')[0]}")
         if print_encoded_tokens:
             print(f"valid data {i} tokenized : {tokenizer.encode(dataset['valid']['text'][i].split('###')[0])}")
 
