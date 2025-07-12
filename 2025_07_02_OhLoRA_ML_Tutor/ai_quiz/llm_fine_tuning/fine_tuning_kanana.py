@@ -70,7 +70,7 @@ class OhLoRACustomCallback(TrainerCallback):
             elapsed_time = time.time() - start_at
 
             print(f'final input prompt : {final_input_prompt}')
-            print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}')
+            print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}\n')
 
             inference_result = {'epoch': state.epoch, 'elapsed_time': elapsed_time, 'prompt': final_input_prompt,
                                 'llm_answer': llm_answer, 'trial_cnt': trial_count, 'output_tkn_cnt': output_token_cnt}
