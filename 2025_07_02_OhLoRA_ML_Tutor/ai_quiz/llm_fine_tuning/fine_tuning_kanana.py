@@ -33,7 +33,7 @@ train_log_dict = {'epoch': [], 'time': [], 'loss': [], 'grad_norm': [], 'learnin
 inference_log_dict = {'epoch': [], 'elapsed_time (s)': [], 'prompt': [], 'llm_answer': [],
                       'trial_cnt': [], 'output_tkn_cnt': []}
 
-log_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning/logs'
+log_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/llm_fine_tuning/logs'
 os.makedirs(log_dir_path, exist_ok=True)
 
 
@@ -118,7 +118,7 @@ def get_original_llm(kanana_llm_name):
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args(kanana_llm_name):
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_final_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned'
     num_train_epochs = 15
 
     training_args = SFTConfig(
@@ -200,8 +200,8 @@ def get_lora_llm(llm, lora_rank):
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from ai_qna/fine_tuning_dataset/ai_qna_fine_tuning.csv)
-#                                   columns = ['data_type', 'input_data', ...]
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from ai_quiz/dataset/all_train_and_test_data.csv)
+#                                   columns = ['data_type', 'quiz', 'keywords', ...]
 
 # Returns:
 # - dataset (Dataset) : LLM 학습 데이터셋
@@ -244,7 +244,7 @@ def fine_tune_model(instruct_version):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning_dataset/SFT_final.csv')
+    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_quiz/dataset/all_train_and_test_data.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
@@ -266,5 +266,5 @@ def fine_tune_model(instruct_version):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_qna/models/{kanana_llm_name}_sft_final_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned'
     trainer.save_model(output_dir_path)

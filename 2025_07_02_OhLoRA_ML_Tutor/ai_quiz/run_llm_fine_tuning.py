@@ -32,13 +32,13 @@ def load_fine_tuned_llm(llm_name):
 
     if llm_name == 'kanana':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/ai_qna/models/kanana_sft_final_fine_tuned',
+            f'{PROJECT_DIR_PATH}/ai_quiz/models/kanana_sft_final_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
     elif llm_name == 'kananai':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/ai_qna/models/kananai_sft_final_fine_tuned',
+            f'{PROJECT_DIR_PATH}/ai_quiz/models/kananai_sft_final_fine_tuned',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
@@ -53,7 +53,7 @@ def load_fine_tuned_llm(llm_name):
 # - llm_name   (str) : Inference 또는 Fine-Tuning 할 LLM 의 이름 ('kanana', 'kananai')
 
 def inference_or_fine_tune_llm(llm_name):
-    models_dir = f'{PROJECT_DIR_PATH}/ai_qna/models'
+    models_dir = f'{PROJECT_DIR_PATH}/ai_quiz/models'
 
     # load valid dataset
     valid_final_input_prompts = load_valid_final_prompts()
@@ -83,7 +83,7 @@ def inference_or_fine_tune_llm(llm_name):
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
     inference_temperature = get_temperature()
-    llm_log_path = f'{PROJECT_DIR_PATH}/ai_qna/fine_tuning/logs'
+    llm_log_path = f'{PROJECT_DIR_PATH}/ai_quiz/llm_fine_tuning/logs'
     inference_log_path = f'{llm_log_path}/{llm_name}_sft_final_inference_log_{inference_temperature}.txt'
     inference_log = ''
 
