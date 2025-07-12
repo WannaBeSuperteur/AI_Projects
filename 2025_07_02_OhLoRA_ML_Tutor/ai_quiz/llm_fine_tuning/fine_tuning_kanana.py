@@ -258,8 +258,8 @@ def fine_tune_model(instruct_version):
     preview_dataset(dataset, tokenizer)
 
     response_template = [13, 320, 34983, 102546, 94821]  # '### 해설 :'
+    collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
-    collator = AugmentCollator(response_template, llm_name=kanana_llm_name, tokenizer=tokenizer)
     training_args = get_training_args(kanana_llm_name)
     trainer = get_sft_trainer(dataset, collator, training_args, instruct_version)
 
