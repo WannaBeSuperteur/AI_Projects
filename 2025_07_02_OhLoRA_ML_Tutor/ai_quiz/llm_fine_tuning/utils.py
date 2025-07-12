@@ -1,16 +1,22 @@
-import pandas as pd
+
 import os
 from datetime import datetime
+
+try:
+    from llm_fine_tuning.common import convert_into_filled_df
+except:
+    from ai_quiz.llm_fine_tuning.common import convert_into_filled_df
+
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
 def get_answer_start_mark():
-    return ' (답변 시작)'
+    return ' (해설 시작)'
 
 
 def get_answer_end_mark():
-    return ' (답변 종료)'
+    return ' (해설 종료)'
 
 
 def get_temperature():
@@ -70,10 +76,9 @@ def add_inference_log(inference_result, inference_log_dict):
 # - valid_final_prompts (list(str)) : Valid Dataset 로부터 가져온 final LLM input prompt 의 리스트
 
 def load_valid_final_prompts():
-    dataset_csv_path = 'ai_quiz/datasets/valid_test_final.csv'
+    dataset_csv_path = 'ai_quiz/dataset/valid_test_final.csv'
     dataset_csv_path = f'{PROJECT_DIR_PATH}/{dataset_csv_path}'
-    dataset_df = pd.read_csv(dataset_csv_path)
-    dataset_df_valid = dataset_df[dataset_df['data_type'].str.startswith('valid')]
+    dataset_df_valid = convert_into_filled_df(dataset_csv_path)
 
     valid_final_prompts = dataset_df_valid['input_data'].tolist()
     return valid_final_prompts

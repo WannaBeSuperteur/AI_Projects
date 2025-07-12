@@ -15,12 +15,13 @@ try:
     from llm_fine_tuning.inference import run_inference_kanana
     from llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
                                   get_answer_start_mark
-    from llm_fine_tuning.augmentation import AugmentCollator
+    from llm_fine_tuning.common import convert_into_filled_df
+
 except:
     from ai_quiz.llm_fine_tuning.inference import run_inference_kanana
     from ai_quiz.llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, \
         add_inference_log, get_answer_start_mark
-    from ai_quiz.llm_fine_tuning.augmentation import AugmentCollator
+    from ai_quiz.llm_fine_tuning.common import convert_into_filled_df
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -38,7 +39,7 @@ os.makedirs(log_dir_path, exist_ok=True)
 
 
 def get_stop_token_list():
-    return [109659, 104449, 99458, 64356]  # (답변 종료)
+    return [34983, 102546, 99458, 64356]  # (해설 종료)
 
 
 class OhLoRACustomCallback(TrainerCallback):
@@ -244,19 +245,19 @@ def fine_tune_model(instruct_version):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/ai_quiz/dataset/all_train_and_test_data.csv')
+    dataset_df = convert_into_filled_df(f'{PROJECT_DIR_PATH}/ai_quiz/dataset/all_train_and_test_data.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
-        lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_message']} (답변 종료) <|end_of_text|>",
+        lambda x: f"{x['input_data']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|end_of_text|>",
         axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
 
-    response_template = [8, 17010, 111964, 25]  # '### 답변 :'
+    response_template = [13, 320, 34983, 102546, 94821]  # '### 해설 :'
 
     collator = AugmentCollator(response_template, llm_name=kanana_llm_name, tokenizer=tokenizer)
     training_args = get_training_args(kanana_llm_name)
