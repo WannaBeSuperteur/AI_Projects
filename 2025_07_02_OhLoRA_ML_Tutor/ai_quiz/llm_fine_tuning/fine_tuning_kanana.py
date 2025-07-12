@@ -3,7 +3,7 @@ import time
 
 import peft
 from peft import LoraConfig
-from trl import SFTTrainer, SFTConfig
+from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 from datasets import DatasetDict, Dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, TrainingArguments, TrainerState, \
                          TrainerControl
@@ -129,7 +129,7 @@ def get_training_args(kanana_llm_name):
         gradient_checkpointing=False,
         output_dir=output_dir_path,
         save_total_limit=3,                 # max checkpoint count to save
-        per_device_train_batch_size=2,      # batch size per device during training
+        per_device_train_batch_size=1,      # batch size per device during training
         per_device_eval_batch_size=1,       # batch size per device during validation
         report_to=None                      # to prevent wandb API key request at start of Fine-Tuning
     )
@@ -252,12 +252,12 @@ def fine_tune_model(instruct_version):
     get_lora_llm(llm=original_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
-        lambda x: f"{x['input_data']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|end_of_text|>",
+        lambda x: f"{x['input_data']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|eot_id|>",
         axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
 
-    response_template = [13, 320, 34983, 102546, 94821]  # '### 해설 :'
+    response_template = [61816, 102546]  # '### 해설 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args(kanana_llm_name)

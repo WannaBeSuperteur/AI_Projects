@@ -61,7 +61,7 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, answer_s
     stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # (해설 종료)
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
     answer_end_mark = get_answer_end_mark()
-    max_length = 256
+    max_length = 1024
 
     while trial_count < max_trials:
         outputs = fine_tuned_llm.generate(**inputs,
