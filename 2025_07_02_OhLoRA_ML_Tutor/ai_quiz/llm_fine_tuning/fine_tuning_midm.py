@@ -225,7 +225,7 @@ def generate_llm_trainable_dataset(dataset_df):
 # Returns:
 # - ai_qna/models/midm_sft_final_fine_tuned 에 Fine-Tuning 된 모델 저장
 
-def fine_tune_model(instruct_version):
+def fine_tune_model():
     global lora_llm, tokenizer, valid_final_prompts
     valid_final_prompts = load_valid_final_prompts()
 
@@ -256,7 +256,7 @@ def fine_tune_model(instruct_version):
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args()
-    trainer = get_sft_trainer(dataset, collator, training_args, instruct_version)
+    trainer = get_sft_trainer(dataset, collator, training_args)
 
     # run Fine-Tuning
     trainer.train()

@@ -8,7 +8,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from llm_fine_tuning.fine_tuning_kanana import fine_tune_model as fine_tune_kanana
 from llm_fine_tuning.fine_tuning_kanana import get_stop_token_list as get_stop_token_list_kanana
-from llm_fine_tuning.inference import run_inference_kanana
+from llm_fine_tuning.fine_tuning_midm import fine_tune_model as fine_tune_midm
+from llm_fine_tuning.fine_tuning_midm import get_stop_token_list as get_stop_token_list_midm
+from llm_fine_tuning.inference import run_inference_kanana, run_inference_midm
 
 from llm_fine_tuning.utils import load_valid_final_prompts, get_answer_start_mark, get_temperature
 
@@ -19,10 +21,11 @@ ANSWER_CNT = 4
 
 # Fine-Tuning 된 LLM 로딩
 # Create Date : 2025.07.12
-# Last Update Date : -
+# Last Update Date : 2025.07.13
+# - Mi:dm 2.0 Mini LLM 추가
 
 # Arguments:
-# - llm_name (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai')
+# - llm_name (str) : Fine-Tuning 된 LLM 의 이름 ('kanana', 'kananai' or 'midm')
 
 # Returns:
 # - fine_tuned_llm (LLM) : Fine-Tuning 된 LLM
@@ -42,15 +45,22 @@ def load_fine_tuned_llm(llm_name):
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
+    elif llm_name == 'midm':
+        fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
+            f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned',
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).cuda()
+
     return fine_tuned_llm
 
 
 # LLM inference (해당 LLM 이 없거나 로딩 실패 시 Fine-Tuning 학습) 실시
 # Create Date : 2025.07.12
-# Last Update Date : -
+# Last Update Date : 2025.07.13
+# - Mi:dm 2.0 Mini LLM 추가
 
 # Arguments:
-# - llm_name   (str) : Inference 또는 Fine-Tuning 할 LLM 의 이름 ('kanana', 'kananai')
+# - llm_name   (str) : Inference 또는 Fine-Tuning 할 LLM 의 이름 ('kanana', 'kananai' or 'midm')
 
 def inference_or_fine_tune_llm(llm_name):
     models_dir = f'{PROJECT_DIR_PATH}/ai_quiz/models'
@@ -75,6 +85,9 @@ def inference_or_fine_tune_llm(llm_name):
 
         elif llm_name == 'kananai':
             fine_tune_kanana(instruct_version=True)
+
+        elif llm_name == 'midm':
+            fine_tune_midm()
 
         fine_tuned_llm = load_fine_tuned_llm(llm_name)
         tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_final_fine_tuned')
@@ -112,6 +125,14 @@ def inference_or_fine_tune_llm(llm_name):
                                                                                  stop_token_list=stop_token_list,
                                                                                  answer_start_mark=answer_start_mark)
 
+            elif llm_name == 'midm':
+                stop_token_list = get_stop_token_list_midm()
+                llm_answer, trial_count, output_token_cnt = run_inference_midm(fine_tuned_llm,
+                                                                               final_input_prompt,
+                                                                               tokenizer,
+                                                                               stop_token_list=stop_token_list,
+                                                                               answer_start_mark=answer_start_mark)
+
             elapsed_time = time.time() - inference_start_at
 
             llm_answers.append(llm_answer)
@@ -148,7 +169,7 @@ if __name__ == '__main__':
     llm_names_list = llm_names.split(',')
 
     for llm_name in llm_names_list:
-        assert llm_name in ['kanana', 'kananai'], "LLM name must be 'kanana', 'kananai'."
+        assert llm_name in ['kanana', 'kananai', 'midm'], "LLM name must be 'kanana', 'kananai' or 'midm'."
 
         print(f'\n=== 🚀 Fine-Tune LLM {llm_name} START 🚀 ===')
         inference_or_fine_tune_llm(llm_name)
