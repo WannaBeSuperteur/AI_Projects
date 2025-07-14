@@ -112,7 +112,9 @@ def run_inference_midm(fine_tuned_llm, final_input_prompt, tokenizer, answer_sta
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
 
     final_input_prompt_ = final_input_prompt + answer_start_mark
-    inputs = tokenizer(final_input_prompt_, return_tensors='pt').to(fine_tuned_llm.device)
+    inputs = tokenizer(final_input_prompt_, return_tensors='pt')
+    inputs = {'input_ids': inputs['input_ids'].to(fine_tuned_llm.device),
+              'attention_mask': inputs['attention_mask'].to(fine_tuned_llm.device)}
 
     llm_answer = ''
     trial_count = 0
