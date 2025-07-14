@@ -39,7 +39,7 @@ os.makedirs(log_dir_path, exist_ok=True)
 
 
 def get_stop_token_list():
-    return [51658, 23171, 1069, 11]  # (해설 종료)
+    return [51658, 23171, 4511, 11]  # (해설 종료)
 
 
 class OhLoRACustomCallback(TrainerCallback):
