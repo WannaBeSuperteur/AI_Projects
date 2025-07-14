@@ -39,7 +39,7 @@ os.makedirs(log_dir_path, exist_ok=True)
 
 
 def get_stop_token_list():
-    return [34983, 102546, 99458, 64356]  # (해설 종료)
+    return [51658, 23171, 1069, 11]  # (해설 종료)
 
 
 class OhLoRACustomCallback(TrainerCallback):
@@ -252,7 +252,7 @@ def fine_tune_model():
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
 
-    response_template = [61816, 102546]  # '### 해설 :'
+    response_template = [11001]  # '### 해설 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args()
