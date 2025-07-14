@@ -247,7 +247,7 @@ def fine_tune_model():
     get_lora_llm(llm=original_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
-        lambda x: f"{x['input_data']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|eot_id|>",
+        lambda x: f"{x['input_data']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|end_of_text|>",
         axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
