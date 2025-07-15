@@ -117,7 +117,7 @@ def get_original_llm():
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args():
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned_10epochs'
     num_train_epochs = 10
 
     training_args = SFTConfig(
