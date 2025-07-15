@@ -97,7 +97,7 @@ def inference_or_fine_tune_llm(llm_name):
 
     inference_temperature = get_temperature()
     llm_log_path = f'{PROJECT_DIR_PATH}/ai_quiz/llm_fine_tuning/logs'
-    inference_log_path = f'{llm_log_path}/{llm_name}_sft_final_inference_log_{inference_temperature}.txt'
+    inference_log_path = f'{llm_log_path}/{llm_name}_sft_final_inference_log_{inference_temperature}_10epochs.txt'
     inference_log = ''
 
     # run inference using Fine-Tuned LLM

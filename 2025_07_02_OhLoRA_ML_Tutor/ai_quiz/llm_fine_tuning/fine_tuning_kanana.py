@@ -53,7 +53,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
         kanana_llm_name = 'kananai' if self.instruct_version else 'kanana'
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_train_log.csv')
+        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_train_log_10epochs.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -77,7 +77,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_inference_log_dict.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_inference_log_dict_10epochs.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
