@@ -118,7 +118,7 @@ def get_original_llm():
 
 def get_training_args():
     output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned'
-    num_train_epochs = 5
+    num_train_epochs = 10
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
@@ -262,5 +262,5 @@ def fine_tune_model():
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned_10epochs'
     trainer.save_model(output_dir_path)

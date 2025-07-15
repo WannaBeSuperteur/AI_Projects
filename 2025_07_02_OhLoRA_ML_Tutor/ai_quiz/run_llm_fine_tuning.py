@@ -41,13 +41,13 @@ def load_fine_tuned_llm(llm_name):
 
     elif llm_name == 'kananai':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/ai_quiz/models/kananai_sft_final_fine_tuned',
+            f'{PROJECT_DIR_PATH}/ai_quiz/models/kananai_sft_final_fine_tuned_10epochs',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
     elif llm_name == 'midm':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned',
+            f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned_10epochs',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
