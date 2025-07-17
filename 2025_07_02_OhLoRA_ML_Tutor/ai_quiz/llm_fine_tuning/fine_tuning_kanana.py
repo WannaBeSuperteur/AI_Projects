@@ -53,7 +53,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
         kanana_llm_name = 'kananai' if self.instruct_version else 'kanana'
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_train_log_20epochs.csv')
+        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_train_log_30epochs.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -77,7 +77,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_inference_log_dict_20epochs.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_inference_log_dict_30epochs.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
@@ -119,8 +119,8 @@ def get_original_llm(kanana_llm_name):
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args(kanana_llm_name):
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned_20epochs'
-    num_train_epochs = 20
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned_30epochs'
+    num_train_epochs = 30
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
@@ -267,5 +267,5 @@ def fine_tune_model(instruct_version):
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned_20epochs'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned_30epochs'
     trainer.save_model(output_dir_path)
