@@ -41,7 +41,7 @@ def load_fine_tuned_llm(llm_name):
 
     elif llm_name == 'kananai':
         fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-            f'{PROJECT_DIR_PATH}/ai_quiz/models/kananai_sft_final_fine_tuned_30epochs',
+            f'{PROJECT_DIR_PATH}/ai_quiz/models/kananai_sft_final_fine_tuned_50epochs',
             trust_remote_code=True,
             torch_dtype=torch.bfloat16).cuda()
 
@@ -97,7 +97,7 @@ def inference_or_fine_tune_llm(llm_name):
 
     inference_temperature = get_temperature()
     llm_log_path = f'{PROJECT_DIR_PATH}/ai_quiz/llm_fine_tuning/logs'
-    inference_log_path = f'{llm_log_path}/{llm_name}_sft_final_inference_log_{inference_temperature}_30epochs.txt'
+    inference_log_path = f'{llm_log_path}/{llm_name}_sft_final_inference_log_{inference_temperature}_50epochs.txt'
     inference_log = ''
 
     # run inference using Fine-Tuned LLM
