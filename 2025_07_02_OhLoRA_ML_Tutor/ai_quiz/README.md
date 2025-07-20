@@ -6,7 +6,8 @@
 
 지정된 경로에 해당 LLM 이 이미 존재하는 경우, Fine-Tuning 대신 **inference test 실행됨**
 
-```python ai_quiz/run_llm_fine_tuning.py```
+* ```python ai_quiz/run_llm_fine_tuning.py``` (for [Kanana-1.5 2.1B Instruct](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505))
+* ```python ai_quiz/run_llm_fine_tuning.py -llm_name midm``` (for [Mi:dm 2.0 Mini](https://huggingface.co/K-intelligence/Midm-2.0-Mini-Instruct))
 
 ### S-BERT Training (사용자 답변 채점용)
 
