@@ -181,7 +181,7 @@ TBU
 | 🧪 모델 학습   | 사용자 답변 채점용 S-BERT 모델 학습                                            | 07.10 목 - 07.11 금 (2d) | ```P008-004-train-SBERT2``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/40) | ✅  |
 | 🧪 모델 학습   | 답안 해설용 LLM Supervised Fine-Tuning 학습<br>(LLM: **Kanana** by Kakao) | 07.12 토 - 07.20 일 (9d) | ```P008-005-train-LLM2```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/41) | ✅  |
 | 🧪 모델 학습   | 답안 해설용 LLM Supervised Fine-Tuning 학습<br>(LLM: **믿:음 2.0** by KT)   | 07.12 토 - 07.16 수 (5d) | ```P008-005-train-LLM2```   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/41) | ✅  |
-| ⚙ 기능 구현    | 틀릴 가능성이 높은 퀴즈 출제 구현                                                | 07.21 월 (1d)           | ```P008-006-fit-quiz```     |                                                                    | ⬜  |
+| ⚙ 기능 구현    | 틀릴 가능성이 높은 퀴즈 출제 구현                                                | 07.21 월 (1d)           | ```P008-006-fit-quiz```     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/42) | 💨 |
 | 📃 문서화     | "머신러닝 분야 퀴즈" 개발 내용 문서화                                             | 07.21 월 (1d)           |                             |                                                                    | ⬜  |
 
 **4. 멀티턴 실전 면접 기능**
