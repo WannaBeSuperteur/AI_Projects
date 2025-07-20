@@ -97,5 +97,7 @@
 | 30 epochs | **70.19 %** (292 / 416)  | 미 실시                    |
 | 50 epochs | **54.57 %** (227 / 416)  | 미 실시                    |
 
+![image](../../images/250702_9.PNG)
+
 * **Kanana-1.5-2.1B Instruct / 10 epochs** 옵션으로 Fine-Tuning 시 **80.05 % (333 / 416)** 정확도의 최고 성능 달성
 * [참고 리포트](llm_fine_tuning/llm_comprehensive_report.md)
