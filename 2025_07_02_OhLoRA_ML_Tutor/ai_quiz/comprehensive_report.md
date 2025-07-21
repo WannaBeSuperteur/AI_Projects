@@ -12,6 +12,10 @@
 
 * **머신러닝 퀴즈 채점 및 해설** 구현을 위한 모델 (Fine-Tuned LLM & S-BERT) 성능 평가
 * 결과 요약
+  * S-BERT (채점)
+    * 성능이 다소 부족한 편이므로, **퀴즈 점수는 단순 참고용** 임을 명시
+  * LLM Fine-Tuning (해설)
+    * **Kanana-1.5-2.1B Instruct / 10 epochs** 옵션 최종 채택 (해설 정확도 **80.05 %**)
 
 ## 2. S-BERT 모델 성능 (사용자 답변 채점용)
 
@@ -100,4 +104,5 @@
 ![image](../../images/250702_9.PNG)
 
 * **Kanana-1.5-2.1B Instruct / 10 epochs** 옵션으로 Fine-Tuning 시 **80.05 % (333 / 416)** 정확도의 최고 성능 달성
-* [참고 리포트](llm_fine_tuning/llm_comprehensive_report.md)
+* 위 옵션으로 프로덕트에 최종 적용
+* [결과 리포트](llm_fine_tuning/llm_comprehensive_report.md)
