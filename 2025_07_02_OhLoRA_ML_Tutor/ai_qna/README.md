@@ -3,6 +3,7 @@
 
 * [1. 개요](#1-개요)
 * [2. LLM Fine-Tuning](#2-llm-fine-tuning)
+  * [2-1. Vector 사용 시 vs. Plain Text 추가 임베딩 시 비교](#2-1-vector-사용-시-vs-plain-text-추가-임베딩-시-비교) 
 * [3. S-BERT (for RAG concept)](#3-s-bert-for-rag-concept)
 * [4. 코드 실행 방법](#4-코드-실행-방법)
   * [4-1. LLM Fine-Tuning](#4-1-llm-fine-tuning)
@@ -34,6 +35,48 @@
   * **6.** Oh-LoRA 👱‍♀️ (오로라) LLM 이 생성한 답변을 **최종적으로 사용자에게 표시**
 * RAG 유사 컨셉 DB
   * [RAG 유사 컨셉 DB](rag_sbert/db/rag_data_text.csv)
+
+### 2-1. Vector 사용 시 vs. Plain Text 추가 임베딩 시 비교
+
+* 결론
+  * **실제 RAG 처럼 Vector 사용** 시, Plain Text 를 추가 임베딩할 때보다 **가장 알맞은 정보 선택에 걸리는 시간이 약 절반으로 감소 (2배 빨라짐)** 한다.
+  * 소요 시간 비교
+
+| Vector 사용 시      | Plain Text 추가 임베딩 시 |
+|------------------|---------------------|
+| 평균 **1.88 초** 소요 | 평균 **3.58 초** 소요    |
+
+* Vector 사용 시 **(= RAG 의 Vector DB 컨셉)**
+
+```
+Input user prompt (Ctrl+C to finish) : 코사인 유사도가 뭔지 알려줘 
+BEST ITEM PICK TIME: 2.070249557495117
+best DB item : cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄
+
+Input user prompt (Ctrl+C to finish) : 코사인 유사도 계산법이 뭔지 알려줘 
+BEST ITEM PICK TIME: 1.8142421245574951
+best DB item : cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값
+
+Input user prompt (Ctrl+C to finish) : 앙상블의 장점이 뭐야?
+BEST ITEM PICK TIME: 1.7694203853607178
+best DB item : Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상
+```
+
+* Plain Text 추가 임베딩 시
+
+```
+Input user prompt (Ctrl+C to finish) : 코사인 유사도가 뭔지 알려줘 
+BEST ITEM PICK TIME: 3.7247207164764404
+best DB item : cosine similarity (코사인 유사도) : 두 벡터의 방향 유사도를 -1.0 ~ +1.0 으로 나타냄 | 핵심 아이디어: 벡터 크기 대신 방향을 봄
+
+Input user prompt (Ctrl+C to finish) : 코사인 유사도 계산법이 뭔지 알려줘 
+BEST ITEM PICK TIME: 3.5206947326660156
+best DB item : cosine similarity (코사인 유사도) 계산법 : 원소 개수가 같은 2개의 벡터의 각도의 코사인 값
+
+Input user prompt (Ctrl+C to finish) : 앙상블의 장점이 뭐야?
+BEST ITEM PICK TIME: 3.488046884536743
+best DB item : Ensemble (앙상블) 장점 : 여러 개의 모델을 이용하여 단일 모델 이용 시보다 성능 향상
+```
 
 ## 3. S-BERT (for RAG concept)
 
