@@ -79,3 +79,24 @@ def run_inference_each_example(sbert_model, user_question, rag_retrieved_data):
 
     similarity_score = compute_cosine_similarity(user_question_embedding[0], rag_retrieved_data_embedding[0])
     return similarity_score
+
+
+# Q&A LLM 의 RAG 컨셉을 위한 학습된 S-BERT (Sentence BERT) 모델을 이용하여 "각 example 에 대한" inference 실시 (vector 대상)
+# Create Date : 2025.07.21
+# Last Update Date : -
+
+# Arguments:
+# - sbert_model               (S-BERT Model) : 학습된 Sentence BERT 모델
+# - user_question             (str)          : 사용자 질문 (예: "머신러닝에서 많이 쓰이는 평가지표 알려줘")
+# - rag_retrieved_data_vector (str)          : DB에 저장된 데이터 (예: "머신러닝 모델 성능 ...") 에 대한 vector
+
+# Returns:
+# - similarity_score (float) : 학습된 S-BERT 모델이 계산한 similarity score (RAG 유사 메커니즘 용)
+
+def run_inference_each_example_vector(sbert_model, user_question, rag_retrieved_data_vector):
+    def compute_cosine_similarity(vector0, vector1):
+        return np.dot(vector0, vector1) / (np.linalg.norm(vector0) * np.linalg.norm(vector1))
+
+    user_question_embedding = sbert_model.encode([user_question])
+    similarity_score = compute_cosine_similarity(user_question_embedding[0], rag_retrieved_data_vector)
+    return similarity_score
