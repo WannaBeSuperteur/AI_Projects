@@ -1,0 +1,7 @@
+quiz_no,keywords,score
+1,성능지표|정확도|재현율|F1 Score|정의,0.95
+2,성능지표|IoU|Dice Score|정의,1.0
+16,머신러닝 모델|Naive Bayes|동작 방법,0.3
+17,머신러닝 모델|PCA|동작 방법,0.35
+43,NLP|LLM|LLM 파인튜닝|LoRA|약어|정의|이유,0.0
+44,NLP|LLM|샘플링|top-k|top-p|temperature|정의,0.2
