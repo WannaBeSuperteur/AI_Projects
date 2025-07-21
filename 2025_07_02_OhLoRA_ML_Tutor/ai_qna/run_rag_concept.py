@@ -9,6 +9,7 @@ except:
 
 import pandas as pd
 
+import time
 import os
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
@@ -125,6 +126,7 @@ def load_sbert_model():
 
 
 if __name__ == '__main__':
+    running_inference = False
 
     # load train & test dataset
     train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_qna/rag_sbert/dataset/train_final.csv'
@@ -144,17 +146,22 @@ if __name__ == '__main__':
         sbert_model = load_sbert_model()
 
     # run inference on test dataset
-    run_inference(sbert_model, test_dataset_df)
+    if running_inference:
+        run_inference(sbert_model, test_dataset_df)
 
     # pick best DB by user prompt, from saved DB
     while True:
         test_user_prompt = input('\nInput user prompt (Ctrl+C to finish) : ')
+
+        start_at = time.time()
         best_db_item = pick_best_db_item_csv(sbert_model,
                                              test_user_prompt,
                                              db_file_name='rag_data_text.csv',
                                              verbose=True)
+        best_item_pick_time = time.time() - start_at
 
+        print(f'\nBEST ITEM PICK TIME: {best_item_pick_time}')
         if best_db_item == '':
-            print(f'\nNO BEST DB ITEM (cos-sim threshold : 0.6)')
+            print(f'NO BEST DB ITEM (cos-sim threshold : 0.6)')
         else:
-            print(f'\nbest DB item : {best_db_item}')
+            print(f'best DB item : {best_db_item}')
