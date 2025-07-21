@@ -9,7 +9,7 @@ import pandas as pd
 import os
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-QUIZ_LIST_PATH = f'{PROJECT_DIR_PATH}/dataset/question_list.csv'
+QUIZ_LIST_PATH = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/question_list.csv'
 
 
 if __name__ == '__main__':

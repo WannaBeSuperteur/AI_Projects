@@ -48,13 +48,11 @@ def select_next_quiz(log_csv_path):
     quiz_cnt = len(quiz_list_csv)
     logged_quiz_mean_score = log_csv['score'].mean()
 
-    print(log_csv)
-    print(quiz_list_csv)
-
     # compute score for each quiz question
-    iou = [0.0 for _ in range(quiz_cnt)]
-    sum_score_weighted_by_iou = [0.0 for _ in range(quiz_cnt)]
-    score_weighted_by_iou = [0.0 for _ in range(quiz_cnt)]
+    base_total_iou = 0.25
+    iou = [base_total_iou for _ in range(quiz_cnt)]
+    sum_score_weighted_by_iou = [base_total_iou * logged_quiz_mean_score for _ in range(quiz_cnt)]
+    score_weighted_by_iou = [0.0 for _ in range(quiz_cnt)]  # final predicted score
 
     for quiz_no in range(quiz_cnt):
         quiz_kwds = quiz_list_csv['keywords'][quiz_no]
@@ -83,5 +81,10 @@ def select_next_quiz(log_csv_path):
                                  'score': score_weighted_by_iou}
     score_compute_result_df = pd.DataFrame(score_compute_result_dict)
 
-    raise NotImplementedError
+    # select lowest score quiz question
+    not_logged_questions = score_compute_result_df[~(score_compute_result_df['logged'])]
+    lowest_score = not_logged_questions['score'].min()
+    lowest_score_question = not_logged_questions[not_logged_questions['score'] == lowest_score]
+
+    return list(lowest_score_question['idx'])[0]
 
