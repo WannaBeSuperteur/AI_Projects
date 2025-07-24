@@ -75,9 +75,24 @@ def extract_sbert_dataset(data_type):
     return dataset_df_answer_type, dataset_df_next_question
 
 
+# S-BERT 학습 / 검증 / 테스트 데이터셋 저장
+# Create Date : 2025.07.24
+# Last Update Date : -
+
+# Arguments:
+# - data_type (str) : 학습 ('train') or 검증/테스트 ('valid/test')
+
+# Returns:
+# - 해당 S-BERT 학습/검증/테스트 데이터셋 파일을 저장
+
+def save_sbert_dataset(data_type):
+    data_type_for_filename = data_type.replace('/', '_')
+
+    dataset_df_answer_type, dataset_df_next_question = extract_sbert_dataset(data_type)
+    dataset_df_answer_type.to_csv(f'dataset_df_answer_type_{data_type_for_filename}.csv', index=False)
+    dataset_df_next_question.to_csv(f'dataset_df_next_question_{data_type_for_filename}.csv', index=False)
+
+
 if __name__ == '__main__':
-    dataset_df_answer_type, dataset_df_next_question = extract_sbert_dataset('train')
-    dataset_df_answer_type.to_csv('dataset_df_answer_type_train.csv', index=False)
-    dataset_df_next_question.to_csv('dataset_df_next_question_train.csv', index=False)
-
-
+    save_sbert_dataset('train')
+    save_sbert_dataset('valid/test')
