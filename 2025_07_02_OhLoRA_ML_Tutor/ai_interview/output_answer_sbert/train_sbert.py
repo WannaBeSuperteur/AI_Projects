@@ -73,7 +73,8 @@ def load_pretrained_sbert_model(model_path="klue/roberta-base"):
 # Q&A LLM RAG 컨셉 Mechanism 을 위한 S-BERT (Sentence BERT) 모델 학습
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
 # Create Date : 2025.07.25
-# Last Update Date : -
+# Last Update Date : 2025.07.26
+# - S-BERT 저장 경로 오타 수정
 
 # Arguments:
 # - train_dataset_df (Pandas DataFrame) : S-BERT 학습을 위한 학습 데이터셋
@@ -85,8 +86,8 @@ def load_pretrained_sbert_model(model_path="klue/roberta-base"):
 # - 학습된 Sentence-BERT 모델을 ai_qna/models/rag_sbert/trained_sbert_model 디렉토리에 저장
 
 def train_sbert(train_dataset_df, model_path, epochs):
-    sbert_model_save_path = f'{PROJECT_DIR_PATH}/ai_interview/models/next_question_sbert/trained_sbert_model_{epochs}'
-    sbert_model_ckpt_path = f'{PROJECT_DIR_PATH}/ai_interview/models/next_question_sbert/checkpoints_{epochs}'
+    sbert_model_save_path = f'{PROJECT_DIR_PATH}/ai_interview/models/output_answer_sbert/trained_sbert_model_{epochs}'
+    sbert_model_ckpt_path = f'{PROJECT_DIR_PATH}/ai_interview/models/output_answer_sbert/checkpoints_{epochs}'
 
     n_train_examples = len(train_dataset_df)
     n_train_size = int(0.9 * n_train_examples)
