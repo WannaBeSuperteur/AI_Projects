@@ -62,8 +62,8 @@ def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference
     else:  # output_answer
         dataset_symbol = 'answer'
 
-    train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_type_train.csv'
-    test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_type_valid_test.csv'
+    train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_train.csv'
+    test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_valid_test.csv'
     train_dataset_df = pd.read_csv(train_dataset_csv_path)
     test_dataset_df = pd.read_csv(test_dataset_csv_path)
 
