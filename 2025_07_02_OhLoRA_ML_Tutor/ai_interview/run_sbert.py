@@ -1,12 +1,17 @@
 
 try:
-    from sbert.inference_sbert import run_inference, run_inference_each_example
-    from sbert.load_sbert_model import load_trained_sbert_model
-    from sbert.train_sbert import train_sbert
+    from common.load_sbert_model import load_trained_sbert_model
+    from next_question_sbert.inference_sbert import run_inference as run_inference_next_question
+    from next_question_sbert.train_sbert import train_sbert as train_sbert_next_question
+    from output_answer_sbert.inference_sbert import run_inference as run_inference_output_answer
+    from output_answer_sbert.train_sbert import train_sbert  as train_sbert_output_answer
+
 except:
-    from ai_quiz.sbert.inference_sbert import run_inference, run_inference_each_example
-    from ai_quiz.sbert.load_sbert_model import load_trained_sbert_model
-    from ai_quiz.sbert.train_sbert import train_sbert
+    from ai_interview.common.load_sbert_model import load_trained_sbert_model
+    from ai_interview.next_question_sbert.inference_sbert import run_inference_next_question
+    from ai_interview.next_question_sbert.train_sbert import train_sbert_next_question
+    from ai_interview.output_answer_sbert.inference_sbert import run_inference_output_answer
+    from ai_interview.output_answer_sbert.train_sbert import train_sbert_output_answer
 
 import pandas as pd
 
@@ -15,106 +20,65 @@ import shutil
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
-# 사용자 답변 채점을 위한 학습된 S-BERT 모델 로딩
-# Create Date : 2025.07.11
+# 다음 질문 또는 사용자가 성공한 답변 예측용 S-BERT 모델 로딩
+# Create Date : 2025.07.25
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# - model_type (str) : 다음 질문 ('next_question') or 사용자가 성공한 답변 ('output_answer') 예측용 모델
 
 # Returns:
 # - sbert_model (S-BERT Model) : 학습된 Sentence BERT 모델
 
-def load_sbert_model():
-    model_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/trained_sbert_model'
+def load_sbert_model(model_type):
+    assert model_type in ['next_question', 'output_answer'], "model_type must be 'next_question' or 'output_answer'."
+
+    model_path = f'{PROJECT_DIR_PATH}/ai_interview/models/{model_type}_sbert/trained_sbert_model'
     sbert_model = load_trained_sbert_model(model_path)
 
     return sbert_model
 
 
-# quiz, keyword, good_answer 의 빈칸이 채워진 DataFrame 반환
-# Create Date : 2025.07.11
+# 다음 질문 또는 사용자가 성공한 답변 예측용 S-BERT 모델 학습
+# Create Date : 2025.07.25
 # Last Update Date : -
 
 # Arguments:
-# - csv_path (str) : DataFrame 이 있는 csv 파일의 path
+# - model_type      (str)      : 다음 질문 ('next_question') or 사용자가 성공한 답변 ('output_answer') 예측용 모델
+# - experiment_mode (boolean)  : 실험 모드 여부
+# - train_sbert     (function) : S-BERT 모델 학습 함수
+# - run_inference   (function) : S-BERT 모델 inference 실행 함수
 
-# Returns
-# - filled_dataset_df (Pandas DataFrame) : 빈칸이 채워진 DataFrame
+# Returns:
+# - 해당 model_type 의 S-BERT 모델 학습
+# - 해당 S-BERT 모델에 대한 inference test 실시 및 그 결과 저장
 
-def convert_into_filled_df(csv_path):
-    dataset_df = pd.read_csv(csv_path)
-
-    # get current columns
-    data_type_list = dataset_df['data_type'].tolist()
-    quiz_list = dataset_df['quiz'].tolist()
-    keyword_list = dataset_df['keywords'].tolist()
-    good_answer_list = dataset_df['good_answer'].tolist()
-    user_answer_list = dataset_df['user_answer'].tolist()
-    explanation_list = dataset_df['explanation'].tolist()
-    similarity_list = dataset_df['similarity_score'].tolist()
-
-    current_quiz = ''
-    current_keyword = ''
-    current_good_answer = ''
-
-    # fill quiz, keyword and good answer list
-    filled_quiz_list = []
-    filled_keyword_list = []
-    filled_good_answer_list = []
-
-    for quiz in quiz_list:
-        if not pd.isna(quiz) and quiz != '':
-            current_quiz = quiz
-        filled_quiz_list.append(current_quiz)
-
-    for keyword in keyword_list:
-        if not pd.isna(keyword) and keyword != '':
-            current_keyword = keyword
-        filled_keyword_list.append(current_keyword)
-
-    for good_answer in good_answer_list:
-        if not pd.isna(good_answer) and good_answer != '':
-            current_good_answer = good_answer
-        filled_good_answer_list.append(current_good_answer)
-
-    # create final filled DataFrame
-    filled_dataset_dict = {
-        'data_type': data_type_list,
-        'quiz': filled_quiz_list,
-        'keywords': filled_keyword_list,
-        'good_answer': filled_good_answer_list,
-        'user_answer': user_answer_list,
-        'explanation': explanation_list,
-        'similarity_score': similarity_list
-    }
-
-    filled_dataset_df = pd.DataFrame(filled_dataset_dict)
-    return filled_dataset_df
-
-
-if __name__ == '__main__':
-    experiment_mode = False
+def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference):
+    assert model_type in ['next_question', 'output_answer'], "model_type must be 'next_question' or 'output_answer'."
 
     # load train & test dataset
-    train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/train_final.csv'
-    train_dataset_df = convert_into_filled_df(train_dataset_csv_path)
+    if model_type == 'next_question':
+        dataset_symbol = 'next_question'
+    else:  # output_answer
+        dataset_symbol = 'answer'
 
-    test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_quiz/dataset/valid_test_final.csv'
-    test_dataset_df = convert_into_filled_df(test_dataset_csv_path)
+    train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_type_train.csv'
+    test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_type_valid_test.csv'
+    train_dataset_df = pd.read_csv(train_dataset_csv_path)
+    test_dataset_df = pd.read_csv(test_dataset_csv_path)
 
     # experiment mode
     if experiment_mode:
         model_path_list = ['klue/roberta-base']
-        epochs_list = [110, 120, 130, 140, 150]
+        epochs_list = [10, 20, 30, 40, 50]
 
         for model_path in model_path_list:
             for epochs in epochs_list:
                 train_sbert(train_dataset_df, model_path, epochs)
-                sbert_model = load_sbert_model()
+                sbert_model = load_sbert_model(model_type)
                 run_inference(sbert_model, test_dataset_df, model_path, epochs, is_experiment_mode=True)
 
-                models_dir = f'{PROJECT_DIR_PATH}/ai_quiz/models'
+                models_dir = f'{PROJECT_DIR_PATH}/ai_interview/models'
                 shutil.rmtree(models_dir)
 
     # NOT experiment mode
@@ -126,13 +90,25 @@ if __name__ == '__main__':
 
         # load S-BERT Model
         try:
-            sbert_model = load_sbert_model()
+            sbert_model = load_sbert_model(model_type)
             print('S-BERT Model (for DB mechanism) - Load SUCCESSFUL! 👱‍♀️')
 
         except Exception as e:
             print(f'S-BERT Model (for DB mechanism) load failed : {e}')
             train_sbert(train_dataset_df, model_path, epochs)
-            sbert_model = load_sbert_model()
+            sbert_model = load_sbert_model(model_type)
 
         # run inference on test dataset
         run_inference(sbert_model, test_dataset_df, model_path, epochs)
+
+
+if __name__ == '__main__':
+    run_sbert_each_model(model_type='next_question',
+                         experiment_mode=True,
+                         train_sbert=train_sbert_next_question,
+                         run_inference=train_sbert_next_question)
+
+    run_sbert_each_model(model_type='output_answer',
+                         experiment_mode=True,
+                         train_sbert=train_sbert_output_answer,
+                         run_inference=train_sbert_output_answer)

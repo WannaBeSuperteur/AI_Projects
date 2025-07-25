@@ -1,3 +1,6 @@
+# cosine similarity 도출용 비교 대상: "현재 질문 + 사용자 답변" & "사용자가 성공한 답변"
+
+
 from sentence_transformers import SentenceTransformer, models, losses
 from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
 from sentence_transformers.readers import InputExample
@@ -17,34 +20,34 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 
 SBERT_TRAIN_BATCH_SIZE = 16
 SBERT_VALID_BATCH_SIZE = 4
-SBERT_EPOCHS = 7
+SBERT_EPOCHS = 10
 
-SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
-SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/checkpoints'
+SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_interview/models/output_answer_sbert/trained_sbert_model'
+SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_interview/models/output_answer_sbert/checkpoints'
 
 
 class RagSBERTDataset(Dataset):
     def __init__(self, dataset_df):
-        self.user_question_info = dataset_df['user_question'].tolist()
-        self.rag_retrieved_data_info = dataset_df['rag_retrieved_data'].tolist()
+        self.input_part_info = dataset_df['input_part'].tolist()
+        self.output_answer_info = dataset_df['output_answer'].tolist()
         self.similarity_score_info = dataset_df['similarity_score'].tolist()
 
     def __len__(self):
-        return len(self.user_question_info)
+        return len(self.input_part_info)
 
     def __getitem__(self, idx):
-        user_question = self.user_question_info[idx]
-        rag_retrieved_data = self.rag_retrieved_data_info[idx]
+        input_part = self.input_part_info[idx]
+        output_answer = self.output_answer_info[idx]
         similarity_score = self.similarity_score_info[idx]
 
-        input_example = InputExample(texts=[user_question, rag_retrieved_data],
+        input_example = InputExample(texts=[input_part, output_answer],
                                      label=similarity_score)
         return input_example
 
 
 # Pre-trained (or Fine-Tuned) S-BERT Model 로딩
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.07.06
+# Create Date : 2025.07.25
 # Last Update Date : -
 
 # Arguments:
@@ -73,7 +76,7 @@ def load_pretrained_sbert_model(model_path="klue/roberta-base"):
 
 # Q&A LLM RAG 컨셉 Mechanism 을 위한 S-BERT (Sentence BERT) 모델 학습
 # Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
-# Create Date : 2025.07.06
+# Create Date : 2025.07.25
 # Last Update Date : -
 
 # Arguments:
@@ -94,10 +97,12 @@ def train_sbert(train_dataset_df):
 
     # save readme file
     os.makedirs(SBERT_MODEL_SAVE_PATH, exist_ok=True)
-    readme_path = f'{SBERT_MODEL_SAVE_PATH}/readme_QNA.txt'
+    readme_path = f'{SBERT_MODEL_SAVE_PATH}/readme_ML_interview_output_answer.txt'
 
     with open(readme_path, 'w') as f:
-        f.write('Oh-LoRA AI Tutor Q&A model (defined: 20250706132519) (S-BERT, roberta-based)')
+        f.write('Oh-LoRA AI Tutor ML interview "OUTPUT ANSWER" ' +
+                '(current question + user answer -> successful user answer) model ' +
+                '(defined: 20250725181901) (S-BERT, roberta-based)')
         f.close()
 
     # load pre-trained S-BERT model
