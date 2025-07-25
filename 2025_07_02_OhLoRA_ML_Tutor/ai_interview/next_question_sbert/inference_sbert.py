@@ -13,14 +13,17 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspa
 # Last Update Date : -
 
 # Arguments:
-# - sbert_model     (S-BERT Model)     : 학습된 Sentence BERT 모델
-# - test_dataset_df (Pandas DataFrame) : 테스트 데이터셋
+# - sbert_model        (S-BERT Model)     : 학습된 Sentence BERT 모델
+# - test_dataset_df    (Pandas DataFrame) : 테스트 데이터셋
+# - model_path         (str)              : Pre-trained S-BERT Model 의 경로 (logging 목적으로 사용)
+# - epochs             (int)              : S-BERT 학습 epoch 횟수
+# - is_experiment_mode (bool)             : 실험 모드 여부
 
 # Returns:
 # - 반환값 없음
 # - 테스트 결과 (성능지표 값) 출력 및 해당 결과를 rag_sbert/result/test_result.csv 로 저장
 
-def run_inference(sbert_model, test_dataset_df):
+def run_inference(sbert_model, test_dataset_df, model_path, epochs, is_experiment_mode=False):
     n = len(test_dataset_df)
 
     input_part_list = test_dataset_df['input_part'].tolist()
@@ -45,6 +48,9 @@ def run_inference(sbert_model, test_dataset_df):
     print(f'MAE error : {mae_error:.4f}')
     print(f'Corr-coef : {corr_coef:.4f}')
 
+    # remove '/' from model path
+    model_path_ = model_path.replace('/', '_')
+
     # save test result
     test_result_dict = {'input_part': input_part_list, 'next_question': next_question_list,
                         'predicted_similarity': predicted_similarity, 'ground_truth_similarity': ground_truth_similarity,
@@ -53,12 +59,20 @@ def run_inference(sbert_model, test_dataset_df):
     test_result_df = pd.DataFrame(test_result_dict)
     result_dir = f'{PROJECT_DIR_PATH}/ai_interview/next_question_sbert/result'
     os.makedirs(result_dir, exist_ok=True)
-    test_result_df.to_csv(f'{result_dir}/test_result.csv', index=False)
+
+    if is_experiment_mode:
+        test_result_df.to_csv(f'{result_dir}/test_result_{model_path_}_epoch_{epochs}.csv', index=False)
+    else:
+        test_result_df.to_csv(f'{result_dir}/test_result.csv', index=False)
 
     # save MSE, MAE error and Corr-coef
     metric_values_dict = {'mse': [mse_error], 'mae': [mae_error], 'corr': [corr_coef]}
     metric_values_df = pd.DataFrame(metric_values_dict)
-    metric_values_df.to_csv(f'{result_dir}/test_metric_values.csv', index=False)
+
+    if is_experiment_mode:
+        metric_values_df.to_csv(f'{result_dir}/test_metric_values_{model_path_}_epoch_{epochs}.csv', index=False)
+    else:
+        metric_values_df.to_csv(f'{result_dir}/test_metric_values.csv', index=False)
 
 
 # ML Interview LLM 에 전달할 다음 질문 정보 생성을 위한 학습된 S-BERT 모델을 이용하여 "각 example 에 대한" inference 실시
