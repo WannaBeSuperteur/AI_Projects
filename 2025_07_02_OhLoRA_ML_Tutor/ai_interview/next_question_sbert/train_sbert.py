@@ -25,7 +25,7 @@ SBERT_VALID_BATCH_SIZE = 4
 class RagSBERTDataset(Dataset):
     def __init__(self, dataset_df):
         self.input_part_info = dataset_df['input_part'].tolist()
-        self.output_answer_info = dataset_df['output_answer'].tolist()
+        self.next_question_info = dataset_df['next_question'].tolist()
         self.similarity_score_info = dataset_df['similarity'].tolist()
 
     def __len__(self):
@@ -33,10 +33,10 @@ class RagSBERTDataset(Dataset):
 
     def __getitem__(self, idx):
         input_part = self.input_part_info[idx]
-        output_answer = self.output_answer_info[idx]
+        next_question = self.next_question_info[idx]
         similarity_score = self.similarity_score_info[idx]
 
-        input_example = InputExample(texts=[input_part, output_answer],
+        input_example = InputExample(texts=[input_part, next_question],
                                      label=similarity_score)
         return input_example
 
