@@ -26,14 +26,15 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # Arguments:
 # - model_type (str) : 다음 질문 ('next_question') or 사용자가 성공한 답변 ('output_answer') 예측용 모델
+# - epochs     (int) : S-BERT 학습 epoch 횟수
 
 # Returns:
 # - sbert_model (S-BERT Model) : 학습된 Sentence BERT 모델
 
-def load_sbert_model(model_type):
+def load_sbert_model(model_type, epochs):
     assert model_type in ['next_question', 'output_answer'], "model_type must be 'next_question' or 'output_answer'."
 
-    model_path = f'{PROJECT_DIR_PATH}/ai_interview/models/{model_type}_sbert/trained_sbert_model'
+    model_path = f'{PROJECT_DIR_PATH}/ai_interview/models/{model_type}_sbert/trained_sbert_model_{epochs}'
     sbert_model = load_trained_sbert_model(model_path)
 
     return sbert_model
@@ -75,7 +76,7 @@ def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference
         for model_path in model_path_list:
             for epochs in epochs_list:
                 train_sbert(train_dataset_df, model_path, epochs)
-                sbert_model = load_sbert_model(model_type)
+                sbert_model = load_sbert_model(model_type, epochs)
                 run_inference(sbert_model, test_dataset_df, model_path, epochs, is_experiment_mode=True)
 
                 models_dir = f'{PROJECT_DIR_PATH}/ai_interview/models'
@@ -90,13 +91,13 @@ def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference
 
         # load S-BERT Model
         try:
-            sbert_model = load_sbert_model(model_type)
+            sbert_model = load_sbert_model(model_type, epochs)
             print('S-BERT Model (for DB mechanism) - Load SUCCESSFUL! 👱‍♀️')
 
         except Exception as e:
             print(f'S-BERT Model (for DB mechanism) load failed : {e}')
             train_sbert(train_dataset_df, model_path, epochs)
-            sbert_model = load_sbert_model(model_type)
+            sbert_model = load_sbert_model(model_type, epochs)
 
         # run inference on test dataset
         run_inference(sbert_model, test_dataset_df, model_path, epochs)
