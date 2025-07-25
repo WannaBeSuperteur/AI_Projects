@@ -70,7 +70,7 @@ def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference
     # experiment mode
     if experiment_mode:
         model_path_list = ['klue/roberta-base']
-        epochs_list = [10, 20, 30, 40, 50]
+        epochs_list = [5, 10, 20, 40]
 
         for model_path in model_path_list:
             for epochs in epochs_list:
