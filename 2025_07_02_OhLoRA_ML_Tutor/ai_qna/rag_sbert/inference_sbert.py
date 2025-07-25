@@ -86,9 +86,9 @@ def run_inference_each_example(sbert_model, user_question, rag_retrieved_data):
 # Last Update Date : -
 
 # Arguments:
-# - sbert_model               (S-BERT Model) : 학습된 Sentence BERT 모델
-# - user_question             (str)          : 사용자 질문 (예: "머신러닝에서 많이 쓰이는 평가지표 알려줘")
-# - rag_retrieved_data_vector (str)          : DB에 저장된 데이터 (예: "머신러닝 모델 성능 ...") 에 대한 vector
+# - sbert_model               (S-BERT Model)  : 학습된 Sentence BERT 모델
+# - user_question             (str)           : 사용자 질문 (예: "머신러닝에서 많이 쓰이는 평가지표 알려줘")
+# - rag_retrieved_data_vector (Pandas Series) : DB에 저장된 데이터 (예: "머신러닝 모델 성능 ...") 에 대한 vector
 
 # Returns:
 # - similarity_score (float) : 학습된 S-BERT 모델이 계산한 similarity score (RAG 유사 메커니즘 용)

@@ -91,9 +91,9 @@ def run_inference_each_example(sbert_model, input_part, output_answer):
 # Last Update Date : -
 
 # Arguments:
-# - sbert_model          (S-BERT Model) : 학습된 Sentence BERT 모델
-# - input_part           (str)          : 입력 파트 : "현재 질문 + 사용자 답변"
-# - output_answer_vector (NumPy array)  : 출력 파트 : "사용자가 성공한 답변" 에 대한 embedding vector
+# - sbert_model          (S-BERT Model)  : 학습된 Sentence BERT 모델
+# - input_part           (str)           : 입력 파트 : "현재 질문 + 사용자 답변"
+# - output_answer_vector (Pandas Series) : 출력 파트 : "사용자가 성공한 답변" 에 대한 embedding vector
 
 # Returns:
 # - similarity_score (float) : 학습된 S-BERT 모델이 계산한 similarity score (RAG 유사 메커니즘 용)
