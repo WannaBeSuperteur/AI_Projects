@@ -26,7 +26,7 @@ class RagSBERTDataset(Dataset):
     def __init__(self, dataset_df):
         self.input_part_info = dataset_df['input_part'].tolist()
         self.output_answer_info = dataset_df['output_answer'].tolist()
-        self.similarity_score_info = dataset_df['similarity_score'].tolist()
+        self.similarity_score_info = dataset_df['similarity'].tolist()
 
     def __len__(self):
         return len(self.input_part_info)
