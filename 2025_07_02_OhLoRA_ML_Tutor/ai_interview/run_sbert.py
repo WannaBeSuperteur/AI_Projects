@@ -42,7 +42,8 @@ def load_sbert_model(model_type, epochs):
 
 # 다음 질문 또는 사용자가 성공한 답변 예측용 S-BERT 모델 학습
 # Create Date : 2025.07.25
-# Last Update Date : -
+# Last Update Date : 2025.07.26
+# - dataset_symbol 오타 수정
 
 # Arguments:
 # - model_type      (str)      : 다음 질문 ('next_question') or 사용자가 성공한 답변 ('output_answer') 예측용 모델
@@ -61,7 +62,7 @@ def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference
     if model_type == 'next_question':
         dataset_symbol = 'next_question'
     else:  # output_answer
-        dataset_symbol = 'answer'
+        dataset_symbol = 'answer_type'
 
     train_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_train.csv'
     test_dataset_csv_path = f'{PROJECT_DIR_PATH}/ai_interview/dataset/dataset_df_{dataset_symbol}_valid_test.csv'
