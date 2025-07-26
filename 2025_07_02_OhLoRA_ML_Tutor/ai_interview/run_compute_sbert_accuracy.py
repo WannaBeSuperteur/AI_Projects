@@ -1,9 +1,10 @@
 
-import os
 import pandas as pd
+import os
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
-NEXT_QUESTION_SBERT_RESULT_PATH = 'next_question_sbert/result'
-OUTPUT_ANSWER_SBERT_RESULT_PATH = 'output_answer_sbert/result'
+NEXT_QUESTION_SBERT_RESULT_PATH = f'{PROJECT_DIR_PATH}/ai_interview/next_question_sbert/result'
+OUTPUT_ANSWER_SBERT_RESULT_PATH = f'{PROJECT_DIR_PATH}/ai_interview/output_answer_sbert/result'
 
 
 # test result detail 파일을 읽고 정확도 (accuracy) 및 오답 정보 반환
