@@ -1,5 +1,5 @@
 ,file,accuracy,mean_diff_correct_and_max_sim_wrong,wrong_answer_info
-0,test_result_klue_roberta-base_epoch_10.csv,1.0,0.9171,[]
-1,test_result_klue_roberta-base_epoch_20.csv,0.9875,0.9526,['input_part: 거대 언어 모델 정의 -> 파라미터 엄청나게 많다던데 (남은 답변: 거대 언어 모델 정의) | pred: Loss Function 정의 | gt: 거대 언어 모델 정의']
-2,test_result_klue_roberta-base_epoch_40.csv,0.9875,0.9703,['input_part: Loss Function 관련 실무 경험 -> 이미지 세그멘테이션에서 인접한 픽셀의 점수 차이를 Loss Term 으로 추가했어 (남은 답변: 상세 경험) | pred: 잠시 휴식 | gt: Loss Function 관련 실무 경험']
-3,test_result_klue_roberta-base_epoch_5.csv,1.0,0.8484,[]
+0,test_result_klue_roberta-base_epoch_10.csv,1.0,0.921,[]
+1,test_result_klue_roberta-base_epoch_20.csv,1.0,0.9734,[]
+2,test_result_klue_roberta-base_epoch_40.csv,1.0,0.9862,[]
+3,test_result_klue_roberta-base_epoch_5.csv,0.925,0.6843,"['input_part: 면접 시작 인사 -> 로라야 그럼 네가 면접관이야? (남은 답변: 면접 시작 인사) | pred: 인공지능, 머신러닝, 딥러닝 차이 | gt: 면접 시작 인사', 'input_part: Loss Function 정의 -> Loss Function 은 모델의 오차를 일정한 수식, 즉 함수로 나타낸 거야! 이걸 최대한 줄이는 식으로 학습되지! (남은 답변: 모든 질문 해결 완료) | pred: Loss Function 정의 | gt: Loss Function 예시', 'input_part: 면접 시작 인사 -> 오늘 뭐 물어볼 거야 그래서? (남은 답변: 면접 시작 인사) | pred: 인공지능, 머신러닝, 딥러닝 차이 | gt: 면접 시작 인사', 'input_part: Loss Function 정의 -> 모델의 예측과 실제 값의 오차를 일정한 수식으로 정의하는 그 수식이지 (남은 답변: 모든 질문 해결 완료) | pred: Loss Function 정의 | gt: Loss Function 예시', 'input_part: MSE Loss 설명 -> MSE Loss 는 오차 그 자체를 평균한 값이지. 맞지? (남은 답변: MSE Loss 설명) | pred: MSE Loss 용도 | gt: MSE Loss 설명', 'input_part: Loss Function 예시 -> MSE, MAE, Cross Entropy Loss 같은 것들이 있지 (남은 답변: 모든 질문 해결 완료) | pred: MSE Loss 용도 | gt: MSE Loss 설명']"
