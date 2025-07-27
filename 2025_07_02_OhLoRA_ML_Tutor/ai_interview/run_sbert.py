@@ -88,7 +88,7 @@ def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference
 
         # final decision
         model_path = 'klue/roberta-base'
-        epochs = 100
+        epochs = 40
 
         # load S-BERT Model
         try:
@@ -106,11 +106,11 @@ def run_sbert_each_model(model_type, experiment_mode, train_sbert, run_inference
 
 if __name__ == '__main__':
     run_sbert_each_model(model_type='next_question',
-                         experiment_mode=True,
+                         experiment_mode=False,
                          train_sbert=train_sbert_next_question,
                          run_inference=run_inference_next_question)
 
     run_sbert_each_model(model_type='output_answer',
-                         experiment_mode=True,
+                         experiment_mode=False,
                          train_sbert=train_sbert_output_answer,
                          run_inference=run_inference_output_answer)
