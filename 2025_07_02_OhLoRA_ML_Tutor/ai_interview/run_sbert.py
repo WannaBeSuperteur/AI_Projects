@@ -4,7 +4,7 @@ try:
     from next_question_sbert.inference_sbert import run_inference as run_inference_next_question
     from next_question_sbert.train_sbert import train_sbert as train_sbert_next_question
     from output_answer_sbert.inference_sbert import run_inference as run_inference_output_answer
-    from output_answer_sbert.train_sbert import train_sbert  as train_sbert_output_answer
+    from output_answer_sbert.train_sbert import train_sbert as train_sbert_output_answer
 
 except:
     from ai_interview.common.load_sbert_model import load_trained_sbert_model
