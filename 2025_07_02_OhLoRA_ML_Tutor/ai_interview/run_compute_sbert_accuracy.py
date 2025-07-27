@@ -65,21 +65,20 @@ if __name__ == '__main__':
     data_column_names = ['next_question', 'output_answer']
 
     for dir_path, similarity_suffix, column_name in zip(paths, similarity_score_column_suffices, data_column_names):
-        test_result_detail_files = list(filter(lambda x: x.startswith('test_result_'), os.listdir(dir_path)))
+        file_name = 'test_result.csv'
 
-        accuracy_info_dict = {'file': test_result_detail_files,
+        accuracy_info_dict = {'file': [file_name],
                               'accuracy': [],
                               'mean_diff_correct_and_max_sim_wrong': [],
                               'wrong_answer_info': []}
 
-        for file_name in test_result_detail_files:
-            file_path = f'{dir_path}/{file_name}'
-            accuracy, mean_diff_correct_and_max_sim_wrong, wrong_answer_info = (
-                read_file_and_compute_accuracy(file_path, column_name))
+        file_path = f'{dir_path}/{file_name}'
+        accuracy, mean_diff_correct_and_max_sim_wrong, wrong_answer_info = (
+            read_file_and_compute_accuracy(file_path, column_name))
 
-            accuracy_info_dict['accuracy'].append(accuracy)
-            accuracy_info_dict['mean_diff_correct_and_max_sim_wrong'].append(mean_diff_correct_and_max_sim_wrong)
-            accuracy_info_dict['wrong_answer_info'].append(str(wrong_answer_info))
+        accuracy_info_dict['accuracy'].append(accuracy)
+        accuracy_info_dict['mean_diff_correct_and_max_sim_wrong'].append(mean_diff_correct_and_max_sim_wrong)
+        accuracy_info_dict['wrong_answer_info'].append(str(wrong_answer_info))
 
         accuracy_info_df = pd.DataFrame(accuracy_info_dict)
-        accuracy_info_df.to_csv(f'{dir_path}/test_accuracy.csv')
+        accuracy_info_df.to_csv(f'{dir_path}/test_accuracy_final.csv')

@@ -1,0 +1,2 @@
+,file,accuracy,mean_diff_correct_and_max_sim_wrong,wrong_answer_info
+0,test_result.csv,0.9625,0.9201,"['input_part: Loss Function 정의 -> Loss Function 은 딥러닝 모델의 손해를 나타내는 함수야 | pred: Loss Function 정의 | gt: 답변 실패', 'input_part: Multi-Class, Multi-Label 중 BCE 가 좋은 task -> Multi-Label 이라고 듣긴 했는데 그 이유는 잘 모르겠어 | pred: 답변 실패 | gt: BCE 가 좋은 task', 'input_part: Loss Function 정의 -> 손실 함수는 딥러닝 모델이 얼마나 돈을 잃었는지 나타내는 거야 | pred: Loss Function 정의 | gt: 답변 실패']"
