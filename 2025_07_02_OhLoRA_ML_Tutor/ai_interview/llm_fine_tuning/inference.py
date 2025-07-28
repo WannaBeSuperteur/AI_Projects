@@ -35,8 +35,8 @@ class StopOnTokens(StoppingCriteria):
 # - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
 # - final_input_prompt (str)           : LLM 에 최종 입력되는 프롬프트 (퀴즈 + 모범 답안 + 사용자 답안)
 # - tokenizer          (AutoTokenizer) : LLM 의 Tokenizer
-# - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(해설 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
-# - stop_token_list    (list)          : stopping token, 즉 '(해설 종료)' 에 해당하는 token 의 list
+# - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(발화 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
+# - stop_token_list    (list)          : stopping token, 즉 '(발화 종료)' 에 해당하는 token 의 list
 # - max_trials         (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
 
 # Returns:
@@ -58,7 +58,7 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, answer_s
     output_token_cnt = None
 
     # for stopping criteria
-    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # (해설 종료)
+    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # (발화 종료)
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
     answer_end_mark = get_answer_end_mark()
     max_length = 1024
@@ -96,8 +96,8 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, answer_s
 # - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
 # - final_input_prompt (str)           : LLM 에 최종 입력되는 프롬프트 (퀴즈 + 모범 답안 + 사용자 답안)
 # - tokenizer          (AutoTokenizer) : LLM 의 Tokenizer
-# - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(해설 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
-# - stop_token_list    (list)          : stopping token, 즉 '(해설 종료)' 에 해당하는 token 의 list
+# - answer_start_mark  (str)           : 질문의 맨 마지막에 오는 '(발화 시작)' 과 같은 문구 (LLM이 답변을 하도록 유도 목적)
+# - stop_token_list    (list)          : stopping token, 즉 '(발화 종료)' 에 해당하는 token 의 list
 # - max_trials         (int)           : LLM 이 empty answer 가 아닌 답변을 출력하도록 하는 최대 시도 횟수
 
 # Returns:
@@ -121,7 +121,7 @@ def run_inference_midm(fine_tuned_llm, final_input_prompt, tokenizer, answer_sta
     output_token_cnt = None
 
     # for stopping criteria
-    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # (해설 종료)
+    stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # (발화 종료)
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
     answer_end_mark = get_answer_end_mark()
     max_length = 1024

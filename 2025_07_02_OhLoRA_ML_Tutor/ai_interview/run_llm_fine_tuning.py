@@ -170,6 +170,7 @@ if __name__ == '__main__':
                         default='10')
 
     args = parser.parse_args()
+    print(f'arguments : {args}')
 
     llm_names, epochs = args.llm_names, args.epochs
     llm_names_list, epochs_list = llm_names.split(','), epochs.split(',')

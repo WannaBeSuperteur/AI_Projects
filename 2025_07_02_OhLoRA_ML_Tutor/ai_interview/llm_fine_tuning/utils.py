@@ -1,11 +1,7 @@
 
+import pandas as pd
 import os
 from datetime import datetime
-
-try:
-    from llm_fine_tuning.common import convert_into_filled_df
-except:
-    from ai_interview.llm_fine_tuning.common import convert_into_filled_df
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -23,7 +19,7 @@ def get_temperature():
     return 0.6
 
 
-def preview_dataset(dataset, tokenizer, print_encoded_tokens=False):
+def preview_dataset(dataset, tokenizer, print_encoded_tokens=True):
     print('\n=== DATASET PREVIEW ===')
     print(f"dataset size : [train: {len(dataset['train']['text'])}, valid: {len(dataset['valid']['text'])}]")
 
@@ -65,6 +61,54 @@ def add_inference_log(inference_result, inference_log_dict):
     inference_log_dict['output_tkn_cnt'].append(inference_result['output_tkn_cnt'])
 
 
+# quiz, keyword, good_answer 의 빈칸이 채워진 DataFrame 반환
+# Create Date : 2025.07.28
+# Last Update Date : -
+
+# Arguments:
+# - csv_path  (str) : DataFrame 이 있는 csv 파일의 path
+# - data_type (str) : 필터링할 data 유형 ('train' 또는 'valid/test', null (None) 가능)
+
+# Returns
+# - filled_dataset_df (Pandas DataFrame) : 빈칸이 채워진 DataFrame
+
+def convert_into_filled_df(csv_path, data_type=None):
+    dataset_df = pd.read_csv(csv_path)
+
+    if data_type is not None:
+        dataset_df = dataset_df[dataset_df['data_type'] == data_type]
+
+    # get current columns
+    data_type_list = dataset_df['data_type'].tolist()
+    input_list = dataset_df['input_data_wo_rag_augment'].tolist()
+    output_list = dataset_df['output_data'].tolist()
+
+    # fill quiz and good answer list
+    final_input_list = []
+    final_output_list = []
+    final_data_type_list = []
+
+    for data_type_, input_, output_ in zip(data_type_list, input_list, output_list):
+        is_input_valid = not (pd.isna(input_) and input_ != '')
+        is_output_valid = not (pd.isna(output_) and output_ != '')
+        is_valid = (is_input_valid and is_output_valid) if data_type_ is None else is_input_valid
+
+        if is_valid:
+            final_input_list.append(input_)
+            final_output_list.append(output_)
+            final_data_type_list.append(data_type_)
+
+    # create final filled DataFrame
+    final_dataset_dict = {
+        'data_type': final_data_type_list,
+        'input_data': final_input_list,
+        'output_data': final_output_list
+    }
+
+    filled_dataset_df = pd.DataFrame(final_dataset_dict)
+    return filled_dataset_df
+
+
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
 # Create Date : 2025.07.28
 # Last Update Date : -
@@ -76,9 +120,9 @@ def add_inference_log(inference_result, inference_log_dict):
 # - valid_final_prompts (list(str)) : Valid Dataset 로부터 가져온 final LLM input prompt 의 리스트
 
 def load_valid_final_prompts():
-    dataset_csv_path = 'ai_interview/dataset/valid_test_final.csv'
+    dataset_csv_path = 'ai_interview/dataset/all_train_and_test_data.csv'
     dataset_csv_path = f'{PROJECT_DIR_PATH}/{dataset_csv_path}'
-    dataset_df_valid = convert_into_filled_df(dataset_csv_path)
+    dataset_df_valid = convert_into_filled_df(dataset_csv_path, data_type='valid/test')
 
     valid_final_prompts = dataset_df_valid['input_data'].tolist()
     return valid_final_prompts

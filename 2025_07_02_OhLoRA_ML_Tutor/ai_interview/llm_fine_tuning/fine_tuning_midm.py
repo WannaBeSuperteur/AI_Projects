@@ -14,14 +14,12 @@ import pandas as pd
 try:
     from llm_fine_tuning.inference import run_inference_midm
     from llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, add_inference_log, \
-                                  get_answer_start_mark
-    from llm_fine_tuning.common import convert_into_filled_df
+                                      get_answer_start_mark, convert_into_filled_df
 
 except:
     from ai_interview.llm_fine_tuning.inference import run_inference_midm
     from ai_interview.llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, \
-        add_inference_log, get_answer_start_mark
-    from ai_interview.llm_fine_tuning.common import convert_into_filled_df
+                                                   add_inference_log, get_answer_start_mark, convert_into_filled_df
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -39,7 +37,7 @@ os.makedirs(log_dir_path, exist_ok=True)
 
 
 def get_stop_token_list():
-    return [51658, 23171, 4511, 11]  # (해설 종료)
+    return [663, 425, 4511]  # (해설 종료)
 
 
 class OhLoRACustomCallback(TrainerCallback):
@@ -248,12 +246,12 @@ def fine_tune_model(epochs):
     get_lora_llm(llm=original_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
-        lambda x: f"{x['input_data_wo_rag_augment']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|end_of_text|>",
+        lambda x: f"{x['input_data']} (발화 시작) ### 발화: {x['output_data']} (발화 종료) <|end_of_text|>",
         axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
 
-    response_template = [11001]  # '### 해설 :'
+    response_template = [28912, 28]  # '### 발화:'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
     training_args = get_training_args(epochs)
