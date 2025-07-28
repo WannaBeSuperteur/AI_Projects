@@ -18,10 +18,10 @@ try:
     from llm_fine_tuning.common import convert_into_filled_df
 
 except:
-    from ai_quiz.llm_fine_tuning.inference import run_inference_kanana
-    from ai_quiz.llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, \
+    from ai_interview.llm_fine_tuning.inference import run_inference_kanana
+    from ai_interview.llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, \
         add_inference_log, get_answer_start_mark
-    from ai_quiz.llm_fine_tuning.common import convert_into_filled_df
+    from ai_interview.llm_fine_tuning.common import convert_into_filled_df
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -34,7 +34,7 @@ train_log_dict = {'epoch': [], 'time': [], 'loss': [], 'grad_norm': [], 'learnin
 inference_log_dict = {'epoch': [], 'elapsed_time (s)': [], 'prompt': [], 'llm_answer': [],
                       'trial_cnt': [], 'output_tkn_cnt': []}
 
-log_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/llm_fine_tuning/logs'
+log_dir_path = f'{PROJECT_DIR_PATH}/ai_interview/llm_fine_tuning/logs'
 os.makedirs(log_dir_path, exist_ok=True)
 
 
@@ -44,16 +44,17 @@ def get_stop_token_list():
 
 class OhLoRACustomCallback(TrainerCallback):
 
-    def __init__(self, instruct_version):
+    def __init__(self, instruct_version, epochs):
         super(OhLoRACustomCallback, self).__init__()
         self.instruct_version = instruct_version
+        self.epochs = epochs
 
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         global lora_llm, tokenizer, valid_final_prompts
 
         kanana_llm_name = 'kananai' if self.instruct_version else 'kanana'
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_train_log_50epochs.csv')
+        train_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_train_log_{self.epochs}epochs.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -77,7 +78,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_inference_log_dict_50epochs.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/{kanana_llm_name}_sft_final_inference_log_dict_{self.epochs}epochs.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
@@ -87,7 +88,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
 
 # Original LLM (Kanana-1.5 2.1B) 가져오기 (Fine-Tuning 실시할)
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
@@ -109,22 +110,22 @@ def get_original_llm(kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
 # - kanana_llm_name (str) : 'kananai' for Kanana-1.5-2.1B instruct, 'kanana' for Kanana-1.5-2.1B base
+# - epochs          (int) : 학습 epoch 횟수
 
 # Returns:
 # - training_args (SFTConfig) : Training Arguments
 
-def get_training_args(kanana_llm_name):
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned_50epochs'
-    num_train_epochs = 50
+def get_training_args(kanana_llm_name, epochs):
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_interview/models/{kanana_llm_name}_sft_final_fine_tuned_{epochs}epochs'
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
-        num_train_epochs=num_train_epochs,
+        num_train_epochs=epochs,
         logging_steps=5,                    # logging frequency
         gradient_checkpointing=False,
         output_dir=output_dir_path,
@@ -138,7 +139,7 @@ def get_training_args(kanana_llm_name):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
@@ -146,11 +147,12 @@ def get_training_args(kanana_llm_name):
 # - collator         (DataCollator) : Data Collator
 # - training_args    (SFTConfig)    : Training Arguments
 # - instruct_version (bool)         : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
+# - epochs           (int)          : 학습 epoch 횟수
 
 # Returns:
 # - trainer (SFTTrainer) : SFT (Supervised Fine-Tuning) Trainer
 
-def get_sft_trainer(dataset, collator, training_args, instruct_version):
+def get_sft_trainer(dataset, collator, training_args, instruct_version, epochs):
     global lora_llm, tokenizer
 
     trainer = SFTTrainer(
@@ -160,14 +162,14 @@ def get_sft_trainer(dataset, collator, training_args, instruct_version):
         processing_class=tokenizer,     # LLM tokenizer / renamed : tokenizer -> processing_class from trl 0.12.0
         args=training_args,
         data_collator=collator,
-        callbacks=[OhLoRACustomCallback(instruct_version)]
+        callbacks=[OhLoRACustomCallback(instruct_version, epochs)]
     )
 
     return trainer
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
@@ -197,12 +199,12 @@ def get_lora_llm(llm, lora_rank):
 
 
 # Original LLM (Kanana-1.5 2.1B) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from ai_quiz/dataset/all_train_and_test_data.csv)
-#                                   columns = ['data_type', 'quiz', 'keywords', ...]
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from ai_interview/dataset/all_train_and_test_data.csv)
+#                                   columns = ['data_type', 'input_data_wo_rag_augment', 'user_input', ...]
 
 # Returns:
 # - dataset (Dataset) : LLM 학습 데이터셋
@@ -219,16 +221,17 @@ def generate_llm_trainable_dataset(dataset_df):
 
 
 # LLM (Kanana-1.5 2.1B) Fine-Tuning 실시
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
 # - instruct_version (bool) : True for Kanana-1.5-2.1B instruct, False for Kanana-1.5-2.1B base
+# - epochs           (int)  : 학습 epoch 횟수
 
 # Returns:
 # - ai_qna/models/{kanana|kananai}_sft_final_fine_tuned 에 Fine-Tuning 된 모델 저장
 
-def fine_tune_model(instruct_version):
+def fine_tune_model(instruct_version, epochs):
     global lora_llm, tokenizer, valid_final_prompts
     valid_final_prompts = load_valid_final_prompts()
     kanana_llm_name = 'kananai' if instruct_version else 'kanana'
@@ -245,14 +248,14 @@ def fine_tune_model(instruct_version):
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = convert_into_filled_df(f'{PROJECT_DIR_PATH}/ai_quiz/dataset/all_train_and_test_data.csv')
+    dataset_df = convert_into_filled_df(f'{PROJECT_DIR_PATH}/ai_interview/dataset/all_train_and_test_data.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
-        lambda x: f"{x['input_data']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|eot_id|>",
+        lambda x: f"{x['input_data_wo_rag_augment']} (발화 시작) ### 발화: {x['output_data']} (발화 종료) <|eot_id|>",
         axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
@@ -260,12 +263,12 @@ def fine_tune_model(instruct_version):
     response_template = [61816, 102546]  # '### 해설 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
-    training_args = get_training_args(kanana_llm_name)
-    trainer = get_sft_trainer(dataset, collator, training_args, instruct_version)
+    training_args = get_training_args(kanana_llm_name, epochs)
+    trainer = get_sft_trainer(dataset, collator, training_args, instruct_version, epochs)
 
     # run Fine-Tuning
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/{kanana_llm_name}_sft_final_fine_tuned_50epochs'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_interview/models/{kanana_llm_name}_sft_final_fine_tuned_{epochs}epochs'
     trainer.save_model(output_dir_path)

@@ -5,18 +5,18 @@ from datetime import datetime
 try:
     from llm_fine_tuning.common import convert_into_filled_df
 except:
-    from ai_quiz.llm_fine_tuning.common import convert_into_filled_df
+    from ai_interview.llm_fine_tuning.common import convert_into_filled_df
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
 
 def get_answer_start_mark():
-    return ' (해설 시작)'
+    return ' (발화 시작)'
 
 
 def get_answer_end_mark():
-    return ' (해설 종료)'
+    return ' (발화 종료)'
 
 
 def get_temperature():
@@ -66,7 +66,7 @@ def add_inference_log(inference_result, inference_log_dict):
 
 
 # Valid Dataset 에 있는 user prompt 가져오기 (테스트 데이터셋 대용)
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
@@ -76,7 +76,7 @@ def add_inference_log(inference_result, inference_log_dict):
 # - valid_final_prompts (list(str)) : Valid Dataset 로부터 가져온 final LLM input prompt 의 리스트
 
 def load_valid_final_prompts():
-    dataset_csv_path = 'ai_quiz/dataset/valid_test_final.csv'
+    dataset_csv_path = 'ai_interview/dataset/valid_test_final.csv'
     dataset_csv_path = f'{PROJECT_DIR_PATH}/{dataset_csv_path}'
     dataset_df_valid = convert_into_filled_df(dataset_csv_path)
 

@@ -18,10 +18,10 @@ try:
     from llm_fine_tuning.common import convert_into_filled_df
 
 except:
-    from ai_quiz.llm_fine_tuning.inference import run_inference_midm
-    from ai_quiz.llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, \
+    from ai_interview.llm_fine_tuning.inference import run_inference_midm
+    from ai_interview.llm_fine_tuning.utils import load_valid_final_prompts, preview_dataset, add_train_log, \
         add_inference_log, get_answer_start_mark
-    from ai_quiz.llm_fine_tuning.common import convert_into_filled_df
+    from ai_interview.llm_fine_tuning.common import convert_into_filled_df
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -34,7 +34,7 @@ train_log_dict = {'epoch': [], 'time': [], 'loss': [], 'grad_norm': [], 'learnin
 inference_log_dict = {'epoch': [], 'elapsed_time (s)': [], 'prompt': [], 'llm_answer': [],
                       'trial_cnt': [], 'output_tkn_cnt': []}
 
-log_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/llm_fine_tuning/logs'
+log_dir_path = f'{PROJECT_DIR_PATH}/ai_interview/llm_fine_tuning/logs'
 os.makedirs(log_dir_path, exist_ok=True)
 
 
@@ -44,14 +44,15 @@ def get_stop_token_list():
 
 class OhLoRACustomCallback(TrainerCallback):
 
-    def __init__(self):
+    def __init__(self, epochs):
         super(OhLoRACustomCallback, self).__init__()
+        self.epochs = epochs
 
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         global lora_llm, tokenizer, valid_final_prompts
 
         train_log_df = pd.DataFrame(train_log_dict)
-        train_log_df.to_csv(f'{log_dir_path}/midm_sft_final_train_log_10epochs.csv')
+        train_log_df.to_csv(f'{log_dir_path}/midm_sft_final_train_log_{self.epochs}epochs.csv')
 
         print('=== INFERENCE TEST ===')
 
@@ -75,7 +76,7 @@ class OhLoRACustomCallback(TrainerCallback):
             add_inference_log(inference_result, inference_log_dict)
 
         inference_log_df = pd.DataFrame(inference_log_dict)
-        inference_log_df.to_csv(f'{log_dir_path}/midm_sft_final_inference_log_dict_10epochs.csv')
+        inference_log_df.to_csv(f'{log_dir_path}/midm_sft_final_inference_log_dict_{self.epochs}epochs.csv')
 
     def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         try:
@@ -85,7 +86,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
 
 # Original LLM (Mi:dm 2.0 Mini) 가져오기 (Fine-Tuning 실시할)
-# Create Date : 2025.07.13
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
@@ -107,22 +108,21 @@ def get_original_llm():
 
 
 # Original LLM (Mi:dm 2.0 Mini) 에 대한 Fine-Tuning 을 위한 Training Arguments 가져오기
-# Create Date : 2025.07.13
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# -  epochs (int) : 학습 epoch 횟수
 
 # Returns:
 # - training_args (SFTConfig) : Training Arguments
 
-def get_training_args():
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned_10epochs'
-    num_train_epochs = 10
+def get_training_args(epochs):
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_interview/models/midm_sft_final_fine_tuned_{epochs}epochs'
 
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
-        num_train_epochs=num_train_epochs,
+        num_train_epochs=epochs,
         logging_steps=5,                    # logging frequency
         gradient_checkpointing=False,
         output_dir=output_dir_path,
@@ -136,18 +136,19 @@ def get_training_args():
 
 
 # Original LLM (Mi:dm 2.0 Mini) 에 대한 Fine-Tuning 을 위한 SFT (Supervised Fine-Tuning) Trainer 가져오기
-# Create Date : 2025.07.13
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
 # - dataset       (Dataset)      : LLM 학습 데이터셋
 # - collator      (DataCollator) : Data Collator
 # - training_args (SFTConfig)    : Training Arguments
+# - epochs        (int)          : 학습 epoch 횟수
 
 # Returns:
 # - trainer (SFTTrainer) : SFT (Supervised Fine-Tuning) Trainer
 
-def get_sft_trainer(dataset, collator, training_args):
+def get_sft_trainer(dataset, collator, training_args, epochs):
     global lora_llm, tokenizer
 
     trainer = SFTTrainer(
@@ -157,14 +158,14 @@ def get_sft_trainer(dataset, collator, training_args):
         processing_class=tokenizer,     # LLM tokenizer / renamed : tokenizer -> processing_class from trl 0.12.0
         args=training_args,
         data_collator=collator,
-        callbacks=[OhLoRACustomCallback()]
+        callbacks=[OhLoRACustomCallback(epochs)]
     )
 
     return trainer
 
 
 # Original LLM (Mi:dm 2.0 Mini) 에 대한 LoRA (Low-Rank Adaption) 적용된 LLM 가져오기
-# Create Date : 2025.07.13
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
@@ -194,12 +195,12 @@ def get_lora_llm(llm, lora_rank):
 
 
 # Original LLM (Mi:dm 2.0 Mini) 에 대한 LLM 이 직접 학습 가능한 데이터셋 가져오기
-# Create Date : 2025.07.13
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
-# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from ai_quiz/dataset/all_train_and_test_data.csv)
-#                                   columns = ['data_type', 'quiz', 'keywords', ...]
+# - dataset_df (Pandas DataFrame) : 학습 데이터가 저장된 DataFrame (from ai_interview/dataset/all_train_and_test_data.csv)
+#                                   columns = ['data_type', 'input_data_wo_rag_augment', 'user_input', ...]
 
 # Returns:
 # - dataset (Dataset) : LLM 학습 데이터셋
@@ -216,16 +217,16 @@ def generate_llm_trainable_dataset(dataset_df):
 
 
 # LLM (Mi:dm 2.0 Mini) Fine-Tuning 실시
-# Create Date : 2025.07.13
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# - epochs (int) : 학습 epoch 횟수
 
 # Returns:
 # - ai_qna/models/midm_sft_final_fine_tuned 에 Fine-Tuning 된 모델 저장
 
-def fine_tune_model():
+def fine_tune_model(epochs):
     global lora_llm, tokenizer, valid_final_prompts
     valid_final_prompts = load_valid_final_prompts()
 
@@ -240,14 +241,14 @@ def fine_tune_model():
     original_llm.generation_config.pad_token_id = tokenizer.pad_token_id  # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
 
     # read dataset
-    dataset_df = convert_into_filled_df(f'{PROJECT_DIR_PATH}/ai_quiz/dataset/all_train_and_test_data.csv')
+    dataset_df = convert_into_filled_df(f'{PROJECT_DIR_PATH}/ai_interview/dataset/all_train_and_test_data.csv')
     dataset_df = dataset_df.sample(frac=1)  # shuffle
 
     # prepare Fine-Tuning
     get_lora_llm(llm=original_llm, lora_rank=64)
 
     dataset_df['text'] = dataset_df.apply(
-        lambda x: f"{x['input_data']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|end_of_text|>",
+        lambda x: f"{x['input_data_wo_rag_augment']} (해설 시작) ### 해설: {x['explanation']} (해설 종료) <|end_of_text|>",
         axis=1)
     dataset = generate_llm_trainable_dataset(dataset_df)
     preview_dataset(dataset, tokenizer)
@@ -255,12 +256,12 @@ def fine_tune_model():
     response_template = [11001]  # '### 해설 :'
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
-    training_args = get_training_args()
-    trainer = get_sft_trainer(dataset, collator, training_args)
+    training_args = get_training_args(epochs)
+    trainer = get_sft_trainer(dataset, collator, training_args, epochs)
 
     # run Fine-Tuning
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/midm_sft_final_fine_tuned_10epochs'
+    output_dir_path = f'{PROJECT_DIR_PATH}/ai_interview/models/midm_sft_final_fine_tuned_{epochs}epochs'
     trainer.save_model(output_dir_path)

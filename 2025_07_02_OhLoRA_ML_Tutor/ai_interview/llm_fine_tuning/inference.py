@@ -4,7 +4,7 @@ from transformers import StoppingCriteria, StoppingCriteriaList
 try:
     from llm_fine_tuning.utils import get_temperature, get_answer_end_mark
 except:
-    from ai_quiz.llm_fine_tuning.utils import get_temperature, get_answer_end_mark
+    from ai_interview.llm_fine_tuning.utils import get_temperature, get_answer_end_mark
 
 import torch
 import os
@@ -28,7 +28,7 @@ class StopOnTokens(StoppingCriteria):
 
 
 # Fine Tuning 된 LLM 을 이용한 inference 실시 (Kanana-1.5 2.1B)
-# Create Date : 2025.07.12
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
@@ -89,7 +89,7 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, answer_s
 
 
 # Fine Tuning 된 LLM 을 이용한 inference 실시 (Mi:dm 2.0 Mini, 2.31B)
-# Create Date : 2025.07.13
+# Create Date : 2025.07.28
 # Last Update Date : -
 
 # Arguments:
