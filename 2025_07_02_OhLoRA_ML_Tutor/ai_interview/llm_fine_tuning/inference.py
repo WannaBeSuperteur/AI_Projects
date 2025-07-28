@@ -29,7 +29,8 @@ class StopOnTokens(StoppingCriteria):
 
 # Fine Tuning 된 LLM 을 이용한 inference 실시 (Kanana-1.5 2.1B)
 # Create Date : 2025.07.28
-# Last Update Date : -
+# Last Update Date : 2025.07.28
+# - max tokens 개수를 1024 -> 512 개로 수정
 
 # Arguments:
 # - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
@@ -61,7 +62,7 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, answer_s
     stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # (발화 종료)
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
     answer_end_mark = get_answer_end_mark()
-    max_length = 1024
+    max_length = 512
 
     while trial_count < max_trials:
         outputs = fine_tuned_llm.generate(**inputs,
@@ -90,7 +91,8 @@ def run_inference_kanana(fine_tuned_llm, final_input_prompt, tokenizer, answer_s
 
 # Fine Tuning 된 LLM 을 이용한 inference 실시 (Mi:dm 2.0 Mini, 2.31B)
 # Create Date : 2025.07.28
-# Last Update Date : -
+# Last Update Date : 2025.07.28
+# - max tokens 개수를 1024 -> 512 개로 수정
 
 # Arguments:
 # - fine_tuned_llm     (LLM)           : Fine-Tuning 된 LLM
@@ -124,7 +126,7 @@ def run_inference_midm(fine_tuned_llm, final_input_prompt, tokenizer, answer_sta
     stop_token_ids = torch.tensor(stop_token_list).to(fine_tuned_llm.device)  # (발화 종료)
     stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
     answer_end_mark = get_answer_end_mark()
-    max_length = 1024
+    max_length = 512
 
     while trial_count < max_trials:
         outputs = fine_tuned_llm.generate(**inputs,
