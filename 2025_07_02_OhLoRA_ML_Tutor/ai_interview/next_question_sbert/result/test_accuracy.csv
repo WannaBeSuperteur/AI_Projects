@@ -1,0 +1,5 @@
+,file,accuracy,mean_diff_correct_and_max_sim_wrong,wrong_answer_info
+0,test_result_klue_roberta-base_epoch_10.csv,0.9875,0.9357,['input_part: 거대 언어 모델 정의 -> 파라미터 엄청나게 많다던데 (남은 답변: 거대 언어 모델 정의) | pred: Loss Function 정의 | gt: 거대 언어 모델 정의']
+1,test_result_klue_roberta-base_epoch_20.csv,1.0,0.9735,[]
+2,test_result_klue_roberta-base_epoch_40.csv,1.0,0.9897,[]
+3,test_result_klue_roberta-base_epoch_5.csv,1.0,0.8951,[]
