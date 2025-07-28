@@ -1,5 +1,7 @@
 
 import pandas as pd
+import numpy as np
+
 import os
 from datetime import datetime
 
@@ -89,9 +91,9 @@ def convert_into_filled_df(csv_path, data_type=None):
     final_data_type_list = []
 
     for data_type_, input_, output_ in zip(data_type_list, input_list, output_list):
-        is_input_valid = not (pd.isna(input_) and input_ != '')
-        is_output_valid = not (pd.isna(output_) and output_ != '')
-        is_valid = (is_input_valid and is_output_valid) if data_type_ is None else is_input_valid
+        is_input_valid = not (pd.isna(input_) or 'nan' in str(input_).lower() or input_ == '')
+        is_output_valid = not (pd.isna(output_) or 'nan' in str(output_).lower() or output_ == '')
+        is_valid = (is_input_valid and is_output_valid) if data_type_ == 'train' else is_input_valid
 
         if is_valid:
             final_input_list.append(input_)
