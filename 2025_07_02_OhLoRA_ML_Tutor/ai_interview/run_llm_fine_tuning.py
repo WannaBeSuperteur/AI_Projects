@@ -179,4 +179,4 @@ if __name__ == '__main__':
         assert llm_name in ['kanana', 'kananai', 'midm'], "LLM name must be 'kanana', 'kananai' or 'midm'."
 
         print(f'\n=== 🚀 Fine-Tune LLM {llm_name} START 🚀 ===')
-        inference_or_fine_tune_llm(llm_name, epochs)
+        inference_or_fine_tune_llm(llm_name, int(epochs))

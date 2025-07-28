@@ -21,7 +21,7 @@ def get_temperature():
     return 0.6
 
 
-def preview_dataset(dataset, tokenizer, print_encoded_tokens=True):
+def preview_dataset(dataset, tokenizer, print_encoded_tokens=False):
     print('\n=== DATASET PREVIEW ===')
     print(f"dataset size : [train: {len(dataset['train']['text'])}, valid: {len(dataset['valid']['text'])}]")
 
