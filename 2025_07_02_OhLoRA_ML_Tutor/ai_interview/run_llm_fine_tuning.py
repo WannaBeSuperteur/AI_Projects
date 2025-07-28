@@ -75,7 +75,7 @@ def inference_or_fine_tune_llm(llm_name, epochs):
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
         fine_tuned_llm = load_fine_tuned_llm(llm_name, kanana_epochs=epochs, midm_epochs=epochs)
-        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_final_fine_tuned')
+        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_final_fine_tuned_{epochs}epochs')
         print(f'Fine-Tuned LLM ({llm_name}) - Load SUCCESSFUL! 👱‍♀️')
 
     except Exception as e:
@@ -90,8 +90,8 @@ def inference_or_fine_tune_llm(llm_name, epochs):
         elif llm_name == 'midm':
             fine_tune_midm(epochs=epochs)
 
-        fine_tuned_llm = load_fine_tuned_llm(llm_name)
-        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_final_fine_tuned')
+        fine_tuned_llm = load_fine_tuned_llm(llm_name, kanana_epochs=epochs, midm_epochs=epochs)
+        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/{llm_name}_sft_final_fine_tuned_{epochs}epochs')
 
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
