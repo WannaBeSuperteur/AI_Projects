@@ -81,7 +81,7 @@
 
 **[ dataset ver 2 ]**
 
-* 학습 데이터 개수 증량 (248 rows → 403 rows)
+* 학습 데이터 개수 증량 (248 rows → 483 rows, 약 2배)
 
 **[ dataset ver 1 ]**
 
