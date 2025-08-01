@@ -22,7 +22,7 @@ IMAGE_RESOLUTION = 256
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 실시간 표시 (display) 테스트
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:

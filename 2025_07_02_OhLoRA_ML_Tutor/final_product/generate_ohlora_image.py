@@ -8,7 +8,7 @@ kwargs_val = dict(trunc_psi=1.0, trunc_layers=0, randomize_noise=False)
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성 및 반환
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:
