@@ -1,9 +1,8 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
-
-import random
 import math
 import numpy as np
+import pandas as pd
+import random
 
 import argparse
 import threading
@@ -11,24 +10,17 @@ import os
 import sys
 import time
 from datetime import datetime
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 ALL_PROJECTS_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 sys.path.append(PROJECT_DIR_PATH)
 
-from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_memory_list, summarize_llm_answer,
-                     decide_property_score_texts, decide_property_scores)
 from run_display import generate_and_show_ohlora_image
-
 from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, StyleGANGeneratorForV6
 from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
                                           load_ohlora_w_group_names,
                                           get_property_change_vectors)
-from ombre.load_seg_modal import load_existing_hair_seg_model
-
 from llm.common import load_pretrained_sbert_model
-from llm.memory_mechanism import pick_best_memory_item
-
-import pandas as pd
 
 
 EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE = 0.2, 1.0, 0.0
