@@ -101,10 +101,24 @@ def load_models():
     gpu_0 = torch.device('cuda:0')
     gpu_1 = torch.device('cuda:1')
 
-    # TODO: implement
+    # load StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 generator model
+    stylegan_model_dir = f'{PROJECT_DIR_PATH}/stylegan/models'
+
+    if vectorfind_ver == 'v7':
+        stylegan_generator = StyleGANGeneratorForV6(resolution=256)  # v6 and v7 have same architecture
+        generator_path = f'{stylegan_model_dir}/stylegan_gen_vector_find_v7.pth'
+    else:  # v8
+        stylegan_generator = StyleGANGenerator(resolution=256)
+        generator_path = f'{stylegan_model_dir}/stylegan_gen_vector_find_v8.pth'
+
+    generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
+    stylegan_generator.load_state_dict(generator_state_dict)
+    stylegan_generator.to(device)
+
+    # TODO: implement (loading LLMs)
 
     # load S-BERT Model (RoBERTa-based)
-    ethics_model_path = f'{PROJECT_DIR_PATH}/final_product/ethics_sbert/trained_sbert_model'
+    ethics_model_path = f'{PROJECT_DIR_PATH}/final_product/models/ethics_sbert/trained_sbert_model'
     sbert_model_ethics = load_pretrained_sbert_model(ethics_model_path)
 
     return sbert_model_ethics

@@ -222,7 +222,7 @@ def load_existing_hair_seg_model(device):
     hair_seg_model = SegModelForOhLoRAV4()
 
     # load generator state dict
-    hair_seg_model_path = f'{PROJECT_DIR_PATH}/ombre/segmentation_model_ohlora_v4.pth'
+    hair_seg_model_path = f'{PROJECT_DIR_PATH}/ombre/models/segmentation_model_ohlora_v4.pth'
     hair_seg_model_state_dict = torch.load(hair_seg_model_path, map_location=device, weights_only=True)
     hair_seg_model.load_state_dict(hair_seg_model_state_dict)
 
