@@ -1,5 +1,20 @@
 
-## 실험 결과
+## 목차
+
+* [1. 동작 원리](#1-동작-원리)
+* [2. 실험 결과](#2-실험-결과)
+  * [2-1. S-BERT 모델 테스트 결과 (5, 10, 20, 40 epochs)](#2-1-s-bert-모델-테스트-결과-5-10-20-40-epochs)
+  * [2-2. S-BERT 최종 모델 오답 분석 (output_answered)](#2-2-s-bert-최종-모델-오답-분석-output_answered)
+  * [2-3. LLM 테스트 결과](#2-3-llm-테스트-결과)
+* [3. 코드 실행 방법](#3-코드-실행-방법)
+  * [3-1. S-BERT Training (사용자가 성공적으로 한 답변, 다음 질문 예측 각각)](#3-1-s-bert-training-사용자가-성공적으로-한-답변-다음-질문-예측-각각)
+  * [3-2. S-BERT 모델의 정확도 측정](#3-2-s-bert-모델의-정확도-측정)
+  * [3-3. LLM Inference 또는 Fine-Tuning](#3-3-llm-inference-또는-fine-tuning)
+
+## 1. 동작 원리
+
+
+## 2. 실험 결과
 
 * **[1] 결론 요약**
 
@@ -43,7 +58,7 @@
 * **[4] 참고 사항**
   * S-BERT 평가 결과의 MSE, MAE, Corr-coef 는 **코사인 유사도의 예측값 vs. 실제 값** 비교 기준 
 
-### S-BERT 모델 테스트 결과 (5, 10, 20, 40 epochs)
+### 2-1. S-BERT 모델 테스트 결과 (5, 10, 20, 40 epochs)
 
 * 결론 요약
   * 학습 epoch 횟수가 클수록 대체로 성능이 향상됨
@@ -60,7 +75,7 @@
 | ```Mean_Diff```<br>(**1차, 2차, 최종** 데이터셋) | ![image](../../images/250702_20.PNG)       | ![image](../../images/250702_19.PNG) |
 | MSE, MAE, Corr-coef (상관계수)               | ![image](../../images/250702_22.PNG)       | ![image](../../images/250702_21.PNG) |
 
-### S-BERT 최종 모델 오답 분석 (output_answered)
+### 2-2. S-BERT 최종 모델 오답 분석 (output_answered)
 
 * 결론
   * **Loss Function의 정의** 쪽에서 ```답변 실패``` 한 경우를 ```Loss Function 정의``` 를 성공적으로 답한 것으로 판단한 오답이 많이 나옴
@@ -78,7 +93,7 @@
   * 사용자가 질문에 대해 **모르면 모르겠다고 솔직히 답하도록** 유도 (실제 면접에서도 중요함)
   * 사용자가 답변을 할 때 ```~인데 잘 모르겠어``` 와 같이 **확신이 없는 표현을 자제** 하도록 유도 (실제 면접에서도 유효)
 
-### LLM 테스트 결과
+### 2-3. LLM 테스트 결과
 
 * 결론
   * **Kanana-1.5-2.1B instruct** 모델로 **5 epochs** 동안 학습 시, 정확도 **97.8 %** 로 가장 좋은 성능 기록
@@ -116,17 +131,17 @@
 | 10     | **89.5 %** (290 / 324)      | **형식 적합 비율** 91.4 % (296 / 324) |
 | 20     | **92.0 %** (298 / 324)      | **형식 적합 비율** 92.0 % (298 / 324) |
 
-## 코드 실행 방법
+## 3. 코드 실행 방법
 
 모든 코드는 **먼저 LLM 모델 정보 및 다운로드 경로 안내 (TBU) 및 해당 각 HuggingFace 링크에 있는 Model Card 에 나타난 저장 경로 (Save Path) 정보를 참고하여 모델 다운로드 후,** ```2025_07_02_OhLoRA_ML_Tutor``` (프로젝트 메인 디렉토리) 에서 실행
 
-### S-BERT Training (사용자가 성공적으로 한 답변, 다음 질문 예측 각각)
+### 3-1. S-BERT Training (사용자가 성공적으로 한 답변, 다음 질문 예측 각각)
 
 * 지정된 경로에 해당 S-BERT 모델이 이미 존재하는 경우, Fine-Tuning 대신 **inference test 실행됨**
 
 ```python ai_interview/run_sbert.py```
 
-### S-BERT 모델의 정확도 측정
+### 3-2. S-BERT 모델의 정확도 측정
 
 * 입력
   * ```next_question``` S-BERT 모델 상세 테스트 결과 (```next_question_sbert/result/test_result_..._epoch_{epochs}.csv```)
@@ -136,3 +151,13 @@
   * ```output_answer``` S-BERT 모델 정확도 측정 결과 (```output_answer_sbert/result/test_accuracy.csv```)
 
 ```python ai_interview/run_compute_sbert_accuracy.py```
+
+### 3-3. LLM Inference 또는 Fine-Tuning
+
+* 기본형
+  * ```python ai_interview/run_llm_fine_tuning```
+* **믿:음 2.0** LLM 실행
+  * ```python ai_interview/run_llm_fine_tuning -llm_names midm```
+* **5회 (기본값)** 가 아닌 다른 epoch 로 Fine-Tuning
+  * 예: 20 epochs 동안 Fine-Tuning 
+  * ```python ai_interview/run_llm_fine_tuning -epochs 20```
