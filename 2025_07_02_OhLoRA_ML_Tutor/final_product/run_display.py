@@ -19,7 +19,7 @@ ORIGINALLY_PROPERTY_DIMS_V8 = 7  # 원래 property (eyes, hair_color, hair_lengt
 
 
 # Oh-LoRA (오로라) 이미지 생성 및 표시
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments :

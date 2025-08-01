@@ -85,24 +85,15 @@ hate_block_periods = {1: 24 * 60 * 60,
                       4: 1461 * 24 * 60 * 60}
 
 
-# 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator,
-#                  4 LLMs (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned),
-#                  S-BERT (RoBERTa-based) 2개 (for memory & ethics mechanism)
-# Create Date : 2025.06.29
+# 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator + LLM, S-BERT models
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:
-# - 없음
+# - function_type (str) : 실행할 기능으로, 'qna', 'quiz', 'interview' 중 하나
 
 # Returns:
-# - ohlora_llms           (dict(LLM))       : LLM (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned)
-#                                             {'output_message': LLM, 'memory': LLM, 'summary': LLM,
-#                                              'eyes_mouth_pose': LLM}
-# - ohlora_llms_tokenizer (dict(tokenizer)) : LLM (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned) 의 tokenizer
-#                                             {'output_message': tokenizer, 'memory': tokenizer, 'summary': tokenizer,
-#                                              'eyes_mouth_pose': tokenizer}
-# - sbert_model_memory    (S-BERT Model)    : memory mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
-# - sbert_model_ethics    (S-BERT Model)    : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
+# - sbert_model_ethics (S-BERT Model) : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
 
 def load_models():
     global stylegan_generator, hair_seg_model, vectorfind_ver
@@ -110,55 +101,17 @@ def load_models():
     gpu_0 = torch.device('cuda:0')
     gpu_1 = torch.device('cuda:1')
 
-    output_types = ['output_message', 'memory', 'eyes_mouth_pose', 'summary']
-    device_mapping = {'output_message': gpu_0, 'memory': gpu_0, 'eyes_mouth_pose': gpu_1, 'summary': gpu_1}
-    llm_mapping = {'output_message': 'kananai', 'memory': 'polyglot', 'eyes_mouth_pose': 'polyglot', 'summary': 'kanana'}
-
-    # load StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 generator model
-    stylegan_model_dir = f'{PROJECT_DIR_PATH}/stylegan/models'
-
-    if vectorfind_ver == 'v7':
-        stylegan_generator = StyleGANGeneratorForV6(resolution=256)  # v6 and v7 have same architecture
-        generator_path = f'{stylegan_model_dir}/stylegan_gen_vector_find_v7.pth'
-    else:  # v8
-        stylegan_generator = StyleGANGenerator(resolution=256)
-        generator_path = f'{stylegan_model_dir}/stylegan_gen_vector_find_v8.pth'
-
-    generator_state_dict = torch.load(generator_path, map_location=device, weights_only=True)
-    stylegan_generator.load_state_dict(generator_state_dict)
-    stylegan_generator.to(device)
-
-    # load Hair Segmentation model
-    hair_seg_model = load_existing_hair_seg_model(device)
-
-    # load Oh-LoRA final LLM and tokenizer
-    ohlora_llms = {}
-    ohlora_llms_tokenizer = {}
-
-    for output_type in output_types:
-        model_path = f'{PROJECT_DIR_PATH}/llm/models/{llm_mapping[output_type]}_{output_type}_fine_tuned'
-        ohlora_llm = AutoModelForCausalLM.from_pretrained(model_path,
-                                                          trust_remote_code=True,
-                                                          torch_dtype=torch.bfloat16).to(device_mapping[output_type])
-
-        ohlora_llm_tokenizer = AutoTokenizer.from_pretrained(model_path)
-        ohlora_llm.generation_config.pad_token_id = ohlora_llm_tokenizer.pad_token_id
-
-        ohlora_llms[output_type] = ohlora_llm
-        ohlora_llms_tokenizer[output_type] = ohlora_llm_tokenizer
+    # TODO: implement
 
     # load S-BERT Model (RoBERTa-based)
-    memory_model_path = f'{PROJECT_DIR_PATH}/llm/models/memory_sbert/trained_sbert_model'
-    sbert_model_memory = load_pretrained_sbert_model(memory_model_path)
-
-    ethics_model_path = f'{PROJECT_DIR_PATH}/llm/models/ethics_sbert/trained_sbert_model'
+    ethics_model_path = f'{PROJECT_DIR_PATH}/final_product/ethics_sbert/trained_sbert_model'
     sbert_model_ethics = load_pretrained_sbert_model(ethics_model_path)
 
-    return ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics
+    return sbert_model_ethics
 
 
 # Oh-LoRA (오로라) 답변 직후 이미지 생성
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:
@@ -177,7 +130,7 @@ def handle_ohlora_answered(eyes_score, mouth_score, pose_score):
 
 
 # Oh-LoRA (오로라) 실시간 이미지 생성 핸들링 (+ 장시간 waiting 시 강제 종료 처리)
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:
@@ -251,55 +204,8 @@ def realtime_ohlora_generate():
                                        ombre_grad_height=(0.5 + 0.2 * math.cos(8 * math.pi * period_progress)))
 
 
-# 사용자 프롬프트에 시간 관련 단어 포함 시, 현재 시간 정보 추가
-# Create Date : 2025.06.29
-# Last Update Date : -
-
-# Arguments:
-# - user_prompt (str) : 최초 원본 사용자 프롬프트
-
-# Returns:
-# - updated_user_prompt (str) : 현재 시간 정보가 추가된 사용자 프롬프트 (시간 관련 단어 없을 시 최초 원본 그대로 반환)
-
-def add_time_info(user_prompt):
-
-    # 시간 단어 미 포함 시
-    time_words = ['오늘', '내일', '지금', '요일', '이따', '휴일']
-    time_word_included = False
-
-    for time_word in time_words:
-        if time_word in user_prompt:
-            time_word_included = True
-            break
-
-    if not time_word_included:
-        return user_prompt
-
-    # 시간 단어 포함 시
-    dow_mapping = ['월', '화', '수', '목', '금', '토', '일']
-    current_dow = datetime.today().weekday()
-    current_hour = datetime.now().hour
-
-    if current_hour < 4:
-        dow_text = dow_mapping[(current_dow + 6) % 7]
-        time_mark = f'(지금은 {dow_text}요일 저녁)'
-    else:
-        dow_text = dow_mapping[current_dow]
-        evening_start_hour = 17 if dow_text == '금' else 18
-
-        if current_hour < 12:
-            time_mark = f'(지금은 {dow_text}요일 오전)'
-        elif current_hour < evening_start_hour:
-            time_mark = f'(지금은 {dow_text}요일 오후)'
-        else:
-            time_mark = f'(지금은 {dow_text}요일 저녁)'
-
-    updated_user_prompt = time_mark + ' ' + user_prompt
-    return updated_user_prompt
-
-
 # Oh-LoRA (오로라) 의 Ethics mechanism 을 이용한 사용자 제재 처리
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:
@@ -421,18 +327,11 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
 
 
 # Oh-LoRA (오로라) 실행
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:
-# - ohlora_llms           (dict(LLM))       : LLM (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned)
-#                                             {'output_message': LLM, 'memory': LLM, 'summary': LLM,
-#                                              'eyes_mouth_pose': LLM}
-# - ohlora_llms_tokenizer (dict(tokenizer)) : LLM (Polyglot-Ko 1.3B & Kanana-1.5 2.1B Fine-Tuned) 의 tokenizer
-#                                             {'output_message': tokenizer, 'memory': tokenizer, 'summary': tokenizer,
-#                                              'eyes_mouth_pose': tokenizer}
-# - sbert_model_memory    (S-BERT Model)    : memory mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
-# - sbert_model_ethics    (S-BERT Model)    : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
+# - sbert_model_ethics (S-BERT Model) : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
 
 # Running Mechanism:
 # - Oh-LoRA LLM 답변 생성 시마다 이에 기반하여 final_product/ohlora.png 경로에 오로라 이미지 생성
@@ -451,34 +350,9 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
 
     while True:
         original_user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
-        user_prompt = add_time_info(original_user_prompt)
-        status = 'generating'
+        llm_answer_cleaned = ''  # TODO: temp
 
-        # check user prompt length
-        encoded_user_prompt = ohlora_llms_tokenizer['output_message'].encode(original_user_prompt)
-        if len(encoded_user_prompt) > 40:
-            print('[SYSTEM MESSAGE] 너무 긴 질문은 오로라👱‍♀️ 에게 부담 돼요! 그런 질문은 오로라의 절친 혜나 🌹 (LLM Hyena) 에게 해 주세요! 😢')
-            continue
-
-        best_memory_item = pick_best_memory_item(sbert_model_memory,
-                                                 original_user_prompt,
-                                                 memory_file_name='ohlora_memory.txt',
-                                                 threshold=0.95,
-                                                 verbose=False)
-
-        if best_memory_item == '':
-            if summary == '':
-                final_ohlora_input = user_prompt
-            else:
-                final_ohlora_input = '(오로라 답변 요약) ' + summary + ' (사용자 질문) ' + user_prompt
-        else:
-            final_ohlora_input = best_memory_item + ' ' + user_prompt
-
-        # generate Oh-LoRA answer and post-process
-        llm_answer = generate_llm_answer(ohlora_llm=ohlora_llms['output_message'],
-                                         ohlora_llm_tokenizer=ohlora_llms_tokenizer['output_message'],
-                                         final_ohlora_input=final_ohlora_input)
-        llm_answer_cleaned = clean_llm_answer(llm_answer)
+        # TODO: implementation
 
         # check ethics of user prompt
         system_message, block_period = check_and_process_ethics(sbert_model_ethics,
@@ -491,32 +365,8 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
         if block_period > 0:
             raise Exception('blocked_by_ohlora')
 
-        # update memory
-        memory_list = parse_memory(memory_llm=ohlora_llms['memory'],
-                                   memory_llm_tokenizer=ohlora_llms_tokenizer['memory'],
-                                   final_ohlora_input=final_ohlora_input)
-
-        if memory_list is not None:
-            save_memory_list(memory_list)
-
-        # update summary
-        updated_summary = summarize_llm_answer(summary_llm=ohlora_llms['summary'],
-                                               summary_llm_tokenizer=ohlora_llms_tokenizer['summary'],
-                                               final_ohlora_input=final_ohlora_input,
-                                               llm_answer_cleaned=llm_answer_cleaned)
-
-        if updated_summary is not None:
-            summary = updated_summary
-        else:
-            summary = ''
-
         # generate Oh-LoRA image
-        eyes_score_text, mouth_score_text, pose_score_text = decide_property_score_texts(
-            eyes_mouth_pose_llm=ohlora_llms['eyes_mouth_pose'],
-            eyes_mouth_pose_llm_tokenizer=ohlora_llms_tokenizer['eyes_mouth_pose'],
-            llm_answer_cleaned=llm_answer_cleaned)
-
-        eyes_score, mouth_score, pose_score = decide_property_scores(eyes_score_text, mouth_score_text, pose_score_text)
+        eyes_score, mouth_score, pose_score = 0.0, 0.0, 0.0  # TODO: temp
 
         print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
         handle_ohlora_answered(eyes_score, mouth_score, pose_score)
@@ -525,7 +375,7 @@ def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_mod
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:
@@ -575,7 +425,7 @@ def get_vectors(ohlora_no):
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 차단 여부 검사
-# Create Date : 2025.06.29
+# Create Date : 2025.08.01
 # Last Update Date : -
 
 # Arguments:

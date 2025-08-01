@@ -180,6 +180,8 @@
 2025_07_02_OhLoRA_ML_Tutor/ai_interview/models/*
 2025_07_02_OhLoRA_ML_Tutor/ombre/*.pth
 2025_07_02_OhLoRA_ML_Tutor/stylegan/*.pth
+2025_07_02_OhLoRA_ML_Tutor/final_product/ethics_sbert
+2025_07_02_OhLoRA_ML_Tutor/final_product/ethics_sbert/*
 venv
 venv/*
 requirements_v3.10.11.txt
