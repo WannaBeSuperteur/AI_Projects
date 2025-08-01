@@ -13,6 +13,55 @@
 
 ## 1. 동작 원리
 
+* 전체 구조
+
+![image](../../images/250702_16.PNG)
+
+* 사용 모델
+
+| 기능               | 사용 모델        | 필요 (입력) 데이터                                          | 출력 데이터                   |
+|------------------|--------------|------------------------------------------------------|--------------------------|
+| 사용자 답변 성공 여부 평가  | S-BERT       | ```현재 질문``` ```사용자 답변```                             | ```성공한 답변``` ```남은 답변``` |
+| 다음 질문 선택         | S-BERT       | ```현재 질문``` ```사용자 답변``` ```남은 답변```                 | ```다음에 할 질문```           |
+| LLM에 의한 다음 질문 생성 | LLM (Causal) | ```현재 질문``` ```사용자 답변``` ```성공한 답변``` ```다음에 할 질문``` | 생성된 다음 질문 내용             |
+
+### 1-1. 사용자 답변 성공 여부 평가
+
+![image](../../images/250702_13.PNG)
+
+* 사용 모델
+  * [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md)
+* 입력 데이터
+  * 현재 질문 ```current_question``` & 사용자 답변 ```user_input```
+  * 각각의 '(사용자가) 성공한 답변' (```output_answered```) 후보
+* 출력 값
+  * Cosine Similarity (유사도)
+
+### 1-2. 다음 질문 선택
+
+![image](../../images/250702_14.PNG)
+
+* 사용 모델
+  * [S-BERT (Sentence BERT)](https://github.com/WannaBeSuperteur/AI-study/blob/main/Natural%20Language%20Processing/Basics_BERT%2C%20SBERT%20%EB%AA%A8%EB%8D%B8.md)
+* 입력 데이터
+  * 현재 질문 ```current_question``` & 사용자 답변 ```user_input``` & 남은 답변 ```current_remaining_user_answer```
+  * 각각의 '다음 질문 (주제)' (```next_question```) 후보
+* 출력 값
+  * Cosine Similarity (유사도)
+
+### 1-3. LLM에 의한 다음 질문 생성
+
+![image](../../images/250702_15.PNG)
+
+* 사용 모델
+  * Causal LLM
+  * Kanana-1.5 2.1B instruct (by Kakao) [(HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505)
+* 입력 데이터
+  * 현재 질문 ```current_question``` & 사용자 답변 ```user_input```
+  * 사용자가 성공한 답변 ```output_answered```
+  * 다음 질문 주제 ```output_next_question```
+* 출력 값
+  * LLM에 의해 생성된 다음 질문 
 
 ## 2. 실험 결과
 
