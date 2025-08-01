@@ -9,9 +9,9 @@ import time
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
-from stylegan.run_stylegan_vectorfind_v8 import (load_ohlora_z_vectors,
-                                                 load_ohlora_w_group_names,
-                                                 get_property_change_vectors)
+from stylegan.stylegan_vectorfind_v8 import (load_ohlora_z_vectors,
+                                             load_ohlora_w_group_names,
+                                             get_property_change_vectors)
 from stylegan.common import load_existing_stylegan_vectorfind_v8
 import stylegan.stylegan_common.stylegan_generator as gen
 
