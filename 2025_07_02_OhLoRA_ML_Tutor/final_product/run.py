@@ -1,3 +1,6 @@
+
+from sentence_transformers import SentenceTransformer, models
+
 import torch
 import math
 import numpy as np
@@ -20,7 +23,6 @@ from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, Style
 from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
                                           load_ohlora_w_group_names,
                                           get_property_change_vectors)
-from llm.common import load_pretrained_sbert_model
 
 
 EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE = 0.2, 1.0, 0.0
@@ -75,6 +77,36 @@ hate_block_periods = {1: 24 * 60 * 60,
                       2: 7 * 24 * 60 * 60,
                       3: 90 * 24 * 60 * 60,
                       4: 1461 * 24 * 60 * 60}
+
+
+# Pre-trained (or Fine-Tuned) S-BERT Model 로딩
+# Reference : https://velog.io/@jaehyeong/Basic-NLP-sentence-transformers-라이브러리를-활용한-SBERT-학습-방법
+# Create Date : 2025.08.01
+# Last Update Date : -
+
+# Arguments:
+# - model_path (str) : Pre-trained (or Fine-Tuned) S-BERT Model 의 경로
+
+# Returns:
+# - pretrained_sbert_model (S-BERT Model) : Pre-train 된 Sentence-BERT 모델
+
+def load_pretrained_sbert_model(model_path):
+    embedding_model = models.Transformer(
+        model_name_or_path=model_path,
+        max_seq_length=64,
+        do_lower_case=True
+    )
+
+    pooling_model = models.Pooling(
+        embedding_model.get_word_embedding_dimension(),
+        pooling_mode_mean_tokens=True,
+        pooling_mode_cls_token=False,
+        pooling_mode_max_tokens=False
+    )
+
+    pretrained_sbert_model = SentenceTransformer(modules=[embedding_model, pooling_model])
+    return pretrained_sbert_model
+
 
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator + LLM, S-BERT models
