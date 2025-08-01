@@ -102,7 +102,7 @@
       * **5 epochs** 동안 Fine-Tuning 학습
       * inference 시의 [temperature](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Decoding_Strategies.md#2-5-temperature-%EC%A1%B0%EC%A0%95) : **0.6**
   * [학습 데이터셋 (csv)](../ai_interview/dataset/all_train_and_test_data.csv)
-    * 483 train rows, 81 valid rows (= questions)
+    * **483** train rows, **81** valid rows (= questions)
 
 * **[4] 참고 사항**
   * S-BERT 평가 결과의 MSE, MAE, Corr-coef 는 **코사인 유사도의 예측값 vs. 실제 값** 비교 기준 

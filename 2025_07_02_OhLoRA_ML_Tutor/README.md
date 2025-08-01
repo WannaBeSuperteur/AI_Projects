@@ -192,7 +192,7 @@ TBU
 | 🔨 모델 구현   | S-BERT 모델 구현 (멀티턴 실전 면접 기능용)                                                  | 07.23 수 - 07.28 월 (6d) | ```P008-008-train-SBERT```       | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/44) | ✅  |
 | 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습<br>(**면접관 발화 생성** LLM, RAG 유사 컨셉 / **Kanana**)  | 07.28 월 - 07.31 목 (4d) | ```P008-009-train-LLM3```        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/45) | ✅  |
 | 🧪 모델 학습   | LLM Supervised Fine-Tuning 학습<br>(**면접관 발화 생성** LLM, RAG 유사 컨셉 / **믿:음 2.0**) | 07.29 화 - 07.31 목 (3d) | ```P008-009-train-LLM3```        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/45) | ✅  |
-| 📃 문서화     | "멀티턴 실전 면접" 개발 내용 문서화                                                         | 07.31 목 - 08.01 금 (2d) |                                  |                                                                    | 💨 |
+| 📃 문서화     | "멀티턴 실전 면접" 개발 내용 문서화                                                         | 07.31 목 - 08.01 금 (2d) |                                  |                                                                    | ✅  |
 
 ## 4. 프로젝트 상세 설명
 
