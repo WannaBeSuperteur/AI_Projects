@@ -167,7 +167,7 @@ if __name__ == '__main__':
                         default='kananai')
     parser.add_argument('-epochs',
                         help="name of epochs for train (separated by comma)",
-                        default='10')
+                        default='5')
 
     args = parser.parse_args()
     print(f'arguments : {args}')
