@@ -25,6 +25,26 @@ def generate_image_using_w(vectorfind_generator, w, trunc_psi=1.0, trunc_layers=
     return images
 
 
+# hue-added colors list for adding hue for ombre style
+def get_hue_added_colors_list():
+    hue_added_colors = []
+
+    for i in range(360):
+        image = np.array([[[255, 0, 0]]], dtype=np.uint8)
+        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV).astype(np.float32)
+        image_hsv[:, :, 0] = i
+        image_hsv[:, :, 1] = 1.0
+        converted_image = cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR)
+
+        converted_image_int = list(converted_image.astype(np.uint8)[0][0][::-1])
+        hue_added_colors.append(converted_image_int)
+
+    return hue_added_colors
+
+
+hue_added_colors = get_hue_added_colors_list()
+
+
 # 옴브레 스타일 적용
 # Create Date : 2025.08.01
 # Last Update Date : -
