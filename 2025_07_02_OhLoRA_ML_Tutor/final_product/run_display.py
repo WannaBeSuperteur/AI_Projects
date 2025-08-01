@@ -56,7 +56,8 @@ def generate_and_show_ohlora_image(vectorfind_generator, hair_seg_model,
     with torch.no_grad():
         code_w = vectorfind_generator.mapping(code_part1.cuda(), code_part2.cuda())['w'].detach().cpu()
 
-        ombre_image = generate_ombre_img(vectorfind_generator, hair_seg_model,
+        ombre_image = generate_ombre_img(vectorfind_generator,
+                                         hair_seg_model,
                                          eyes_vector=np.expand_dims(eyes_vector, axis=0),
                                          mouth_vector=np.expand_dims(mouth_vector, axis=0),
                                          pose_vector=np.expand_dims(pose_vector, axis=0),

@@ -23,6 +23,7 @@ from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, Style
 from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
                                           load_ohlora_w_group_names,
                                           get_property_change_vectors)
+from ombre.load_seg_model import load_existing_hair_seg_model
 
 
 EYES_BASE_SCORE, MOUTH_BASE_SCORE, POSE_BASE_SCORE = 0.2, 1.0, 0.0
@@ -140,6 +141,9 @@ def load_models():
     stylegan_generator.to(device)
 
     # TODO: implement (loading LLMs)
+
+    # load Hair Segmentation model
+    hair_seg_model = load_existing_hair_seg_model(device)
 
     # load S-BERT Model (RoBERTa-based)
     ethics_model_path = f'{PROJECT_DIR_PATH}/final_product/models/ethics_sbert/trained_sbert_model'
@@ -376,7 +380,7 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
 # - Oh-LoRA 답변을 parsing 하여 llm/memory_mechanism/saved_memory/ohlora_memory.txt 경로에 메모리 저장
 # - S-BERT 모델을 이용하여, RAG 와 유사한 방식으로 해당 파일에서 사용자 프롬프트에 가장 적합한 메모리 정보를 찾아서 최종 LLM 입력에 추가
 
-def run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics):
+def run_ohlora(sbert_model_ethics):
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     global status, last_answer_generate
 
@@ -529,12 +533,12 @@ if __name__ == '__main__':
     ohlora_z_vector, eyes_vector, mouth_vector, pose_vector = get_vectors(ohlora_no)
 
     # load model
-    ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics = load_models()
+    sbert_model_ethics = load_models()
     print('ALL MODELS for Oh-LoRA (오로라) load successful!! 👱‍♀️')
 
     # run Oh-LoRA (오로라)
     try:
-        run_ohlora(ohlora_llms, ohlora_llms_tokenizer, sbert_model_memory, sbert_model_ethics)
+        run_ohlora(sbert_model_ethics)
 
     except KeyboardInterrupt:
         print('[SYSTEM MESSAGE] 오로라와의 대화가 끝났습니다. 👱‍♀️👋 다음에도 오로라와 함께해 주실 거죠?')
