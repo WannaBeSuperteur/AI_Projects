@@ -6,7 +6,7 @@ from monai.networks.nets import EfficientNetBNFeatures
 from monai.networks.nets.efficientnet import get_efficientnet_image_size
 
 import os
-PROJECT_DIR_PATH = os.path.abspath(os.path.dirname(__file__))
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
 # Modified Implementation of EffiSegNet, from https://github.com/ivezakis/effisegnet/blob/main/models/effisegnet.py
