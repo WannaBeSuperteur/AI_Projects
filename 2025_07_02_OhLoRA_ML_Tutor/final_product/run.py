@@ -20,9 +20,9 @@ from run_llm import (generate_llm_answer, clean_llm_answer, parse_memory, save_m
 from run_display import generate_and_show_ohlora_image
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, StyleGANGeneratorForV6
-from stylegan.stylegan_vectorfind_v8 import (load_ohlora_z_vectors,
-                                             load_ohlora_w_group_names,
-                                             get_property_change_vectors)
+from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
+                                          load_ohlora_w_group_names,
+                                          get_property_change_vectors)
 from ombre.load_seg_modal import load_existing_hair_seg_model
 
 from llm.common import load_pretrained_sbert_model

@@ -1,6 +1,6 @@
 
 import torch
-from stylegan.run_stylegan_vectorfind_v8 import generate_image_using_w
+from stylegan.run_stylegan_vectorfind import generate_image_using_w
 
 
 ORIGINAL_HIDDEN_DIMS_Z = 512
