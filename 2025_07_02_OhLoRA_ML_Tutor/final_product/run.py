@@ -1,6 +1,6 @@
 
 from sentence_transformers import SentenceTransformer, models
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import torch
 import math
@@ -124,7 +124,7 @@ def load_pretrained_sbert_model(model_path):
 # - gpu_1         (device) : 2번째 GPU
 
 # Returns:
-# - model_dict (dict) : LLM & S-BERT Model 반환용 dictionary
+# - model_dict (dict) : LLM & S-BERT Model 반환용 dictionary (key: 'llm', 'sbert', 'llm_tokenizer' 등)
 
 def load_llm_and_sbert_model(function_type, gpu_0, gpu_1):
     assert function_type in ['qna', 'quiz', 'interview']
@@ -144,11 +144,13 @@ def load_llm_and_sbert_model(function_type, gpu_0, gpu_1):
         sbert_path_next_question = f'{PROJECT_DIR_PATH}/ai_interview/models/next_question_sbert/trained_sbert_model_40'
         sbert_path_output_answer = f'{PROJECT_DIR_PATH}/ai_interview/models/output_answer_sbert/trained_sbert_model_40'
 
-    # load model
+    # load LLM and tokenizer
     model_dict['llm'] = AutoModelForCausalLM.from_pretrained(
         llm_path,
         trust_remote_code=True,
         torch_dtype=torch.bfloat16).to(gpu_0)
+    model_dict['llm_tokenizer'] = AutoTokenizer.from_pretrained(llm_path)
+    model_dict['llm'].generation_config.pad_token_id = model_dict['llm_tokenizer'].pad_token_id
 
     if function_type == 'qna' or function_type == 'quiz':
         model_dict['sbert'] = load_pretrained_sbert_model(sbert_path)
@@ -169,7 +171,7 @@ def load_llm_and_sbert_model(function_type, gpu_0, gpu_1):
 
 # Returns:
 # - sbert_model_ethics (S-BERT Model) : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
-# - model_dict         (dict)         : LLM & S-BERT Model 저장용 dictionary (key: 'llm', 'sbert' 등)
+# - model_dict         (dict)         : LLM & S-BERT Model 저장용 dictionary (key: 'llm', 'sbert', 'llm_tokenizer' 등)
 
 def load_models(function_type):
     global stylegan_generator, hair_seg_model, vectorfind_ver
