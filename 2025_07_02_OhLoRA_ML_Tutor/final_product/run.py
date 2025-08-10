@@ -20,6 +20,8 @@ ALL_PROJECTS_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.
 sys.path.append(PROJECT_DIR_PATH)
 
 from run_display import generate_and_show_ohlora_image
+from run_llm import clean_llm_answer
+
 from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, StyleGANGeneratorForV6
 from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
                                           load_ohlora_w_group_names,
@@ -417,6 +419,52 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
     return system_message, block_period
 
 
+# Oh-LoRA (오로라) 실행 중 'qna' (머신러닝 Q&A) 기능 처리
+# Create Date : 2025.08.10
+# Last Update Date : -
+
+# Arguments:
+# - user_prompt (str)  : 최초 원본 사용자 프롬프트
+# - model_dict  (dict) : LLM & S-BERT Model 저장용 dictionary
+
+# Returns:
+# - llm_answer (str) : Oh-LoRA LLM 최종 답변
+
+def run_ohlora_qna(user_prompt, model_dict):
+    raise NotImplementedError
+
+
+# Oh-LoRA (오로라) 실행 중 'quiz' (머신러닝 퀴즈) 기능 처리
+# Create Date : 2025.08.10
+# Last Update Date : -
+
+# Arguments:
+# - model_dict (dict) : LLM & S-BERT Model 저장용 dictionary
+
+# Returns:
+# - llm_answer (str) : Oh-LoRA LLM 최종 답변
+
+def run_ohlora_quiz(model_dict):
+    raise NotImplementedError
+
+
+# Oh-LoRA (오로라) 실행 중 'interview' (머신러닝 분야 모의 인터뷰) 기능 처리
+# Create Date : 2025.08.10
+# Last Update Date : -
+
+# Arguments:
+# - current_question (str)  : LLM이 생성할 질문의 주제
+# - user_prompt      (str)  : 최초 원본 사용자 프롬프트 (질문에 대한 사용자 답변)
+# - model_dict       (dict) : LLM & S-BERT Model 저장용 dictionary
+
+# Returns:
+# - llm_answer    (str) : Oh-LoRA LLM 최종 답변
+# - next_question (str) : LLM이 다음에 생성할 질문의 주제
+
+def run_ohlora_interview(current_question, user_prompt, model_dict):
+    raise NotImplementedError
+
+
 # Oh-LoRA (오로라) 실행
 # Create Date : 2025.08.10
 # Last Update Date : -
@@ -434,18 +482,28 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
 def run_ohlora(function_type, model_dict, sbert_model_ethics):
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     global status, last_answer_generate
-
-    summary = ''
     last_answer_generate = time.time()
+    interview_current_question = ''
 
     thread = threading.Thread(target=realtime_ohlora_generate)
     thread.start()
 
     while True:
         original_user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
-        llm_answer_cleaned = ''  # TODO: temp
 
-        # TODO: implementation
+        # function type ('qna', 'quiz' or 'interview') 에 따른 처리
+        if function_type == 'qna':
+            llm_answer = run_ohlora_qna(original_user_prompt, model_dict)
+
+        elif function_type == 'quiz':
+            llm_answer = run_ohlora_quiz(model_dict)
+
+        else:  # interview
+            llm_answer, next_question = (
+                run_ohlora_interview(interview_current_question, original_user_prompt, model_dict))
+            interview_current_question = next_question
+
+        llm_answer_cleaned = clean_llm_answer(llm_answer)
 
         # check ethics of user prompt
         system_message, block_period = check_and_process_ethics(sbert_model_ethics,
