@@ -20,7 +20,9 @@ ALL_PROJECTS_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.
 sys.path.append(PROJECT_DIR_PATH)
 
 from run_display import generate_and_show_ohlora_image
-from run_llm import clean_llm_answer
+from run_llm import generate_llm_answer, clean_llm_answer
+
+from ai_qna.run_rag_concept import pick_best_db_item_csv
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, StyleGANGeneratorForV6
 from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
@@ -431,7 +433,18 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
 # - llm_answer (str) : Oh-LoRA LLM 최종 답변
 
 def run_ohlora_qna(user_prompt, model_dict):
-    raise NotImplementedError
+    best_db_item = pick_best_db_item_csv(sbert_model=model_dict['sbert'],
+                                         user_prompt=user_prompt,
+                                         db_file_name='rag_data_text.csv',
+                                         verbose=False)
+    final_llm_prompt = f'(제공된 정보) {best_db_item} (사용자 질문) {user_prompt}'
+
+    llm_answer = generate_llm_answer(ohlora_llm=model_dict['llm'],
+                                     ohlora_llm_tokenizer=model_dict['llm_tokenizer'],
+                                     final_ohlora_input=final_llm_prompt,
+                                     function_type='qna')
+
+    return llm_answer
 
 
 # Oh-LoRA (오로라) 실행 중 'quiz' (머신러닝 퀴즈) 기능 처리
