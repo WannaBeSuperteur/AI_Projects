@@ -1,5 +1,6 @@
 
 from sentence_transformers import SentenceTransformer, models
+from transformers import AutoModelForCausalLM
 
 import torch
 import math
@@ -109,9 +110,54 @@ def load_pretrained_sbert_model(model_path):
     return pretrained_sbert_model
 
 
+# function type 에 따라 필요한 LLM & S-BERT 모델 로딩
+# Create Date : 2025.08.10
+# Last Update Date : -
+
+# Arguments:
+# - function_type (str)    : 실행할 기능으로, 'qna', 'quiz', 'interview' 중 하나
+# - gpu_0         (device) : 1번째 GPU
+# - gpu_1         (device) : 2번째 GPU
+
+# Returns:
+# - model_dict (dict) : LLM & S-BERT Model 반환용 dictionary
+
+def load_llm_and_sbert_model(function_type, gpu_0, gpu_1):
+    assert function_type in ['qna', 'quiz', 'interview']
+    model_dict = {}
+
+    # LLM & S-BERT model path
+    if function_type == 'qna':
+        llm_path = f'{PROJECT_DIR_PATH}/ai_qna/models/kananai_sft_final_fine_tuned'
+        sbert_path = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
+
+    elif function_type == 'quiz':
+        llm_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/kananai_sft_final_fine_tuned_10epochs'
+        sbert_path = f'{PROJECT_DIR_PATH}/ai_quiz/models/sbert/trained_sbert_model'
+
+    else:  # interview
+        llm_path = f'{PROJECT_DIR_PATH}/ai_interview/models/kananai_sft_final_fine_tuned_5epochs'
+        sbert_path_next_question = f'{PROJECT_DIR_PATH}/ai_interview/models/next_question_sbert/trained_sbert_model_40'
+        sbert_path_output_answer = f'{PROJECT_DIR_PATH}/ai_interview/models/output_answer_sbert/trained_sbert_model_40'
+
+    # load model
+    model_dict['llm'] = AutoModelForCausalLM.from_pretrained(
+        llm_path,
+        trust_remote_code=True,
+        torch_dtype=torch.bfloat16).to(gpu_0)
+
+    if function_type == 'qna' or function_type == 'quiz':
+        model_dict['sbert'] = load_pretrained_sbert_model(sbert_path)
+
+    else:
+        model_dict['sbert_next_question'] = load_pretrained_sbert_model(sbert_path_next_question)
+        model_dict['sbert_output_answer'] = load_pretrained_sbert_model(sbert_path_output_answer)
+
+    return model_dict
+
 
 # 필요한 모델 로딩 : StyleGAN-VectorFind-v7 or StyleGAN-VectorFind-v8 Generator + LLM, S-BERT models
-# Create Date : 2025.08.01
+# Create Date : 2025.08.10
 # Last Update Date : -
 
 # Arguments:
@@ -119,8 +165,9 @@ def load_pretrained_sbert_model(model_path):
 
 # Returns:
 # - sbert_model_ethics (S-BERT Model) : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
+# - model_dict         (dict)         : LLM & S-BERT Model 저장용 dictionary (key: 'llm', 'sbert' 등)
 
-def load_models():
+def load_models(function_type):
     global stylegan_generator, hair_seg_model, vectorfind_ver
 
     gpu_0 = torch.device('cuda:0')
@@ -140,7 +187,9 @@ def load_models():
     stylegan_generator.load_state_dict(generator_state_dict)
     stylegan_generator.to(device)
 
-    # TODO: implement (loading LLMs)
+    # load LLM and S-BERT models according to function type
+    model_dict = load_llm_and_sbert_model(function_type, gpu_0, gpu_1)
+    print(f'LLM and S-BERT models load successful!! (function type: {function_type})  👱‍♀️✨')
 
     # load Hair Segmentation model
     hair_seg_model = load_existing_hair_seg_model(device)
@@ -149,7 +198,7 @@ def load_models():
     ethics_model_path = f'{PROJECT_DIR_PATH}/final_product/models/ethics_sbert/trained_sbert_model'
     sbert_model_ethics = load_pretrained_sbert_model(ethics_model_path)
 
-    return sbert_model_ethics
+    return sbert_model_ethics, model_dict
 
 
 # Oh-LoRA (오로라) 답변 직후 이미지 생성
@@ -369,10 +418,12 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
 
 
 # Oh-LoRA (오로라) 실행
-# Create Date : 2025.08.01
+# Create Date : 2025.08.10
 # Last Update Date : -
 
 # Arguments:
+# - function_type      (str)          : 실행할 기능으로, 'qna', 'quiz', 'interview' 중 하나
+# - model_dict         (dict)         : LLM & S-BERT Model 저장용 dictionary (key: 'llm', 'sbert' 등)
 # - sbert_model_ethics (S-BERT Model) : ethics mechanism 에 필요한 S-BERT 모델 (RoBERTa-based)
 
 # Running Mechanism:
@@ -380,7 +431,7 @@ def check_and_process_ethics(sbert_model_ethics, user_prompt, llm_answer_cleaned
 # - Oh-LoRA 답변을 parsing 하여 llm/memory_mechanism/saved_memory/ohlora_memory.txt 경로에 메모리 저장
 # - S-BERT 모델을 이용하여, RAG 와 유사한 방식으로 해당 파일에서 사용자 프롬프트에 가장 적합한 메모리 정보를 찾아서 최종 LLM 입력에 추가
 
-def run_ohlora(sbert_model_ethics):
+def run_ohlora(function_type, model_dict, sbert_model_ethics):
     global ohlora_z_vector, eyes_vector, mouth_vector, pose_vector
     global status, last_answer_generate
 
@@ -516,6 +567,9 @@ if __name__ == '__main__':
     parser.add_argument('-ohlora_no',
                         help="latent z vector ID for Oh-LoRA face image generation (index, case No.)",
                         default='none')
+    parser.add_argument('-function_type',
+                        help="function type (one of 'qna', 'quiz' and 'interview')",
+                        default='qna')
     args = parser.parse_args()
 
     ohlora_no = args.ohlora_no
@@ -524,6 +578,7 @@ if __name__ == '__main__':
     except:
         ohlora_no = None
     vectorfind_ver = args.vf_ver
+    function_type = args.function_type
 
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -533,12 +588,12 @@ if __name__ == '__main__':
     ohlora_z_vector, eyes_vector, mouth_vector, pose_vector = get_vectors(ohlora_no)
 
     # load model
-    sbert_model_ethics = load_models()
+    sbert_model_ethics, model_dict = load_models(function_type)
     print('ALL MODELS for Oh-LoRA (오로라) load successful!! 👱‍♀️')
 
     # run Oh-LoRA (오로라)
     try:
-        run_ohlora(sbert_model_ethics)
+        run_ohlora(function_type, model_dict, sbert_model_ethics)
 
     except KeyboardInterrupt:
         print('[SYSTEM MESSAGE] 오로라와의 대화가 끝났습니다. 👱‍♀️👋 다음에도 오로라와 함께해 주실 거죠?')
