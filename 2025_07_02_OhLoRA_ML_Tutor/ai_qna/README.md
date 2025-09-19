@@ -22,7 +22,7 @@
 
 ## 2. LLM Fine-Tuning
 
-* LLM 전체 구조
+* 전체 구조
 
 ![image](../../images/250702_1.PNG)
 
