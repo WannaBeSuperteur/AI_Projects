@@ -481,7 +481,7 @@ def run_ohlora_interview(current_question, user_prompt, model_dict):
 
 
 # Oh-LoRA (오로라) 실행
-# Create Date : 2025.08.10
+# Create Date : 2025.09.20
 # Last Update Date : -
 
 # Arguments:
@@ -503,8 +503,15 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
     thread = threading.Thread(target=realtime_ohlora_generate)
     thread.start()
 
+    if function_type == 'qna':
+        user_prompt_prefix = '오로라에게 머신러닝 질문하기'
+    elif function_type == 'quiz':
+        user_prompt_prefix = '오로라의 퀴즈에 답하기'
+    else:  # interview
+        user_prompt_prefix = '오로라의 면접 질문에 답하기'
+
     while True:
-        original_user_prompt = input('\n오로라에게 말하기 (Ctrl+C to finish) : ')
+        original_user_prompt = input(f'\n{user_prompt_prefix} (Ctrl+C to finish) : ')
 
         # function type ('qna', 'quiz' or 'interview') 에 따른 처리
         if function_type == 'qna':
