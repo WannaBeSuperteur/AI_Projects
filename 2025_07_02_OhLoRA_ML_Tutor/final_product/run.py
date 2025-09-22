@@ -481,7 +481,7 @@ def run_ohlora_interview(current_question, user_prompt, model_dict):
 
 
 # Oh-LoRA (오로라) 실행
-# Create Date : 2025.09.20
+# Create Date : 2025.09.22
 # Last Update Date : -
 
 # Arguments:
@@ -505,10 +505,13 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
 
     if function_type == 'qna':
         user_prompt_prefix = '오로라에게 머신러닝 질문하기'
+        stop_sequence = '(답변 종료'
     elif function_type == 'quiz':
         user_prompt_prefix = '오로라의 퀴즈에 답하기'
+        stop_sequence = '(해설 종료'
     else:  # interview
         user_prompt_prefix = '오로라의 면접 질문에 답하기'
+        stop_sequence = '(발화 종료'
 
     while True:
         original_user_prompt = input(f'\n{user_prompt_prefix} (Ctrl+C to finish) : ')
@@ -541,7 +544,7 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
         # generate Oh-LoRA image
         eyes_score, mouth_score, pose_score = 0.0, 0.0, 0.0  # TODO: temp
 
-        print(f'👱‍♀️ 오로라 : {llm_answer_cleaned}')
+        print(f"👱‍♀️ 오로라 : {llm_answer_cleaned.replace(stop_sequence, '')}")
         handle_ohlora_answered(eyes_score, mouth_score, pose_score)
         status = 'waiting'
         last_answer_generate = time.time()
