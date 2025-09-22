@@ -22,14 +22,19 @@ class StopOnTokens(StoppingCriteria):
 
 
 # LLM 별 Stop Token List 반환
-# Create Date : 2025.08.01
+# Create Date : 2025.09.22
 # Last Update Date : -
 
 # Arguments :
 # - function_type (str) : 실행할 기능으로, 'qna', 'quiz', 'interview' 중 하나
 
 def get_stop_token_list(function_type):
-    pass  # TODO: implement
+    if function_type == 'qna':
+        return [109659, 104449, 99458, 64356]  # (답변 종료)
+    elif function_type == 'quiz':
+        return [34983, 102546, 99458, 64356]  # (해설 종료)
+    else:  # interview
+        return [102133, 57390, 99458, 64356]  # (발화 종료)
 
 
 # Oh-LoRA (오로라) 의 답변 생성
@@ -87,7 +92,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input, fu
 
 
 # Oh-LoRA (오로라) 의 답변을 clean 처리
-# Create Date : 2025.08.01
+# Create Date : 2025.09.22
 # Last Update Date : -
 
 # Arguments :
