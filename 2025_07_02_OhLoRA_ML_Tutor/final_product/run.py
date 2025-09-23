@@ -739,6 +739,8 @@ if __name__ == '__main__':
     vectorfind_ver = args.vf_ver
     function_type = args.function_type
 
+    assert function_type in ['qna', 'quiz', 'interview']
+
     # check device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'device : {device}')
