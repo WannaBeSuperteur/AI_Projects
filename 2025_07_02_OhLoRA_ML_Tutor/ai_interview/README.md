@@ -37,6 +37,10 @@
 * 출력 값
   * Cosine Similarity (유사도)
 
+| 학습 데이터                                                                       | 테스트 데이터                                                                                |
+|------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| [dataset_df_answer_type_train.csv](dataset/dataset_df_answer_type_train.csv) | [dataset_df_answer_type_valid_test.csv](dataset/dataset_df_answer_type_valid_test.csv) |
+
 ### 1-2. 다음 질문 선택
 
 ![image](../../images/250702_14.PNG)
@@ -48,6 +52,10 @@
   * 각각의 '다음 질문 (주제)' (```next_question```) 후보
 * 출력 값
   * Cosine Similarity (유사도)
+
+| 학습 데이터                                                                           | 테스트 데이터                                                                                    |
+|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| [dataset_df_next_question_train.csv](dataset/dataset_df_next_question_train.csv) | [dataset_df_next_question_valid_test.csv](dataset/dataset_df_next_question_valid_test.csv) |
 
 ### 1-3. LLM에 의한 다음 질문 생성
 
@@ -62,6 +70,10 @@
   * 다음 질문 주제 ```output_next_question```
 * 출력 값
   * LLM에 의해 생성된 다음 질문 
+
+| 학습 및 valid/test 데이터                                                                                                                          |
+|----------------------------------------------------------------------------------------------------------------------------------------------|
+| [all_train_and_test_data.csv](../ai_interview/dataset/all_train_and_test_data.csv), with **483** train rows, **81** valid rows (= questions) |
 
 ## 2. 실험 결과
 
@@ -101,8 +113,6 @@
       * 모델 : ```Kanana-1.5 2.1B instruct``` [(HuggingFace)](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505) 
       * **5 epochs** 동안 Fine-Tuning 학습
       * inference 시의 [temperature](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Decoding_Strategies.md#2-5-temperature-%EC%A1%B0%EC%A0%95) : **0.6**
-  * [학습 데이터셋 (csv)](../ai_interview/dataset/all_train_and_test_data.csv)
-    * **483** train rows, **81** valid rows (= questions)
 
 * **[4] 참고 사항**
   * S-BERT 평가 결과의 MSE, MAE, Corr-coef 는 **코사인 유사도의 예측값 vs. 실제 값** 비교 기준 
