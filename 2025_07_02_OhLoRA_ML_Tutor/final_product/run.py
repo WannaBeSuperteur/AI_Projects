@@ -512,20 +512,36 @@ def run_ohlora_quiz(quiz_current_quiz_info, user_prompt, model_dict):
 
 
 # Oh-LoRA (오로라) 실행 중 'interview' (머신러닝 분야 모의 인터뷰) 기능 처리
-# Create Date : 2025.08.10
+# Create Date : 2025.09.23
 # Last Update Date : -
 
 # Arguments:
-# - current_question (str)  : LLM이 생성할 질문의 주제
-# - user_prompt      (str)  : 최초 원본 사용자 프롬프트 (질문에 대한 사용자 답변)
-# - model_dict       (dict) : LLM & S-BERT Model 저장용 dictionary
+# - current_question (str)         : LLM이 생성할 질문의 주제
+# - user_prompt      (str or None) : 최초 원본 사용자 프롬프트 (질문에 대한 사용자 답변)
+# - model_dict       (dict)        : LLM & S-BERT Model 저장용 dictionary
 
 # Returns:
 # - llm_answer    (str) : Oh-LoRA LLM 최종 답변
 # - next_question (str) : LLM이 다음에 생성할 질문의 주제
 
 def run_ohlora_interview(current_question, user_prompt, model_dict):
-    raise NotImplementedError
+
+    # 면접 시작 인사
+    if user_prompt is None:
+        llm_answer = generate_llm_answer(ohlora_llm=model_dict['llm'],
+                                         ohlora_llm_tokenizer=model_dict['llm_tokenizer'],
+                                         final_ohlora_input='면접 시작',
+                                         function_type='interview')
+        next_question = '면접 시작 인사'
+
+    # 질의응답
+    else:
+        pass
+
+    print('llm_answer :', llm_answer)
+    print('next_question :', next_question)
+
+    return llm_answer, next_question
 
 
 # Oh-LoRA (오로라) 실행
@@ -574,6 +590,10 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
     else:  # interview
         user_prompt_prefix = '오로라의 면접 질문에 답하기'
         stop_sequence = '(발화 종료'
+
+        first_greeting, _ = run_ohlora_interview(current_question='', user_prompt=None, model_dict=model_dict)
+        interview_current_question = '면접 시작 인사'
+        print(f"\n👱‍♀️ 오로라 : {first_greeting.replace(stop_sequence, '')}")
 
     while True:
         original_user_prompt = input(f'\n{user_prompt_prefix} (Ctrl+C to finish) : ')

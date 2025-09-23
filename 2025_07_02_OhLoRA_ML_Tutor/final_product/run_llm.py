@@ -88,7 +88,7 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input, fu
         # check LLM answer and return or retry
         # TODO: implement mapping of "function" to "finish word"
         is_empty = llm_answer.replace('\n', '').replace('(발화 종료)', '').replace(' ', '') == ''
-        is_answer_end_mark = '발화 종료' in llm_answer.replace('(발화 종료)', '') or '답변종료' in llm_answer.replace('(답변 종료)', '')
+        is_answer_end_mark = '발화 종료' in llm_answer.replace('(발화 종료', '') or '답변종료' in llm_answer.replace('(답변 종료', '')
         is_other_mark = '(사용자' in llm_answer.replace(' ', '') or '요약)' in llm_answer.replace(' ', '')
         is_low_quality = is_empty or is_answer_end_mark or is_other_mark
 
