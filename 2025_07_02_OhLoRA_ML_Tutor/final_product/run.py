@@ -537,9 +537,11 @@ def run_ohlora_interview(current_question, user_prompt, model_dict):
 
     # 질의응답
     else:
+        sbert_input = f'{current_question} -> {user_prompt}'
         sbert_model_output_answer = model_dict['sbert_output_answer']
+
         best_candidate_info = pick_best_candidate(sbert_model=sbert_model_output_answer,
-                                                  user_prompt=user_prompt,
+                                                  sbert_input=sbert_input,
                                                   candidates_csv_name='embeddings_answer_type.csv',
                                                   verbose=True)
 
