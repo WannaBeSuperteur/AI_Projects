@@ -25,6 +25,7 @@ from run_llm import generate_llm_answer, clean_llm_answer
 from ai_qna.run_rag_concept import pick_best_db_item_csv
 from ai_quiz.select_quiz.select_quiz import select_next_quiz
 from ai_quiz.sbert.inference_sbert import run_inference_each_example
+from ai_interview.rag_concept_common import pick_best_candidate
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, StyleGANGeneratorForV6
 from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
@@ -536,7 +537,13 @@ def run_ohlora_interview(current_question, user_prompt, model_dict):
 
     # 질의응답
     else:
-        pass
+        sbert_model_output_answer = model_dict['sbert_output_answer']
+        best_candidate_info = pick_best_candidate(sbert_model=sbert_model_output_answer,
+                                                  user_prompt=user_prompt,
+                                                  candidates_csv_name='embeddings_answer_type.csv',
+                                                  verbose=True)
+
+        print(best_candidate_info)
 
     print('llm_answer :', llm_answer)
     print('next_question :', next_question)
