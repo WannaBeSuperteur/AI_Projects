@@ -517,15 +517,16 @@ def run_ohlora_quiz(quiz_current_quiz_info, user_prompt, model_dict):
 # Last Update Date : -
 
 # Arguments:
-# - current_question (str)         : LLM이 생성할 질문의 주제
-# - user_prompt      (str or None) : 최초 원본 사용자 프롬프트 (질문에 대한 사용자 답변)
-# - model_dict       (dict)        : LLM & S-BERT Model 저장용 dictionary
+# - current_question  (str)         : LLM이 생성할 질문의 주제
+# - user_prompt       (str or None) : 최초 원본 사용자 프롬프트 (질문에 대한 사용자 답변)
+# - model_dict        (dict)        : LLM & S-BERT Model 저장용 dictionary
+# - remaining_answers (list(str))   : 남아 있는 답변의 list
 
 # Returns:
 # - llm_answer    (str) : Oh-LoRA LLM 최종 답변
 # - next_question (str) : LLM이 다음에 생성할 질문의 주제
 
-def run_ohlora_interview(current_question, user_prompt, model_dict):
+def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_answers):
 
     # 면접 시작 인사
     if user_prompt is None:
@@ -535,22 +536,126 @@ def run_ohlora_interview(current_question, user_prompt, model_dict):
                                          function_type='interview')
         next_question = '면접 시작 인사'
 
-    # 질의응답
+    # 면접 질의응답
     else:
-        sbert_input = f'{current_question} -> {user_prompt}'
-        sbert_model_output_answer = model_dict['sbert_output_answer']
 
-        best_candidate_info = pick_best_candidate(sbert_model=sbert_model_output_answer,
-                                                  sbert_input=sbert_input,
-                                                  candidates_csv_name='embeddings_answer_type.csv',
-                                                  verbose=True)
+        # 1. select output answer
+        output_answer_sbert_input = f'{current_question} -> {user_prompt}'
+        output_answer_sbert_model = model_dict['sbert_output_answer']
 
-        print(best_candidate_info)
+        answered_question_best_candidate = pick_best_candidate(sbert_model=output_answer_sbert_model,
+                                                               sbert_input=output_answer_sbert_input,
+                                                               candidates_csv_name='embeddings_answer_type.csv',
+                                                               verbose=True)
 
+        successful_answer_estimated = answered_question_best_candidate['name']
+        update_remaining_answers(remaining_answers, successful_answer_estimated)
+
+        print('answered_question_best_candidate :', answered_question_best_candidate)
+        print('remaining_answers :', remaining_answers)
+
+        # 2. select next question
+        if len(remaining_answers) >= 1:
+            remaining_answers_str = remaining_answers.join(',')
+        else:
+            remaining_answers_str = '모든 질문 해결 완료'
+
+        next_question_sbert_input = f"{current_question} -> {user_prompt} (남은 답변: {remaining_answers_str})"
+        next_question_sbert_model = model_dict['sbert_output_answer']
+
+        next_question_best_candidate = pick_best_candidate(sbert_model=next_question_sbert_model,
+                                                           sbert_input=next_question_sbert_input,
+                                                           candidates_csv_name='embeddings_next_question.csv',
+                                                           verbose=True)
+
+        print('next_question_best_candidate :', next_question_best_candidate)
+
+        # 3. generate next question
+        next_question = next_question_best_candidate['name']
+
+        if current_question == '면접 시작 인사':
+            final_llm_prompt = f'(대화 주제) {current_question} (사용자 답변) {user_prompt} (다음 질문) {next_question}'
+        else:
+            final_llm_prompt = f'(대화 주제) {current_question} (사용자 답변) {user_prompt} '
+            final_llm_prompt += f'(성공한 답변) {successful_answer_estimated} (다음 질문) {next_question}'
+
+        print('final_llm_prompt :', final_llm_prompt)
+
+        llm_generated_question = generate_llm_answer(ohlora_llm=model_dict['llm'],
+                                                     ohlora_llm_tokenizer=model_dict['llm_tokenizer'],
+                                                     final_ohlora_input=final_llm_prompt,
+                                                     function_type='interview')
+
+        print('llm_generated_question :', llm_generated_question)
+        llm_answer = llm_generated_question
+        add_remaining_answers(remaining_answers, next_question)
+
+        print('remaining_answers :', remaining_answers)
+
+    # 최종 반환
     print('llm_answer :', llm_answer)
     print('next_question :', next_question)
 
     return llm_answer, next_question
+
+
+# Oh-LoRA (오로라) 실행 중 'interview' (머신러닝 분야 모의 인터뷰) 기능 처리를 위한 '남은 답변 목록' 업데이트
+# Create Date : 2025.09.23
+# Last Update Date : -
+
+# Arguments:
+# - remaining_answers   (list(str)) : 남아 있는 답변의 list
+# - best_candidate_name (str)       : best candidate (사용자가 성공한 것으로 판단한 답변) 종류의 이름 (예: 'Loss Function 정의')
+
+def update_remaining_answers(remaining_answers, best_candidate_name):
+    if best_candidate_name in ['면접 시작 인사', '잠시 휴식', '마지막 할 말']:  # 면접 중 의례적 절차
+        return
+
+    if best_candidate_name == '용어 질문':  # 용어 질문인 경우
+        return
+
+    if best_candidate_name == '답변 실패':  # 답변에 실패한 경우
+        return
+
+    if best_candidate_name in remaining_answers:
+        remaining_answers.remove(best_candidate_name)
+
+
+# Oh-LoRA (오로라) 실행 중 'interview' (머신러닝 분야 모의 인터뷰) 기능 처리를 위한 '남은 답변 목록'에 새로운 질문 내용에 따라 추가
+# Create Date : 2025.09.23
+# Last Update Date : -
+
+# Arguments:
+# - remaining_answers (list(str)) : 남아 있는 답변의 list
+# - next_question     (str)       : LLM이 다음에 생성할 질문의 주제 (예: '인공지능, 머신러닝, 딥러닝 차이')
+
+def add_remaining_answers(remaining_answers, next_question):
+    added_question_dict = {
+        '면접 시작 인사': ['면접 시작 인사'],
+        '인공지능, 머신러닝, 딥러닝 차이': ['인공지능', '머신러닝', '딥러닝'],
+        '거대 언어 모델 정의': ['거대 언어 모델 정의'],
+        'Loss Function 정의': ['Loss Function 정의'],
+        'Loss Function 예시': ['Loss Function 예시'],
+        'MSE Loss 설명': ['MSE Loss 설명'],
+        'MSE Loss 용도': ['MSE Loss 용도'],
+        '확률 예측에서 MSE Loss 미 사용 이유': ['확률 예측에서 MSE Loss 미 사용 이유'],
+        'BCE Loss 설명': ['핵심 아이디어', '수식'],
+        'Multi-Class, Multi-Label 중 BCE 가 좋은 task': ['BCE 가 좋은 task', 'BCE 가 좋은 이유'],
+        'Multi-Label 에서 CE + Softmax 적용 문제점': ['Multi-Label 에서 CE + Softmax 적용 문제점'],
+        'Loss Function 관련 실무 경험': ['기본 경험', '상세 경험'],
+        'MBTI': ['MBTI'],
+        '좋아하는 아이돌': ['좋아하는 아이돌'],
+        '잠시 휴식': ['잠시 휴식'],
+        'LLM Fine-Tuning 의 PEFT': ['LLM Fine-Tuning 의 PEFT'],
+        'PEFT 방법 5가지': ['PEFT 방법 5가지'],
+        'LoRA': ['LoRA'],
+        'LoRA 와 QLoRA 의 차이': ['LoRA 와 QLoRA 의 차이'],
+        '마지막 할 말': ['마지막 할 말']
+    }
+
+    remaining_answers.clear()
+    for question in added_question_dict[next_question]:
+        remaining_answers.append(question)
 
 
 # Oh-LoRA (오로라) 실행
@@ -599,10 +704,16 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
     else:  # interview
         user_prompt_prefix = '오로라의 면접 질문에 답하기'
         stop_sequence = '(발화 종료'
+        remaining_answers = []
 
-        first_greeting, _ = run_ohlora_interview(current_question='', user_prompt=None, model_dict=model_dict)
+        first_greeting, _ = run_ohlora_interview(current_question='',
+                                                 user_prompt=None,
+                                                 model_dict=model_dict,
+                                                 remaining_answers=remaining_answers)
+
         interview_current_question = '면접 시작 인사'
         print(f"\n👱‍♀️ 오로라 : {first_greeting.replace(stop_sequence, '')}")
+
 
     while True:
         original_user_prompt = input(f'\n{user_prompt_prefix} (Ctrl+C to finish) : ')
@@ -620,7 +731,7 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
 
         else:  # interview
             llm_answer, next_question = (
-                run_ohlora_interview(interview_current_question, original_user_prompt, model_dict))
+                run_ohlora_interview(interview_current_question, original_user_prompt, model_dict, remaining_answers))
             interview_current_question = next_question
 
         llm_answer_cleaned = clean_llm_answer(llm_answer)
@@ -651,8 +762,6 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
         # print next quiz / interview question
         if function_type == 'quiz':
             print(f"\n[ QUIZ 🙋‍♀️ ]\n{quiz_current_quiz_info['quiz']}")
-        elif function_type == 'interview':
-            pass  # TODO implement
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
