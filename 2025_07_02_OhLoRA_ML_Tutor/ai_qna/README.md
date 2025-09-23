@@ -29,7 +29,7 @@
 * 작동 방식
   * **1.** 사용자 질문을 S-BERT 모델의 BERT + Pooling Layer 에 입력
   * **2.** 사용자 질문을 임베딩한 vector 도출
-  * **3.** 사용자 질문을 임베딩한 vector 와 **RAG concept DB 에 저장된 각 vector 중 유사도가 가장 높은 vector** 를 추출
+  * **3.** 사용자 질문을 임베딩한 vector 와 **[RAG (Retrieval-Augmented Generation)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_RAG.md) concept DB 에 저장된 각 vector 중 유사도가 가장 높은 vector** 를 추출
   * **4.** 해당 **유사도가 가장 높은 vector** 에 대응되는 Plain Text 를 **사용자 질문과 concatenate**
   * **5.** 최종적으로 Oh-LoRA 👱‍♀️ (오로라) LLM 에 전달
   * **6.** Oh-LoRA 👱‍♀️ (오로라) LLM 이 생성한 답변을 **최종적으로 사용자에게 표시**
