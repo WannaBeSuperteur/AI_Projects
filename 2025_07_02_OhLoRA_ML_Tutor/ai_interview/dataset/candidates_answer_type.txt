@@ -1,0 +1,27 @@
+BCE 가 좋은 task
+BCE 가 좋은 이유
+LLM Fine-Tuning 의 PEFT
+LoRA
+LoRA 와 QLoRA 의 차이
+Loss Function 예시
+Loss Function 정의
+MBTI
+MSE Loss 설명
+MSE Loss 용도
+Multi-Label 에서 CE + Softmax 적용 문제점
+PEFT 방법 5가지
+거대 언어 모델 정의
+기본 경험
+답변 실패
+딥러닝
+마지막 할 말
+머신러닝
+면접 시작 인사
+상세 경험
+수식
+용어 질문
+인공지능
+잠시 휴식
+좋아하는 아이돌
+핵심 아이디어
+확률 예측에서 MSE Loss 미 사용 이유
