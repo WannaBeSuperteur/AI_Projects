@@ -75,3 +75,10 @@
 [Quiz Selection 알고리즘 (IoU Score 기반 가중치에 따른 사용자 점수 예측 결과)](#3-틀릴-가능성이-높은-퀴즈-출제) 에 따라, **사용자 예측 점수가 가장 낮은** 퀴즈 출제
 
 ```python ai_quiz/run_select_quiz.py```
+
+* 퀴즈 풀이 로그 파일 경로
+
+| 로그 파일 경로                                                         | 설명                    |
+|------------------------------------------------------------------|-----------------------|
+| [```select_quiz/example_log.csv```](select_quiz/example_log.csv) | 예제 로그 파일              |
+| ```select_quiz/quiz_log.csv```                                   | 실제 Oh-LoRA 실행 시 로그 파일 |
