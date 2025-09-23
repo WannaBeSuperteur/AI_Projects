@@ -543,6 +543,8 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
         output_answer_sbert_input = f'{current_question} -> {user_prompt}'
         output_answer_sbert_model = model_dict['sbert_output_answer']
 
+        print('output_answer_sbert_input :', output_answer_sbert_input)
+
         answered_question_best_candidate = pick_best_candidate(sbert_model=output_answer_sbert_model,
                                                                sbert_input=output_answer_sbert_input,
                                                                candidates_csv_name='embeddings_answer_type.csv',
@@ -556,12 +558,14 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
 
         # 2. select next question
         if len(remaining_answers) >= 1:
-            remaining_answers_str = remaining_answers.join(',')
+            remaining_answers_str = ', '.join(remaining_answers)
         else:
             remaining_answers_str = '모든 질문 해결 완료'
 
         next_question_sbert_input = f"{current_question} -> {user_prompt} (남은 답변: {remaining_answers_str})"
-        next_question_sbert_model = model_dict['sbert_output_answer']
+        next_question_sbert_model = model_dict['sbert_next_question']
+
+        print('next_question_sbert_input :', next_question_sbert_input)
 
         next_question_best_candidate = pick_best_candidate(sbert_model=next_question_sbert_model,
                                                            sbert_input=next_question_sbert_input,
@@ -588,9 +592,18 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
 
         print('llm_generated_question :', llm_generated_question)
         llm_answer = llm_generated_question
-        add_remaining_answers(remaining_answers, next_question)
 
-        print('remaining_answers :', remaining_answers)
+        print('next_question :', next_question)
+        print('remaining_answers (1) :', remaining_answers)
+
+        is_greeting_finished = (len(remaining_answers) > 0 and
+                                remaining_answers[0] == '면접 시작 인사' and
+                                next_question != '면접 시작 인사')
+
+        if len(remaining_answers) == 0 or is_greeting_finished:
+            add_remaining_answers(remaining_answers, next_question)
+
+        print('remaining_answers (2) :', remaining_answers)
 
     # 최종 반환
     print('llm_answer :', llm_answer)
@@ -608,6 +621,9 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
 # - best_candidate_name (str)       : best candidate (사용자가 성공한 것으로 판단한 답변) 종류의 이름 (예: 'Loss Function 정의')
 
 def update_remaining_answers(remaining_answers, best_candidate_name):
+    print('best_candidate_name :', best_candidate_name)
+    print('remaining_answers :', remaining_answers)
+
     if best_candidate_name in ['면접 시작 인사', '잠시 휴식', '마지막 할 말']:  # 면접 중 의례적 절차
         return
 
@@ -712,8 +728,8 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
                                                  remaining_answers=remaining_answers)
 
         interview_current_question = '면접 시작 인사'
+        remaining_answers = [interview_current_question]
         print(f"\n👱‍♀️ 오로라 : {first_greeting.replace(stop_sequence, '')}")
-
 
     while True:
         original_user_prompt = input(f'\n{user_prompt_prefix} (Ctrl+C to finish) : ')
@@ -733,6 +749,11 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
             llm_answer, next_question = (
                 run_ohlora_interview(interview_current_question, original_user_prompt, model_dict, remaining_answers))
             interview_current_question = next_question
+
+            if next_question == '면접 종료':
+                print('[SYSTEM MESSAGE] Oh-LoRA 👱‍♀️ 와의 면접이 종료되었습니다. 감사합니다.')
+                print(' 👱‍♀️👋 다음에도 오로라와 함께해 주실 거죠?')
+                return
 
         llm_answer_cleaned = clean_llm_answer(llm_answer)
 
@@ -901,3 +922,8 @@ if __name__ == '__main__':
     except Exception as e:
         print(f'error : {e}')
         status = 'finished'
+
+
+# TODO
+# - [기본 경험] [상세 경험] 말머리 처리
+# - 잠시 휴식의 경우 다음 질문은 무조건 LLM Fine-Tuning 의 PEFT 로 처리하기
