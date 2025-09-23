@@ -538,6 +538,11 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
 
     # 면접 질의응답
     else:
+        if current_question == 'Loss Function 관련 실무 경험':
+            if '기본 경험' in remaining_answers:
+                user_prompt = '[기본 경험] ' + user_prompt
+            elif '상세 경험' in remaining_answers:
+                user_prompt = '[상세 경험] ' + user_prompt
 
         # 1. select output answer
         output_answer_sbert_input = f'{current_question} -> {user_prompt}'
