@@ -38,7 +38,7 @@ def get_stop_token_list(function_type):
 
 
 # Oh-LoRA (오로라) 의 답변 생성
-# Create Date : 2025.08.01
+# Create Date : 2025.09.23
 # Last Update Date : -
 
 # Arguments :
@@ -55,7 +55,14 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input, fu
     max_trials = 5
 
     # tokenize final Oh-LoRA input
-    final_ohlora_input_ = final_ohlora_input + ' (답변 시작)'
+    if function_type == 'qna':
+        answer_start_mark = '(답변 시작)'
+    elif function_type == 'quiz':
+        answer_start_mark = '(해설 시작)'
+    else:  # interview
+        answer_start_mark = '(발화 시작)'
+
+    final_ohlora_input_ = final_ohlora_input + ' ' + answer_start_mark
 
     inputs = ohlora_llm_tokenizer(final_ohlora_input_, return_tensors='pt')
     inputs = {'input_ids': inputs['input_ids'].to(ohlora_llm.device),

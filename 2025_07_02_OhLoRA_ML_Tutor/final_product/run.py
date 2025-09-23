@@ -24,6 +24,7 @@ from run_llm import generate_llm_answer, clean_llm_answer
 
 from ai_qna.run_rag_concept import pick_best_db_item_csv
 from ai_quiz.select_quiz.select_quiz import select_next_quiz
+from ai_quiz.sbert.inference_sbert import run_inference_each_example
 
 from stylegan.stylegan_common.stylegan_generator import StyleGANGenerator, StyleGANGeneratorForV6
 from stylegan.stylegan_vectorfind import (load_ohlora_z_vectors,
@@ -456,24 +457,58 @@ def run_ohlora_qna(user_prompt, model_dict):
 # Last Update Date : -
 
 # Arguments:
-# - quiz_current_quiz_info (dict) : 현재 퀴즈 정보 (keys: ['quiz', 'answer'])
+# - quiz_current_quiz_info (dict) : 현재 퀴즈 정보 (keys: ['idx', 'quiz', 'keywords', 'good_answer'])
+# - user_prompt            (str)  : 최초 원본 사용자 프롬프트 (= 퀴즈 답변)
 # - model_dict             (dict) : LLM & S-BERT Model 저장용 dictionary
 
 # Returns:
-# - llm_answer (str) : Oh-LoRA LLM 최종 답변
+# - llm_answer     (str)   : Oh-LoRA LLM 최종 답변
+# - rounded_score  (float) : 사용자 답변 채점 결과 점수 (0.0 - 1.0 범위)
+# - next_quiz_info (dict)  : 다음 퀴즈 정보 (keys 구성은 quiz_current_quiz_info 와 동일)
 
-def run_ohlora_quiz(quiz_current_quiz_info, model_dict):
-    quiz_path = f'{PROJECT_DIR_PATH}/ai_quiz/select_quiz/quiz_log.csv'
+def run_ohlora_quiz(quiz_current_quiz_info, user_prompt, model_dict):
+    quiz_log_path = f'{PROJECT_DIR_PATH}/ai_quiz/select_quiz/quiz_log.csv'
+    quiz_list_df = pd.read_csv(QUIZ_LIST_PATH)
 
-    if os.path.exists(quiz_path):
-        next_quiz = select_next_quiz(quiz_path)
+    # generate answer
+    quiz = quiz_current_quiz_info['quiz']
+    quiz_idx = quiz_current_quiz_info['idx']
+    keywords = quiz_current_quiz_info['keywords']
+    good_answer = quiz_current_quiz_info['good_answer']
+
+    final_llm_prompt = f'(퀴즈 문제) {quiz} (모범 답안) {good_answer} (사용자 답변) {user_prompt}'
+
+    llm_answer = generate_llm_answer(ohlora_llm=model_dict['llm'],
+                                     ohlora_llm_tokenizer=model_dict['llm_tokenizer'],
+                                     final_ohlora_input=final_llm_prompt,
+                                     function_type='quiz')
+
+    predicted_score = run_inference_each_example(model_dict['sbert'], user_prompt, good_answer)
+
+    # save score
+    rounded_score = round(np.clip(round(20.0 * predicted_score) / 20.0, 0.0, 1.0), 2)
+
+    if os.path.exists(quiz_log_path):
+        quiz_log_df = pd.read_csv(quiz_log_path)
+        quiz_log_df = quiz_log_df[quiz_log_df['quiz_no'] != quiz_idx]
+        quiz_log_df.loc[len(quiz_log_df)] = {'quiz_no': quiz_idx, 'keywords': keywords, 'score': rounded_score}
+
     else:
-        quiz_list_csv = pd.read_csv(QUIZ_LIST_PATH, index_col=0)
-        next_quiz = quiz_list_csv['quiz'].sample(n=1)
+        quiz_log_dict = {'quiz_no': [quiz_idx], 'keywords': [keywords], 'score': [rounded_score]}
+        quiz_log_df = pd.DataFrame(quiz_log_dict)
 
-    print(next_quiz)
+    quiz_log_df.to_csv(quiz_log_path, index=False)
 
-    raise NotImplementedError
+    # select next quiz
+    next_quiz_idx = select_next_quiz(quiz_log_path)
+    next_quiz_info = {
+        'idx': next_quiz_idx,
+        'quiz': quiz_list_df['quiz'][next_quiz_idx],
+        'keywords': quiz_list_df['keywords'][next_quiz_idx],
+        'good_answer': quiz_list_df['good_answer'][next_quiz_idx]
+    }
+
+    return llm_answer, rounded_score, next_quiz_info
 
 
 # Oh-LoRA (오로라) 실행 중 'interview' (머신러닝 분야 모의 인터뷰) 기능 처리
@@ -527,9 +562,12 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
         stop_sequence = '(해설 종료'
 
         quiz_list_csv = pd.read_csv(QUIZ_LIST_PATH, index_col=0)
-        quiz_current_quiz = quiz_list_csv[['quiz', 'good_answer']].sample(n=1)
+        quiz_current_quiz = quiz_list_csv[['quiz', 'good_answer', 'keywords']].sample(n=1)
+
+        quiz_current_quiz_info['idx'] = quiz_current_quiz.index.values[0]
         quiz_current_quiz_info['quiz'] = quiz_current_quiz['quiz'].item()
         quiz_current_quiz_info['good_answer'] = quiz_current_quiz['good_answer'].item()
+        quiz_current_quiz_info['keywords'] = quiz_current_quiz['keywords'].item()
 
         print(f"\n[ QUIZ 🙋‍♀️ ]\n{quiz_current_quiz_info['quiz']}")
 
@@ -545,7 +583,11 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
             llm_answer = run_ohlora_qna(original_user_prompt, model_dict)
 
         elif function_type == 'quiz':
-            llm_answer = run_ohlora_quiz(quiz_current_quiz_info, model_dict)
+            llm_answer, user_score, next_quiz_info = (
+                run_ohlora_quiz(quiz_current_quiz_info, original_user_prompt, model_dict))
+
+            last_question_good_answer = quiz_current_quiz_info['good_answer']
+            quiz_current_quiz_info = next_quiz_info
 
         else:  # interview
             llm_answer, next_question = (
@@ -569,9 +611,19 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
         eyes_score, mouth_score, pose_score = 0.0, 0.0, 0.0  # TODO: temp
 
         print(f"👱‍♀️ 오로라 : {llm_answer_cleaned.replace(stop_sequence, '')}")
+        if function_type == 'quiz':
+            print(f'👱‍♀️ 오로라의 채점 결과 : {round(100 * user_score)} 점')
+            print(f'👍 모범 답안 : {last_question_good_answer}')
+
         handle_ohlora_answered(eyes_score, mouth_score, pose_score)
         status = 'waiting'
         last_answer_generate = time.time()
+
+        # print next quiz / interview question
+        if function_type == 'quiz':
+            print(f"\n[ QUIZ 🙋‍♀️ ]\n{quiz_current_quiz_info['quiz']}")
+        elif function_type == 'interview':
+            pass  # TODO implement
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
