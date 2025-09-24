@@ -548,18 +548,13 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
         output_answer_sbert_input = f'{current_question} -> {user_prompt}'
         output_answer_sbert_model = model_dict['sbert_output_answer']
 
-        print('output_answer_sbert_input :', output_answer_sbert_input)
-
         answered_question_best_candidate = pick_best_candidate(sbert_model=output_answer_sbert_model,
                                                                sbert_input=output_answer_sbert_input,
                                                                candidates_csv_name='embeddings_answer_type.csv',
-                                                               verbose=True)
+                                                               verbose=False)
 
         successful_answer_estimated = answered_question_best_candidate['name']
         update_remaining_answers(remaining_answers, successful_answer_estimated)
-
-        print('answered_question_best_candidate :', answered_question_best_candidate)
-        print('remaining_answers :', remaining_answers)
 
         # 2. select next question
         if current_question == '잠시 휴식':
@@ -577,14 +572,10 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
             next_question_sbert_input = f"{current_question} -> {user_prompt} (남은 답변: {remaining_answers_str})"
             next_question_sbert_model = model_dict['sbert_next_question']
 
-            print('next_question_sbert_input :', next_question_sbert_input)
-
             next_question_best_candidate = pick_best_candidate(sbert_model=next_question_sbert_model,
                                                                sbert_input=next_question_sbert_input,
                                                                candidates_csv_name='embeddings_next_question.csv',
-                                                               verbose=True)
-
-            print('next_question_best_candidate :', next_question_best_candidate)
+                                                               verbose=False)
 
         # 3. generate next question
         if current_question not in ['잠시 휴식', 'MBTI / 좋아하는 아이돌']:
@@ -596,18 +587,11 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
             final_llm_prompt = f'(대화 주제) {current_question} (사용자 답변) {user_prompt} '
             final_llm_prompt += f'(성공한 답변) {successful_answer_estimated} (다음 질문) {next_question}'
 
-        print('final_llm_prompt :', final_llm_prompt)
-
         llm_generated_question = generate_llm_answer(ohlora_llm=model_dict['llm'],
                                                      ohlora_llm_tokenizer=model_dict['llm_tokenizer'],
                                                      final_ohlora_input=final_llm_prompt,
                                                      function_type='interview')
-
-        print('llm_generated_question :', llm_generated_question)
         llm_answer = llm_generated_question
-
-        print('next_question :', next_question)
-        print('remaining_answers (1) :', remaining_answers)
 
         is_greeting_finished = (len(remaining_answers) > 0 and
                                 remaining_answers[0] == '면접 시작 인사' and
@@ -617,12 +601,6 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
                 is_greeting_finished or
                 current_question == '잠시 휴식'):
             add_remaining_answers(remaining_answers, next_question)
-
-        print('remaining_answers (2) :', remaining_answers)
-
-    # 최종 반환
-    print('llm_answer :', llm_answer)
-    print('next_question :', next_question)
 
     return llm_answer, next_question
 
@@ -636,9 +614,6 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
 # - best_candidate_name (str)       : best candidate (사용자가 성공한 것으로 판단한 답변) 종류의 이름 (예: 'Loss Function 정의')
 
 def update_remaining_answers(remaining_answers, best_candidate_name):
-    print('best_candidate_name :', best_candidate_name)
-    print('remaining_answers :', remaining_answers)
-
     if best_candidate_name in ['면접 시작 인사', '잠시 휴식', '마지막 할 말']:  # 면접 중 의례적 절차
         return
 
@@ -940,8 +915,3 @@ if __name__ == '__main__':
     except Exception as e:
         print(f'error : {e}')
         status = 'finished'
-
-
-# TODO
-# - [기본 경험] [상세 경험] 말머리 처리
-# - 잠시 휴식의 경우 다음 질문은 무조건 LLM Fine-Tuning 의 PEFT 로 처리하기
