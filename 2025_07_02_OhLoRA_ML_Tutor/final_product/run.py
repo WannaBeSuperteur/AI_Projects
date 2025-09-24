@@ -756,7 +756,7 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
             raise Exception('blocked_by_ohlora')
 
         # generate Oh-LoRA image
-        eyes_score, mouth_score, pose_score = 0.0, 0.0, 0.0  # TODO: temp
+        eyes_score, mouth_score, pose_score = 0.0, 0.0, 0.0
 
         print(f"👱‍♀️ 오로라 : {llm_answer_cleaned.replace(stop_sequence, '')}")
         if function_type == 'quiz':
