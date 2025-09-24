@@ -767,11 +767,6 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
                 run_ohlora_interview(interview_current_question, original_user_prompt, model_dict, remaining_answers))
             interview_current_question = next_question
 
-            if next_question == '면접 종료':
-                print('[SYSTEM MESSAGE] Oh-LoRA 👱‍♀️ 와의 면접이 종료되었습니다. 감사합니다.')
-                print(' 👱‍♀️👋 다음에도 오로라와 함께해 주실 거죠?')
-                return
-
         llm_answer_cleaned = clean_llm_answer(llm_answer)
 
         # check ethics of user prompt
@@ -800,6 +795,12 @@ def run_ohlora(function_type, model_dict, sbert_model_ethics):
         # print next quiz / interview question
         if function_type == 'quiz':
             print(f"\n[ QUIZ 🙋‍♀️ ]\n{quiz_current_quiz_info['quiz']}")
+
+        # finish interview
+        if function_type == 'interview' and next_question == '면접 종료':
+            print('[SYSTEM MESSAGE] Oh-LoRA 👱‍♀️ 와의 면접이 종료되었습니다. 감사합니다.')
+            print(' 👱‍♀️👋 다음에도 오로라와 함께해 주실 거죠?')
+            raise Exception('interview_finished')
 
 
 # Oh-LoRA 👱‍♀️ (오로라) 이미지 생성을 위한 vector 반환
