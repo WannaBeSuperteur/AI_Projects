@@ -37,9 +37,9 @@
 * 출력 값
   * Cosine Similarity (유사도)
 
-| 학습 데이터                                                                       | 테스트 데이터                                                                                | ```output_answered``` candidates |
-|------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|----------------------------------|
-| [dataset_df_answer_type_train.csv](dataset/dataset_df_answer_type_train.csv) | [dataset_df_answer_type_valid_test.csv](dataset/dataset_df_answer_type_valid_test.csv) | TBU                              |
+| 학습 데이터                                                                       | 테스트 데이터                                                                                | ```output_answered``` candidates                                                                                                                           |
+|------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [dataset_df_answer_type_train.csv](dataset/dataset_df_answer_type_train.csv) | [dataset_df_answer_type_valid_test.csv](dataset/dataset_df_answer_type_valid_test.csv) | - 후보 목록: [candidates_answer_type.txt](dataset/candidates_answer_type.txt)<br>- 벡터 임베딩 포함: [embeddings_answer_type.csv](dataset/embeddings_answer_type.csv) |
 
 ### 1-2. 다음 질문 선택
 
@@ -53,9 +53,9 @@
 * 출력 값
   * Cosine Similarity (유사도)
 
-| 학습 데이터                                                                           | 테스트 데이터                                                                                    | ```next_question``` candidates |
-|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|--------------------------------|
-| [dataset_df_next_question_train.csv](dataset/dataset_df_next_question_train.csv) | [dataset_df_next_question_valid_test.csv](dataset/dataset_df_next_question_valid_test.csv) | TBU                            |
+| 학습 데이터                                                                           | 테스트 데이터                                                                                    | ```next_question``` candidates                                                                                                                                     |
+|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [dataset_df_next_question_train.csv](dataset/dataset_df_next_question_train.csv) | [dataset_df_next_question_valid_test.csv](dataset/dataset_df_next_question_valid_test.csv) | - 후보 목록: [candidates_next_question.txt](dataset/candidates_next_question.txt)<br>- 벡터 임베딩 포함: [embeddings_next_question.csv](dataset/embeddings_next_question.csv) |
 
 ### 1-3. LLM에 의한 다음 질문 생성
 
