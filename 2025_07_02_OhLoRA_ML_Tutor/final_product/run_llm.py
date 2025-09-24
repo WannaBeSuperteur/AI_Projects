@@ -38,7 +38,7 @@ def get_stop_token_list(function_type):
 
 
 # Oh-LoRA (오로라) 의 답변 생성
-# Create Date : 2025.09.23
+# Create Date : 2025.09.24
 # Last Update Date : -
 
 # Arguments :
@@ -57,10 +57,13 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input, fu
     # tokenize final Oh-LoRA input
     if function_type == 'qna':
         answer_start_mark = '(답변 시작)'
+        answer_end_mark = '(답변 종료)'
     elif function_type == 'quiz':
         answer_start_mark = '(해설 시작)'
+        answer_end_mark = '(해설 종료)'
     else:  # interview
         answer_start_mark = '(발화 시작)'
+        answer_end_mark = '(발화 종료)'
 
     final_ohlora_input_ = final_ohlora_input + ' ' + answer_start_mark
 
@@ -86,14 +89,16 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input, fu
         trial_count += 1
 
         # check LLM answer and return or retry
-        # TODO: implement mapping of "function" to "finish word"
         is_empty = llm_answer.replace('\n', '').replace('(발화 종료)', '').replace(' ', '') == ''
-        is_answer_end_mark = '발화 종료' in llm_answer.replace('(발화 종료', '') or '답변종료' in llm_answer.replace('(답변 종료', '')
+        is_answer_end_mark = ('발화 종료' in llm_answer.replace('(발화 종료', '') or
+                              '답변종료' in llm_answer.replace('(답변 종료', '') or
+                              '해설종료' in llm_answer.replace('(해설 종료', ''))
+
         is_other_mark = '(사용자' in llm_answer.replace(' ', '') or '요약)' in llm_answer.replace(' ', '')
         is_low_quality = is_empty or is_answer_end_mark or is_other_mark
 
         if not is_low_quality and ('http' not in llm_answer):
-            return llm_answer.replace('(답변 종료)', '')
+            return llm_answer.replace(answer_end_mark, '')
 
     return '(읽씹)'
 
@@ -110,23 +115,3 @@ def generate_llm_answer(ohlora_llm, ohlora_llm_tokenizer, final_ohlora_input, fu
 
 def clean_llm_answer(ohlora_answer):
     return ohlora_answer
-
-
-# Oh-LoRA (오로라) 의 답변에 따라 눈을 뜬 정도 (eyes), 입을 벌린 정도 (mouth), 고개 돌림 (pose) 점수 산출
-# Create Date : 2025.08.01
-# Last Update Date : -
-
-# Arguments :
-# - llm_answer_cleaned (str) : 오로라👱‍♀️ 가 생성한 원본 답변에서 text clean 을 실시한 이후의 답변
-
-# Returns :
-# - eyes_score  (float) : 눈을 뜬 정도 (eyes) 를 나타내는 점수 (w vector 에 eyes change vector 를 더할 가중치)
-# - mouth_score (float) : 입을 벌린 정도 (mouth) 를 나타내는 점수 (w vector 에 mouth change vector 를 더할 가중치)
-# - pose_score  (float) : 고개 돌림 (pose) 을 나타내는 점수 (w vector 에 pose change vector 를 더할 가중치)
-
-def decide_property_scores(llm_answer_cleaned):
-
-    # TODO: implement
-    eyes_score, mouth_score, pose_score = 0.0, 0.0, 0.0
-
-    return eyes_score, mouth_score, pose_score

@@ -513,7 +513,7 @@ def run_ohlora_quiz(quiz_current_quiz_info, user_prompt, model_dict):
 
 
 # Oh-LoRA (오로라) 실행 중 'interview' (머신러닝 분야 모의 인터뷰) 기능 처리
-# Create Date : 2025.09.23
+# Create Date : 2025.09.24
 # Last Update Date : -
 
 # Arguments:
