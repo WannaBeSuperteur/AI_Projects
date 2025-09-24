@@ -562,25 +562,33 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
         print('remaining_answers :', remaining_answers)
 
         # 2. select next question
-        if len(remaining_answers) >= 1:
-            remaining_answers_str = ', '.join(remaining_answers)
+        if current_question == '잠시 휴식':
+            next_question = 'LLM Fine-Tuning 의 PEFT'
+
+        elif current_question == 'MBTI / 좋아하는 아이돌':
+            next_question = '잠시 휴식'
+
         else:
-            remaining_answers_str = '모든 질문 해결 완료'
+            if len(remaining_answers) >= 1:
+                remaining_answers_str = ', '.join(remaining_answers)
+            else:
+                remaining_answers_str = '모든 질문 해결 완료'
 
-        next_question_sbert_input = f"{current_question} -> {user_prompt} (남은 답변: {remaining_answers_str})"
-        next_question_sbert_model = model_dict['sbert_next_question']
+            next_question_sbert_input = f"{current_question} -> {user_prompt} (남은 답변: {remaining_answers_str})"
+            next_question_sbert_model = model_dict['sbert_next_question']
 
-        print('next_question_sbert_input :', next_question_sbert_input)
+            print('next_question_sbert_input :', next_question_sbert_input)
 
-        next_question_best_candidate = pick_best_candidate(sbert_model=next_question_sbert_model,
-                                                           sbert_input=next_question_sbert_input,
-                                                           candidates_csv_name='embeddings_next_question.csv',
-                                                           verbose=True)
+            next_question_best_candidate = pick_best_candidate(sbert_model=next_question_sbert_model,
+                                                               sbert_input=next_question_sbert_input,
+                                                               candidates_csv_name='embeddings_next_question.csv',
+                                                               verbose=True)
 
-        print('next_question_best_candidate :', next_question_best_candidate)
+            print('next_question_best_candidate :', next_question_best_candidate)
 
         # 3. generate next question
-        next_question = next_question_best_candidate['name']
+        if current_question not in ['잠시 휴식', 'MBTI / 좋아하는 아이돌']:
+            next_question = next_question_best_candidate['name']
 
         if current_question == '면접 시작 인사':
             final_llm_prompt = f'(대화 주제) {current_question} (사용자 답변) {user_prompt} (다음 질문) {next_question}'
@@ -605,7 +613,9 @@ def run_ohlora_interview(current_question, user_prompt, model_dict, remaining_an
                                 remaining_answers[0] == '면접 시작 인사' and
                                 next_question != '면접 시작 인사')
 
-        if len(remaining_answers) == 0 or is_greeting_finished:
+        if ((len(remaining_answers) == 0 and not next_question == 'MBTI / 좋아하는 아이돌') or
+                is_greeting_finished or
+                current_question == '잠시 휴식'):
             add_remaining_answers(remaining_answers, next_question)
 
         print('remaining_answers (2) :', remaining_answers)
@@ -638,6 +648,9 @@ def update_remaining_answers(remaining_answers, best_candidate_name):
     if best_candidate_name == '답변 실패':  # 답변에 실패한 경우
         return
 
+    if best_candidate_name in ['MBTI', '좋아하는 아이돌']:  # 쉬어가는 타임 (MBTI 또는 좋아하는 아이돌 질문)
+        remaining_answers.clear()
+
     if best_candidate_name in remaining_answers:
         remaining_answers.remove(best_candidate_name)
 
@@ -664,8 +677,7 @@ def add_remaining_answers(remaining_answers, next_question):
         'Multi-Class, Multi-Label 중 BCE 가 좋은 task': ['BCE 가 좋은 task', 'BCE 가 좋은 이유'],
         'Multi-Label 에서 CE + Softmax 적용 문제점': ['Multi-Label 에서 CE + Softmax 적용 문제점'],
         'Loss Function 관련 실무 경험': ['기본 경험', '상세 경험'],
-        'MBTI': ['MBTI'],
-        '좋아하는 아이돌': ['좋아하는 아이돌'],
+        'MBTI / 좋아하는 아이돌': ['MBTI / 좋아하는 아이돌'],
         '잠시 휴식': ['잠시 휴식'],
         'LLM Fine-Tuning 의 PEFT': ['LLM Fine-Tuning 의 PEFT'],
         'PEFT 방법 5가지': ['PEFT 방법 5가지'],
