@@ -101,7 +101,43 @@
 
 ### 1-3. 실행 스크린샷
 
-TBU
+----
+
+**1. 머신러닝 분야 질의응답 (```qna```)**
+
+<details><summary>스크린샷 (총 2장) [ 펼치기 / 접기 ] </summary>
+
+![image](../images/250702_23.PNG)
+
+![image](../images/250702_24.PNG)
+
+</details>
+
+----
+
+**2. 머신러닝 분야 퀴즈 (```quiz```)**
+
+<details><summary>스크린샷 (총 2장) [ 펼치기 / 접기 ] </summary>
+
+![image](../images/250702_25.PNG)
+
+![image](../images/250702_26.PNG)
+
+</details>
+
+----
+
+**3. 머신러닝 분야 멀티턴 실전 면접 (```interview```)**
+
+<details><summary>스크린샷 (총 2장) [ 펼치기 / 접기 ] </summary>
+
+![image](../images/250702_27.PNG)
+
+![image](../images/250702_28.PNG)
+
+</details>
+
+----
 
 ### 1-4. Oh-LoRA 얼굴 변화 애니메이션
 
