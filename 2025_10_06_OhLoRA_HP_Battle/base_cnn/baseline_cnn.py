@@ -2,6 +2,8 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
+
+from torchvision import models
 from torchvision.io import read_image
 from torchvision.transforms import transforms
 
@@ -13,6 +15,7 @@ import sys
 
 
 RESNET_LAST_LAYER_FEATURES = 1000
+TRAIN_DATA_COUNT_LIMIT = 2000  # 60000 (MNIST, Fashion MNIST) or 50000 (CIFAR-10)
 NUM_CLASSES = 10
 
 torch.set_printoptions(linewidth=160, sci_mode=False)
@@ -26,10 +29,10 @@ default_transform = transforms.Compose([
 
 
 class ResNetClassificationModel(nn.Module):
-    def __init__(self, resnet_model):
+    def __init__(self, resnet_model, num_classes):
         super(ResNetClassificationModel, self).__init__()
         self.resnet_model = resnet_model
-        self.num_classes = NUM_CLASSES
+        self.num_classes = num_classes
         self.final_linear = nn.Linear(RESNET_LAST_LAYER_FEATURES, self.num_classes)
         self.final_softmax = nn.Softmax(dim=1)
 
@@ -46,17 +49,24 @@ class ClassificationDataset(Dataset):
         self.label = dataset_df['label'].tolist()
         self.transform = transform
 
+        self.label_mapping = {}
+        self.label_list = sorted(list(set(self.label)))
+        for idx, label in enumerate(self.label_list):
+            self.label_mapping[label] = idx
+
     def __len__(self):
         return len(self.img_path)
 
     def __getitem__(self, idx):
         img_path = self.img_path[idx]
-        label = self.label[idx]
-
         img = read_image(img_path)
         img = self.transform(img)
 
-        return img, label
+        label = self.label[idx]
+        label_int = self.label_mapping[label]
+        label_one_hot = np.eye(len(self.label_list))[label_int]
+
+        return img, label_one_hot
 
 
 # PyTorch 데이터셋 생성
@@ -99,6 +109,8 @@ def create_pytorch_dataset(dataset_name):
     test_dataset_df.to_csv(f'../datasets/{dataset_name}_test.csv', index=False)
 
     # return PyTorch dataset
+    train_dataset_df = train_dataset_df.sample(frac=1)  # shuffle
+    train_dataset_df = train_dataset_df[:TRAIN_DATA_COUNT_LIMIT]
     train_dataset = ClassificationDataset(train_dataset_df, default_transform)
     test_dataset = ClassificationDataset(test_dataset_df, default_transform)
 
@@ -110,12 +122,25 @@ if __name__ == '__main__':
     # add global common path
     global_path = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
     sys.path.append(global_path)
-    from global_common.torch_training import split_tv_and_t
+    from global_common.torch_training import split_tv_and_t, run_all_process, set_cnn_model_config
 
-    # load dataset
     dataset_names = ['mnist', 'fashion_mnist', 'cifar_10']
 
+    # run baseline CNN training & test for each dataset
     for dataset_name in dataset_names:
+
+        # define model
+        resnet_model = models.resnet18(pretrained=True)
+        model = ResNetClassificationModel(resnet_model=resnet_model, num_classes=NUM_CLASSES)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.0001)
+
+        set_cnn_model_config(model,
+                             optimizer=optimizer,
+                             lr_scheduler=torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer,
+                                                                                     T_max=10,
+                                                                                     eta_min=0))
+
+        # load dataset
         train_dataset, test_dataset = create_pytorch_dataset(dataset_name)
         train_loader, valid_loader, test_loader = split_tv_and_t(train_dataset, test_dataset, train_ratio=0.9)
 
@@ -123,3 +148,20 @@ if __name__ == '__main__':
         print(f'train size : {len(train_loader.dataset)}')
         print(f'valid size : {len(valid_loader.dataset)}')
         print(f'test  size : {len(test_loader.dataset)}')
+
+        # run train & test
+        val_loss_list, test_accuracy, best_epoch_model = run_all_process(cnn_model=model,
+                                                                         cnn_model_class=ResNetClassificationModel,
+                                                                         cnn_model_backbone_name='resnet18',
+                                                                         num_classes=NUM_CLASSES,
+                                                                         train_loader=train_loader,
+                                                                         valid_loader=valid_loader,
+                                                                         test_loader=test_loader,
+                                                                         unsqueeze_label=False)
+
+        print(f'============\ndataset : {dataset_name}, test accuracy : {test_accuracy}\n============')
+
+        test_accuracy_file_name = f'test_accuracy_{dataset_name}.txt'
+        with open(test_accuracy_file_name, 'w') as f:
+            f.write(f'test accuracy : {test_accuracy}')
+            f.close()

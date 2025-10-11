@@ -47,6 +47,7 @@ def set_cnn_model_config(cnn_model, optimizer, lr_scheduler):
 # - test_loader             (DataLoader)      : 테스트 DataLoader
 # - valid_loss_csv_path     (str)             : validation loss 기록을 저장할 csv path
 # - test_cf_matrix_csv_path (str)             : 테스트 결과의 confusion matrix 기록을 저장할 csv path
+# - unsqueeze_label         (boolean)         : label unsqueeze 여부
 
 # Returns:
 # - val_loss_list    (list)      : 검증 Loss 리스트
@@ -54,42 +55,59 @@ def set_cnn_model_config(cnn_model, optimizer, lr_scheduler):
 # - best_epoch_model (nn.Module) : best epoch 에서의 model
 
 def run_all_process(cnn_model, cnn_model_class, cnn_model_backbone_name, num_classes,
-                    train_loader, valid_loader, test_loader, valid_loss_csv_path='', test_cf_matrix_csv_path=''):
+                    train_loader, valid_loader, test_loader, valid_loss_csv_path='', test_cf_matrix_csv_path='',
+                    unsqueeze_label=True):
 
     current_epoch = 0
     min_valid_loss_epoch = -1  # Loss-based Early Stopping
     min_valid_loss = None
     best_epoch_model = None
+    best_epoch_model_valid_accuracy = None
     val_loss_list = []
 
     while True:
+
+        # run training & validation
         run_train(model=cnn_model,
                   train_loader=train_loader,
-                  device=cnn_model.device)
+                  device=cnn_model.device,
+                  unsqueeze_label=unsqueeze_label)
 
         valid_accuracy, valid_loss = run_validation(model=cnn_model,
                                                     valid_loader=valid_loader,
-                                                    device=cnn_model.device)
+                                                    device=cnn_model.device,
+                                                    unsqueeze_label=unsqueeze_label)
 
         print(f'epoch={current_epoch}, val_acc={valid_accuracy:.6f}, val_loss={valid_loss:.6f}')
         val_loss_list.append(valid_loss)
 
+        # update scheduler
+        if cnn_model.scheduler is not None:
+            cnn_model.scheduler.step()
+
+        # update best epoch model
         if min_valid_loss is None or valid_loss < min_valid_loss:
             min_valid_loss = valid_loss
             min_valid_loss_epoch = current_epoch
+            best_epoch_model_valid_accuracy = valid_accuracy
 
             if cnn_model_backbone_name == 'resnet18':
-                pretrained_model = cnn_model_class(resnet_model=models.resnet18, num_classes=num_classes)
+                pretrained_model = cnn_model_class(resnet_model=models.resnet18(pretrained=True),
+                                                   num_classes=num_classes)
             elif cnn_model_backbone_name == 'resnet34':
-                pretrained_model = cnn_model_class(resnet_model=models.resnet34, num_classes=num_classes)
+                pretrained_model = cnn_model_class(resnet_model=models.resnet34(pretrained=True),
+                                                   num_classes=num_classes)
             elif cnn_model_backbone_name == 'resnet50':
-                pretrained_model = cnn_model_class(resnet_model=models.resnet50, num_classes=num_classes)
+                pretrained_model = cnn_model_class(resnet_model=models.resnet50(pretrained=True),
+                                                   num_classes=num_classes)
             else:
                 pretrained_model = cnn_model_class(num_classes=num_classes)
 
             best_epoch_model = pretrained_model.to(cnn_model.device)
+            best_epoch_model.device = cnn_model.device
             best_epoch_model.load_state_dict(cnn_model.state_dict())
 
+        # check early stopping
         if current_epoch + 1 >= MAX_EPOCHS or current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
 
@@ -98,10 +116,14 @@ def run_all_process(cnn_model, cnn_model_class, cnn_model_backbone_name, num_cla
     # assert best epoch model accuracy & loss
     checked_valid_accuracy, checked_valid_loss = run_validation(model=best_epoch_model,
                                                                 valid_loader=valid_loader,
-                                                                device=best_epoch_model.device)
+                                                                device=best_epoch_model.device,
+                                                                unsqueeze_label=unsqueeze_label)
 
-    assert abs(valid_accuracy - checked_valid_accuracy) <= 1e-6
-    assert abs(valid_loss - checked_valid_loss) <= 1e-6
+    print(f'[best model] val_acc={best_epoch_model_valid_accuracy}, val_loss={min_valid_loss}')
+    print(f'[check] val_acc={checked_valid_accuracy}, val_loss={checked_valid_loss}')
+
+    assert abs(best_epoch_model_valid_accuracy - checked_valid_accuracy) <= 1e-6
+    assert abs(min_valid_loss - checked_valid_loss) <= 1e-6
 
     # save valid result csv
     if valid_loss_csv_path != '':
@@ -115,10 +137,13 @@ def run_all_process(cnn_model, cnn_model_class, cnn_model_backbone_name, num_cla
 
     # run test
     # validation 과 목적만 다를 뿐 알고리즘은 거의 동일하므로 valid 시 사용한 함수를 그대로 사용
+    print('testing ...')
+
     test_accuracy, _, test_result = run_validation(model=best_epoch_model,
                                                    valid_loader=test_loader,
                                                    device=best_epoch_model.device,
-                                                   return_valid_result=True)
+                                                   return_valid_result=True,
+                                                   unsqueeze_label=unsqueeze_label)
 
     test_cf_matrix = np.zeros((num_classes + 1, num_classes + 1))
 
@@ -132,8 +157,8 @@ def run_all_process(cnn_model, cnn_model_class, cnn_model_backbone_name, num_cla
         for j in range(num_classes):
             test_cf_matrix[num_classes][j] = np.sum(test_cf_matrix[:num_classes, j])
 
-    test_cf_matrix_df = pd.DataFrame(test_cf_matrix)
-    test_cf_matrix_df.to_csv(test_cf_matrix_csv_path, index=False)
+        test_cf_matrix_df = pd.DataFrame(test_cf_matrix)
+        test_cf_matrix_df.to_csv(test_cf_matrix_csv_path, index=False)
 
     return val_loss_list, test_accuracy, best_epoch_model
 
@@ -198,18 +223,20 @@ def split_tv_and_t(train_dataset, test_dataset, train_ratio):
 
 # 모델 학습 실시
 # Create Date : 2025.03.23
-# Last Update Date : -
+# Last Update Date : 2025.10.11
+# - label unsqueeze option 추가
 
 # args :
-# - model        (nn.Module)  : 학습할 모델
-# - train_loader (DataLoader) : Training Data Loader
-# - device       (Device)     : CUDA or CPU device
-# - loss_func    (func)       : Loss Function
+# - model           (nn.Module)  : 학습할 모델
+# - train_loader    (DataLoader) : Training Data Loader
+# - device          (Device)     : CUDA or CPU device
+# - loss_func       (func)       : Loss Function
+# - unsqueeze_label (boolean)    : label unsqueeze 여부
 
 # returns :
 # - train_loss (float) : 모델의 Training Loss
 
-def run_train(model, train_loader, device, loss_func=nn.CrossEntropyLoss(reduction='sum')):
+def run_train(model, train_loader, device, loss_func=nn.CrossEntropyLoss(reduction='sum'), unsqueeze_label=True):
     model.train()
     total = 0
     train_loss_sum = 0.0
@@ -221,7 +248,10 @@ def run_train(model, train_loader, device, loss_func=nn.CrossEntropyLoss(reducti
         model.optimizer.zero_grad()
         outputs = model(images).to(torch.float32)
 
-        loss = loss_func(outputs, labels.unsqueeze(1))
+        if unsqueeze_label:
+            loss = loss_func(outputs, labels.unsqueeze(1))
+        else:
+            loss = loss_func(outputs, labels)
         loss.backward()
         model.optimizer.step()
 
@@ -310,6 +340,7 @@ def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='su
 # Create Date : 2025.03.23
 # Last Update Date : 2025.10.11
 # - 각 sample 별 예측 결과 반환 추가
+# - label unsqueeze option 추가
 
 # args :
 # - model               (nn.Module)  : validation 할 모델
@@ -317,6 +348,7 @@ def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='su
 # - device              (Device)     : CUDA or CPU device
 # - loss_func           (func)       : Loss Function
 # - return_valid_result (boolean)    : valid result 반환 여부
+# - unsqueeze_label     (boolean)    : label unsqueeze 여부
 
 # returns :
 # - val_accuracy (float)            : 모델의 validation 정확도
@@ -324,7 +356,7 @@ def run_train_ae(model, train_loader, device, loss_func=nn.MSELoss(reduction='su
 # - val_result   (Pandas DataFrame) : 각 sample 에 대한 validation 결과
 
 def run_validation(model, valid_loader, device, loss_func=nn.CrossEntropyLoss(reduction='sum'),
-                   return_valid_result=False):
+                   return_valid_result=False, unsqueeze_label=True):
 
     model.eval()
     correct, total = 0, 0
@@ -335,15 +367,25 @@ def run_validation(model, valid_loader, device, loss_func=nn.CrossEntropyLoss(re
         for idx, (images, labels) in enumerate(valid_loader):
             images, labels = images.to(device), labels.to(device).to(torch.float32)
             outputs = model(images).to(torch.float32)
-            val_loss_batch = loss_func(outputs, labels.unsqueeze(1))
+
+            if unsqueeze_label:
+                val_loss_batch = loss_func(outputs, labels.unsqueeze(1))
+            else:
+                val_loss_batch = loss_func(outputs, labels)
             val_loss_sum += val_loss_batch
 
             _, predicted = torch.max(outputs, 1)
+            if not unsqueeze_label:
+                _, labels = torch.max(labels, 1)
+
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
             if return_valid_result:
-                for pred, label in zip(predicted, labels):
+                predicted_ = list(predicted.detach().cpu().numpy())
+                labels_ = list(labels.detach().cpu().numpy())
+
+                for pred, label in zip(predicted_, labels_):
                     valid_result_dict['pred_label_idx'].append(pred)
                     valid_result_dict['true_label_idx'].append(label)
 
