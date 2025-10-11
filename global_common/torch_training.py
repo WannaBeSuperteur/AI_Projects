@@ -168,6 +168,34 @@ def split_tvt(dataset, tvt_ratio):
     return train_loader, valid_loader, test_loader
 
 
+# 데이터셋 분리 (train & valid vs. test)
+# Create Date : 2025.10.11
+# Last Update Date : -
+
+# args :
+# - train_dataset (Dataset) : train, valid, 데이터로 분리할 학습 데이터셋
+# - test_dataset  (Dataset) : 테스트 데이터셋
+# - train_ratio   (float)   : train 데이터의 비율
+
+# returns :
+# - train_loader (DataLoader) : 학습 DataLoader
+# - valid_loader (DataLoader) : 검증 DataLoader
+# - test_loader  (DataLoader) : 테스트 DataLoader
+
+def split_tv_and_t(train_dataset, test_dataset, train_ratio):
+    train_dataset_size = len(train_dataset)
+    train_size = int(train_dataset_size * train_ratio)
+    valid_size = train_dataset_size - train_size
+
+    train_dataset, valid_dataset = random_split(train_dataset, [train_size, valid_size])
+
+    train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
+
+    return train_loader, valid_loader, test_loader
+
+
 # 모델 학습 실시
 # Create Date : 2025.03.23
 # Last Update Date : -
