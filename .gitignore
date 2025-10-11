@@ -184,6 +184,12 @@
 2025_07_02_OhLoRA_ML_Tutor/stylegan/models/*
 2025_07_02_OhLoRA_ML_Tutor/final_product/models/ethics_sbert
 2025_07_02_OhLoRA_ML_Tutor/final_product/models/ethics_sbert/*
+2025_10_06_OhLoRA_HP_Battle/datasets/cifar_10
+2025_10_06_OhLoRA_HP_Battle/datasets/cifar_10/*
+2025_10_06_OhLoRA_HP_Battle/datasets/fashion_mnist
+2025_10_06_OhLoRA_HP_Battle/datasets/fashion_mnist/*
+2025_10_06_OhLoRA_HP_Battle/datasets/mnist
+2025_10_06_OhLoRA_HP_Battle/datasets/mnist/*
 venv
 venv/*
 requirements_v3.10.11.txt
