@@ -22,7 +22,7 @@
 
 ```
 datasets            (본 디렉토리)
- - cifer_10         (디렉토리 생성)
+ - cifar_10         (디렉토리 생성)
    - test
      - airplane
        - 0001.png
