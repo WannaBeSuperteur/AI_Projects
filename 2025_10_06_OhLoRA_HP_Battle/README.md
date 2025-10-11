@@ -155,7 +155,7 @@ TBU
 | Fashion MNIST [(download)](https://www.kaggle.com/datasets/zalando-research/fashionmnist) | MNIST와 유사하되, 숫자가 아닌 옷 이미지를 사용                 | 1 x 28 x 28                | 10       | 60,000     | 10,000    |
 | CIFAR-10 [(download)](https://www.kaggle.com/datasets/ayush1220/cifar10)                  | Object 분류 데이터셋                                | 3 x 32 x 32                | 10       | 50,000     | 10,000    |
 
-* citation for CIFAR-10 dataset
+* Citation for **CIFAR-10** dataset
   * [Learning Multiple Layers of Features from Tiny Images](https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf), Alex Krizhevsky, 2009.
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
