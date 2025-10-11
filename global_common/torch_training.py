@@ -48,6 +48,7 @@ def set_cnn_model_config(cnn_model, optimizer, lr_scheduler):
 # - valid_loss_csv_path     (str)             : validation loss 기록을 저장할 csv path
 # - test_cf_matrix_csv_path (str)             : 테스트 결과의 confusion matrix 기록을 저장할 csv path
 # - unsqueeze_label         (boolean)         : label unsqueeze 여부
+# - early_stopping_rounds   (int)             : custom early stopping round count
 
 # Returns:
 # - val_loss_list    (list)      : 검증 Loss 리스트
@@ -56,7 +57,7 @@ def set_cnn_model_config(cnn_model, optimizer, lr_scheduler):
 
 def run_all_process(cnn_model, cnn_model_class, cnn_model_backbone_name, num_classes,
                     train_loader, valid_loader, test_loader, valid_loss_csv_path='', test_cf_matrix_csv_path='',
-                    unsqueeze_label=True):
+                    unsqueeze_label=True, early_stopping_rounds=None):
 
     current_epoch = 0
     min_valid_loss_epoch = -1  # Loss-based Early Stopping
@@ -108,7 +109,12 @@ def run_all_process(cnn_model, cnn_model_class, cnn_model_backbone_name, num_cla
             best_epoch_model.load_state_dict(cnn_model.state_dict())
 
         # check early stopping
-        if current_epoch + 1 >= MAX_EPOCHS or current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_ROUNDS:
+        if early_stopping_rounds is None:
+            early_stopping_rounds_ = EARLY_STOPPING_ROUNDS
+        else:
+            early_stopping_rounds_ = early_stopping_rounds
+
+        if current_epoch + 1 >= MAX_EPOCHS or current_epoch - min_valid_loss_epoch >= early_stopping_rounds_:
             break
 
         current_epoch += 1
