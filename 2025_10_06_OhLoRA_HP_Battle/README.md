@@ -149,11 +149,14 @@ TBU
 
 **2. 선정 데이터셋**
 
-| 데이터셋          | 설명                                            | 이미지 해상도<br>(Channel 개수 포함) | Class 개수 | train data | test data |
-|---------------|-----------------------------------------------|----------------------------|----------|------------|-----------|
-| MNIST         | 딥러닝 초보자의 연습용 & 모델 설명 예시용으로 널리 사용되는 숫자 분류 데이터셋 | 1 x 28 x 28                | 10       | 60,000     | 10,000    |
-| Fashion MNIST | MNIST와 유사하되, 숫자가 아닌 옷 이미지를 사용                 | 1 x 28 x 28                | 10       | 60,000     | 10,000    |
-| CIFAR-10      | Object 분류 데이터셋                                | 3 x 32 x 32                | 10       | 50,000     | 10,000    |
+| 데이터셋                                                                                      | 설명                                            | 이미지 해상도<br>(Channel 개수 포함) | Class 개수 | train data | test data |
+|-------------------------------------------------------------------------------------------|-----------------------------------------------|----------------------------|----------|------------|-----------|
+| MNIST [(download)](https://www.kaggle.com/datasets/oddrationale/mnist-in-csv)             | 딥러닝 초보자의 연습용 & 모델 설명 예시용으로 널리 사용되는 숫자 분류 데이터셋 | 1 x 28 x 28                | 10       | 60,000     | 10,000    |
+| Fashion MNIST [(download)](https://www.kaggle.com/datasets/zalando-research/fashionmnist) | MNIST와 유사하되, 숫자가 아닌 옷 이미지를 사용                 | 1 x 28 x 28                | 10       | 60,000     | 10,000    |
+| CIFAR-10 [(download)](https://www.kaggle.com/datasets/ayush1220/cifar10)                  | Object 분류 데이터셋                                | 3 x 32 x 32                | 10       | 50,000     | 10,000    |
+
+* citation for CIFAR-10 dataset
+  * [Learning Multiple Layers of Features from Tiny Images](https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf), Alex Krizhevsky, 2009.
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
