@@ -270,7 +270,8 @@ zipp==3.17.0
 
 ### 2-2. 모델 다운로드 및 준비
 
-[해당 문서](MODEL_AND_DATASET_INFO.md) 를 참고하여, HuggingFace 에서 **필요한 모델을 다운로드하여 지정된 경로에 추가** 합니다.
+* **1.** [해당 문서](MODEL_AND_DATASET_INFO.md) 를 참고하여, HuggingFace 에서 **필요한 모델을 다운로드하여 지정된 경로에 추가** 합니다.
+* **2.** [해당 문서](../LLM_DOWNLOAD_PATH.md#2-5-oh-lora-ml-tutor--20250702---0925-) 를 참고하여 원본 LLM 모델을 다운로드합니다.
 
 ### 2-3. run.py 실행
 
