@@ -251,7 +251,7 @@ zipp==3.17.0
 | LLM        | OhLoRA LLM                         | 파일 배치 방법 : [해당 문단](MODEL_AND_DATASET_INFO.md#3-1-ohlora-llm) 참고                         | ```llm/models/polyglot_fine_tuned```                | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM/tree/main)                |
 | LLM S-BERT | S-BERT model for OhLoRA LLM memory | 파일 배치 방법 : [해당 문단](MODEL_AND_DATASET_INFO.md#3-2-s-bert-model-for-ohlora-llm-memory) 참고 | ```llm/models/memory_sbert/trained_sbert_model```   | [Hugging Face](https://huggingface.co/daebakgazua/250408_OhLoRA_LLM_SBERT/tree/main)          |
 
-* **2.** [해당 문서](../LLM_DOWNLOAD_PATH.md#2-1-oh-lora-v1--20250408---0425-) 를 참고하여 원본 LLM 모델을 다운로드합니다.
+* **2.** [해당 문서](../LLM_DOWNLOAD_PATH.md) 를 참고하여 원본 LLM 모델을 다운로드한 후, **1.** 에서 다운로드한 ```adapter_config.json``` 파일을 변경합니다.
 
 ### 2-3. run.py 실행
 
