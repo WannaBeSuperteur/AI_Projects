@@ -44,8 +44,25 @@ class AutoEncoderImageDataset(Dataset):
 # - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
 # - tvt_type     (str) : Train/Valid/Test 데이터셋 종류 ('train', 'valid' or 'test')
 
+# Returns:
+# - dataset_df (Pandas DataFrame) : Dataset 생성을 위한 DataFrame
+
 def create_dataset_df(dataset_name, tvt_type):
-    raise NotImplementedError
+    dataset_dict = {'img_no': [], 'img_path': [], 'class_idx': []}
+    dataset_dir_path = f'{PROJECT_DIR_PATH}/datasets/{dataset_name}/{tvt_type}'
+    dataset_classes = os.listdir(dataset_dir_path)
+
+    for class_idx, dataset_class in enumerate(dataset_classes):
+        dataset_class_dir_path = f'{dataset_dir_path}/{dataset_class}'
+        img_names = os.listdir(dataset_class_dir_path)
+
+        for img_name in img_names:
+            dataset_dict['img_no'].append(len(dataset_dict['img_no']))
+            dataset_dict['img_path'].append(f'{dataset_class_dir_path}/{img_name}')
+            dataset_dict['class_idx'].append(class_idx)
+
+    dataset_df = pd.DataFrame(dataset_dict)
+    return dataset_df
 
 
 # Train 데이터셋을 Train 과 Valid 데이터셋으로 분리

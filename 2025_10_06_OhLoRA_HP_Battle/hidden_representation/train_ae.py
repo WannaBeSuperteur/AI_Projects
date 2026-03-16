@@ -1,5 +1,5 @@
 
-from dataset import split_into_train_and_valid
+from dataset import split_into_train_and_valid, create_dataset_df
 
 
 # Auto Encoder 모델 로딩
@@ -22,6 +22,9 @@ def load_ae_model():
 # - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
 
 def load_dataset(dataset_name):
+    train_dataset_df = create_dataset_df(dataset_name, tvt_type='train')
+    test_dataset_df = create_dataset_df(dataset_name, tvt_type='test')
+
     raise NotImplementedError
 
 
