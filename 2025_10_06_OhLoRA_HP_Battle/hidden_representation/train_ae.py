@@ -15,6 +15,7 @@ from global_common.torch_training import run_train_ae
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 MAX_EPOCHS = 1000
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
 # Auto Encoder 모델 로딩 (학습 전의 모델 로딩 -> 이후 학습 실시)
@@ -88,7 +89,19 @@ def train_ae(ae_model, train_dataset):
     best_epoch_model = None
 
     while True:
-        train_loss = run_train_ae(model=ae_model, train_loader=train_loader, device=ae_model.device)
+
+        # test code 처럼 (출력, 이미지, latent vector) 를 출력할 sample (data loader) index 지정
+        if current_epoch < 5:
+            force_test_idxs = [0, 1, 2, 3, 4]
+        elif (current_epoch < 100 and current_epoch % 20 == 0) or current_epoch % 50 == 0:
+            force_test_idxs = [0, 1, 2]
+        else:
+            force_test_idxs = None
+
+        train_loss = run_train_ae(model=ae_model,
+                                  train_loader=train_loader,
+                                  device=ae_model.device,
+                                  force_test_idxs=force_test_idxs)
         print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}')
         train_loss_list.append(train_loss)
 
@@ -136,5 +149,16 @@ if __name__ == '__main__':
         train_dataset, test_dataset = load_dataset(dataset_name)
         train_train_dataset, train_valid_dataset = split_into_train_and_valid(train_dataset)
 
-        train_ae(ae_model, train_dataset)
+        train_loss_list, best_epoch_model = train_ae(ae_model, train_dataset)
         test_ae(ae_model, test_dataset)
+
+        # save encoder and decoder
+        ae_encoder = best_epoch_model.encoder
+        ae_decoder = best_epoch_model.decoder
+
+        model_path = f'{PROJECT_DIR_PATH}/models'
+        os.makedirs(model_path, exist_ok=True)
+
+        torch.save(best_epoch_model.state_dict(), f'{model_path}/ae_model_{dataset_name}.pt')
+        torch.save(ae_encoder.state_dict(), f'{model_path}/ae_encoder_{dataset_name}.pt')
+        torch.save(ae_decoder.state_dict(), f'{model_path}/ae_decoder_{dataset_name}.pt')
