@@ -1,6 +1,7 @@
 
 from auto_encoder import AutoEncoder_1_28_28, AutoEncoder_3_32_32
 from dataset import split_into_train_and_valid, create_dataset_df
+from dataset import base_transform, AutoEncoderImageDataset
 
 
 # Auto Encoder 모델 로딩 (학습 전의 모델 로딩 -> 이후 학습 실시)
@@ -37,7 +38,17 @@ def load_dataset(dataset_name):
     train_dataset_df = create_dataset_df(dataset_name, tvt_type='train')
     test_dataset_df = create_dataset_df(dataset_name, tvt_type='test')
 
-    raise NotImplementedError
+    train_dataset = AutoEncoderImageDataset(train_dataset_df,
+                                            transform=base_transform,
+                                            dataset_name=dataset_name,
+                                            tvt_type='train')
+
+    test_dataset = AutoEncoderImageDataset(test_dataset_df,
+                                           transform=base_transform,
+                                           dataset_name=dataset_name,
+                                           tvt_type='test')
+
+    return train_dataset, test_dataset
 
 
 # Auto Encoder 학습 실시 및 모델 저장

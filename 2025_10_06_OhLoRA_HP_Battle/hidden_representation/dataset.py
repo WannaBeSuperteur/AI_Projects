@@ -1,7 +1,8 @@
 
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
 from torchvision.io import read_image
+import torchvision.transforms as transforms
 
 import os
 import numpy as np
@@ -11,6 +12,13 @@ import pandas as pd
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
 NUM_CLASSES = 10
+
+
+base_transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
+])
 
 
 class AutoEncoderImageDataset(Dataset):
@@ -72,11 +80,18 @@ def create_dataset_df(dataset_name, tvt_type):
 # Last Update Date : -
 
 # Arguments:
-# - dataset (torch.utils.data.Dataset) : train 과 valid 로 분리할 데이터셋
+# - dataset     (torch.utils.data.Dataset) : train 과 valid 로 분리할 데이터셋
+# - train_ratio (float)                    : 학습 데이터의 비율 (default: 0.8)
 
 # Returns:
 # - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
 # - valid_dataset (torch.utils.data.Dataset) : 검증 (valid) 데이터셋
 
-def split_into_train_and_valid(dataset):
-    raise NotImplementedError
+def split_into_train_and_valid(dataset, train_ratio=0.8):
+    dataset_size = len(dataset)
+
+    train_size = int(train_ratio * dataset_size)
+    valid_size = dataset_size - train_size
+    train_dataset, valid_dataset = random_split(dataset, [train_size, valid_size])
+
+    return train_dataset, valid_dataset
