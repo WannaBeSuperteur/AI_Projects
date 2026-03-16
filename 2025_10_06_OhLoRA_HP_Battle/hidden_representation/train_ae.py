@@ -13,6 +13,8 @@ from global_common.torch_training import run_train_ae
 
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
+EARLY_STOPPING_ROUNDS = 10
+MAX_EPOCHS = 1000
 
 
 # Auto Encoder 모델 로딩 (학습 전의 모델 로딩 -> 이후 학습 실시)
@@ -78,11 +80,40 @@ def load_dataset(dataset_name):
 
 def train_ae(ae_model, train_dataset):
     train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    train_loss_list = []
+
+    current_epoch = 0
+    min_train_loss_epoch = -1  # Loss-based Early Stopping
+    min_train_loss = None
+    best_epoch_model = None
 
     while True:
         train_loss = run_train_ae(model=ae_model, train_loader=train_loader, device=ae_model.device)
-        print(train_loss)
-        raise NotImplementedError
+        print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}')
+        train_loss_list.append(train_loss)
+
+        ae_model.scheduler.step()
+
+        if min_train_loss is None or train_loss < min_train_loss:
+            min_train_loss = train_loss
+            min_train_loss_epoch = current_epoch
+
+            if dataset_name == 'cifar_10':
+                best_epoch_model = AutoEncoder_3_32_32().to(ae_model.device)
+            else:
+                best_epoch_model = AutoEncoder_1_28_28().to(ae_model.device)
+            best_epoch_model.load_state_dict(ae_model.state_dict())
+
+        if current_epoch - min_train_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            break
+
+        current_epoch += 1
+
+        # stop training if too long
+        if current_epoch >= MAX_EPOCHS:
+            break
+
+    return train_loss_list, best_epoch_model
 
 
 # Auto Encoder 테스트 실시 및 테스트 결과 저장
