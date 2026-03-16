@@ -35,7 +35,7 @@ class AutoEncoderImageDataset(Dataset):
         return len(self.img_paths)
 
     def __getitem__(self, idx):
-        img_path = f'{IMAGE_DATA_DIR_PATH}/{self.dataset_name}/{self.tvt_type}/{self.img_paths}'
+        img_path = f'{IMAGE_DATA_DIR_PATH}/{self.dataset_name}/{self.tvt_type}/{self.img_paths[idx]}'
         image = read_image(img_path)
 
         # resize and normalize
