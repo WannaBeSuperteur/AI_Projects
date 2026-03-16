@@ -92,6 +92,8 @@ def train_ae(ae_model, train_dataset):
     min_train_loss = None
     best_epoch_model = None
 
+    print(f'device : {ae_model.device}')
+
     while True:
 
         # test code 처럼 (출력, 이미지, latent vector) 를 출력할 sample (data loader) index 지정
