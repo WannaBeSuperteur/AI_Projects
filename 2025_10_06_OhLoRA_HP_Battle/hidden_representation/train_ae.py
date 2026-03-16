@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from auto_encoder import AutoEncoder_1_28_28, AutoEncoder_3_32_32
-from dataset import split_into_train_and_valid, create_dataset_df
+from dataset import create_dataset_df
 from dataset import base_transform, AutoEncoderImageDataset
 
 import os
@@ -95,10 +95,8 @@ def train_ae(ae_model, train_dataset):
     while True:
 
         # test code 처럼 (출력, 이미지, latent vector) 를 출력할 sample (data loader) index 지정
-        if current_epoch < 5:
-            force_test_idxs = [0, 1, 2, 3, 4]
-        elif (current_epoch < 100 and current_epoch % 20 == 0) or current_epoch % 50 == 0:
-            force_test_idxs = [0, 1, 2]
+        if current_epoch == 0:
+            force_test_idxs = [0, 100, 500, 1000, 2000, 3000]
         else:
             force_test_idxs = None
 
@@ -106,7 +104,11 @@ def train_ae(ae_model, train_dataset):
                                   train_loader=train_loader,
                                   device=ae_model.device,
                                   force_test_idxs=force_test_idxs)
-        print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}')
+
+        if min_train_loss is None:
+            print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}')
+        else:
+            print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}, min_train_loss : {min_train_loss:.4f}')
         train_loss_list.append(train_loss)
 
         ae_model.scheduler.step()
@@ -133,28 +135,16 @@ def train_ae(ae_model, train_dataset):
     return train_loss_list, best_epoch_model
 
 
-# Auto Encoder 테스트 실시 및 테스트 결과 저장
-# Create Date : 2026.03.16
-# Last Update Date : -
-
-# Arguments:
-# - ae_model     (torch.nn.modules)         : Auto-Encoder 모델
-# - test_dataset (torch.utils.data.Dataset) : 테스트 데이터
-
-def test_ae(ae_model, test_dataset):
-    raise NotImplementedError
-
-
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     for dataset_name in dataset_names:
         ae_model = load_ae_model_before_train(dataset_name)
         train_dataset, test_dataset = load_dataset(dataset_name)
-        train_train_dataset, train_valid_dataset = split_into_train_and_valid(train_dataset)
+#        train_train_dataset, train_valid_dataset = split_into_train_and_valid(train_dataset)
 
         train_loss_list, best_epoch_model = train_ae(ae_model, train_dataset)
-        test_ae(ae_model, test_dataset)
+#        test_ae(ae_model, test_dataset)
 
         # save encoder and decoder
         ae_encoder = best_epoch_model.encoder
