@@ -79,6 +79,10 @@ def load_dataset(dataset_name):
 # - ae_model      (torch.nn.modules)         : Auto-Encoder 모델
 # - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
 
+# Returns:
+# - train_loss_list  (list)             : train loss 의 list
+# - best_epoch_model (torch.nn.modules) : Loss 가 가장 낮은 epoch 에서의 Auto-Encoder 모델
+
 def train_ae(ae_model, train_dataset):
     train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
     train_loss_list = []
