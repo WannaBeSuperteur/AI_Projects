@@ -1,7 +1,7 @@
 
 
 from torch.utils.data import Dataset, random_split
-from torchvision.io import read_image
+from torchvision.io import read_image, ImageReadMode
 import torchvision.transforms as transforms
 
 import os
@@ -36,7 +36,11 @@ class AutoEncoderImageDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = f'{IMAGE_DATA_DIR_PATH}/{self.dataset_name}/{self.tvt_type}/{self.img_paths[idx]}'
-        image = read_image(img_path)
+
+        if self.dataset_name == 'cifar_10':
+            image = read_image(img_path)
+        else:
+            image = read_image(img_path, mode=ImageReadMode.GRAY)
 
         # resize and normalize
         image = self.transform(image)
