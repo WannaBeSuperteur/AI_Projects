@@ -139,6 +139,8 @@ if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     for dataset_name in dataset_names:
+        print(f'\n==== DATASET: {dataset_name} ====\n')
+
         ae_model = load_ae_model_before_train(dataset_name)
         train_dataset, test_dataset = load_dataset(dataset_name)
 #        train_train_dataset, train_valid_dataset = split_into_train_and_valid(train_dataset)
