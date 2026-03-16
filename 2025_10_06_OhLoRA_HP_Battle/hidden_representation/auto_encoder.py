@@ -141,3 +141,29 @@ class AutoEncoderDecoder_3_32_32(nn.Module):
         x = self.decoder_deconv4(x)  # 32
 
         return x
+
+
+class AutoEncoder_1_28_28(nn.Module):
+    def __init__(self):
+        super(AutoEncoder_1_28_28, self).__init__()
+
+        self.encoder = AutoEncoderEncoder_1_28_28()
+        self.decoder = AutoEncoderDecoder_1_28_28()
+
+    def forward(self, x):
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
+
+
+class AutoEncoder_3_32_32(nn.Module):
+    def __init__(self):
+        super(AutoEncoder_3_32_32, self).__init__()
+
+        self.encoder = AutoEncoderEncoder_3_32_32()
+        self.decoder = AutoEncoderDecoder_3_32_32()
+
+    def forward(self, x):
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
