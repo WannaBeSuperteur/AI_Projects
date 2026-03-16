@@ -14,7 +14,7 @@ from global_common.torch_training import run_train_ae
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
-MAX_EPOCHS = 1000
+MAX_EPOCHS = 300
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
