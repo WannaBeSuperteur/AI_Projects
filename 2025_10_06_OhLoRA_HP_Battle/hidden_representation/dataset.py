@@ -68,7 +68,7 @@ def create_dataset_df(dataset_name, tvt_type):
 
         for img_name in img_names:
             dataset_dict['img_no'].append(len(dataset_dict['img_no']))
-            dataset_dict['img_path'].append(f'{dataset_class_dir_path}/{img_name}')
+            dataset_dict['img_path'].append(f'{dataset_class}/{img_name}')
             dataset_dict['class_idx'].append(class_idx)
 
     dataset_df = pd.DataFrame(dataset_dict)

@@ -34,6 +34,8 @@ def load_ae_model_before_train(dataset_name):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     ae_model.to(device)
     ae_model.device = device
+    ae_model.optimizer = torch.optim.AdamW(ae_model.parameters(), lr=0.001)
+    ae_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=ae_model.optimizer, gamma=0.95)
 
     return ae_model
 
