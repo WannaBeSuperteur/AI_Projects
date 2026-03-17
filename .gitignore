@@ -190,6 +190,8 @@
 2025_10_06_OhLoRA_HP_Battle/datasets/fashion_mnist/*
 2025_10_06_OhLoRA_HP_Battle/datasets/mnist
 2025_10_06_OhLoRA_HP_Battle/datasets/mnist/*
+2025_10_06_OhLoRA_HP_Battle/models
+2025_10_06_OhLoRA_HP_Battle/models/*
 venv
 venv/*
 requirements_v3.10.11.txt
