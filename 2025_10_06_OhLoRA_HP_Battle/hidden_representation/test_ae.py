@@ -25,9 +25,9 @@ def load_ae_encoder(dataset_name):
     print(f'device for loading model : {device}')
 
     if dataset_name == 'cifar_10':
-        model = AutoEncoder_3_32_32()
+        model = AutoEncoder_3_32_32().encoder
     else:
-        model = AutoEncoder_1_28_28()
+        model = AutoEncoder_1_28_28().encoder
 
     model_path = f'{PROJECT_DIR_PATH}/models/ae_encoder_{dataset_name}.pt'
     model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
