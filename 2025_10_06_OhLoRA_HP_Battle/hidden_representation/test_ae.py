@@ -3,6 +3,8 @@ import os
 import torch
 
 from auto_encoder import AutoEncoder_3_32_32, AutoEncoder_1_28_28
+from dataset import create_dataset_df
+from dataset import base_transform, AutoEncoderImageDataset
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -86,11 +88,34 @@ def run_hidden_representation_test(dataset_name, ae_encoder):
     raise NotImplementedError
 
 
+# Auto Encoder 테스트용 데이터셋 로딩
+# Create Date : 2026.03.17
+# Last Update Date : -
+
+# Arguments:
+# - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+
+# Returns:
+# - test_dataset (torch.utils.data.Dataset) : 테스트 데이터셋
+
+def load_test_dataset(dataset_name):
+    test_dataset_df = create_dataset_df(dataset_name, tvt_type='test')
+    test_dataset = AutoEncoderImageDataset(test_dataset_df,
+                                           transform=base_transform,
+                                           dataset_name=dataset_name,
+                                           tvt_type='test')
+
+    return test_dataset
+
+
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     for dataset_name in dataset_names:
         print(f'\n==== DATASET: {dataset_name} ====\n')
+
+        test_dataset = load_test_dataset(dataset_name)
+        print(f'test dataset : {test_dataset}')
 
         ae_encoder = load_ae_encoder(dataset_name)
         ae_entire_model = load_ae_encoder(dataset_name)
