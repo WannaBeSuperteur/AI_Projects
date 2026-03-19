@@ -125,7 +125,7 @@ TBU
 | 🔨 모델 구현   | 기본 CNN 모델 (하이퍼파라미터 튜닝 대상) 구현                          | 10.11 토 (1d)                     | ```P009-001-CNN```                   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/47) | ✅  |
 | 🔨 모델 구현   | 이미지의 hidden representation 모델 구현 (Auto-Encoder?)      | 10.11 토 (1d)                     | ```P009-002-hidden-representation``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/48) | ✅  |
 | 🧪 모델 학습   | 이미지의 hidden representation 모델 학습                      | 10.11 토 + 03.15 일 - 03.18 수 (5d) | ```P009-002-hidden-representation``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/48) | ✅  |
-| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 학습 데이터 제작 구현                         | 03.18 수 - 03.19 목 (2d)           | ```P009-003-select-images```         |                                                                    | ⬜  |         
+| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 학습 데이터 제작 구현                         | 03.19 목 (1d)                     | ```P009-003-select-images```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/49) | 💨 |         
 | 🔨 모델 구현   | 최적 하이퍼파라미터 탐색 모델 구현 **(hidden representation 입력 기반)** | 03.19 목 (1d)                     | ```P009-004-hp-find-model```         |                                                                    | ⬜  |
 | 🧪 모델 학습   | 최적 하이퍼파라미터 탐색 모델 학습                                   | 03.19 목 - 03.20 금 (2d)           | ```P009-005-hp-find-model-train```   |                                                                    | ⬜  |
 | 📃 문서화     | "하이퍼파라미터 튜닝 대결" 개발 내용 문서화                             | 03.20 금 (1d)                     |                                      |                                                                    | ⬜  |
