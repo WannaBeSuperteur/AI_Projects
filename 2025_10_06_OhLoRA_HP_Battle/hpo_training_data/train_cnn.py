@@ -1,5 +1,26 @@
 
+import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
+import torchvision.transforms as transforms
+
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+from global_common.torch_training import run_train_ae
+
+
+TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
+EARLY_STOPPING_ROUNDS = 10
+MAX_EPOCHS = 300
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+
+
+cnn_base_transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=0.5, std=0.5)  # -1.0 ~ +1.0 min-max normalization
+])
 
 
 # for 'fashion_mnist' and 'mnist' dataset
@@ -137,3 +158,138 @@ class BaseCNN_3_32_32(nn.Module):
 
         return x
 
+
+# Base CNN 모델 로딩 (학습 전의 모델 로딩 -> 이후 학습 실시)
+# Create Date : 2026.03.19
+# Last Update Date : -
+
+# Arguments:
+# - dataset_name (str)  : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+# - hps          (dict) : 하이퍼파라미터 목록
+
+# Returns:
+# - cnn_model (nn.Module) : Auto-Encoder 모델
+
+def load_cnn_model_before_train(dataset_name, hps):
+    if dataset_name == 'cifar_10':
+        cnn_model = BaseCNN_3_32_32(dropout_conv_earlier=hps['dropout_conv_earlier'],
+                                    dropout_conv_later=hps['dropout_conv_later'],
+                                    dropout_fc=hps['dropout_fc'],
+                                    activation_func=hps['activation_func'])
+    else:
+        cnn_model = BaseCNN_1_28_28(dropout_conv_earlier=hps['dropout_conv_earlier'],
+                                    dropout_conv_later=hps['dropout_conv_later'],
+                                    dropout_fc=hps['dropout_fc'],
+                                    activation_func=hps['activation_func'])
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    cnn_model.to(device)
+    cnn_model.device = device
+
+    # optimizer
+    assert hps['optimizer'] in ['adam', 'adamw']
+
+    if hps['optimizer'] == 'adam':
+        cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(),
+                                                lr=hps['lr'])
+    elif hps['optimizer'] == 'adamw':
+        cnn_model.optimizer = torch.optim.AdamW(cnn_model.parameters(),
+                                                lr=hps['lr'])
+
+    # learning rate scheduler
+    assert hps['scheduler'] in ['exp_90', 'exp_95', 'exp_98', 'cosine']
+
+    if hps['scheduler'] == 'exp_90':
+        cnn_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=cnn_model.optimizer,
+                                                                     gamma=0.9)
+    elif hps['scheduler'] == 'exp_95':
+        cnn_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=cnn_model.optimizer,
+                                                                     gamma=0.95)
+    elif hps['scheduler'] == 'exp_98':
+        cnn_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=cnn_model.optimizer,
+                                                                     gamma=0.98)
+    elif hps['scheduler'] == 'cosine':
+        cnn_model.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=cnn_model.optimizer,
+                                                                         T_max=10,
+                                                                         eta_min=0)
+
+    return cnn_model
+
+
+# Base CNN 학습용 데이터셋 로딩
+# Create Date : 2026.03.20
+# Last Update Date : -
+
+# Arguments:
+# - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+
+# Returns:
+# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
+
+def load_dataset(dataset_name):
+    raise NotImplementedError
+
+
+# Base CNN 학습 실시 및 모델 저장
+# Create Date : 2026.03.20
+# Last Update Date : -
+
+# Arguments:
+# - cnn_model     (nn.Module)                : 학습할 CNN 모델
+# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+
+# Returns:
+# - train_loss_list  (list)             : train loss 의 list
+# - best_epoch_model (torch.nn.modules) : Loss 가 가장 낮은 epoch 에서의 Auto-Encoder 모델
+
+def train_cnn(cnn_model, train_dataset):
+    raise NotImplementedError
+
+
+# Base CNN 테스트
+# Create Date : 2026.03.20
+# Last Update Date : -
+
+# Arguments:
+# - cnn_model    (nn.Module)                : 학습할 CNN 모델
+# - test_dataset (torch.utils.data.Dataset) : 테스트 데이터셋
+
+# Returns:
+# - accuracy (float) : 테스트 결과 정확도
+# - f1_score (float) : 테스트 결과 F1 Score
+
+def test_cnn(cnn_model, train_dataset):
+    raise NotImplementedError
+
+
+if __name__ == '__main__':
+    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
+
+    hps = {'dropout_conv_earlier': 0.05,
+           'dropout_conv_later': 0.05,
+           'dropout_fc': 0.45,
+           'lr': 0.001,
+           'activation_func': 'leaky_relu',
+           'optimizer': 'adamw',
+           'scheduler': 'exp_95'}
+
+    for dataset_name in dataset_names:
+        print(f'\n==== DATASET: {dataset_name} ====\n')
+
+        cnn_model = load_cnn_model_before_train(dataset_name, hps)
+        train_dataset, test_dataset = load_dataset(dataset_name)
+
+        train_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset)
+        accuracy, f1_score = test_cnn(cnn_model, test_dataset)
+
+        # save encoder and decoder
+        ae_encoder = best_epoch_model.encoder
+        ae_decoder = best_epoch_model.decoder
+
+        model_path = f'{PROJECT_DIR_PATH}/models'
+        os.makedirs(model_path, exist_ok=True)
+
+        torch.save(best_epoch_model.state_dict(), f'{model_path}/ae_model_{dataset_name}.pt')
+        torch.save(ae_encoder.state_dict(), f'{model_path}/ae_encoder_{dataset_name}.pt')
+        torch.save(ae_decoder.state_dict(), f'{model_path}/ae_decoder_{dataset_name}.pt')
