@@ -194,8 +194,10 @@
 2025_10_06_OhLoRA_HP_Battle/models/*
 2025_10_06_OhLoRA_HP_Battle/hidden_representation/test
 2025_10_06_OhLoRA_HP_Battle/hidden_representation/test/*
-2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test
-2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*
+2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*/train
+2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*/train/*
+2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*/test
+2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*/test/*
 venv
 venv/*
 requirements_v3.10.11.txt
