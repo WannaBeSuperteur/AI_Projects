@@ -1,20 +1,25 @@
 
+import os
+import numpy as np
+import pandas as pd
+
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+from torchvision.io import read_image, ImageReadMode
 import torchvision.transforms as transforms
-
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from global_common.torch_training import run_train_ae
 
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 MAX_EPOCHS = 300
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
+
+NUM_CLASSES = 10
+LABELS_CIFAR_10 = {'airplane': 0, 'automobile': 1, 'bird': 2, 'cat': 3, 'deer': 4, 'dog': 5, 'frog': 6, 'horse': 7,
+                   'ship': 8, 'truck': 9}
 
 cnn_base_transform = transforms.Compose([
     transforms.ToPILImage(),
@@ -159,6 +164,40 @@ class BaseCNN_3_32_32(nn.Module):
         return x
 
 
+# Base CNN 모델 학습/테스트 데이터셋
+class BaseCNNImageDataset(Dataset):
+    def __init__(self, dataset_df, transform, dataset_name, tvt_type):
+        self.img_paths = dataset_df['img_path'].tolist()  # ex: airplane/0001.png
+        self.labels = dataset_df['label'].tolist()
+
+        self.transform = transform
+        self.dataset_name = dataset_name
+        self.tvt_type = tvt_type                          # 'train' or 'test'
+
+    def __len__(self):
+        return len(self.img_paths)
+
+    def __getitem__(self, idx):
+        img_path = f'{IMAGE_DATA_DIR_PATH}/{self.dataset_name}/{self.tvt_type}/{self.img_paths[idx]}'
+
+        if self.dataset_name == 'cifar_10':
+            image = read_image(img_path)
+        else:
+            image = read_image(img_path, mode=ImageReadMode.GRAY)
+
+        # resize and normalize
+        image = self.transform(image)
+
+        # class index
+        if self.dataset_name == 'cifar_10':
+            class_idx = LABELS_CIFAR_10[self.labels[idx]]
+        else:
+            class_idx = int(self.labels[idx])
+        class_idx_one_hot = np.eye(NUM_CLASSES)[class_idx]
+
+        return image, class_idx_one_hot
+
+
 # Base CNN 모델 로딩 (학습 전의 모델 로딩 -> 이후 학습 실시)
 # Create Date : 2026.03.19
 # Last Update Date : -
@@ -217,18 +256,39 @@ def load_cnn_model_before_train(dataset_name, hps):
 
 
 # Base CNN 학습용 데이터셋 로딩
-# Create Date : 2026.03.20
+# Create Date : 2026.03.19
 # Last Update Date : -
 
 # Arguments:
-# - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+# - dataset_name (str)  : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+# - constraints  (dict) : 데이터셋 constraint list
 
 # Returns:
 # - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
 # - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
 
-def load_dataset(dataset_name):
-    raise NotImplementedError
+def load_dataset(dataset_name, constraints):
+    dataset_info_df = pd.read_csv(f'test/{dataset_name}/dataset_info.csv', index_col=0)
+
+    for constraint_col in constraints.keys():
+        left = constraints[constraint_col][0]
+        right = constraints[constraint_col][1]
+        dataset_info_df = dataset_info_df[dataset_info_df[constraint_col].between(left, right)]
+
+    train_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'train']
+    test_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'test']
+
+    train_dataset = BaseCNNImageDataset(train_dataset_info_df,
+                                        transform=cnn_base_transform,
+                                        dataset_name=dataset_name,
+                                        tvt_type='train')
+
+    test_dataset = BaseCNNImageDataset(test_dataset_info_df,
+                                       transform=cnn_base_transform,
+                                       dataset_name=dataset_name,
+                                       tvt_type='test')
+
+    return train_dataset, test_dataset
 
 
 # Base CNN 학습 실시 및 모델 저장
@@ -277,8 +337,13 @@ if __name__ == '__main__':
     for dataset_name in dataset_names:
         print(f'\n==== DATASET: {dataset_name} ====\n')
 
+        if dataset_name == 'cifar_10':
+            constraints = {'value': [224, 255]}
+        else:
+            constraints = {'value': [56, 64]}
+
         cnn_model = load_cnn_model_before_train(dataset_name, hps)
-        train_dataset, test_dataset = load_dataset(dataset_name)
+        train_dataset, test_dataset = load_dataset(dataset_name, constraints)
 
         train_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset)
         accuracy, f1_score = test_cnn(cnn_model, test_dataset)
