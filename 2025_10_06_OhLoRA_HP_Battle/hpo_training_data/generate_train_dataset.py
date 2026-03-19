@@ -120,6 +120,8 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
 
     train_subdataset_count = {}
     test_subdataset_count = {}
+    save_train_image = True
+    save_test_image = True
 
     for class_name in class_names:
         train_subdataset_count[class_name] = 0
@@ -149,15 +151,16 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
                 train_img = train_img[:, :, None]
 
             # check condition and save
-            is_saved = check_condition_and_save_image_in_subdataset(img=train_img,
-                                                                    avg_pixel_hsv_ranges=avg_pixel_hsv_ranges,
-                                                                    std_ranges=std_ranges,
-                                                                    save_path=train_img_save_path)
+            if save_train_image:
+                is_saved = check_condition_and_save_image_in_subdataset(img=train_img,
+                                                                        avg_pixel_hsv_ranges=avg_pixel_hsv_ranges,
+                                                                        std_ranges=std_ranges,
+                                                                        save_path=train_img_save_path)
 
-            if is_saved:
-                train_subdataset_count[class_name] += 1
-                if train_subdataset_count[class_name] >= MAX_DATA_SIZE_PER_CLASS:
-                    break
+                if is_saved:
+                    train_subdataset_count[class_name] += 1
+                    if train_subdataset_count[class_name] >= MAX_DATA_SIZE_PER_CLASS:
+                        save_train_image = False
 
             # add to dataset info dictionary
             dataset_hsv_std_info_dict['tvt_type'].append('train')
@@ -180,15 +183,16 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
                 test_img = test_img[:, :, None]
 
             # check condition and save
-            is_saved = check_condition_and_save_image_in_subdataset(img=test_img,
-                                                                    avg_pixel_hsv_ranges=avg_pixel_hsv_ranges,
-                                                                    std_ranges=std_ranges,
-                                                                    save_path=test_img_save_path)
+            if save_test_image:
+                is_saved = check_condition_and_save_image_in_subdataset(img=test_img,
+                                                                        avg_pixel_hsv_ranges=avg_pixel_hsv_ranges,
+                                                                        std_ranges=std_ranges,
+                                                                        save_path=test_img_save_path)
 
-            if is_saved:
-                test_subdataset_count[class_name] += 1
-                if test_subdataset_count[class_name] >= MAX_DATA_SIZE_PER_CLASS:
-                    break
+                if is_saved:
+                    test_subdataset_count[class_name] += 1
+                    if test_subdataset_count[class_name] >= MAX_DATA_SIZE_PER_CLASS:
+                        save_test_image = False
 
             # add to dataset info dictionary
             dataset_hsv_std_info_dict['tvt_type'].append('test')
