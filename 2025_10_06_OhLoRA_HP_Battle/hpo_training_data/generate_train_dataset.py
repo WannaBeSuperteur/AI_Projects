@@ -2,6 +2,7 @@
 import os
 import cv2
 import numpy as np
+import pandas as pd
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 MAX_DATA_SIZE_PER_CLASS = 200
@@ -40,6 +41,7 @@ def check_condition_and_save_image_in_subdataset(img, avg_pixel_hsv_ranges, std_
         std_in_range_b = std_ranges[2][0] <= channel_std[0] <= std_ranges[2][1]
         std_in_range = std_in_range_r and std_in_range_g and std_in_range_b
 
+    # Grayscale image
     else:
         hsv_in_range = avg_pixel_hsv_ranges[0][0] <= channel_mean[0] <= avg_pixel_hsv_ranges[0][1]
         std_in_range = std_ranges[0][0] <= channel_std[0] <= std_ranges[0][1]
@@ -48,6 +50,41 @@ def check_condition_and_save_image_in_subdataset(img, avg_pixel_hsv_ranges, std_
         cv2.imwrite(save_path, img)
         return True
     return False
+
+
+# 특정 이미지의 모든 픽셀을 channel-wise 하게 평균한 픽셀의 색상,채도,명도 값 + 모든 픽셀에 대한 R, G, B 값 각각의 표준편차 계산
+# Create Date : 2026.03.19
+# Last Update Date : -
+
+# Arguments:
+# - img (np.array) : OpenCV 로 읽은 학습/테스트 데이터 이미지
+
+# Returns
+# - compute_image_condition_values (dict(float)) : 특정 이미지의 모든 픽셀을 channel-wise 하게 평균한 픽셀의 색상,채도,명도 값 +
+#                                                  특정 이미지의 모든 픽셀에 대한 R, G, B 값 각각의 표준편차 값
+
+def compute_image_condition_values(img):
+    channel_mean = np.mean(img, axis=(0, 1))
+    channel_std = np.std(img, axis=(0, 1))
+
+    # RGB image
+    if img.shape[2] == 3:
+        hsv = cv2.cvtColor(np.array([[channel_mean]], dtype=np.uint8), cv2.COLOR_BGR2HSV)
+        hue = hsv[0][0][0]
+        saturation = hsv[0][0][1]
+        value_ = hsv[0][0][2]
+        std_r = round(channel_std[2], 2)
+        std_g = round(channel_std[1], 2)
+        std_b = round(channel_std[0], 2)
+
+        return {'hue': hue, 'saturation': saturation, 'value': value_, 'std_r': std_r, 'std_g': std_g, 'std_b': std_b}
+
+    # Grayscale image
+    else:
+        value_ = round(channel_mean[0], 2)
+        std = round(channel_std[0], 2)
+
+        return {'value': value_, 'std': std}
 
 
 # 전체 학습 데이터셋으로부터 sub dataset 생성
@@ -71,6 +108,15 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
 
     dataset_dir = f'{PROJECT_DIR_PATH}/datasets/{dataset_name}'
     class_names = os.listdir(os.path.join(dataset_dir, 'train'))
+
+    if dataset_name == 'cifar_10':  # RGB image
+        dataset_hsv_std_info_dict = {'tvt_type': [], 'img_path': [], 'label': [],
+                                     'hue': [], 'saturation': [], 'value': [],
+                                     'std_r': [], 'std_g': [], 'std_b': []}
+
+    else:  # Grayscale image
+        dataset_hsv_std_info_dict = {'tvt_type': [], 'img_path': [], 'label': [],
+                                     'value': [], 'std': []}
 
     train_subdataset_count = {}
     test_subdataset_count = {}
@@ -101,6 +147,7 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
                 train_img = cv2.imread(train_img_path, cv2.IMREAD_GRAYSCALE)
                 train_img = train_img[:, :, None]
 
+            # check condition and save
             is_saved = check_condition_and_save_image_in_subdataset(img=train_img,
                                                                     avg_pixel_hsv_ranges=avg_pixel_hsv_ranges,
                                                                     std_ranges=std_ranges,
@@ -110,6 +157,15 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
                 train_subdataset_count[class_name] += 1
                 if train_subdataset_count[class_name] >= MAX_DATA_SIZE_PER_CLASS:
                     break
+
+            # add to dataset info dictionary
+            dataset_hsv_std_info_dict['tvt_type'].append('train')
+            dataset_hsv_std_info_dict['img_path'].append(f'{class_name}/{train_img_name}')
+            dataset_hsv_std_info_dict['label'].append(class_name)
+
+            image_condition_values = compute_image_condition_values(train_img)
+            for k, v in image_condition_values.items():
+                dataset_hsv_std_info_dict[k].append(v)
 
         # generate sub-dataset (test)
         for test_img_name in test_img_names:
@@ -122,6 +178,7 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
                 test_img = cv2.imread(test_img_path, cv2.IMREAD_GRAYSCALE)
                 test_img = test_img[:, :, None]
 
+            # check condition and save
             is_saved = check_condition_and_save_image_in_subdataset(img=test_img,
                                                                     avg_pixel_hsv_ranges=avg_pixel_hsv_ranges,
                                                                     std_ranges=std_ranges,
@@ -131,6 +188,20 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
                 test_subdataset_count[class_name] += 1
                 if test_subdataset_count[class_name] >= MAX_DATA_SIZE_PER_CLASS:
                     break
+
+            # add to dataset info dictionary
+            dataset_hsv_std_info_dict['tvt_type'].append('test')
+            dataset_hsv_std_info_dict['img_path'].append(f'{class_name}/{test_img_name}')
+            dataset_hsv_std_info_dict['label'].append(class_name)
+
+            image_condition_values = compute_image_condition_values(test_img)
+            for k, v in image_condition_values.items():
+                dataset_hsv_std_info_dict[k].append(v)
+
+    # convert to Pandas DataFrame and save
+    dataset_hsv_std_info_df = pd.DataFrame(dataset_hsv_std_info_dict)
+    dataset_hsv_std_info_df_path = os.path.join(save_dir, 'dataset_info.csv')
+    dataset_hsv_std_info_df.to_csv(dataset_hsv_std_info_df_path)
 
     return train_subdataset_count, test_subdataset_count
 
