@@ -122,7 +122,6 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
     test_subdataset_count = {}
 
     for class_name in class_names:
-        print(f'processing class : {class_name}')
         train_subdataset_count[class_name] = 0
         test_subdataset_count[class_name] = 0
 
@@ -135,6 +134,8 @@ def create_subdataset(dataset_name, avg_pixel_hsv_ranges, std_ranges, save_dir):
         test_img_dir_name = f'{dataset_dir}/test/{class_name}'
         train_img_names = os.listdir(train_img_dir_name)
         test_img_names = os.listdir(test_img_dir_name)
+
+        print(f'processing class : {class_name} (train: {len(train_img_names)}, test: {len(test_img_names)})')
 
         # generate sub-dataset (train)
         for train_img_name in train_img_names:
