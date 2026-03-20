@@ -29,6 +29,7 @@ IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
 NUM_CLASSES = 10
 LABELS_CIFAR_10 = {'airplane': 0, 'automobile': 1, 'bird': 2, 'cat': 3, 'deer': 4, 'dog': 5, 'frog': 6, 'horse': 7,
                    'ship': 8, 'truck': 9}
+EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 32
 
 cnn_base_transform = transforms.Compose([
     transforms.ToPILImage(),
@@ -462,10 +463,23 @@ def test_cnn(cnn_model, test_dataset, print_cf_matrix=False):
 # - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
 
 # Returns:
-# - encoding_result (np.array) : Auto-Encoder 의 인코더에 의한 임베딩 결과
+# - encoding_result (np.array) : Auto-Encoder 의 인코더에 의한 임베딩 결과, shape=(N_IMAGES, EMBED_DIMS)
 
 def encode_train_dataset(ae_encoder, train_dataset):
-    raise NotImplementedError
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    encoding_result = np.zeros((len(train_dataset), EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA))
+
+    for idx, (images, labels) in enumerate(train_loader):
+        images = images.to(cnn_model.device)
+        encoding_representation = ae_encoder(images)
+        images_in_batch = encoding_representation.shape[0]
+
+        encoding_representation = encoding_representation.mean(dim=(2, 3))
+        encoding_representation = encoding_representation.detach().cpu().numpy()
+        encoding_repr_to_use = encoding_representation[:, :EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA]
+        encoding_result[idx*TRAIN_BATCH_SIZE:idx*TRAIN_BATCH_SIZE+images_in_batch, :] = encoding_repr_to_use
+
+    return encoding_result
 
 
 # HPO 머신러닝 모델의 최종 학습 데이터 (입력/출력 데이터) 로 변환
@@ -478,13 +492,40 @@ def encode_train_dataset(ae_encoder, train_dataset):
 # - hps                         (dict)                     : 하이퍼파라미터 목록
 # - train_dataset_label_distrib (list)                     : 학습+검증 데이터셋 label 분포
 # - labels_trained              (list)                     : 각 label 의 실제 학습/테스트 데이터셋 포함 여부 (각 항목은 0 or 1)
+# - f1_score_macro              (float)                    : Base CNN 성능 테스트 결과 Macro F1 Score
 
 # Returns:
 # - hpo_model_input_data  (dict) : HPO 모델의 학습 데이터 입력값의 dict
 # - hpo_model_output_data (dict) : HPO 모델의 학습 데이터 출력값의 dict
 
-def convert_to_train_data(ae_encoder, train_dataset, hps, train_dataset_label_distrib, labels_trained):
-    raise NotImplementedError
+def convert_to_train_data(ae_encoder, train_dataset, hps, train_dataset_label_distrib, labels_trained, f1_score_macro):
+
+    # get train images embedding
+    encoding_result = encode_train_dataset(ae_encoder, train_dataset)
+    encoding_mean = np.mean(encoding_result, axis=0)
+    encoding_std = np.std(encoding_result, axis=0)
+
+    # label distribution
+    total_train_images = sum(train_dataset_label_distrib)
+    max_min_of_labels = max(train_dataset_label_distrib) / max(1, min(train_dataset_label_distrib))
+    avg_std_of_labels = np.mean(train_dataset_label_distrib) / max(0.001, np.std(train_dataset_label_distrib))
+    largest_label_percentage = train_dataset_label_distrib[0] / total_train_images
+
+    # input and output data
+    hpo_model_input_data = {'encoding_mean': encoding_mean,
+                            'encoding_std': encoding_std,
+                            'total_train_images': total_train_images,
+                            'max_min_of_labels': max_min_of_labels,
+                            'avg_std_of_labels': avg_std_of_labels,
+                            'largest_label_percentage': largest_label_percentage,
+                            'labels_trained': labels_trained}
+
+    for hp_key, hp_value in hps.items():
+        hpo_model_input_data[f'hp_{hp_key}'] = hp_value
+
+    hpo_model_output_data = {'f1_score_macro': f1_score_macro}
+
+    return hpo_model_input_data, hpo_model_output_data
 
 
 if __name__ == '__main__':
@@ -511,6 +552,8 @@ if __name__ == '__main__':
         model_path = f'{PROJECT_DIR_PATH}/models/ae_encoder_{dataset_name}.pt'
         ae_encoder_state_dict = torch.load(model_path, map_location=device, weights_only=True)
         ae_encoder.load_state_dict(ae_encoder_state_dict)
+        ae_encoder.to(device)
+        ae_encoder.device = device
         ae_encoders[dataset_name] = ae_encoder
 
     # demo test
@@ -539,4 +582,8 @@ if __name__ == '__main__':
         # convert to HPO model training data
         ae_encoder = ae_encoders[dataset_name]
         hpo_model_input_data, hpo_model_output_data = (
-            convert_to_train_data(ae_encoder, train_dataset, hps, train_dataset_label_distrib, labels_trained))
+            convert_to_train_data(ae_encoder, train_dataset, hps, train_dataset_label_distrib, labels_trained,
+                                  f1_score_macro))
+
+        print(f'\nhpo_model_input_data : {hpo_model_input_data}')
+        print(f'\nhpo_model_output_data : {hpo_model_output_data}')
