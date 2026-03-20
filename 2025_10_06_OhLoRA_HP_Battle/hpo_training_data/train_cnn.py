@@ -5,7 +5,7 @@ import pandas as pd
 
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
 from torchvision.io import read_image, ImageReadMode
 import torchvision.transforms as transforms
 
@@ -257,7 +257,8 @@ def load_cnn_model_before_train(dataset_name, hps):
 
 # Base CNN 학습용 데이터셋 로딩
 # Create Date : 2026.03.19
-# Last Update Date : -
+# Last Update Date : 2026.03.20
+# - 학습 데이터셋 -> 학습 + 검증 데이터셋으로 분리
 
 # Arguments:
 # - dataset_name (str)  : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
@@ -265,6 +266,7 @@ def load_cnn_model_before_train(dataset_name, hps):
 
 # Returns:
 # - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - valid_dataset (torch.utils.data.Dataset) : 검증 (valid) 데이터셋
 # - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
 
 def load_dataset(dataset_name, constraints):
@@ -278,17 +280,21 @@ def load_dataset(dataset_name, constraints):
     train_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'train']
     test_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'test']
 
-    train_dataset = BaseCNNImageDataset(train_dataset_info_df,
-                                        transform=cnn_base_transform,
-                                        dataset_name=dataset_name,
-                                        tvt_type='train')
+    train_valid_dataset = BaseCNNImageDataset(train_dataset_info_df,
+                                              transform=cnn_base_transform,
+                                              dataset_name=dataset_name,
+                                              tvt_type='train')
+
+    n_train_size = int(0.85 * len(train_valid_dataset))
+    n_valid_size = len(train_valid_dataset) - n_train_size
+    train_dataset, valid_dataset = random_split(train_valid_dataset, [n_train_size, n_valid_size])
 
     test_dataset = BaseCNNImageDataset(test_dataset_info_df,
                                        transform=cnn_base_transform,
                                        dataset_name=dataset_name,
                                        tvt_type='test')
 
-    return train_dataset, test_dataset
+    return train_dataset, valid_dataset, test_dataset
 
 
 # Base CNN 학습 실시 및 모델 저장
@@ -298,12 +304,13 @@ def load_dataset(dataset_name, constraints):
 # Arguments:
 # - cnn_model     (nn.Module)                : 학습할 CNN 모델
 # - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - valid_dataset (torch.utils.data.Dataset) : 검증 (valid) 데이터셋
 
 # Returns:
 # - train_loss_list  (list)             : train loss 의 list
 # - best_epoch_model (torch.nn.modules) : Loss 가 가장 낮은 epoch 에서의 Auto-Encoder 모델
 
-def train_cnn(cnn_model, train_dataset):
+def train_cnn(cnn_model, train_dataset, valid_dataset):
     raise NotImplementedError
 
 
@@ -343,9 +350,9 @@ if __name__ == '__main__':
             constraints = {'value': [56, 64]}
 
         cnn_model = load_cnn_model_before_train(dataset_name, hps)
-        train_dataset, test_dataset = load_dataset(dataset_name, constraints)
+        train_dataset, valid_dataset, test_dataset = load_dataset(dataset_name, constraints)
 
-        train_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset)
+        train_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
         accuracy, f1_score = test_cnn(cnn_model, test_dataset)
 
         # save encoder and decoder
