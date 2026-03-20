@@ -108,7 +108,7 @@ def add_train_data(data_dict, hpo_model_input_data, hpo_model_output_data):
     data_dict['largest_label_percentage'].append(round(hpo_model_input_data['largest_label_percentage'], 4))
 
     for i in range(len(hpo_model_input_data['labels_trained'])):
-        data_dict[f'labels_trained_{i}'] = hpo_model_input_data['labels_trained'][i]
+        data_dict[f'labels_trained_{i}'].append(hpo_model_input_data['labels_trained'][i])
 
     data_dict['hp_dropout_conv_earlier'].append(round(hpo_model_input_data['hp_dropout_conv_earlier'], 4))
     data_dict['hp_dropout_conv_later'].append(round(hpo_model_input_data['hp_dropout_conv_later'], 4))
