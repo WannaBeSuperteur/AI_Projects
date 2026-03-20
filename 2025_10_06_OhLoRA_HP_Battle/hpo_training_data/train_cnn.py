@@ -426,7 +426,7 @@ if __name__ == '__main__':
     hps = {'dropout_conv_earlier': 0.05,
            'dropout_conv_later': 0.05,
            'dropout_fc': 0.45,
-           'lr': 0.001,
+           'lr': 0.0001,
            'activation_func': 'leaky_relu',
            'optimizer': 'adamw',
            'scheduler': 'exp_95'}
