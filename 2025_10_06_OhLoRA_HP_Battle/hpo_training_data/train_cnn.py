@@ -87,7 +87,7 @@ class BaseCNN_1_28_28(nn.Module):
         )
         self.fc_final = nn.Sequential(
             nn.Linear(512, NUM_CLASSES),
-            nn.Softmax()
+            nn.Softmax(dim=1)
         )
 
     def forward(self, x):
@@ -158,7 +158,7 @@ class BaseCNN_3_32_32(nn.Module):
         )
         self.fc_final = nn.Sequential(
             nn.Linear(512, NUM_CLASSES),
-            nn.Softmax()
+            nn.Softmax(dim=1)
         )
 
     def forward(self, x):
@@ -435,9 +435,9 @@ if __name__ == '__main__':
         print(f'\n==== DATASET: {dataset_name} ====\n')
 
         if dataset_name == 'cifar_10':
-            constraints = {'value': [224, 255]}
+            constraints = {'value': [192, 255]}
         else:
-            constraints = {'value': [56, 64]}
+            constraints = {'value': [48, 64]}
 
         cnn_model = load_cnn_model_before_train(dataset_name, hps)
         train_dataset, valid_dataset, test_dataset = load_dataset(dataset_name, constraints)
