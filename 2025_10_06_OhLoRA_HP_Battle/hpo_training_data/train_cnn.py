@@ -470,7 +470,7 @@ def encode_train_dataset(ae_encoder, train_dataset):
     encoding_result = np.zeros((len(train_dataset), EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA))
 
     for idx, (images, labels) in enumerate(train_loader):
-        images = images.to(cnn_model.device)
+        images = images.to(ae_encoder.device)
         encoding_representation = ae_encoder(images)
         images_in_batch = encoding_representation.shape[0]
 
