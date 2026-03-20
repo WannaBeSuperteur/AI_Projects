@@ -13,7 +13,10 @@ from sklearn.metrics import accuracy_score, f1_score
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from global_common.torch_training import run_train, run_validation
+
+from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoEncoderEncoder_3_32_32
 
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
@@ -450,6 +453,40 @@ def test_cnn(cnn_model, test_dataset, print_cf_matrix=False):
     return accuracy, f1_score_macro, f1_score_micro
 
 
+# Auto-Encoder 를 이용하여 학습 데이터 전체를 인코딩 (Embedding) 실시
+# Create Date: 2026.03.20
+# Last Update Date: -
+
+# Arguments:
+# - ae_encoder    (nn.Module)                : Auto-Encoder 의 Encoder 부분
+# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+
+# Returns:
+# - encoding_result (np.array) : Auto-Encoder 의 인코더에 의한 임베딩 결과
+
+def encode_train_dataset(ae_encoder, train_dataset):
+    raise NotImplementedError
+
+
+# HPO 머신러닝 모델의 최종 학습 데이터 (입력/출력 데이터) 로 변환
+# Create Date: 2026.03.20
+# Last Update Date: -
+
+# Arguments:
+# - ae_encoder                  (nn.Module)                : Auto-Encoder 의 Encoder 부분
+# - train_dataset               (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - hps                         (dict)                     : 하이퍼파라미터 목록
+# - train_dataset_label_distrib (list)                     : 학습+검증 데이터셋 label 분포
+# - labels_trained              (list)                     : 각 label 의 실제 학습/테스트 데이터셋 포함 여부 (각 항목은 0 or 1)
+
+# Returns:
+# - hpo_model_input_data  (dict) : HPO 모델의 학습 데이터 입력값의 dict
+# - hpo_model_output_data (dict) : HPO 모델의 학습 데이터 출력값의 dict
+
+def convert_to_train_data(ae_encoder, train_dataset, hps, train_dataset_label_distrib, labels_trained):
+    raise NotImplementedError
+
+
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
@@ -461,6 +498,22 @@ if __name__ == '__main__':
            'optimizer': 'adamw',
            'scheduler': 'exp_95'}
 
+    # load Auto-Encoder encoder models
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    ae_encoders = {}
+
+    for dataset_name in dataset_names:
+        if dataset_name == 'cifar_10':
+            ae_encoder = AutoEncoderEncoder_3_32_32()
+        else:
+            ae_encoder = AutoEncoderEncoder_1_28_28()
+
+        model_path = f'{PROJECT_DIR_PATH}/models/ae_encoder_{dataset_name}.pt'
+        ae_encoder_state_dict = torch.load(model_path, map_location=device, weights_only=True)
+        ae_encoder.load_state_dict(ae_encoder_state_dict)
+        ae_encoders[dataset_name] = ae_encoder
+
+    # demo test
     for dataset_name in dataset_names:
         print(f'\n==== DATASET: {dataset_name} ====\n')
 
@@ -482,3 +535,8 @@ if __name__ == '__main__':
         accuracy, f1_score_macro, f1_score_micro = test_cnn(best_epoch_model, test_dataset, print_cf_matrix=True)
 
         print(f'accuracy : {accuracy}, f1_score: (macro: {f1_score_macro}, micro: {f1_score_micro})')
+
+        # convert to HPO model training data
+        ae_encoder = ae_encoders[dataset_name]
+        hpo_model_input_data, hpo_model_output_data = (
+            convert_to_train_data(ae_encoder, train_dataset, hps, train_dataset_label_distrib, labels_trained))
