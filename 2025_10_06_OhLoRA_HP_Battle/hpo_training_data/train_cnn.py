@@ -276,6 +276,7 @@ def load_cnn_model_before_train(dataset_name, hps):
 # Last Update Date : 2026.03.20
 # - 학습 데이터셋 -> 학습 + 검증 데이터셋으로 분리
 # - 학습 및 테스트 데이터셋 분포 정보 반환 추가
+# - TOP 5 label 데이터셋만 학습/테스트하도록 설정
 
 # Arguments:
 # - dataset_name (str)  : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
@@ -299,11 +300,11 @@ def load_dataset(dataset_name, constraints):
     train_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'train']
     test_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'test']
 
-    train_dataset_label_distrib = list(train_dataset_info_df['label'].value_counts())
-    test_dataset_label_distrib = list(test_dataset_info_df['label'].value_counts())
-    train_dataset_label_distrib.sort(reverse=True)
-    test_dataset_label_distrib.sort(reverse=True)
+    # train/valid dataset
+    train_dataset_value_counts = train_dataset_info_df['label'].value_counts()
+    top_5_labels = list(train_dataset_value_counts[:5].index)
 
+    train_dataset_info_df = train_dataset_info_df[train_dataset_info_df['label'].isin(top_5_labels)]
     train_valid_dataset = BaseCNNImageDataset(train_dataset_info_df,
                                               transform=cnn_base_transform,
                                               dataset_name=dataset_name,
@@ -313,10 +314,18 @@ def load_dataset(dataset_name, constraints):
     n_valid_size = len(train_valid_dataset) - n_train_size
     train_dataset, valid_dataset = random_split(train_valid_dataset, [n_train_size, n_valid_size])
 
+    # test dataset
+    test_dataset_info_df = test_dataset_info_df[test_dataset_info_df['label'].isin(top_5_labels)]
     test_dataset = BaseCNNImageDataset(test_dataset_info_df,
                                        transform=cnn_base_transform,
                                        dataset_name=dataset_name,
                                        tvt_type='test')
+
+    # data label distribution
+    train_dataset_label_distrib = list(train_dataset_info_df['label'].value_counts())
+    test_dataset_label_distrib = list(test_dataset_info_df['label'].value_counts())
+    train_dataset_label_distrib.sort(reverse=True)
+    test_dataset_label_distrib.sort(reverse=True)
 
     return train_dataset, valid_dataset, test_dataset, train_dataset_label_distrib, test_dataset_label_distrib
 
