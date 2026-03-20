@@ -9,6 +9,11 @@ from torch.utils.data import Dataset, random_split
 from torchvision.io import read_image, ImageReadMode
 import torchvision.transforms as transforms
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+from global_common.torch_training import run_train, run_validation
+
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
@@ -38,6 +43,11 @@ class BaseCNN_1_28_28(nn.Module):
 
     def __init__(self, dropout_conv_earlier, dropout_conv_later, dropout_fc, activation_func):
         super(BaseCNN_1_28_28, self).__init__()
+
+        self.dropout_conv_earlier = dropout_conv_earlier
+        self.dropout_conv_later = dropout_conv_later
+        self.dropout_fc = dropout_fc
+        self.activation_func = activation_func
 
         # Conv Layers
         self.conv1 = nn.Sequential(
@@ -75,8 +85,8 @@ class BaseCNN_1_28_28(nn.Module):
             nn.Dropout(dropout_fc)
         )
         self.fc_final = nn.Sequential(
-            nn.Linear(512, 1),
-            nn.Sigmoid()
+            nn.Linear(512, NUM_CLASSES),
+            nn.Softmax()
         )
 
     def forward(self, x):
@@ -107,6 +117,11 @@ class BaseCNN_3_32_32(nn.Module):
 
     def __init__(self, dropout_conv_earlier, dropout_conv_later, dropout_fc, activation_func):
         super(BaseCNN_3_32_32, self).__init__()
+
+        self.dropout_conv_earlier = dropout_conv_earlier
+        self.dropout_conv_later = dropout_conv_later
+        self.dropout_fc = dropout_fc
+        self.activation_func = activation_func
 
         # Conv Layers
         self.conv1 = nn.Sequential(
@@ -141,8 +156,8 @@ class BaseCNN_3_32_32(nn.Module):
             nn.Dropout(dropout_fc)
         )
         self.fc_final = nn.Sequential(
-            nn.Linear(512, 1),
-            nn.Sigmoid()
+            nn.Linear(512, NUM_CLASSES),
+            nn.Softmax()
         )
 
     def forward(self, x):
@@ -311,7 +326,49 @@ def load_dataset(dataset_name, constraints):
 # - best_epoch_model (torch.nn.modules) : Loss 가 가장 낮은 epoch 에서의 Auto-Encoder 모델
 
 def train_cnn(cnn_model, train_dataset, valid_dataset):
-    raise NotImplementedError
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE)
+    valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE)
+
+    current_epoch = 0
+    min_val_loss_epoch = -1  # Loss-based Early Stopping
+    min_val_loss = None
+    best_epoch_model = None
+    val_loss_list = []
+
+    while True:
+        train_loss = run_train(model=cnn_model,
+                               train_loader=train_loader,
+                               device=cnn_model.device,
+                               unsqueeze_label=False)
+
+        _, val_loss = run_validation(model=cnn_model,
+                                     valid_loader=valid_loader,
+                                     device=cnn_model.device,
+                                     unsqueeze_label=False)
+
+        print(f'epoch : {current_epoch}, train_loss : {train_loss:.4f}, val_loss : {val_loss:.4f}')
+
+        val_loss_cpu = float(val_loss.detach().cpu())
+        val_loss_list.append(val_loss_cpu)
+
+        cnn_model.scheduler.step()
+
+        if min_val_loss is None or val_loss < min_val_loss:
+            min_val_loss = val_loss
+            min_val_loss_epoch = current_epoch
+
+            best_epoch_model = cnn_model.__class__(dropout_conv_earlier=cnn_model.dropout_conv_earlier,
+                                                   dropout_conv_later=cnn_model.dropout_conv_later,
+                                                   dropout_fc=cnn_model.dropout_fc,
+                                                   activation_func=cnn_model.activation_func).to(cnn_model.device)
+            best_epoch_model.load_state_dict(cnn_model.state_dict())
+
+        if current_epoch - min_val_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            break
+
+        current_epoch += 1
+
+    return val_loss_list, best_epoch_model
 
 
 # Base CNN 테스트
@@ -352,16 +409,7 @@ if __name__ == '__main__':
         cnn_model = load_cnn_model_before_train(dataset_name, hps)
         train_dataset, valid_dataset, test_dataset = load_dataset(dataset_name, constraints)
 
-        train_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
-        accuracy, f1_score = test_cnn(cnn_model, test_dataset)
+        val_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
+        accuracy, f1_score = test_cnn(best_epoch_model, test_dataset)
 
-        # save encoder and decoder
-        ae_encoder = best_epoch_model.encoder
-        ae_decoder = best_epoch_model.decoder
-
-        model_path = f'{PROJECT_DIR_PATH}/models'
-        os.makedirs(model_path, exist_ok=True)
-
-        torch.save(best_epoch_model.state_dict(), f'{model_path}/ae_model_{dataset_name}.pt')
-        torch.save(ae_encoder.state_dict(), f'{model_path}/ae_encoder_{dataset_name}.pt')
-        torch.save(ae_decoder.state_dict(), f'{model_path}/ae_decoder_{dataset_name}.pt')
+        print(f'accuracy : {accuracy}, f1_score: {f1_score}')
