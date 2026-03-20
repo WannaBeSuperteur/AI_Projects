@@ -354,7 +354,7 @@ def train_cnn(cnn_model, train_dataset, valid_dataset):
 
         cnn_model.scheduler.step()
 
-        if min_val_loss is None or val_loss < min_val_loss:
+        if min_val_loss is None or val_loss < min_val_loss - 1e-5:
             min_val_loss = val_loss
             min_val_loss_epoch = current_epoch
 
