@@ -435,9 +435,11 @@ if __name__ == '__main__':
         print(f'\n==== DATASET: {dataset_name} ====\n')
 
         if dataset_name == 'cifar_10':
-            constraints = {'value': [192, 255]}
-        else:
-            constraints = {'value': [48, 64]}
+            constraints = {'value': [160, 255]}
+        elif dataset_name == 'fashion_mnist':
+            constraints = {'value': [56, 64]}
+        else:  # mnist
+            constraints = {'value': [40, 64]}
 
         cnn_model = load_cnn_model_before_train(dataset_name, hps)
         train_dataset, valid_dataset, test_dataset = load_dataset(dataset_name, constraints)
