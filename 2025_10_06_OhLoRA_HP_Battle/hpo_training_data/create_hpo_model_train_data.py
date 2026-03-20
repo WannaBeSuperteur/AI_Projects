@@ -99,8 +99,8 @@ def add_train_data(data_dict, hpo_model_input_data, hpo_model_output_data):
 
     # input data
     for i in range(EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA):
-        data_dict[f'encoding_mean_{i}'].append(hpo_model_input_data['encoding_mean'][i])
-        data_dict[f'encoding_std_{i}'].append(hpo_model_input_data['encoding_std'][i])
+        data_dict[f'encoding_mean_{i}'].append(round(hpo_model_input_data['encoding_mean'][i], 3))
+        data_dict[f'encoding_std_{i}'].append(round(hpo_model_input_data['encoding_std'][i], 3))
 
     data_dict['total_train_images'].append(hpo_model_input_data['total_train_images'])
     data_dict['max_min_of_labels'].append(round(hpo_model_input_data['max_min_of_labels'], 3))
@@ -110,9 +110,9 @@ def add_train_data(data_dict, hpo_model_input_data, hpo_model_output_data):
     for i in range(len(hpo_model_input_data['labels_trained'])):
         data_dict[f'labels_trained_{i}'] = hpo_model_input_data['labels_trained'][i]
 
-    data_dict['hp_dropout_conv_earlier'].append(hpo_model_input_data['hp_dropout_conv_earlier'])
-    data_dict['hp_dropout_conv_later'].append(hpo_model_input_data['hp_dropout_conv_later'])
-    data_dict['hp_dropout_fc'].append(hpo_model_input_data['hp_dropout_fc'])
+    data_dict['hp_dropout_conv_earlier'].append(round(hpo_model_input_data['hp_dropout_conv_earlier'], 4))
+    data_dict['hp_dropout_conv_later'].append(round(hpo_model_input_data['hp_dropout_conv_later'], 4))
+    data_dict['hp_dropout_fc'].append(round(hpo_model_input_data['hp_dropout_fc'], 4))
     data_dict['hp_lr'].append(hpo_model_input_data['hp_lr'])
     data_dict['hp_activation_func'].append(hpo_model_input_data['hp_activation_func'])
     data_dict['hp_optimizer'].append(hpo_model_input_data['hp_optimizer'])
@@ -142,7 +142,7 @@ if __name__ == '__main__':
         ae_encoder.device = device
         ae_encoders[dataset_name] = ae_encoder
 
-    # hyper-params configuration (total 377,520 possible cases)
+    # hyper-params configuration
     hp_candidates = initialize_hp_candidates()
 
     # demo test
