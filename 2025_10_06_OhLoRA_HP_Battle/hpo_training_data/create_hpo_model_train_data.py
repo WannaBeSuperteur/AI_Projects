@@ -70,15 +70,15 @@ def generate_constraints(dataset_name):
                        'std_b': [std_b_left, std_b_left + std_b_range_size]}
 
     elif dataset_name == 'fashion_mnist':
-        val_left, val_range_size = random.randint(0, 144), random.randint(8, 80)
-        std_left, std_range_size = random.randint(0, 128), random.randint(8, 48)
+        val_left, val_range_size = random.randint(0, 144), random.randint(1, 80)
+        std_left, std_range_size = random.randint(0, 128), random.randint(1, 48)
 
         constraints = {'value': [val_left, val_left + val_range_size],
                        'std': [std_left, std_left + std_range_size]}
 
     else:  # mnist
-        val_left, val_range_size = random.randint(0, 64), random.randint(8, 48)
-        std_left, std_range_size = random.randint(32, 128), random.randint(8, 32)
+        val_left, val_range_size = random.randint(0, 64), random.randint(1, 48)
+        std_left, std_range_size = random.randint(32, 128), random.randint(1, 32)
 
         constraints = {'value': [val_left, val_left + val_range_size],
                        'std': [std_left, std_left + std_range_size]}
