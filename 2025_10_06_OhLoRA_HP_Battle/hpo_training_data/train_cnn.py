@@ -288,6 +288,7 @@ def load_cnn_model_before_train(dataset_name, hps):
 # - test_dataset                (torch.utils.data.Dataset) : 테스트 데이터셋
 # - train_dataset_label_distrib (list)                     : 학습+검증 데이터셋 label 분포
 # - test_dataset_label_distrib  (list)                     : 테스트 데이터셋 label 분포
+# - labels_trained              (list)                     : 각 label 의 실제 학습/테스트 데이터셋 포함 여부 (각 항목은 0 or 1)
 
 def load_dataset(dataset_name, constraints):
     dataset_info_df = pd.read_csv(f'test/{dataset_name}/dataset_info.csv', index_col=0)
@@ -327,7 +328,16 @@ def load_dataset(dataset_name, constraints):
     train_dataset_label_distrib.sort(reverse=True)
     test_dataset_label_distrib.sort(reverse=True)
 
-    return train_dataset, valid_dataset, test_dataset, train_dataset_label_distrib, test_dataset_label_distrib
+    # label trained or not info
+    labels_trained = [0 for _ in range(NUM_CLASSES)]
+    for label_name in train_dataset_value_counts[:5].index:
+        if dataset_name == 'cifar_10':
+            labels_trained[LABELS_CIFAR_10[label_name]] = 1
+        else:
+            labels_trained[int(label_name)] = 1
+
+    return (train_dataset, valid_dataset, test_dataset, train_dataset_label_distrib, test_dataset_label_distrib,
+            labels_trained)
 
 
 # Base CNN 학습 실시 및 모델 저장
@@ -462,7 +472,7 @@ if __name__ == '__main__':
             constraints = {'value': [40, 64]}
 
         cnn_model = load_cnn_model_before_train(dataset_name, hps)
-        train_dataset, valid_dataset, test_dataset, train_dataset_label_distrib, test_dataset_label_distrib =(
+        train_dataset, valid_dataset, test_dataset, train_dataset_label_distrib, test_dataset_label_distrib, labels_trained =(
             load_dataset(dataset_name, constraints))
 
         print(f'train data label distrib : {train_dataset_label_distrib}')
