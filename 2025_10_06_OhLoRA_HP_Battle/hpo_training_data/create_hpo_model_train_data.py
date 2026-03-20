@@ -4,6 +4,7 @@ from train_cnn import load_cnn_model_before_train, load_dataset, train_cnn, test
 from train_cnn import NUM_CLASSES, EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA
 
 import random
+import numpy as np
 import pandas as pd
 
 import os
@@ -41,9 +42,9 @@ def initialize_data_dict():
 
 
 def initialize_hp_candidates():
-    return {'dropout_conv_earlier': [0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25],
-            'dropout_conv_later': [0.0, 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25],
-            'dropout_fc': [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6],
+    return {'dropout_conv_earlier': list(np.linspace(0.0, 0.3, 301)),
+            'dropout_conv_later': list(np.linspace(0.0, 0.3, 301)),
+            'dropout_fc': list(np.linspace(0.0, 0.6, 601)),
             'lr': [0.00002, 0.00003, 0.00005, 0.00007, 0.0001,
                    0.00015, 0.0002, 0.0003, 0.0005, 0.0007,
                    0.001, 0.0015, 0.002, 0.003, 0.005],
