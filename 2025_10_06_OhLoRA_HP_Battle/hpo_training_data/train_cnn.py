@@ -1,5 +1,4 @@
 
-import os
 import numpy as np
 import pandas as pd
 
@@ -8,6 +7,8 @@ import torch.nn as nn
 from torch.utils.data import Dataset, random_split
 from torchvision.io import read_image, ImageReadMode
 import torchvision.transforms as transforms
+
+from sklearn.metrics import accuracy_score, f1_score
 
 import os
 import sys
@@ -326,8 +327,8 @@ def load_dataset(dataset_name, constraints):
 # - best_epoch_model (torch.nn.modules) : Loss 가 가장 낮은 epoch 에서의 Auto-Encoder 모델
 
 def train_cnn(cnn_model, train_dataset, valid_dataset):
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE)
-    valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
 
     current_epoch = 0
     min_val_loss_epoch = -1  # Loss-based Early Stopping
@@ -362,6 +363,8 @@ def train_cnn(cnn_model, train_dataset, valid_dataset):
                                                    dropout_fc=cnn_model.dropout_fc,
                                                    activation_func=cnn_model.activation_func).to(cnn_model.device)
             best_epoch_model.load_state_dict(cnn_model.state_dict())
+            best_epoch_model.device = cnn_model.device
+            best_epoch_model.to(cnn_model.device)
 
         if current_epoch - min_val_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
@@ -376,15 +379,45 @@ def train_cnn(cnn_model, train_dataset, valid_dataset):
 # Last Update Date : -
 
 # Arguments:
-# - cnn_model    (nn.Module)                : 학습할 CNN 모델
-# - test_dataset (torch.utils.data.Dataset) : 테스트 데이터셋
+# - cnn_model       (nn.Module)                : 학습할 CNN 모델
+# - test_dataset    (torch.utils.data.Dataset) : 테스트 데이터셋
+# - print_cf_matrix (bool)                     : Confusion Matrix 출력 여부
 
 # Returns:
-# - accuracy (float) : 테스트 결과 정확도
-# - f1_score (float) : 테스트 결과 F1 Score
+# - accuracy        (float) : 테스트 결과 정확도
+# - f1_score_macro  (float) : 테스트 결과 Macro F1 Score
+# - f1_score_micro  (float) : 테스트 결과 Micro F1 Score
 
-def test_cnn(cnn_model, train_dataset):
-    raise NotImplementedError
+def test_cnn(cnn_model, test_dataset, print_cf_matrix=False):
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=False)
+    all_pred = np.array([])
+    all_gt = np.array([])
+    cf_matrix = np.zeros((NUM_CLASSES, NUM_CLASSES))
+
+    for idx, (images, labels) in enumerate(test_loader):
+        images = images.to(cnn_model.device)
+        predictions = cnn_model(images)
+        predictions_np = predictions.detach().cpu().numpy()
+        labels_np = labels.numpy()
+
+        pred = np.argmax(predictions_np, axis=1)
+        gt = np.argmax(labels_np, axis=1)
+
+        for pred_item, gt_item in zip(pred, gt):
+            cf_matrix[pred_item][gt_item] += 1
+
+        all_pred = np.concatenate((all_pred, pred))
+        all_gt = np.concatenate((all_gt, gt))
+
+    accuracy = round(accuracy_score(all_gt, all_pred), 4)
+    f1_score_macro = round(f1_score(all_gt, all_pred, average='macro'), 4)
+    f1_score_micro = round(f1_score(all_gt, all_pred, average='micro'), 4)
+
+    if print_cf_matrix:
+        print('==== CONFUSION MATRIX ====')
+        print(cf_matrix)
+
+    return accuracy, f1_score_macro, f1_score_micro
 
 
 if __name__ == '__main__':
@@ -410,6 +443,6 @@ if __name__ == '__main__':
         train_dataset, valid_dataset, test_dataset = load_dataset(dataset_name, constraints)
 
         val_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
-        accuracy, f1_score = test_cnn(best_epoch_model, test_dataset)
+        accuracy, f1_score_macro, f1_score_micro = test_cnn(best_epoch_model, test_dataset, print_cf_matrix=True)
 
-        print(f'accuracy : {accuracy}, f1_score: {f1_score}')
+        print(f'accuracy : {accuracy}, f1_score: (macro: {f1_score_macro}, micro: {f1_score_micro})')
