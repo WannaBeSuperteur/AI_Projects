@@ -29,7 +29,7 @@ IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
 NUM_CLASSES = 10
 LABELS_CIFAR_10 = {'airplane': 0, 'automobile': 1, 'bird': 2, 'cat': 3, 'deer': 4, 'dog': 5, 'frog': 6, 'horse': 7,
                    'ship': 8, 'truck': 9}
-EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 32
+EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 64
 
 cnn_base_transform = transforms.Compose([
     transforms.ToPILImage(),

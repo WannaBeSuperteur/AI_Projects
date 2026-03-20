@@ -14,7 +14,7 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-TRIALS_PER_DATASET = 50
+TRIALS_PER_DATASET = 1200
 
 
 def initialize_data_dict():
@@ -45,9 +45,9 @@ def initialize_hp_candidates():
     return {'dropout_conv_earlier': list(np.linspace(0.0, 0.3, 301)),
             'dropout_conv_later': list(np.linspace(0.0, 0.3, 301)),
             'dropout_fc': list(np.linspace(0.0, 0.6, 601)),
-            'lr': [0.00002, 0.00003, 0.00005, 0.00007, 0.0001,
-                   0.00015, 0.0002, 0.0003, 0.0005, 0.0007,
-                   0.001, 0.0015, 0.002, 0.003, 0.005],
+            'lr': [0.00002, 0.000025, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.000085, 0.0001, 0.000125,
+                   0.00015, 0.000175, 0.0002, 0.00025, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.00085,
+                   0.001, 0.00125, 0.0015, 0.00175, 0.002, 0.0025, 0.003, 0.004, 0.005, 0.006],
             'activation_func': ['relu', 'leaky_relu'],
             'optimizer': ['adam', 'adamw'],
             'scheduler': ['exp_90', 'exp_95', 'exp_98', 'cosine']}
@@ -171,9 +171,9 @@ if __name__ == '__main__':
                 load_dataset(dataset_name, constraints))
 
             # check label distribution condition
-            too_many_train_data = sum(train_dataset_label_distrib) > 2000
+            too_many_train_data = sum(train_dataset_label_distrib) > 1500
             too_few_classes = len(train_dataset_label_distrib) < 5 or len(test_dataset_label_distrib) < 5
-            too_few_minor_class_data = too_few_classes or train_dataset_label_distrib[4] < 100 or test_dataset_label_distrib[4] < 20
+            too_few_minor_class_data = too_few_classes or train_dataset_label_distrib[4] < 125 or test_dataset_label_distrib[4] < 25
 
             if too_many_train_data or too_few_minor_class_data:
                 print(f'rejected distribution: train={train_dataset_label_distrib}, test={test_dataset_label_distrib}')
