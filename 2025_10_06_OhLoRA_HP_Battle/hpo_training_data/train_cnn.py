@@ -275,15 +275,18 @@ def load_cnn_model_before_train(dataset_name, hps):
 # Create Date : 2026.03.19
 # Last Update Date : 2026.03.20
 # - 학습 데이터셋 -> 학습 + 검증 데이터셋으로 분리
+# - 학습 및 테스트 데이터셋 분포 정보 반환 추가
 
 # Arguments:
 # - dataset_name (str)  : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
 # - constraints  (dict) : 데이터셋 constraint list
 
 # Returns:
-# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
-# - valid_dataset (torch.utils.data.Dataset) : 검증 (valid) 데이터셋
-# - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
+# - train_dataset               (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - valid_dataset               (torch.utils.data.Dataset) : 검증 (valid) 데이터셋
+# - test_dataset                (torch.utils.data.Dataset) : 테스트 데이터셋
+# - train_dataset_label_distrib (list)                     : 학습+검증 데이터셋 label 분포
+# - test_dataset_label_distrib  (list)                     : 테스트 데이터셋 label 분포
 
 def load_dataset(dataset_name, constraints):
     dataset_info_df = pd.read_csv(f'test/{dataset_name}/dataset_info.csv', index_col=0)
@@ -295,6 +298,11 @@ def load_dataset(dataset_name, constraints):
 
     train_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'train']
     test_dataset_info_df = dataset_info_df[dataset_info_df['tvt_type'] == 'test']
+
+    train_dataset_label_distrib = list(train_dataset_info_df['label'].value_counts())
+    test_dataset_label_distrib = list(test_dataset_info_df['label'].value_counts())
+    train_dataset_label_distrib.sort(reverse=True)
+    test_dataset_label_distrib.sort(reverse=True)
 
     train_valid_dataset = BaseCNNImageDataset(train_dataset_info_df,
                                               transform=cnn_base_transform,
@@ -310,7 +318,7 @@ def load_dataset(dataset_name, constraints):
                                        dataset_name=dataset_name,
                                        tvt_type='test')
 
-    return train_dataset, valid_dataset, test_dataset
+    return train_dataset, valid_dataset, test_dataset, train_dataset_label_distrib, test_dataset_label_distrib
 
 
 # Base CNN 학습 실시 및 모델 저장
@@ -442,7 +450,11 @@ if __name__ == '__main__':
             constraints = {'value': [40, 64]}
 
         cnn_model = load_cnn_model_before_train(dataset_name, hps)
-        train_dataset, valid_dataset, test_dataset = load_dataset(dataset_name, constraints)
+        train_dataset, valid_dataset, test_dataset, train_dataset_label_distrib, test_dataset_label_distrib =(
+            load_dataset(dataset_name, constraints))
+
+        print(f'train data label distrib : {train_dataset_label_distrib}')
+        print(f'test data label distrib : {test_dataset_label_distrib}')
 
         val_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
         accuracy, f1_score_macro, f1_score_micro = test_cnn(best_epoch_model, test_dataset, print_cf_matrix=True)
