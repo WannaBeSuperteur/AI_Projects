@@ -18,7 +18,7 @@ from global_common.torch_training import run_train, run_validation
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
-MAX_EPOCHS = 300
+MAX_EPOCHS = 70
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
@@ -384,6 +384,9 @@ def train_cnn(cnn_model, train_dataset, valid_dataset):
             best_epoch_model.to(cnn_model.device)
 
         if current_epoch - min_val_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            break
+
+        if current_epoch >= MAX_EPOCHS:
             break
 
         current_epoch += 1
