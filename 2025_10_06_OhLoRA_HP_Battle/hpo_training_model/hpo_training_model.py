@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import os
 
+from torch.utils.data import Dataset
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 NUM_CLASSES = 10
 EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 64
@@ -36,3 +38,14 @@ class HPOTrainingModel(nn.Module):
         return x
 
 
+class HPOTrainingDataset(Dataset):
+    def __init__(self, dataset_df, dataset_name, tvt_type):
+        self.dataset_df = dataset_df
+        self.dataset_name = dataset_name
+        self.tvt_type = tvt_type          # 'train', 'valid' or 'test'
+
+    def __len__(self):
+        return len(self.dataset_df)
+
+    def __getitem__(self, idx):
+        return self.dataset_df.iloc[idx]
