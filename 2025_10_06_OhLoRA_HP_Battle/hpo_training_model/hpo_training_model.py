@@ -80,14 +80,37 @@ def merge_dataset_df(dataset_name):
     return merged_dataset_df
 
 
-# HPO 모델 학습
+# HPO 모델 로딩 (학습할 모델)
+# Create Date : 2026.03.29
+# Last Update Date : -
+
+# Arguments:
+# - 없음
+
+# Returns:
+# - hpo_model (torch.nn.modules) : 학습할 HPO 모델
+
+def load_hpo_model():
+    hpo_model = HPOTrainingModel()
+    hpo_model.optimizer = torch.optim.AdamW(hpo_model.parameters(), lr=0.001)
+    hpo_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=hpo_model.optimizer, gamma=0.95)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    hpo_model.to(device)
+    hpo_model.device = device
+
+    return hpo_model
+
+
+# HPO 모델 학습 및 저장
 # Create Date : 2026.03.29
 # Last Update Date : -
 
 # Arguments:
 # - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - hpo_model     (torch.nn.modules)         : HPO 모델
 
-def train_hpo_model(train_dataset):
+def train_hpo_model(train_dataset, hpo_model):
     raise NotImplementedError
 
 
@@ -97,8 +120,9 @@ def train_hpo_model(train_dataset):
 
 # Arguments:
 # - test_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - hpo_model    (torch.nn.modules)         : HPO 모델
 
-def test_hpo_model(test_dataset):
+def test_hpo_model(test_dataset, hpo_model):
     raise NotImplementedError
 
 
@@ -116,5 +140,6 @@ if __name__ == '__main__':
         train_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='train')
         test_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='test')
 
-        train_hpo_model(train_dataset)
-        test_hpo_model(test_dataset)
+        hpo_model = load_hpo_model()
+        train_hpo_model(train_dataset, hpo_model)
+        test_hpo_model(test_dataset, hpo_model)
