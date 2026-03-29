@@ -80,6 +80,28 @@ def merge_dataset_df(dataset_name):
     return merged_dataset_df
 
 
+# HPO 모델 학습
+# Create Date : 2026.03.29
+# Last Update Date : -
+
+# Arguments:
+# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+
+def train_hpo_model(train_dataset):
+    raise NotImplementedError
+
+
+# HPO 모델 테스트
+# Create Date : 2026.03.29
+# Last Update Date : -
+
+# Arguments:
+# - test_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+
+def test_hpo_model(test_dataset):
+    raise NotImplementedError
+
+
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
@@ -94,5 +116,5 @@ if __name__ == '__main__':
         train_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='train')
         test_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='test')
 
-        print(train_df)
-        print(test_df)
+        train_hpo_model(train_dataset)
+        test_hpo_model(test_dataset)
