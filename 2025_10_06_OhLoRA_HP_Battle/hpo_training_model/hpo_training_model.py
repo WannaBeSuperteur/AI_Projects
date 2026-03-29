@@ -1,11 +1,15 @@
 
+import pandas as pd
 import torch
 import torch.nn as nn
 import os
 
 from torch.utils.data import Dataset
 
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+HPO_TRAINING_DATA_PATH = f'{PROJECT_DIR_PATH}/hpo_training_data/test'
+
 NUM_CLASSES = 10
 EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 64
 NUM_FEATURES_INPUT = 2 * EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA + NUM_CLASSES + 16
@@ -49,3 +53,36 @@ class HPOTrainingDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.dataset_df.iloc[idx]
+
+
+# 학습 데이터셋을 merge 하여 최종 데이터셋 생성
+# Create Date : 2026.03.29
+# Last Update Date : -
+
+# Arguments:
+# - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+
+# Returns:
+# - merged_dataset_df (Pandas DataFrame) : 해당 dataset name 에 대한 HPO model 의 최종 데이터셋
+
+def merge_dataset_df(dataset_name):
+    csv_path = f'{HPO_TRAINING_DATA_PATH}/{dataset_name}'
+    csv_names = os.listdir(csv_path)
+    dfs = []
+
+    for csv_name in csv_names:
+        if 'hpo_model_train_dataset_df' in csv_name:
+            df_path = os.path.join(csv_path, csv_name)
+            df = pd.read_csv(df_path)
+            dfs.append(df)
+
+    merged_dataset_df = pd.concat(dfs, ignore_index=True)
+    return merged_dataset_df
+
+
+if __name__ == '__main__':
+    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
+
+    for dataset_name in dataset_names:
+        merged_dataset_df = merge_dataset_df(dataset_name)
+        print(merged_dataset_df)
