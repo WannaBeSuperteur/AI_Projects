@@ -85,4 +85,14 @@ if __name__ == '__main__':
 
     for dataset_name in dataset_names:
         merged_dataset_df = merge_dataset_df(dataset_name)
-        print(merged_dataset_df)
+        merged_dataset_size = len(merged_dataset_df)
+        merged_dataset_train_size = int(0.9 * merged_dataset_size)
+
+        train_df = merged_dataset_df.iloc[:merged_dataset_train_size, :]
+        test_df = merged_dataset_df.iloc[merged_dataset_train_size:, :]
+
+        train_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='train')
+        test_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='test')
+
+        print(train_df)
+        print(test_df)
