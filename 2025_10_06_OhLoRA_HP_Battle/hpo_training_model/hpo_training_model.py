@@ -73,10 +73,26 @@ def merge_dataset_df(dataset_name):
     csv_names = os.listdir(csv_path)
     dfs = []
 
+    hp_activate_funcs = ['relu', 'leaky_relu']
+    hp_optimizers = ['adam', 'adamw']
+    hp_schedulers = ['exp_90', 'exp_95', 'exp_98', 'cosine']
+
     for csv_name in csv_names:
         if 'hpo_model_train_dataset_df' in csv_name:
             df_path = os.path.join(csv_path, csv_name)
             df = pd.read_csv(df_path)
+
+            for active_func in hp_activate_funcs:
+                df[f'actfunc_{active_func}'] = df['hp_activation_func'].map(
+                    lambda x: 1 if x == active_func else 0)
+
+            for optimizer in hp_optimizers:
+                df[f'opt_{optimizer}'] = df['hp_optimizer'].map(lambda x: 1 if x == optimizer else 0)
+
+            for scheduler in hp_schedulers:
+                df[f'sch_{scheduler}'] = df['hp_scheduler'].map(lambda x: 1 if x == scheduler else 0)
+
+            df.drop(columns=['hp_activation_func', 'hp_optimizer', 'hp_scheduler'], inplace=True)
             dfs.append(df)
 
     merged_dataset_df = pd.concat(dfs, ignore_index=True)
@@ -208,11 +224,14 @@ def test_hpo_model(test_dataset, hpo_model):
 # - train_df (Pandas DataFrame) : 학습 데이터셋의 DataFrame
 
 # Returns:
-# - train_means (list(float)) : 학습 데이터셋의 각 input column 별 평균값 목록
-# - train_stds  (list(float)) : 학습 데이터셋의 각 input column 별 표준편차 목록
+# - train_means (dict(float)) : 학습 데이터셋의 각 input column 별 평균값 목록
+# - train_stds  (dict(float)) : 학습 데이터셋의 각 input column 별 표준편차 목록
 
 def get_means_and_stds(train_df):
-    raise NotImplementedError
+    train_means = train_df.mean().to_dict()
+    train_stds = train_df.std().to_dict()
+
+    return train_means, train_stds
 
 
 # HPO 모델 tabular 데이터 전처리 함수
@@ -221,8 +240,8 @@ def get_means_and_stds(train_df):
 
 # Arguments:
 # - dataset_df (Pandas DataFrame) : 학습 또는 테스트 데이터셋의 DataFrame
-# - means      (list(float))      : 각 input column 별 평균값 목록
-# - stds       (list(float))      : 각 input column 별 표준편차 목록
+# - means      (dict(float))      : 각 input column 별 평균값 목록
+# - stds       (dict(float))      : 각 input column 별 표준편차 목록
 
 # Returns:
 # - preprocessed_dataset_df (Pandas DataFrame) : 학습 또는 테스트 데이터셋의 전처리된 DataFrame
