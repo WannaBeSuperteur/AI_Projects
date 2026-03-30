@@ -200,6 +200,37 @@ def test_hpo_model(test_dataset, hpo_model):
     raise NotImplementedError
 
 
+# HPO 모델 tabular 데이터 전처리를 위한 (학습 데이터 기준) 각 column의 평균, 표준편차 계산 + 파일로 저장 (향후 inference 시 처리용)
+# Create Date : 2026.03.30
+# Last Update Date : -
+
+# Arguments:
+# - train_df (Pandas DataFrame) : 학습 데이터셋의 DataFrame
+
+# Returns:
+# - train_means (list(float)) : 학습 데이터셋의 각 input column 별 평균값 목록
+# - train_stds  (list(float)) : 학습 데이터셋의 각 input column 별 표준편차 목록
+
+def get_means_and_stds(train_df):
+    raise NotImplementedError
+
+
+# HPO 모델 tabular 데이터 전처리 함수
+# Create Date : 2026.03.30
+# Last Update Date : -
+
+# Arguments:
+# - dataset_df (Pandas DataFrame) : 학습 또는 테스트 데이터셋의 DataFrame
+# - means      (list(float))      : 각 input column 별 평균값 목록
+# - stds       (list(float))      : 각 input column 별 표준편차 목록
+
+# Returns:
+# - preprocessed_dataset_df (Pandas DataFrame) : 학습 또는 테스트 데이터셋의 전처리된 DataFrame
+
+def preprocess_data(dataset_df, means, stds):
+    raise NotImplementedError
+
+
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
@@ -208,12 +239,18 @@ if __name__ == '__main__':
         merged_dataset_size = len(merged_dataset_df)
         merged_dataset_train_size = int(0.9 * merged_dataset_size)
 
-        train_df = merged_dataset_df.iloc[:merged_dataset_train_size, :]
-        test_df = merged_dataset_df.iloc[merged_dataset_train_size:, :]
+        train_df_raw = merged_dataset_df.iloc[:merged_dataset_train_size, :]
+        test_df_raw = merged_dataset_df.iloc[merged_dataset_train_size:, :]
+
+        # pre-process train & test data
+        train_means, train_stds = get_means_and_stds(train_df_raw)
+        train_df = preprocess_data(train_df_raw, train_means, train_stds)
+        test_df = preprocess_data(test_df_raw, train_means, train_stds)
 
         train_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='train')
         test_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='test')
 
+        # train and test HPO model
         hpo_model = load_hpo_model()
         train_hpo_model(train_dataset, hpo_model)
         test_hpo_model(test_dataset, hpo_model)
