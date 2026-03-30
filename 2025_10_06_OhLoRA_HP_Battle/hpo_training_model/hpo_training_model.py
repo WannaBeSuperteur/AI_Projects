@@ -4,16 +4,19 @@ import torch
 import torch.nn as nn
 import os
 
-from torch.utils.data import Dataset
-
+from torch.utils.data import Dataset, DataLoader, random_split
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 HPO_TRAINING_DATA_PATH = f'{PROJECT_DIR_PATH}/hpo_training_data/test'
+HPO_TRAINING_MODEL_PATH = f'{PROJECT_DIR_PATH}/hpo_training_model'
 
 NUM_CLASSES = 10
 EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 64
 NUM_FEATURES_INPUT = 2 * EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA + NUM_CLASSES + 16
 NUM_FEATURES_OUTPUT = 1
+
+TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
+EARLY_STOPPING_ROUNDS = 10
 
 
 class HPOTrainingModel(nn.Module):
@@ -103,7 +106,7 @@ def load_hpo_model():
 
 
 # HPO 모델 학습 및 저장
-# Create Date : 2026.03.29
+# Create Date : 2026.03.30
 # Last Update Date : -
 
 # Arguments:
@@ -111,7 +114,78 @@ def load_hpo_model():
 # - hpo_model     (torch.nn.modules)         : HPO 모델
 
 def train_hpo_model(train_dataset, hpo_model):
-    raise NotImplementedError
+    hpo_model.train()
+
+    n_train_size = int(0.9 * len(train_dataset))
+    n_valid_size = len(train_dataset) - n_train_size
+    train_dataset_train, train_dataset_valid = random_split(train_dataset, [n_train_size, n_valid_size])
+
+    train_loader = DataLoader(train_dataset_train, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    valid_loader = DataLoader(train_dataset_valid, batch_size=VALID_BATCH_SIZE, shuffle=True)
+    loss_func = nn.MSELoss(reduction='sum')
+
+    current_epoch = 0
+    min_valid_loss_epoch = -1  # Loss-based Early Stopping (Loss = Error = MSE for HPO training model)
+    min_valid_loss = None
+    best_epoch_model = None
+    val_loss_list = []
+
+    while True:
+
+        # training
+        hpo_model.train()
+        train_total_rows = 0
+        train_loss_sum = 0.0
+
+        for idx, data in enumerate(train_loader):
+            print(data)
+            inputs, labels = split_data(data)
+
+            hpo_model.optimizer.zero_grad()
+            outputs = hpo_model(inputs).to(torch.float32)
+
+            loss = loss_func(outputs, labels)
+            loss.backward()
+            hpo_model.optimizer.step()
+
+            train_loss_sum += loss.item()
+            train_total_rows += labels.size(0)
+
+        train_loss = train_loss_sum / train_total_rows
+        print(f'train_loss: {train_loss}')
+
+        # validation
+        hpo_model.eval()
+        valid_total_rows = 0
+        valid_loss_sum = 0.0
+
+        for idx, data in enumerate(valid_loader):
+            print(data)
+            with torch.no_grad():
+                inputs, labels = split_data(data)
+                outputs = hpo_model(inputs).to(torch.float32)
+
+            loss = loss_func(outputs, labels)
+            valid_loss_sum += loss.item()
+            valid_total_rows += labels.size(0)
+
+        valid_loss = valid_loss_sum / valid_total_rows
+        print(f'train_loss: {train_loss}')
+        val_loss_list.append(valid_loss)
+
+        # handle early stopping
+        current_epoch += 1
+        if min_valid_loss is None or valid_loss < min_valid_loss:
+            min_valid_loss_epoch = current_epoch
+            best_epoch_model = load_hpo_model().to(hpo_model.device)
+            best_epoch_model.device = hpo_model.device
+            best_epoch_model.load_state_dict(hpo_model.state_dict())
+
+        if current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            break
+
+    # save best epoch model
+    torch.save(best_epoch_model.state_dict(), f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt')
 
 
 # HPO 모델 테스트
