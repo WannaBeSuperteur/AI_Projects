@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
         # initialize dict
         data_dict = initialize_data_dict()
-        data_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_7.csv'
+        data_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_8.csv'
 
         # hyper params
         current_trial = 0
