@@ -235,7 +235,7 @@ def get_means_and_stds(train_df):
 
 
 # HPO 모델 tabular 데이터 전처리 함수
-# Create Date : 2026.03.30
+# Create Date : 2026.03.31
 # Last Update Date : -
 
 # Arguments:
@@ -247,7 +247,15 @@ def get_means_and_stds(train_df):
 # - preprocessed_dataset_df (Pandas DataFrame) : 학습 또는 테스트 데이터셋의 전처리된 DataFrame
 
 def preprocess_data(dataset_df, means, stds):
-    raise NotImplementedError
+    target_column = 'f1_score_macro'
+    column_names = list(dataset_df.columns)
+    preprocessed_dataset_df = pd.DataFrame(dataset_df)
+
+    for column in column_names:
+        if column != target_column:
+            preprocessed_dataset_df[column] = dataset_df[column].apply(lambda x: (x - means[column]) / stds[column])
+
+    return preprocessed_dataset_df
 
 
 if __name__ == '__main__':
