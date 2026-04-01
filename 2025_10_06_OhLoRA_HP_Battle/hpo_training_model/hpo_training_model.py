@@ -55,7 +55,17 @@ class HPOTrainingDataset(Dataset):
         return len(self.dataset_df)
 
     def __getitem__(self, idx):
-        return self.dataset_df.iloc[idx]
+        all_values = self.dataset_df.iloc[idx].to_dict()
+
+        inputs = []
+        labels = []
+        for k, v in all_values.items():
+            if k == 'f1_score_macro':
+                labels.append(v)
+            else:
+                inputs.append(v)
+
+        return inputs, labels
 
 
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
@@ -122,7 +132,7 @@ def load_hpo_model():
 
 
 # HPO 모델 학습 및 저장
-# Create Date : 2026.03.30
+# Create Date : 2026.04.01
 # Last Update Date : -
 
 # Arguments:
@@ -153,9 +163,9 @@ def train_hpo_model(train_dataset, hpo_model):
         train_total_rows = 0
         train_loss_sum = 0.0
 
-        for idx, data in enumerate(train_loader):
-            print(data)
-            inputs, labels = split_data(data)
+        for idx, (inputs, labels) in enumerate(train_loader):
+            print(inputs)
+            print(labels)
 
             hpo_model.optimizer.zero_grad()
             outputs = hpo_model(inputs).to(torch.float32)
@@ -175,10 +185,10 @@ def train_hpo_model(train_dataset, hpo_model):
         valid_total_rows = 0
         valid_loss_sum = 0.0
 
-        for idx, data in enumerate(valid_loader):
-            print(data)
+        for idx, (inputs, labels) in enumerate(valid_loader):
+            print(inputs)
+            print(labels)
             with torch.no_grad():
-                inputs, labels = split_data(data)
                 outputs = hpo_model(inputs).to(torch.float32)
 
             loss = loss_func(outputs, labels)
