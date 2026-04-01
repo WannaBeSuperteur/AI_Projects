@@ -65,7 +65,9 @@ class HPOTrainingDataset(Dataset):
             else:
                 inputs.append(v)
 
-        return inputs, labels
+        inputs_tensor = torch.tensor(inputs)
+        labels_tensor = torch.tensor(labels)
+        return inputs_tensor, labels_tensor
 
 
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
