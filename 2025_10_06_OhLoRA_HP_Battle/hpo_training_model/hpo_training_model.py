@@ -425,7 +425,7 @@ def run_threshold_cutoff_test():
         result_dict[f'input_features_{dataset_name}'] = []
 
     # threshold cutoff test
-    threshold_cutoffs = np.linspace(0.0, 0.3, 121)
+    threshold_cutoffs = np.linspace(0.0, 0.3, 151)
 
     for threshold_cutoff in threshold_cutoffs:
         result = generate_and_test_hpo_models(threshold_cutoff=threshold_cutoff)
@@ -435,9 +435,9 @@ def run_threshold_cutoff_test():
         for dataset_name in dataset_names:
             os.remove(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt')
 
-    # save threshold cutoff test result
-    result_df = pd.DataFrame(result_dict)
-    result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff.csv')
+        # save threshold cutoff test result
+        result_df = pd.DataFrame(result_dict)
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff.csv')
 
 
 if __name__ == '__main__':
