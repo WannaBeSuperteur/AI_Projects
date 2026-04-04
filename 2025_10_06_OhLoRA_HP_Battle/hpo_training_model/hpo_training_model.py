@@ -307,6 +307,7 @@ def load_trained_hpo_model():
     trained_hpo_model = HPOTrainingModel()
     model_path = f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt'
     trained_hpo_model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
+    trained_hpo_model.to(device)
     trained_hpo_model.device = device
 
     return trained_hpo_model
