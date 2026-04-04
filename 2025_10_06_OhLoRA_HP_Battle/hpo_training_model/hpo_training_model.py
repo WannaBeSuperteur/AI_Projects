@@ -20,11 +20,11 @@ EARLY_STOPPING_ROUNDS = 10
 
 
 class HPOTrainingModel(nn.Module):
-    def __init__(self):
+    def __init__(self, num_input_features):
         super(HPOTrainingModel, self).__init__()
 
         self.fc1 = nn.Sequential(
-            nn.Linear(NUM_FEATURES_INPUT, 1024),
+            nn.Linear(num_input_features, 1024),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -72,15 +72,17 @@ class HPOTrainingDataset(Dataset):
 
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
 # Create Date : 2026.03.29
-# Last Update Date : -
+# Last Update Date : 2026.04.04
+# - HPO 모델 학습용 데이터셋의 valid feature (= column) 만 반영
 
 # Arguments:
 # - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
 
 # Returns:
 # - merged_dataset_df (Pandas DataFrame) : 해당 dataset name 에 대한 HPO model 의 최종 데이터셋
+# - valid_features    (list)             : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
 
-def merge_dataset_df(dataset_name):
+def merge_dataset_df(dataset_name, valid_features):
     csv_path = f'{HPO_TRAINING_DATA_PATH}/{dataset_name}'
     csv_names = os.listdir(csv_path)
     dfs = []
@@ -104,7 +106,8 @@ def merge_dataset_df(dataset_name):
             for scheduler in hp_schedulers:
                 df[f'sch_{scheduler}'] = df['hp_scheduler'].map(lambda x: 1 if x == scheduler else 0)
 
-            df.drop(columns=['hp_activation_func', 'hp_optimizer', 'hp_scheduler'], inplace=True)
+            df.drop(columns=['hp_activation_func', 'hp_optimizer', 'hp_scheduler'], inplace=True, errors='ignore')
+            df = df[valid_features]
             dfs.append(df)
 
     merged_dataset_df = pd.concat(dfs, ignore_index=True)
@@ -113,17 +116,18 @@ def merge_dataset_df(dataset_name):
 
 # HPO 모델 로딩 (학습할 모델)
 # Create Date : 2026.03.29
-# Last Update Date : -
+# Last Update Date : 2026.04.04
+# - input feature (valid feature) 개수 반영
 
 # Arguments:
-# - 없음
+# - num_input_features (int) : input feature (valid feature) 개수
 
 # Returns:
 # - hpo_model (torch.nn.modules) : 학습할 HPO 모델
 
-def load_hpo_model():
-    hpo_model = HPOTrainingModel()
-    hpo_model.optimizer = torch.optim.AdamW(hpo_model.parameters(), lr=0.001)
+def load_hpo_model(num_input_features):
+    hpo_model = HPOTrainingModel(num_input_features)
+    hpo_model.optimizer = torch.optim.AdamW(hpo_model.parameters(), lr=0.00025)
     hpo_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=hpo_model.optimizer, gamma=0.95)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -138,10 +142,11 @@ def load_hpo_model():
 # Last Update Date : -
 
 # Arguments:
-# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
-# - hpo_model     (torch.nn.modules)         : HPO 모델
+# - train_dataset      (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - hpo_model          (torch.nn.modules)         : HPO 모델
+# - num_input_features (int)                      : input feature (valid feature) 개수
 
-def train_hpo_model(train_dataset, hpo_model):
+def train_hpo_model(train_dataset, hpo_model, num_input_features):
     hpo_model.train()
 
     n_train_size = int(0.9 * len(train_dataset))
@@ -205,7 +210,7 @@ def train_hpo_model(train_dataset, hpo_model):
         if min_valid_loss is None or valid_loss < min_valid_loss:
             min_valid_loss_epoch = current_epoch
             min_valid_loss = valid_loss
-            best_epoch_model = load_hpo_model().to(hpo_model.device)
+            best_epoch_model = load_hpo_model(num_input_features).to(hpo_model.device)
             best_epoch_model.device = hpo_model.device
             best_epoch_model.load_state_dict(hpo_model.state_dict())
 
@@ -263,7 +268,7 @@ def test_hpo_model(test_dataset, hpo_model):
     return mae_error, mse_error, pred_true_corr, test_result_df
 
 
-# HPO 모델 tabular 데이터 전처리를 위한 (학습 데이터 기준) 각 column의 평균, 표준편차 계산 + 파일로 저장 (향후 inference 시 처리용)
+# HPO 모델 학습용 tabular 데이터 전처리를 위한 (학습 데이터 기준) 각 column의 평균, 표준편차 계산 + 파일로 저장 (향후 inference 시 처리용)
 # Create Date : 2026.03.30
 # Last Update Date : -
 
@@ -281,7 +286,7 @@ def get_means_and_stds(train_df):
     return train_means, train_stds
 
 
-# HPO 모델 tabular 데이터 전처리 함수
+# HPO 모델 학습용 tabular 데이터 전처리 함수
 # Create Date : 2026.03.31
 # Last Update Date : -
 
@@ -305,8 +310,30 @@ def preprocess_data(dataset_df, means, stds):
     return preprocessed_dataset_df
 
 
-def load_trained_hpo_model():
-    trained_hpo_model = HPOTrainingModel()
+# HPO 모델 학습용 데이터셋의 valid feature (= column) = abs({target 과의 corr-coef}) >= 0.05 인 column 리스트 반환
+# Create Date : 2026.04.04
+# Last Update Date : -
+
+# Arguments:
+# - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+
+# Returns:
+# - valid_features (list) : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
+
+def get_valid_feature_list(dataset_name):
+    corrs_csv_path = f'{HPO_TRAINING_DATA_PATH}/{dataset_name}/hpo_model_train_dataset_corrs.csv'
+    corrs_df = pd.read_csv(corrs_csv_path, index_col=0)
+    valid_features = []
+
+    for _, row in corrs_df.iterrows():
+        if abs(row[0]) >= 0.1 or row.name == 'f1_score_macro':
+            valid_features.append(row.name)
+
+    return valid_features
+
+
+def load_trained_hpo_model(num_input_features):
+    trained_hpo_model = HPOTrainingModel(num_input_features)
     model_path = f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt'
     trained_hpo_model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
     trained_hpo_model.to(device)
@@ -319,10 +346,15 @@ if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    valid_features_dict = {}
+    for dataset_name in dataset_names:
+        valid_features = get_valid_feature_list(dataset_name)
+        valid_features_dict[dataset_name] = valid_features
+
     for dataset_name in dataset_names:
         print(f'\ndataset name : {dataset_name}')
 
-        merged_dataset_df = merge_dataset_df(dataset_name)
+        merged_dataset_df = merge_dataset_df(dataset_name, valid_features=valid_features_dict[dataset_name])
         merged_dataset_size = len(merged_dataset_df)
         merged_dataset_train_size = int(0.9 * merged_dataset_size)
 
@@ -338,15 +370,18 @@ if __name__ == '__main__':
         test_dataset = HPOTrainingDataset(dataset_df=test_df, dataset_name=dataset_name, tvt_type='test')
 
         # train and test HPO model
+        num_input_features = len(valid_features_dict[dataset_name]) - NUM_FEATURES_OUTPUT
+
         try:
-            trained_hpo_model = load_trained_hpo_model()
+            trained_hpo_model = load_trained_hpo_model(num_input_features)
             print('LOAD TRAINED HPO MODEL SUCCESSFUL !!')
         except:
             print('load trained HPO model failed, training ...')
-            hpo_model = load_hpo_model()
-            train_hpo_model(train_dataset, hpo_model)
-            trained_hpo_model = load_trained_hpo_model()
+            hpo_model = load_hpo_model(num_input_features=num_input_features)
+            train_hpo_model(train_dataset, hpo_model, num_input_features=num_input_features)
+            trained_hpo_model = load_trained_hpo_model(num_input_features)
 
         mae_error, mse_error, pred_true_corr, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
         print(f'MAE error: {mae_error}, MSE error: {mse_error}, pred-true corr-coef: {pred_true_corr}')
+        print(f'input feature count: {num_input_features}')
         test_result_df.to_csv(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_test_{dataset_name}.csv')
