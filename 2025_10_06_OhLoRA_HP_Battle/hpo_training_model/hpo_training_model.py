@@ -5,12 +5,15 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import os
+import time
 
 from torch.utils.data import Dataset, DataLoader, random_split
+
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 HPO_TRAINING_DATA_PATH = f'{PROJECT_DIR_PATH}/hpo_training_data/test'
 HPO_TRAINING_MODEL_PATH = f'{PROJECT_DIR_PATH}/hpo_training_model'
+
 
 NUM_CLASSES = 10
 EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 64
@@ -414,7 +417,7 @@ def generate_and_test_hpo_models(threshold_cutoff=0.05):
 def run_threshold_cutoff_test():
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
-    result_dict = {'threshold_cutoff': []}
+    result_dict = {'threshold_cutoff': [], 'elapsed_time': []}
     for dataset_name in dataset_names:
         result_dict[f'mse_{dataset_name}'] = []
     for dataset_name in dataset_names:
@@ -428,9 +431,13 @@ def run_threshold_cutoff_test():
     threshold_cutoffs = np.linspace(0.0, 0.3, 151)
 
     for threshold_cutoff in threshold_cutoffs:
+        start_at = time.time()
         result = generate_and_test_hpo_models(threshold_cutoff=threshold_cutoff)
+        elapsed_time = time.time() - start_at
+
         for k, v in result.items():
             result_dict[k].append(v)
+        result_dict['elapsed_time'].append(round(elapsed_time, 6))
 
         for dataset_name in dataset_names:
             os.remove(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt')
