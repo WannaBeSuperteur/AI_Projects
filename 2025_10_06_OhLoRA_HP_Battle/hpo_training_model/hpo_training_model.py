@@ -365,7 +365,7 @@ def generate_and_test_hpo_models(threshold_cutoff=0.05):
     result = {'threshold_cutoff': threshold_cutoff}
 
     for dataset_name in dataset_names:
-        valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=0.05)
+        valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoff)
         valid_features_dict[dataset_name] = valid_features
 
     for dataset_name in dataset_names:
