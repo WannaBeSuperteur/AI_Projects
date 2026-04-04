@@ -145,8 +145,9 @@ def load_hpo_model(num_input_features):
 # - train_dataset      (torch.utils.data.Dataset) : 학습 (train) 데이터셋
 # - hpo_model          (torch.nn.modules)         : HPO 모델
 # - num_input_features (int)                      : input feature (valid feature) 개수
+# - dataset_name       (str)                      : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
 
-def train_hpo_model(train_dataset, hpo_model, num_input_features):
+def train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name):
     hpo_model.train()
 
     n_train_size = int(0.9 * len(train_dataset))
@@ -310,29 +311,32 @@ def preprocess_data(dataset_df, means, stds):
     return preprocessed_dataset_df
 
 
-# HPO 모델 학습용 데이터셋의 valid feature (= column) = abs({target 과의 corr-coef}) >= 0.05 인 column 리스트 반환
+# HPO 모델 학습용 데이터셋의 valid feature (= column) = abs({target 과의 corr-coef}) >= cutoff 인 column 리스트 반환
 # Create Date : 2026.04.04
 # Last Update Date : -
 
 # Arguments:
-# - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+# - dataset_name     (str)   : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+# - threshold_cutoff (float) : Threshold cutoff (최솟값) for corr-coef
 
 # Returns:
 # - valid_features (list) : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
 
-def get_valid_feature_list(dataset_name):
+def get_valid_feature_list(dataset_name, threshold_cutoff):
     corrs_csv_path = f'{HPO_TRAINING_DATA_PATH}/{dataset_name}/hpo_model_train_dataset_corrs.csv'
     corrs_df = pd.read_csv(corrs_csv_path, index_col=0)
     valid_features = []
 
     for _, row in corrs_df.iterrows():
-        if abs(row[0]) >= 0.1 or row.name == 'f1_score_macro':
+        if abs(row[0]) >= threshold_cutoff or row.name == 'f1_score_macro':
             valid_features.append(row.name)
 
     return valid_features
 
 
-def load_trained_hpo_model(num_input_features):
+def load_trained_hpo_model(num_input_features, dataset_name):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     trained_hpo_model = HPOTrainingModel(num_input_features)
     model_path = f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt'
     trained_hpo_model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
@@ -342,13 +346,24 @@ def load_trained_hpo_model(num_input_features):
     return trained_hpo_model
 
 
-if __name__ == '__main__':
+# HPO 모델 생성 및 테스트 (메인 함수)
+# Create Date : 2026.04.04
+# Last Update Date : -
+
+# Arguments:
+# - threshold_cutoff (float) : Threshold cutoff (최솟값) for corr-coef
+
+# Returns:
+# - result (dict) : 모델 생성 및 테스트 결과
+
+def generate_and_test_hpo_models(threshold_cutoff=0.05):
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     valid_features_dict = {}
+    result = {'threshold_cutoff': threshold_cutoff}
+
     for dataset_name in dataset_names:
-        valid_features = get_valid_feature_list(dataset_name)
+        valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=0.05)
         valid_features_dict[dataset_name] = valid_features
 
     for dataset_name in dataset_names:
@@ -373,15 +388,44 @@ if __name__ == '__main__':
         num_input_features = len(valid_features_dict[dataset_name]) - NUM_FEATURES_OUTPUT
 
         try:
-            trained_hpo_model = load_trained_hpo_model(num_input_features)
+            trained_hpo_model = load_trained_hpo_model(num_input_features, dataset_name)
             print('LOAD TRAINED HPO MODEL SUCCESSFUL !!')
         except:
             print('load trained HPO model failed, training ...')
             hpo_model = load_hpo_model(num_input_features=num_input_features)
-            train_hpo_model(train_dataset, hpo_model, num_input_features=num_input_features)
-            trained_hpo_model = load_trained_hpo_model(num_input_features)
+            train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name)
+            trained_hpo_model = load_trained_hpo_model(num_input_features, dataset_name)
 
         mae_error, mse_error, pred_true_corr, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
         print(f'MAE error: {mae_error}, MSE error: {mse_error}, pred-true corr-coef: {pred_true_corr}')
         print(f'input feature count: {num_input_features}')
         test_result_df.to_csv(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_test_{dataset_name}.csv')
+
+        result[f'mse_{dataset_name}'] = round(mse_error, 6)
+        result[f'mae_{dataset_name}'] = round(mae_error, 6)
+        result[f'corrcoef_{dataset_name}'] = round(pred_true_corr, 6)
+        result[f'input_features_{dataset_name}'] = num_input_features
+
+    return result
+
+
+if __name__ == '__main__':
+    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
+
+    result_dict = {'threshold_cutoff': []}
+    for dataset_name in dataset_names:
+        result_dict[f'mse_{dataset_name}'] = []
+    for dataset_name in dataset_names:
+        result_dict[f'mae_{dataset_name}'] = []
+    for dataset_name in dataset_names:
+        result_dict[f'corrcoef_{dataset_name}'] = []
+    for dataset_name in dataset_names:
+        result_dict[f'input_features_{dataset_name}'] = []
+
+    result = generate_and_test_hpo_models(threshold_cutoff=0.0)
+    for k, v in result.items():
+        result_dict[k].append(v)
+
+    print(result_dict)
+    result_df = pd.DataFrame(result_dict)
+    result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff.csv')

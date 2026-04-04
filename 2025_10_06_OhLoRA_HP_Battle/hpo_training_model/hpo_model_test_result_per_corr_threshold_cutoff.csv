@@ -1,0 +1,2 @@
+,threshold_cutoff,mse_cifar_10,mse_fashion_mnist,mse_mnist,mae_cifar_10,mae_fashion_mnist,mae_mnist,corrcoef_cifar_10,corrcoef_fashion_mnist,corrcoef_mnist,input_features_cifar_10,input_features_fashion_mnist,input_features_mnist
+0,0.0,0.012756,0.039047,0.054163,0.089793,0.145098,0.125552,0.743463,0.791133,0.837143,111,123,139
