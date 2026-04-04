@@ -346,3 +346,5 @@ if __name__ == '__main__':
             trained_hpo_model = load_trained_hpo_model()
 
         mae_error, mse_error, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
+        print(f'MAE error: {mae_error}, MSE error: {mse_error}')
+        test_result_df.to_csv(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_test_{dataset_name}.csv')
