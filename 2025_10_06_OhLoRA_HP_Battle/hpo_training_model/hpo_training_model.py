@@ -333,7 +333,7 @@ if __name__ == '__main__':
         test_df = preprocess_data(test_df_raw, train_means, train_stds)
 
         train_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='train')
-        test_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='test')
+        test_dataset = HPOTrainingDataset(dataset_df=test_df, dataset_name=dataset_name, tvt_type='test')
 
         # train and test HPO model
         try:
