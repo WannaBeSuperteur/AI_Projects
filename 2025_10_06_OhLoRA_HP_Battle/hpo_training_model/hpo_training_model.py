@@ -204,6 +204,7 @@ def train_hpo_model(train_dataset, hpo_model):
         current_epoch += 1
         if min_valid_loss is None or valid_loss < min_valid_loss:
             min_valid_loss_epoch = current_epoch
+            min_valid_loss = valid_loss
             best_epoch_model = load_hpo_model().to(hpo_model.device)
             best_epoch_model.device = hpo_model.device
             best_epoch_model.load_state_dict(hpo_model.state_dict())
