@@ -7,15 +7,22 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 # 학습 데이터 분석 (입력 데이터 각 column 과 출력 column 간 상관계수)
 # Create Date: 2026.03.23
-# Last Update Date: -
+# Last Update Date: 2026.04.04
+# - hpo_model_train_dataset_df 로 시작하는 모든 csv 파일의 통계 반영
 
 # Arguments:
 # - dataset_name (str) : 데이터셋 이름 ('mnist', 'fashion_mnist' or 'cifar_10')
 
 def analyze_data(dataset_name):
-    dataset_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df.csv'
+    dataset_dfs = []
+    suffix_list = ['', '_2', '_3', '_4', '_5', '_6', '_7', '_8', '_9', '_10']
+    for suffix in suffix_list:
+        dataset_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df{suffix}.csv'
+        dataset_df_part = pd.read_csv(dataset_csv_path)
+        dataset_dfs.append(dataset_df_part)
+    dataset_df = pd.concat(dataset_dfs, ignore_index=True)
+
     corr_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_corrs.csv'
-    dataset_df = pd.read_csv(dataset_csv_path)
 
     # convert categorical columns to one-hot
     hp_activate_funcs = ['relu', 'leaky_relu']
