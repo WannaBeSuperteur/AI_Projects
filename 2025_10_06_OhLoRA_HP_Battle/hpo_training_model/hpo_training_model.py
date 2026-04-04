@@ -227,6 +227,7 @@ def train_hpo_model(train_dataset, hpo_model):
 # Returns:
 # - mae_error      (float)            : MAE error
 # - mse_error      (float)            : MSE error
+# - pred_true_corr (float)            : pred 값과 true (Ground Truth) 값 간의 상관계수
 # - test_result_df (Pandas DataFrame) : 테스트 결과 Pandas DataFrame
 
 def test_hpo_model(test_dataset, hpo_model):
@@ -257,8 +258,9 @@ def test_hpo_model(test_dataset, hpo_model):
     test_result_df = pd.DataFrame(test_result_dict)
     mae_error = test_result_df['abs_error'].mean()
     mse_error = test_result_df['sqr_error'].mean()
+    pred_true_corr = round(test_result_df['pred'].corr(test_result_df['true']), 6)
 
-    return mae_error, mse_error, test_result_df
+    return mae_error, mse_error, pred_true_corr, test_result_df
 
 
 # HPO 모델 tabular 데이터 전처리를 위한 (학습 데이터 기준) 각 column의 평균, 표준편차 계산 + 파일로 저장 (향후 inference 시 처리용)
@@ -345,6 +347,6 @@ if __name__ == '__main__':
             train_hpo_model(train_dataset, hpo_model)
             trained_hpo_model = load_trained_hpo_model()
 
-        mae_error, mse_error, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
-        print(f'MAE error: {mae_error}, MSE error: {mse_error}')
+        mae_error, mse_error, pred_true_corr, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
+        print(f'MAE error: {mae_error}, MSE error: {mse_error}, pred-true corr-coef: {pred_true_corr}')
         test_result_df.to_csv(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_test_{dataset_name}.csv')
