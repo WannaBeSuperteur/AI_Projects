@@ -217,15 +217,48 @@ def train_hpo_model(train_dataset, hpo_model):
 
 
 # HPO 모델 테스트
-# Create Date : 2026.03.29
+# Create Date : 2026.04.04
 # Last Update Date : -
 
 # Arguments:
 # - test_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
 # - hpo_model    (torch.nn.modules)         : HPO 모델
 
+# Returns:
+# - mae_error      (float)            : MAE error
+# - mse_error      (float)            : MSE error
+# - test_result_df (Pandas DataFrame) : 테스트 결과 Pandas DataFrame
+
 def test_hpo_model(test_dataset, hpo_model):
-    raise NotImplementedError
+    hpo_model.eval()
+    test_result_dict = {'pred': [], 'true': [], 'abs_error': [], 'sqr_error': []}
+    test_loader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
+
+    with torch.no_grad():
+        for idx, (inputs, labels) in enumerate(test_loader):
+            inputs_ = inputs.cuda()
+            with torch.no_grad():
+                outputs = hpo_model(inputs_).to(torch.float32)
+
+            outputs_np = outputs.detach().cpu().numpy()
+            this_batch_size = labels.size(0)
+
+            for i in range(this_batch_size):
+                pred = labels[i]
+                true_value = outputs_np[i]
+                abs_error = abs(labels[i] - outputs_np[i])
+                sqr_error = pow(labels[i] - outputs_np[i], 2)
+
+                test_result_dict['pred'].append(pred)
+                test_result_dict['true'].append(true_value)
+                test_result_dict['abs_error'].append(abs_error)
+                test_result_dict['sqr_error'].append(sqr_error)
+
+    test_result_df = pd.DataFrame(test_result_dict)
+    mae_error = test_result_df['abs_error'].mean()
+    mse_error = test_result_df['sqr_error'].mean()
+
+    return mae_error, mse_error, test_result_df
 
 
 # HPO 모델 tabular 데이터 전처리를 위한 (학습 데이터 기준) 각 column의 평균, 표준편차 계산 + 파일로 저장 (향후 inference 시 처리용)
@@ -294,4 +327,4 @@ if __name__ == '__main__':
         # train and test HPO model
         hpo_model = load_hpo_model()
         train_hpo_model(train_dataset, hpo_model)
-        test_hpo_model(test_dataset, hpo_model)
+        mae_error, mse_error, test_result_df = test_hpo_model(test_dataset, hpo_model)
