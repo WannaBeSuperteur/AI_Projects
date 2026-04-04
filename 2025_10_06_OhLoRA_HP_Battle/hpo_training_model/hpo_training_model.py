@@ -244,15 +244,15 @@ def test_hpo_model(test_dataset, hpo_model):
             this_batch_size = labels.size(0)
 
             for i in range(this_batch_size):
-                pred = labels[i]
-                true_value = outputs_np[i]
-                abs_error = abs(labels[i] - outputs_np[i])
-                sqr_error = pow(labels[i] - outputs_np[i], 2)
+                pred = labels[i][0]
+                true_value = outputs_np[i][0]
+                abs_error = abs(pred - true_value)
+                sqr_error = pow(pred - true_value, 2)
 
-                test_result_dict['pred'].append(pred)
-                test_result_dict['true'].append(true_value)
-                test_result_dict['abs_error'].append(abs_error)
-                test_result_dict['sqr_error'].append(sqr_error)
+                test_result_dict['pred'].append(round(float(pred), 4))
+                test_result_dict['true'].append(round(float(true_value), 4))
+                test_result_dict['abs_error'].append(round(float(abs_error), 4))
+                test_result_dict['sqr_error'].append(round(float(sqr_error), 4))
 
     test_result_df = pd.DataFrame(test_result_dict)
     mae_error = test_result_df['abs_error'].mean()
