@@ -303,8 +303,18 @@ def preprocess_data(dataset_df, means, stds):
     return preprocessed_dataset_df
 
 
+def load_trained_hpo_model():
+    trained_hpo_model = HPOTrainingModel()
+    model_path = f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt'
+    trained_hpo_model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
+    trained_hpo_model.device = device
+
+    return trained_hpo_model
+
+
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     for dataset_name in dataset_names:
         print(f'\ndataset name : {dataset_name}')
@@ -325,6 +335,13 @@ if __name__ == '__main__':
         test_dataset = HPOTrainingDataset(dataset_df=train_df, dataset_name=dataset_name, tvt_type='test')
 
         # train and test HPO model
-        hpo_model = load_hpo_model()
-        train_hpo_model(train_dataset, hpo_model)
-        mae_error, mse_error, test_result_df = test_hpo_model(test_dataset, hpo_model)
+        try:
+            trained_hpo_model = load_trained_hpo_model()
+            print('LOAD TRAINED HPO MODEL SUCCESSFUL !!')
+        except:
+            print('load trained HPO model failed, training ...')
+            hpo_model = load_hpo_model()
+            train_hpo_model(train_dataset, hpo_model)
+            trained_hpo_model = load_trained_hpo_model()
+
+        mae_error, mse_error, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
