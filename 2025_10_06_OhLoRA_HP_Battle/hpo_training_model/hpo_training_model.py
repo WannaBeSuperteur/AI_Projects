@@ -134,7 +134,7 @@ def load_hpo_model():
 
 
 # HPO 모델 학습 및 저장
-# Create Date : 2026.04.01
+# Create Date : 2026.04.04
 # Last Update Date : -
 
 # Arguments:
@@ -166,13 +166,13 @@ def train_hpo_model(train_dataset, hpo_model):
         train_loss_sum = 0.0
 
         for idx, (inputs, labels) in enumerate(train_loader):
-            print(inputs)
-            print(labels)
+            inputs_ = inputs.cuda()
+            labels_ = labels.cuda()
 
             hpo_model.optimizer.zero_grad()
-            outputs = hpo_model(inputs).to(torch.float32)
+            outputs = hpo_model(inputs_).to(torch.float32)
 
-            loss = loss_func(outputs, labels)
+            loss = loss_func(outputs, labels_)
             loss.backward()
             hpo_model.optimizer.step()
 
@@ -180,7 +180,6 @@ def train_hpo_model(train_dataset, hpo_model):
             train_total_rows += labels.size(0)
 
         train_loss = train_loss_sum / train_total_rows
-        print(f'train_loss: {train_loss}')
 
         # validation
         hpo_model.eval()
@@ -188,17 +187,17 @@ def train_hpo_model(train_dataset, hpo_model):
         valid_loss_sum = 0.0
 
         for idx, (inputs, labels) in enumerate(valid_loader):
-            print(inputs)
-            print(labels)
+            inputs_ = inputs.cuda()
+            labels_ = labels.cuda()
             with torch.no_grad():
-                outputs = hpo_model(inputs).to(torch.float32)
+                outputs = hpo_model(inputs_).to(torch.float32)
 
-            loss = loss_func(outputs, labels)
+            loss = loss_func(outputs, labels_)
             valid_loss_sum += loss.item()
             valid_total_rows += labels.size(0)
 
         valid_loss = valid_loss_sum / valid_total_rows
-        print(f'train_loss: {train_loss}')
+        print(f'epoch: {current_epoch}, train_loss: {train_loss:.4f}, valid_loss: {valid_loss:.4f}')
         val_loss_list.append(valid_loss)
 
         # handle early stopping
@@ -274,6 +273,8 @@ if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     for dataset_name in dataset_names:
+        print(f'\ndataset name : {dataset_name}')
+
         merged_dataset_df = merge_dataset_df(dataset_name)
         merged_dataset_size = len(merged_dataset_df)
         merged_dataset_train_size = int(0.9 * merged_dataset_size)
