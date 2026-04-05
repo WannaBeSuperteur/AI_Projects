@@ -362,7 +362,7 @@ def load_trained_hpo_model(num_input_features, dataset_name):
 # - result (dict) : 모델 생성 및 테스트 결과
 
 def generate_and_test_hpo_models(threshold_cutoff=0.05):
-    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
+    dataset_names = ['mnist']
 
     valid_features_dict = {}
     result = {'threshold_cutoff': threshold_cutoff}
