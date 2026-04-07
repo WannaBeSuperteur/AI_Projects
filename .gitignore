@@ -198,6 +198,7 @@
 2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*/train/*
 2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*/test
 2025_10_06_OhLoRA_HP_Battle/hpo_training_data/test/*/test/*
+2025_10_06_OhLoRA_HP_Battle/hpo_training_model/*.pt
 venv
 venv/*
 requirements_v3.10.11.txt
