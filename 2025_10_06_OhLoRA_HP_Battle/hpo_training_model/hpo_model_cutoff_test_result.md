@@ -16,9 +16,15 @@
 
 * MSE (Mean-Squared Error)
 
+![image](../../images/251006_7.PNG)
+
 * MAE (Mean Absolute Error)
 
+![image](../../images/251006_8.png)
+
 * feature 개수 (target feature 와의 corr-coef 가 해당 cutoff 값 이상인)
+
+![image](../../images/251006_9.png)
 
 ## 3. 테스트 결과에 따른 결정
 
