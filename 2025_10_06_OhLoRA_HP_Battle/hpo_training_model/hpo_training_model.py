@@ -353,17 +353,17 @@ def load_trained_hpo_model(num_input_features, dataset_name):
 
 # HPO 모델 생성 및 테스트 (메인 함수)
 # Create Date : 2026.04.04
-# Last Update Date : -
+# Last Update Date : 2026.04.07
+# - dataset_names (데이터셋 이름 목록) 를 argument 로 추가
 
 # Arguments:
-# - threshold_cutoff (float) : Threshold cutoff (최솟값) for corr-coef
+# - dataset_names    (list(str)) : 데이터셋 이름 ('mnist', 'fashion_mnist' or 'cifar_10') 의 목록
+# - threshold_cutoff (float)     : Threshold cutoff (최솟값) for corr-coef
 
 # Returns:
 # - result (dict) : 모델 생성 및 테스트 결과
 
-def generate_and_test_hpo_models(threshold_cutoff=0.05):
-    dataset_names = ['mnist']
-
+def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
     valid_features_dict = {}
     result = {'threshold_cutoff': threshold_cutoff}
 
@@ -432,7 +432,7 @@ def run_threshold_cutoff_test():
 
     for threshold_cutoff in threshold_cutoffs:
         start_at = time.time()
-        result = generate_and_test_hpo_models(threshold_cutoff=threshold_cutoff)
+        result = generate_and_test_hpo_models(dataset_names, threshold_cutoff=threshold_cutoff)
         elapsed_time = time.time() - start_at
 
         for k, v in result.items():
@@ -448,4 +448,6 @@ def run_threshold_cutoff_test():
 
 
 if __name__ == '__main__':
-    run_threshold_cutoff_test()
+    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.2)
+    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.175)
+    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.35)
