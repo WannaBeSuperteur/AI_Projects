@@ -14,6 +14,8 @@
 
 ## 2. 테스트 결과
 
+각 데이터셋 별로 **직사각형으로 표시한 cutoff threshold 구간 (가로축)** 에서 Error 가 가장 작음
+
 * MSE (Mean-Squared Error)
 
 ![image](../../images/251006_7.PNG)
@@ -28,4 +30,8 @@
 
 ## 3. 테스트 결과에 따른 결정
 
-* TBU
+* 각 데이터셋 별로 다음과 같은 threshold cutoff 를 이용하여 모델 학습
+
+| cifar_10 | fashion_mnist | mnist |
+|----------|---------------|-------|
+| 0.20     | 0.175         | 0.35  |
