@@ -24,6 +24,16 @@
 
 ## 3. 학습 데이터 구성
 
+* 각 이미지 데이터셋 (CIFAR-10, Fashion-MNIST, MNIST) 별 **5,000 rows 의 tabular dataset**
+* 각 데이터셋을 **학습 + 검증 데이터 90%, 테스트 데이터 10% 로 분리**
+* 상세 데이터셋 위치
+
+| 이미지 데이터셋      | 하이퍼파라미터 탐색 최적화 (HPO) 모델 학습 데이터셋                                                                            |
+|---------------|------------------------------------------------------------------------------------------------------------|
+| CIFAR-10      | [해당 디렉토리](../hpo_training_data/test/cifar_10) 의 ```hpo_model_train_dataset_df``` 가 포함된 csv 파일 (총 10개)      |
+| Fashion-MNIST | [해당 디렉토리](../hpo_training_data/test/fashion_mnist) 의 ```hpo_model_train_dataset_df``` 가 포함된 csv 파일 (총 10개) |
+| MNIST         | [해당 디렉토리](../hpo_training_data/test/mnist) 의 ```hpo_model_train_dataset_df``` 가 포함된 csv 파일 (총 10개)         |
+
 ## 4. 최적의 threshold cutoff 탐색
 
 * Tabular 데이터셋이므로, **output column (Macro F1 Score) 과 상관계수가 낮은 column을 제거** 했을 때 **모델 학습이 최적화** 될 수 있다.
