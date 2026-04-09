@@ -1,7 +1,12 @@
 
 import torch
-from train_cnn import load_cnn_model_before_train, load_dataset, train_cnn, test_cnn, convert_to_train_data
-from train_cnn import NUM_CLASSES, EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA
+
+try:
+    from train_cnn import load_cnn_model_before_train, load_dataset, train_cnn, test_cnn, convert_to_train_data
+    from train_cnn import NUM_CLASSES, EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA
+except:
+    from hpo_training_data.train_cnn import load_cnn_model_before_train, load_dataset, train_cnn, test_cnn, convert_to_train_data
+    from hpo_training_data.train_cnn import NUM_CLASSES, EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA
 
 import random
 import numpy as np

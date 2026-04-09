@@ -277,14 +277,13 @@ def load_cnn_model_before_train(dataset_name, hps):
 
 # Base CNN 학습용 데이터셋 로딩
 # Create Date : 2026.03.19
-# Last Update Date : 2026.03.20
-# - 학습 데이터셋 -> 학습 + 검증 데이터셋으로 분리
-# - 학습 및 테스트 데이터셋 분포 정보 반환 추가
-# - TOP 5 label 데이터셋만 학습/테스트하도록 설정
+# Last Update Date : 2026.04.09
+# - dataset path prefix 추가 (다른 곳에서 본 함수 호출 시 사용)
 
 # Arguments:
-# - dataset_name (str)  : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
-# - constraints  (dict) : 데이터셋 constraint list
+# - dataset_name        (str)  : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+# - constraints         (dict) : 데이터셋 constraint list
+# - dataset_path_prefix (str)  : 데이터셋 경로의 prefix
 
 # Returns:
 # - train_dataset               (torch.utils.data.Dataset) : 학습 (train) 데이터셋
@@ -294,8 +293,8 @@ def load_cnn_model_before_train(dataset_name, hps):
 # - test_dataset_label_distrib  (list)                     : 테스트 데이터셋 label 분포
 # - labels_trained              (list)                     : 각 label 의 실제 학습/테스트 데이터셋 포함 여부 (각 항목은 0 or 1)
 
-def load_dataset(dataset_name, constraints):
-    dataset_info_df = pd.read_csv(f'test/{dataset_name}/dataset_info.csv', index_col=0)
+def load_dataset(dataset_name, constraints, dataset_path_prefix=''):
+    dataset_info_df = pd.read_csv(f'{dataset_path_prefix}test/{dataset_name}/dataset_info.csv', index_col=0)
 
     for constraint_col in constraints.keys():
         left = constraints[constraint_col][0]
