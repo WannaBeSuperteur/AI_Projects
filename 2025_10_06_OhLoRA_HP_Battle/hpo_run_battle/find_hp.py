@@ -10,8 +10,14 @@ sys.path.append(PROJECT_DIR_PATH)
 from hpo_training_data.create_hpo_model_train_data import generate_constraints
 from hpo_training_data.train_cnn import load_dataset, encode_train_dataset
 from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoEncoderEncoder_3_32_32
-from hpo_training_model.hpo_training_model import load_trained_hpo_model, get_valid_feature_list
+from hpo_training_model.hpo_training_model import (load_trained_hpo_model,
+                                                   get_valid_feature_list,
+                                                   get_means_and_stds,
+                                                   merge_dataset_df)
 from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
+
+
+threshold_cutoffs = {'cifar_10': 0.2, 'fashion_mnist': 0.175, 'mnist': 0.35}
 
 
 def convert_to_train_data(ae_encoder, train_dataset, train_dataset_label_distrib, labels_trained):
@@ -37,6 +43,18 @@ def convert_to_train_data(ae_encoder, train_dataset, train_dataset_label_distrib
                             'labels_trained': labels_trained}
 
     return hpo_model_input_data
+
+
+def get_train_means_and_stds(dataset_name, threshold_cutoff):
+    valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoff)
+    merged_dataset_df = merge_dataset_df(dataset_name, valid_features=valid_features)
+    merged_dataset_size = len(merged_dataset_df)
+    merged_dataset_train_size = int(0.9 * merged_dataset_size)
+
+    train_df_raw = merged_dataset_df.iloc[:merged_dataset_train_size, :]
+    train_means, train_stds = get_means_and_stds(train_df_raw)
+
+    return train_means, train_stds
 
 
 # 하이퍼파라미터 탐색 가능한 모의 데이터셋 생성
@@ -105,8 +123,6 @@ def create_mock_dataset(dataset_name):
 # - hp_optimize_model (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
 
 def load_hp_optimize_model(dataset_name):
-    threshold_cutoffs = {'cifar_10': 0.2, 'fashion_mnist': 0.175, 'mnist': 0.35}
-
     valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
     num_input_features = len(valid_features) - NUM_FEATURES_OUTPUT
 
@@ -115,7 +131,7 @@ def load_hp_optimize_model(dataset_name):
 
 
 # 기 학습된 최적 하이퍼파라미터 탐색 모델을 이용한 최적 하이퍼파라미터 탐색 (hill-climbing 방식)
-# Create Date : 2026.04.09
+# Create Date : 2026.04.10
 # Last Update Date : -
 
 # Arguments:
@@ -130,7 +146,7 @@ def find_optimal_hps(hp_optimize_model, train_dataset):
 
 
 # 탐색한 최적 하이퍼파라미터를 이용한 학습 시의 Macro F1 Score 측정
-# Create Date : 2026.04.09
+# Create Date : 2026.04.10
 # Last Update Date : -
 
 # Arguments:
@@ -149,6 +165,8 @@ if __name__ == '__main__':
     # run baseline CNN training & test for each dataset
     for dataset_name in dataset_names:
         train_dataset, valid_dataset, test_dataset, hpo_model_input_data = create_mock_dataset(dataset_name)
+        train_means, train_stds = get_train_means_and_stds(dataset_name, threshold_cutoffs[dataset_name])
+
         hp_optimize_model = load_hp_optimize_model(dataset_name)
         optimal_hps = find_optimal_hps(hp_optimize_model, train_dataset)
         macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
