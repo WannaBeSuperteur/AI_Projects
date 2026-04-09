@@ -10,6 +10,8 @@ sys.path.append(PROJECT_DIR_PATH)
 from hpo_training_data.create_hpo_model_train_data import generate_constraints
 from hpo_training_data.train_cnn import load_dataset, encode_train_dataset
 from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoEncoderEncoder_3_32_32
+from hpo_training_model.hpo_training_model import load_trained_hpo_model, get_valid_feature_list
+from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 
 
 def convert_to_train_data(ae_encoder, train_dataset, train_dataset_label_distrib, labels_trained):
@@ -103,7 +105,13 @@ def create_mock_dataset(dataset_name):
 # - hp_optimize_model (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
 
 def load_hp_optimize_model(dataset_name):
-    raise NotImplementedError
+    threshold_cutoffs = {'cifar_10': 0.2, 'fashion_mnist': 0.175, 'mnist': 0.35}
+
+    valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
+    num_input_features = len(valid_features) - NUM_FEATURES_OUTPUT
+
+    hp_optimize_model = load_trained_hpo_model(num_input_features, dataset_name)
+    return hp_optimize_model
 
 
 # 기 학습된 최적 하이퍼파라미터 탐색 모델을 이용한 최적 하이퍼파라미터 탐색 (hill-climbing 방식)
