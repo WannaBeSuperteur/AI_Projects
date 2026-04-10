@@ -131,17 +131,19 @@ def load_hp_optimize_model(dataset_name):
 
 
 # 기 학습된 최적 하이퍼파라미터 탐색 모델을 이용한 최적 하이퍼파라미터 탐색 (hill-climbing 방식)
-# Create Date : 2026.04.10
+# Create Date : 2026.04.11
 # Last Update Date : -
 
 # Arguments:
-# - hp_optimize_model (torch.nn.module)          : 기 학습된 최적 하이퍼파라미터 탐색 모델
-# - train_dataset     (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - hp_optimize_model    (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
+# - hpo_model_input_data (dict)            : 기 학습된 하이퍼파라미터 최적화 모델의 입력 데이터
+# - train_means          (dict(float))     : 학습 데이터셋의 각 input column 별 평균값 목록
+# - train_stds           (dict(float))     : 학습 데이터셋의 각 input column 별 표준편차 목록
 
 # Returns:
 # - optimal_hps (dict) : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
 
-def find_optimal_hps(hp_optimize_model, train_dataset):
+def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds):
     raise NotImplementedError
 
 
@@ -168,7 +170,7 @@ if __name__ == '__main__':
         train_means, train_stds = get_train_means_and_stds(dataset_name, threshold_cutoffs[dataset_name])
 
         hp_optimize_model = load_hp_optimize_model(dataset_name)
-        optimal_hps = find_optimal_hps(hp_optimize_model, train_dataset)
+        optimal_hps = find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds)
         macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
 
         print(f'dataset_name : {dataset_name}')
