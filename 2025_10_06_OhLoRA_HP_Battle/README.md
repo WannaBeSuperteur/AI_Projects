@@ -119,20 +119,21 @@ TBU
 
 **2. 하이퍼파라미터 튜닝 대결**
 
-| 구분         | 계획 내용                                                 | 일정                               | branch                               | issue                                                              | 상태 |
-|------------|-------------------------------------------------------|----------------------------------|--------------------------------------|--------------------------------------------------------------------|----|
-| 📝 데이터셋 선택 | 인간과의 하이퍼파라미터 대결을 할 **이미지 분류 데이터셋** 선정                 | 10.11 토 (1d)                     |                                      |                                                                    | ✅  |
-| 🔨 모델 구현   | 기본 CNN 모델 (하이퍼파라미터 튜닝 대상) 구현                          | 10.11 토 (1d)                     | ```P009-001-CNN```                   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/47) | ✅  |
-| 🔨 모델 구현   | 이미지의 hidden representation 모델 구현 (Auto-Encoder?)      | 10.11 토 (1d)                     | ```P009-002-hidden-representation``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/48) | ✅  |
-| 🧪 모델 학습   | 이미지의 hidden representation 모델 학습                      | 10.11 토 + 03.15 일 - 03.18 수 (5d) | ```P009-002-hidden-representation``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/48) | ✅  |
-| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 학습 데이터 제작 구현                         | 03.19 목 - 03.20 금 (2d)           | ```P009-003-select-images```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/49) | ✅  |         
-| 📝 데이터셋 제작 | 최적 하이퍼파라미터 탐색 모델 학습 데이터 제작                            | 03.20 금 - 04.03 금 (15d)          |                                      |                                                                    | ✅  |         
-| 🔨 모델 구현   | 최적 하이퍼파라미터 탐색 모델 구현 **(hidden representation 입력 기반)** | 03.23 월 - 03.24 화 (2d)           | ```P009-004-hp-find-model```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/50) | ✅  |
-| 🧪 모델 학습   | 최적 하이퍼파라미터 탐색 모델 학습                                   | 03.24 화 - 04.07 화 (15d)          | ```P009-004-hp-find-model```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/50) | ✅  |
-| 📃 문서화     | "최적 하이퍼파라미터 탐색 모델 학습" 개발 내용 문서화                       | 04.07 화 - 04.08 수 (2d)           |                                      |                                                                    | ✅  |
-| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델을 이용한 하이퍼파라미터 탐색                      | 04.09 목 - 04.10 금 (2d)           | ```P009-005-find-hp```               |                                                                    | ⬜  |
-| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 vs. 인간이 결정한 하이퍼파라미터 간 대결             | 04.11 토 (1d)                     | ```P009-006-battle```                |                                                                    | ⬜  |
-| 📃 문서화     | "하이퍼파라미터 튜닝 대결" 개발 내용 문서화                             | 04.11 토 (1d)                     |                                      |                                                                    | ⬜  |
+| 구분         | 계획 내용                                                            | 일정                               | branch                               | issue                                                              | 상태 |
+|------------|------------------------------------------------------------------|----------------------------------|--------------------------------------|--------------------------------------------------------------------|----|
+| 📝 데이터셋 선택 | 인간과의 하이퍼파라미터 대결을 할 **이미지 분류 데이터셋** 선정                            | 10.11 토 (1d)                     |                                      |                                                                    | ✅  |
+| 🔨 모델 구현   | 기본 CNN 모델 (하이퍼파라미터 튜닝 대상) 구현                                     | 10.11 토 (1d)                     | ```P009-001-CNN```                   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/47) | ✅  |
+| 🔨 모델 구현   | 이미지의 hidden representation 모델 구현 (Auto-Encoder?)                 | 10.11 토 (1d)                     | ```P009-002-hidden-representation``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/48) | ✅  |
+| 🧪 모델 학습   | 이미지의 hidden representation 모델 학습                                 | 10.11 토 + 03.15 일 - 03.18 수 (5d) | ```P009-002-hidden-representation``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/48) | ✅  |
+| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 학습 데이터 제작 구현                                    | 03.19 목 - 03.20 금 (2d)           | ```P009-003-select-images```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/49) | ✅  |         
+| 📝 데이터셋 제작 | 최적 하이퍼파라미터 탐색 모델 학습 데이터 제작                                       | 03.20 금 - 04.03 금 (15d)          |                                      |                                                                    | ✅  |         
+| 🔨 모델 구현   | 최적 하이퍼파라미터 탐색 모델 구현 **(hidden representation 입력 기반)**            | 03.23 월 - 03.24 화 (2d)           | ```P009-004-hp-find-model```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/50) | ✅  |
+| 🧪 모델 학습   | 최적 하이퍼파라미터 탐색 모델 학습                                              | 03.24 화 - 04.07 화 (15d)          | ```P009-004-hp-find-model```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/50) | ✅  |
+| 📃 문서화     | "최적 하이퍼파라미터 탐색 모델 학습" 개발 내용 문서화                                  | 04.07 화 - 04.08 수 (2d)           |                                      |                                                                    | ✅  |
+| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델을 이용한 하이퍼파라미터 탐색                                 | 04.09 목 - 04.10 금 (2d)           | ```P009-005-find-hp```               |                                                                    | ⬜  |
+| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 vs. 인간이 결정한 하이퍼파라미터 간 대결                        | 04.11 토 (1d)                     | ```P009-006-battle```                |                                                                    | ⬜  |
+| 🧪 모델 학습   | 최적 하이퍼파라미터 탐색 모델 학습 추가 실험 **(하이퍼파라미터 관련 feature는 pruning하지 않음)** | 04.12 일 - 04.14 화 (3d)           | ```P009-007-hp-find-model-2```       |                                                                    | ⬜  |
+| 📃 문서화     | "하이퍼파라미터 튜닝 대결" 개발 내용 문서화                                        | 04.11 토 (1d)                     |                                      |                                                                    | ⬜  |
 
 **3. LLM을 이용한 대결 결과 표현**
 
