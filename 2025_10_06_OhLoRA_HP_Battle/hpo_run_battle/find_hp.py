@@ -146,11 +146,17 @@ def load_hp_optimize_model(dataset_name):
 
 def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features):
     base_input_data = []
-    base_input_data.append(hpo_model_input_data['total_train_images'])
-    base_input_data.append(hpo_model_input_data['max_min_of_labels'])
-    base_input_data.append(hpo_model_input_data['avg_std_of_labels'])
-    base_input_data.append(hpo_model_input_data['largest_label_percentage'])
 
+    dataset_stat_features = ['total_train_images',
+                             'max_min_of_labels',
+                             'avg_std_of_labels',
+                             'largest_label_percentage']
+
+    for dataset_stat_feature in dataset_stat_features:
+        if dataset_stat_feature in valid_features:
+            base_input_data.append(hpo_model_input_data[dataset_stat_feature])
+
+    print(base_input_data)
     raise NotImplementedError
 
 
