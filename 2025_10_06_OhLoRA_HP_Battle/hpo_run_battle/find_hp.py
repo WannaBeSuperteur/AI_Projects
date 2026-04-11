@@ -139,11 +139,18 @@ def load_hp_optimize_model(dataset_name):
 # - hpo_model_input_data (dict)            : 기 학습된 하이퍼파라미터 최적화 모델의 입력 데이터
 # - train_means          (dict(float))     : 학습 데이터셋의 각 input column 별 평균값 목록
 # - train_stds           (dict(float))     : 학습 데이터셋의 각 input column 별 표준편차 목록
+# - valid_features       (list)            : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
 
 # Returns:
 # - optimal_hps (dict) : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
 
-def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds):
+def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features):
+    base_input_data = []
+    base_input_data.append(hpo_model_input_data['total_train_images'])
+    base_input_data.append(hpo_model_input_data['max_min_of_labels'])
+    base_input_data.append(hpo_model_input_data['avg_std_of_labels'])
+    base_input_data.append(hpo_model_input_data['largest_label_percentage'])
+
     raise NotImplementedError
 
 
@@ -170,7 +177,9 @@ if __name__ == '__main__':
         train_means, train_stds = get_train_means_and_stds(dataset_name, threshold_cutoffs[dataset_name])
 
         hp_optimize_model = load_hp_optimize_model(dataset_name)
-        optimal_hps = find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds)
+        valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
+
+        optimal_hps = find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features)
         macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
 
         print(f'dataset_name : {dataset_name}')
