@@ -9,6 +9,7 @@ sys.path.append(PROJECT_DIR_PATH)
 
 from hpo_training_data.create_hpo_model_train_data import generate_constraints
 from hpo_training_data.train_cnn import load_dataset, encode_train_dataset
+from hpo_training_data.train_cnn import EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA, NUM_CLASSES
 from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoEncoderEncoder_3_32_32
 from hpo_training_model.hpo_training_model import (load_trained_hpo_model,
                                                    get_valid_feature_list,
@@ -152,9 +153,37 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                              'avg_std_of_labels',
                              'largest_label_percentage']
 
+    # dataset stat
     for dataset_stat_feature in dataset_stat_features:
         if dataset_stat_feature in valid_features:
             base_input_data.append(hpo_model_input_data[dataset_stat_feature])
+
+    # hyper-params (1)
+    hps_1 = ['dropout_conv_earlier', 'dropout_conv_later', 'dropout_fc', 'lr']
+    for hp in hps_1:
+        if f'hp_{hp}' in valid_features:
+            base_input_data.append(None)
+
+    # encoding mean and std
+    for i in range(EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA):
+        if f'encoding_mean_{i}' in valid_features:
+            base_input_data.append(hpo_model_input_data[f'encoding_mean'][i])
+        if f'encoding_std_{i}' in valid_features:
+            base_input_data.append(hpo_model_input_data[f'encoding_std'][i])
+
+    # labels trained or not
+    for i in range(NUM_CLASSES):
+        if f'labels_trained_{i}' in valid_features:
+            base_input_data.append(hpo_model_input_data[f'labels_trained_{i}'])
+
+    # hyper-params (2)
+    hps_2 = ['actfunc_relu', 'actfunc_leaky_relu',
+             'opt_adam', 'opt_adamw',
+             'sch_exp_90', 'sch_exp_95', 'sch_exp_98', 'sch_cosine']
+
+    for hp in hps_2:
+        if hp in valid_features:
+            base_input_data.append(None)
 
     print(base_input_data)
     raise NotImplementedError
