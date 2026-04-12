@@ -23,6 +23,12 @@ from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 threshold_cutoffs = {'cifar_10': 0.2, 'fashion_mnist': 0.175, 'mnist': 0.35}
 HP_RANDOM_INIT_COUNT = 10
 
+categorical_hps = {
+    'actfunc': ['relu', 'leaky_relu'],
+    'opt': ['adam', 'adamw'],
+    'sch': ['exp_90', 'exp_95', 'exp_98', 'cosine']
+}
+
 
 def convert_to_train_data(ae_encoder, train_dataset, train_dataset_label_distrib, labels_trained):
 
@@ -124,11 +130,6 @@ def find_neighboring_hps_numeric(hps_dict):
 
 def find_neighboring_hps_categorical(hps_dict, all_hps_list):
     neighboring_hps = []
-    categorical_hps = {
-        'actfunc': ['relu', 'leaky_relu'],
-        'opt': ['adam', 'adamw'],
-        'sch': ['exp_90', 'exp_95', 'exp_98', 'cosine']
-    }
 
     for hp_type, hp_value in categorical_hps.items():
         if hp_type in hps_dict:
@@ -142,18 +143,29 @@ def find_neighboring_hps_categorical(hps_dict, all_hps_list):
     return neighboring_hps
 
 
-def predict_macro_f1_score_with_input_data(input_data, hps_dict):
+def predict_macro_f1_score_with_input_data(input_data, input_data_columns, hps_dict, train_means, train_stds):
     input_data_ = copy.deepcopy(input_data)
 
+    # fill hyper-param values input
     for j in range(len(input_data_)):
         if isinstance(input_data_[j], dict):
-            input_data_[j] = hps_dict[input_data_[j]['key']]
+            if input_data_[j]['key'] in ['hp_dropout_conv_earlier', 'hp_dropout_conv_later', 'hp_dropout_fc', 'hp_lr']:
+                input_data_[j] = hps_dict[input_data_[j]['key']]
+            else:
+                hp_type = input_data_[j]['key'].split('_')[0]
+                hp_value = '_'.join(input_data_[j]['key'].split('_')[1])
+
+                if hps_dict[hp_type] == hp_value:
+                    input_data_[j] = 1.0
+                else:
+                    input_data_[j] = 0.0
 
     raise NotImplementedError
 
 
 def get_input_data_and_all_hps_list(hpo_model_input_data, valid_features):
     base_input_data = []
+    base_input_data_columns = []
     all_hps_list = []
 
     dataset_stat_features = ['total_train_images',
@@ -161,12 +173,11 @@ def get_input_data_and_all_hps_list(hpo_model_input_data, valid_features):
                              'avg_std_of_labels',
                              'largest_label_percentage']
 
-    print(hpo_model_input_data)
-
     # dataset stat
     for dataset_stat_feature in dataset_stat_features:
         if dataset_stat_feature in valid_features:
             base_input_data.append(hpo_model_input_data[dataset_stat_feature])
+            base_input_data_columns.append(dataset_stat_feature)
 
     # hyper-params (1)
     hps_1 = ['dropout_conv_earlier', 'dropout_conv_later', 'dropout_fc', 'lr']
@@ -174,18 +185,22 @@ def get_input_data_and_all_hps_list(hpo_model_input_data, valid_features):
         if f'hp_{hp}' in valid_features:
             all_hps_list.append(f'hp_{hp}')
             base_input_data.append({'key': f'hp_{hp}'})
+            base_input_data_columns.append(f'hp_{hp}')
 
     # encoding mean and std
     for i in range(EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA):
         if f'encoding_mean_{i}' in valid_features:
             base_input_data.append(hpo_model_input_data[f'encoding_mean'][i])
+            base_input_data_columns.append(f'encoding_mean_{i}')
         if f'encoding_std_{i}' in valid_features:
             base_input_data.append(hpo_model_input_data[f'encoding_std'][i])
+            base_input_data_columns.append(f'encoding_std_{i}')
 
     # labels trained or not
     for i in range(NUM_CLASSES):
         if f'labels_trained_{i}' in valid_features:
             base_input_data.append(hpo_model_input_data[f'labels_trained_{i}'])
+            base_input_data_columns.append(f'labels_trained_{i}')
 
     # hyper-params (2)
     hps_2 = ['actfunc_relu', 'actfunc_leaky_relu',
@@ -196,8 +211,9 @@ def get_input_data_and_all_hps_list(hpo_model_input_data, valid_features):
         if hp in valid_features:
             all_hps_list.append(hp)
             base_input_data.append({'key': hp})
+            base_input_data_columns.append(hp)
 
-    return base_input_data, all_hps_list
+    return base_input_data, base_input_data_columns, all_hps_list
 
 
 # 하이퍼파라미터 탐색 가능한 모의 데이터셋 생성
@@ -288,10 +304,8 @@ def load_hp_optimize_model(dataset_name):
 # - optimal_hps (dict) : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
 
 def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features):
-    base_input_data, all_hps_list = get_input_data_and_all_hps_list(hpo_model_input_data, valid_features)
-
-    print(base_input_data)
-    print(all_hps_list)
+    base_input_data, base_input_data_columns, all_hps_list = (
+        get_input_data_and_all_hps_list(hpo_model_input_data, valid_features))
 
     # find best hyper-param
     best_hps_dict_all_trials = {}
@@ -311,7 +325,11 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
             current_input_data = copy.deepcopy(base_input_data)
 
             # predict Macro F1 Score with current hyper-params
-            macro_f1_score_pred = predict_macro_f1_score_with_input_data(current_input_data, current_hps_dict)
+            macro_f1_score_pred = predict_macro_f1_score_with_input_data(current_input_data,
+                                                                         base_input_data_columns,
+                                                                         current_hps_dict,
+                                                                         train_means,
+                                                                         train_stds)
             if macro_f1_score_pred > best_hps_macro_f1_score_pred:
                 best_hps_macro_f1_score_pred = macro_f1_score_pred
                 best_hps_dict = current_hps_dict
@@ -320,7 +338,11 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
             is_better_found = False
 
             for neighboring_hps_dict in neighboring_hps_list:
-                macro_f1_score_pred_nei = predict_macro_f1_score_with_input_data(current_input_data, neighboring_hps_dict)
+                macro_f1_score_pred_nei = predict_macro_f1_score_with_input_data(current_input_data,
+                                                                                 base_input_data_columns,
+                                                                                 neighboring_hps_dict,
+                                                                                 train_means,
+                                                                                 train_stds)
 
                 if macro_f1_score_pred_nei > best_hps_macro_f1_score_pred:
                     best_hps_macro_f1_score_pred = macro_f1_score_pred_nei
