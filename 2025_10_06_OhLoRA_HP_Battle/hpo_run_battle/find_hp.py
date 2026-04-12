@@ -351,6 +351,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     # find best hyper-param
     best_hps_dict_all_trials = {}
     best_hps_macro_f1_score_pred_all_trials = 0.0
+    hp_optimize_model.eval()
 
     for i in range(HP_RANDOM_INIT_COUNT):
         print(f'\n==== ROUND {i} ====')
