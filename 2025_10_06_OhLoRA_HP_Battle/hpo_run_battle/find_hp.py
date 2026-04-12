@@ -19,6 +19,7 @@ from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 
 
 threshold_cutoffs = {'cifar_10': 0.2, 'fashion_mnist': 0.175, 'mnist': 0.35}
+HP_RANDOM_INIT_COUNT = 10
 
 
 def convert_to_train_data(ae_encoder, train_dataset, train_dataset_label_distrib, labels_trained):
@@ -132,7 +133,7 @@ def load_hp_optimize_model(dataset_name):
 
 
 # 기 학습된 최적 하이퍼파라미터 탐색 모델을 이용한 최적 하이퍼파라미터 탐색 (hill-climbing 방식)
-# Create Date : 2026.04.11
+# Create Date : 2026.04.12
 # Last Update Date : -
 
 # Arguments:
@@ -147,6 +148,7 @@ def load_hp_optimize_model(dataset_name):
 
 def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features):
     base_input_data = []
+    all_hps_list = []
 
     dataset_stat_features = ['total_train_images',
                              'max_min_of_labels',
@@ -162,7 +164,8 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     hps_1 = ['dropout_conv_earlier', 'dropout_conv_later', 'dropout_fc', 'lr']
     for hp in hps_1:
         if f'hp_{hp}' in valid_features:
-            base_input_data.append(None)
+            all_hps_list.append(f'hp_{hp}')
+            base_input_data.append({f'hp_{hp}': None})
 
     # encoding mean and std
     for i in range(EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA):
@@ -183,9 +186,11 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 
     for hp in hps_2:
         if hp in valid_features:
-            base_input_data.append(None)
+            all_hps_list.append(hp)
+            base_input_data.append({hp: None})
 
     print(base_input_data)
+
     raise NotImplementedError
 
 
