@@ -143,7 +143,23 @@ def find_neighboring_hps_categorical(hps_dict, all_hps_list):
     return neighboring_hps
 
 
-def predict_macro_f1_score_with_input_data(input_data, input_data_columns, hps_dict, train_means, train_stds):
+# 기 학습된 하이퍼파라미터 탐색 모델을 이용한 Macro F1 Score 예측
+# Create Date : 2026.04.12
+# Last Update Date : -
+
+# Arguments:
+# - input_data         (list)            : 하이퍼파라미터 탐색 모델 (= Macro F1 Score 예측 모델) 의 입력 데이터
+# - input_data_columns (list)            : 하이퍼파라미터 탐색 모델 (= Macro F1 Score 예측 모델) 의 입력 데이터 컬럼 목록
+# - hps_dict           (dict)            : 하이퍼파라미터 값들의 dictionary
+# - train_means        (dict(float))     : 학습 데이터셋의 각 input column 별 평균값 목록
+# - train_stds         (dict(float))     : 학습 데이터셋의 각 input column 별 표준편차 목록
+# - hp_optimize_model  (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
+
+# Returns:
+# - macro_f1_score_pred (float) : 기 학습된 하이퍼파라미터 탐색 모델로 예측한 Macro F1 Score
+
+def predict_macro_f1_score_with_input_data(input_data, input_data_columns, hps_dict, train_means, train_stds,
+                                           hp_optimize_model):
     input_data_ = copy.deepcopy(input_data)
 
     # fill hyper-param values input
@@ -163,10 +179,30 @@ def predict_macro_f1_score_with_input_data(input_data, input_data_columns, hps_d
     for idx, input_data_column in enumerate(input_data_columns):
         input_data_[idx] = (input_data_[idx] - train_means[input_data_column]) / train_stds[input_data_column]
 
-    print(input_data_)
+    # get Macro F1 Score prediction
+    input_data_torch = torch.tensor(input_data_)
+    input_data_torch = input_data_torch.unsqueeze(0).to(torch.float32)
+    with torch.no_grad():
+        outputs = hp_optimize_model(input_data_torch.cuda()).to(torch.float32)
+    outputs = outputs.detach().cpu().numpy()
 
-    raise NotImplementedError
+    macro_f1_score_pred = outputs[0][0]
+    return macro_f1_score_pred
 
+
+# 기 학습된 하이퍼파라미터 탐색 모델의 입력 데이터 (valid feature 필터링 후) 및 하이퍼파라미터 리스트 반환
+# Create Date : 2026.04.12
+# Last Update Date : -
+
+# Arguments:
+# - hpo_model_input_data (dict) : 기 학습된 하이퍼파라미터 최적화 모델의 입력 데이터 (valid feature 필터링 전)
+# - valid_features       (list) : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
+
+# Returns:
+# - base_input_data         (list) : 하이퍼파라미터 탐색 모델 (= Macro F1 Score 예측 모델) 의 입력 데이터
+#                                    (hyper-param 부분 채워진 데이터, valid feature 필터링 후)
+# - base_input_data_columns (list) : 하이퍼파라미터 탐색 모델의 입력 데이터 컬럼 목록 (valid feature 필터링 후)
+# - all_hps_list            (list) : 하이퍼파라미터 탐색 모델의 입력으로 들어갈 모든 하이퍼파라미터 목록 (valid feature 필터링 후)
 
 def get_input_data_and_all_hps_list(hpo_model_input_data, valid_features):
     base_input_data = []
@@ -300,7 +336,7 @@ def load_hp_optimize_model(dataset_name):
 
 # Arguments:
 # - hp_optimize_model    (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
-# - hpo_model_input_data (dict)            : 기 학습된 하이퍼파라미터 최적화 모델의 입력 데이터
+# - hpo_model_input_data (dict)            : 기 학습된 하이퍼파라미터 최적화 모델의 입력 데이터 (valid feature 필터링 전)
 # - train_means          (dict(float))     : 학습 데이터셋의 각 input column 별 평균값 목록
 # - train_stds           (dict(float))     : 학습 데이터셋의 각 input column 별 표준편차 목록
 # - valid_features       (list)            : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
@@ -334,10 +370,13 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                                                                          base_input_data_columns,
                                                                          current_hps_dict,
                                                                          train_means,
-                                                                         train_stds)
+                                                                         train_stds,
+                                                                         hp_optimize_model)
             if macro_f1_score_pred > best_hps_macro_f1_score_pred:
                 best_hps_macro_f1_score_pred = macro_f1_score_pred
                 best_hps_dict = current_hps_dict
+
+            print('current_hps_dict :', current_hps_dict, ', pred :', macro_f1_score_pred)
 
             # predict Macro F1 Score with neighboring hyper-params
             is_better_found = False
@@ -347,12 +386,15 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                                                                                  base_input_data_columns,
                                                                                  neighboring_hps_dict,
                                                                                  train_means,
-                                                                                 train_stds)
+                                                                                 train_stds,
+                                                                                 hp_optimize_model)
 
                 if macro_f1_score_pred_nei > best_hps_macro_f1_score_pred:
                     best_hps_macro_f1_score_pred = macro_f1_score_pred_nei
                     best_hps_dict = neighboring_hps_dict
                     is_better_found = True
+
+                print('neighboring_hps_dict :', current_hps_dict, ', pred :', best_hps_macro_f1_score_pred)
 
             if not is_better_found:
                 break
@@ -361,6 +403,10 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
         if best_hps_macro_f1_score_pred > best_hps_macro_f1_score_pred_all_trials:
             best_hps_macro_f1_score_pred_all_trials = best_hps_macro_f1_score_pred
             best_hps_dict_all_trials = best_hps_dict
+
+        print('best_hps_dict :', best_hps_dict)
+        print('current best score :', best_hps_macro_f1_score_pred)
+        print('entire best score :', best_hps_macro_f1_score_pred_all_trials)
 
     raise NotImplementedError
 
