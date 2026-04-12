@@ -186,10 +186,11 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 
     for hp in hps_2:
         if hp in valid_features:
-            all_hps_list.append(hp)
+            all_hps_list.append(hp.split('_')[0])
             base_input_data.append({hp: None})
 
     print(base_input_data)
+    print(all_hps_list)
 
     raise NotImplementedError
 
