@@ -94,7 +94,7 @@ def merge_dataset_df(dataset_name, valid_features):
 
     hp_activate_funcs = ['relu', 'leaky_relu']
     hp_optimizers = ['adam', 'adamw']
-    hp_schedulers = ['exp_90', 'exp_95', 'exp_98', 'cosine']
+    hp_schedulers = ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']
 
     for csv_name in csv_names:
         if 'hpo_model_train_dataset_df' in csv_name:

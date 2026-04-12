@@ -27,7 +27,7 @@ def analyze_data(dataset_name):
     # convert categorical columns to one-hot
     hp_activate_funcs = ['relu', 'leaky_relu']
     hp_optimizers = ['adam', 'adamw']
-    hp_schedulers = ['exp_90', 'exp_95', 'exp_98', 'cosine']
+    hp_schedulers = ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']
 
     for active_func in hp_activate_funcs:
         dataset_df[f'actfunc_{active_func}'] = dataset_df['hp_activation_func'].map(lambda x: 1 if x == active_func else 0)

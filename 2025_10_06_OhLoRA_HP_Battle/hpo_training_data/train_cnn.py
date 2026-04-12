@@ -21,7 +21,7 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
-MAX_EPOCHS = 70
+MAX_EPOCHS = 15
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
@@ -256,9 +256,12 @@ def load_cnn_model_before_train(dataset_name, hps):
                                                 lr=hps['lr'])
 
     # learning rate scheduler
-    assert hps['scheduler'] in ['exp_90', 'exp_95', 'exp_98', 'cosine']
+    assert hps['scheduler'] in ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']
 
-    if hps['scheduler'] == 'exp_90':
+    if hps['scheduler'] == 'exp_80':
+        cnn_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=cnn_model.optimizer,
+                                                                     gamma=0.8)
+    elif hps['scheduler'] == 'exp_90':
         cnn_model.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=cnn_model.optimizer,
                                                                      gamma=0.9)
     elif hps['scheduler'] == 'exp_95':

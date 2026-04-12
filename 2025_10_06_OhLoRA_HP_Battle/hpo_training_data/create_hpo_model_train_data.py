@@ -42,15 +42,17 @@ def initialize_data_dict():
 
 
 def initialize_hp_candidates():
-    return {'dropout_conv_earlier': list(np.linspace(0.0, 0.3, 301)),
-            'dropout_conv_later': list(np.linspace(0.0, 0.3, 301)),
-            'dropout_fc': list(np.linspace(0.0, 0.6, 601)),
-            'lr': [0.00002, 0.000025, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.000085, 0.0001, 0.000125,
+    return {'dropout_conv_earlier': list(np.linspace(0.0, 0.9, 901)),
+            'dropout_conv_later': list(np.linspace(0.0, 0.9, 901)),
+            'dropout_fc': list(np.linspace(0.0, 0.9, 901)),
+            'lr': [0.000001, 0.00000125, 0.0000015, 0.00000175, 0.000002, 0.0000025, 0.000003, 0.000004,
+                   0.000005, 0.000006, 0.000007, 0.0000085, 0.00001, 0.0000125, 0.000015, 0.0000175,
+                   0.00002, 0.000025, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.000085, 0.0001, 0.000125,
                    0.00015, 0.000175, 0.0002, 0.00025, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.00085,
                    0.001, 0.00125, 0.0015, 0.00175, 0.002, 0.0025, 0.003, 0.004, 0.005, 0.006],
             'activation_func': ['relu', 'leaky_relu'],
             'optimizer': ['adam', 'adamw'],
-            'scheduler': ['exp_90', 'exp_95', 'exp_98', 'cosine']}
+            'scheduler': ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']}
 
 
 def generate_constraints(dataset_name):
