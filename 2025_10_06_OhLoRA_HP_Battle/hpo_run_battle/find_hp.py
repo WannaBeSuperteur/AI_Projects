@@ -122,6 +122,26 @@ def find_neighboring_hps_numeric(hps_dict):
     return neighboring_hps
 
 
+def find_neighboring_hps_categorical(hps_dict, all_hps_list):
+    neighboring_hps = []
+    categorical_hps = {
+        'actfunc': ['relu', 'leaky_relu'],
+        'opt': ['adam', 'adamw'],
+        'sch': ['exp_90', 'exp_95', 'exp_98', 'cosine']
+    }
+
+    for hp_type, hp_value in categorical_hps.items():
+        if hp_type in hps_dict:
+            hp_name = f'{hp_type}_{hp_value}'
+
+            if hp_name in all_hps_list and hps_dict[hp_type] != hp_value:
+                new_hps_dict = copy.deepcopy(hps_dict)
+                new_hps_dict[hp_type] = hp_value
+                neighboring_hps.append(new_hps_dict)
+
+    return neighboring_hps
+
+
 # 하이퍼파라미터 탐색 가능한 모의 데이터셋 생성
 # Create Date : 2026.04.09
 # Last Update Date : -
@@ -251,7 +271,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 
     for hp in hps_2:
         if hp in valid_features:
-            all_hps_list.append(hp.split('_')[0])
+            all_hps_list.append(hp)
             base_input_data.append({'key': hp})
 
     print(base_input_data)
@@ -263,7 +283,9 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     for i in range(HP_RANDOM_INIT_COUNT):
         while True:
             current_hps_dict = init_hps(all_hps_list)
-            neighboring_hps_list = find_neighboring_hps_numeric(current_hps_dict)
+            neighboring_hps_list_numeric = find_neighboring_hps_numeric(current_hps_dict)
+            neighboring_hps_list_categorical = find_neighboring_hps_categorical(current_hps_dict, all_hps_list)
+            neighboring_hps = neighboring_hps_list_numeric + neighboring_hps_list_categorical
             current_input_data = copy.deepcopy(base_input_data)
 
             for j in range(len(current_input_data)):
@@ -271,7 +293,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                     current_input_data[j] = current_hps_dict[current_input_data[j]['key']]
 
             print(current_hps_dict)
-            print(neighboring_hps_list)
+            print(neighboring_hps)
             print(current_input_data)
             break
 
