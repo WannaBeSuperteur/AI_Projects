@@ -147,18 +147,23 @@ def predict_macro_f1_score_with_input_data(input_data, input_data_columns, hps_d
     input_data_ = copy.deepcopy(input_data)
 
     # fill hyper-param values input
-    for j in range(len(input_data_)):
-        if isinstance(input_data_[j], dict):
-            if input_data_[j]['key'] in ['hp_dropout_conv_earlier', 'hp_dropout_conv_later', 'hp_dropout_fc', 'hp_lr']:
-                input_data_[j] = hps_dict[input_data_[j]['key']]
+    for i in range(len(input_data_)):
+        if isinstance(input_data_[i], dict):
+            if input_data_[i]['key'] in ['hp_dropout_conv_earlier', 'hp_dropout_conv_later', 'hp_dropout_fc', 'hp_lr']:
+                input_data_[i] = hps_dict[input_data_[i]['key']]
             else:
-                hp_type = input_data_[j]['key'].split('_')[0]
-                hp_value = '_'.join(input_data_[j]['key'].split('_')[1])
+                hp_type = input_data_[i]['key'].split('_')[0]
+                hp_value = '_'.join(input_data_[i]['key'].split('_')[1])
 
                 if hps_dict[hp_type] == hp_value:
-                    input_data_[j] = 1.0
+                    input_data_[i] = 1.0
                 else:
-                    input_data_[j] = 0.0
+                    input_data_[i] = 0.0
+
+    for idx, input_data_column in enumerate(input_data_columns):
+        input_data_[idx] = (input_data_[idx] - train_means[input_data_column]) / train_stds[input_data_column]
+
+    print(input_data_)
 
     raise NotImplementedError
 
