@@ -240,7 +240,7 @@ def get_input_data_and_all_hps_list(hpo_model_input_data, valid_features):
     # labels trained or not
     for i in range(NUM_CLASSES):
         if f'labels_trained_{i}' in valid_features:
-            base_input_data.append(hpo_model_input_data[f'labels_trained_{i}'])
+            base_input_data.append(hpo_model_input_data['labels_trained'][i])
             base_input_data_columns.append(f'labels_trained_{i}')
 
     # hyper-params (2)
