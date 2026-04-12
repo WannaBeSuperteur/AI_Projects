@@ -14,7 +14,7 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-TRIALS_PER_DATASET = 400
+TRIALS_PER_DATASET = 2400
 
 
 def initialize_data_dict():
@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
         # initialize dict
         data_dict = initialize_data_dict()
-        data_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_10.csv'
+        data_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_new.csv'
 
         # hyper params
         current_trial = 0
