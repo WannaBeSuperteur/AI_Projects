@@ -2,6 +2,7 @@
 import numpy as np
 import torch
 import random
+import copy
 
 import os
 import sys
@@ -86,6 +87,39 @@ def init_hps(all_hps_list):
 
     return hps_dict
 
+
+def find_neighboring_hps_numeric(hps_dict):
+    neighboring_hps = []
+    linear_hps = {'hp_dropout_conv_earlier': [0.0, 0.3],
+                  'hp_dropout_conv_later': [0.0, 0.3],
+                  'hp_dropout_fc': [0.0, 0.6]}
+    exponential_hps = {'hp_lr': [0.00002, 0.006]}
+
+    for linear_hp, min_max_range in linear_hps.items():
+        if linear_hp in hps_dict:
+            new_hps_dict = copy.deepcopy(hps_dict)
+            if new_hps_dict[linear_hp] > min_max_range[0]:
+                new_hps_dict[linear_hp] = max(new_hps_dict[linear_hp] - 0.05, min_max_range[0])
+                neighboring_hps.append(new_hps_dict)
+
+            new_hps_dict = copy.deepcopy(hps_dict)
+            if new_hps_dict[linear_hp] < min_max_range[1]:
+                new_hps_dict[linear_hp] = min(new_hps_dict[linear_hp] + 0.05, min_max_range[1])
+                neighboring_hps.append(new_hps_dict)
+
+    for exponential_hp, min_max_range in exponential_hps.items():
+        if exponential_hp in hps_dict:
+            new_hps_dict = copy.deepcopy(hps_dict)
+            if new_hps_dict[exponential_hp] > min_max_range[0]:
+                new_hps_dict[exponential_hp] = max(new_hps_dict[exponential_hp] * 0.8, min_max_range[0])
+                neighboring_hps.append(new_hps_dict)
+
+            new_hps_dict = copy.deepcopy(hps_dict)
+            if new_hps_dict[exponential_hp] < min_max_range[1]:
+                new_hps_dict[exponential_hp] = min(new_hps_dict[exponential_hp] * 1.25, min_max_range[1])
+                neighboring_hps.append(new_hps_dict)
+
+    return neighboring_hps
 
 
 # 하이퍼파라미터 탐색 가능한 모의 데이터셋 생성
@@ -184,6 +218,8 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                              'avg_std_of_labels',
                              'largest_label_percentage']
 
+    print(hpo_model_input_data)
+
     # dataset stat
     for dataset_stat_feature in dataset_stat_features:
         if dataset_stat_feature in valid_features:
@@ -194,7 +230,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     for hp in hps_1:
         if f'hp_{hp}' in valid_features:
             all_hps_list.append(f'hp_{hp}')
-            base_input_data.append({f'hp_{hp}': None})
+            base_input_data.append({'key': f'hp_{hp}'})
 
     # encoding mean and std
     for i in range(EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA):
@@ -216,7 +252,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     for hp in hps_2:
         if hp in valid_features:
             all_hps_list.append(hp.split('_')[0])
-            base_input_data.append({hp: None})
+            base_input_data.append({'key': hp})
 
     print(base_input_data)
     print(all_hps_list)
@@ -226,8 +262,17 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 
     for i in range(HP_RANDOM_INIT_COUNT):
         while True:
-            current_hps = init_hps(all_hps_list)
-            print(current_hps)
+            current_hps_dict = init_hps(all_hps_list)
+            neighboring_hps_list = find_neighboring_hps_numeric(current_hps_dict)
+            current_input_data = copy.deepcopy(base_input_data)
+
+            for j in range(len(current_input_data)):
+                if isinstance(current_input_data[j], dict):
+                    current_input_data[j] = current_hps_dict[current_input_data[j]['key']]
+
+            print(current_hps_dict)
+            print(neighboring_hps_list)
+            print(current_input_data)
             break
 
     raise NotImplementedError
