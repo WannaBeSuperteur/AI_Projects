@@ -1,6 +1,7 @@
 
 import numpy as np
 import torch
+import random
 
 import os
 import sys
@@ -57,6 +58,34 @@ def get_train_means_and_stds(dataset_name, threshold_cutoff):
     train_means, train_stds = get_means_and_stds(train_df_raw)
 
     return train_means, train_stds
+
+
+def init_hps(all_hps_list):
+    hps_dict = {}
+    if 'hp_dropout_conv_earlier' in all_hps_list:
+        hps_dict['hp_dropout_conv_earlier'] = random.random() * 0.3
+    if 'hp_dropout_conv_later' in all_hps_list:
+        hps_dict['hp_dropout_conv_later'] = random.random() * 0.3
+    if 'hp_dropout_fc' in all_hps_list:
+        hps_dict['hp_dropout_fc'] = random.random() * 0.6
+    if 'hp_lr' in all_hps_list:
+        hps_dict['hp_lr'] = pow(10, random.random() * 2.45 - 4.7)
+
+    actfunc_one_hot_features = list(filter(lambda x: x.startswith('actfunc'), all_hps_list))
+    opt_one_hot_features = list(filter(lambda x: x.startswith('opt'), all_hps_list))
+    sch_one_hot_features = list(filter(lambda x: x.startswith('sch'), all_hps_list))
+
+    if len(actfunc_one_hot_features) >= 1:
+        hps_dict['actfunc'] = '_'.join(random.choice(actfunc_one_hot_features).split('_')[1:])
+
+    if len(opt_one_hot_features) >= 1:
+        hps_dict['opt'] = '_'.join(random.choice(opt_one_hot_features).split('_')[1:])
+
+    if len(sch_one_hot_features) >= 1:
+        hps_dict['sch'] = '_'.join(random.choice(sch_one_hot_features).split('_')[1:])
+
+    return hps_dict
+
 
 
 # 하이퍼파라미터 탐색 가능한 모의 데이터셋 생성
@@ -191,6 +220,15 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 
     print(base_input_data)
     print(all_hps_list)
+
+    # find best hyper-param
+    best_hps = {}
+
+    for i in range(HP_RANDOM_INIT_COUNT):
+        while True:
+            current_hps = init_hps(all_hps_list)
+            print(current_hps)
+            break
 
     raise NotImplementedError
 
