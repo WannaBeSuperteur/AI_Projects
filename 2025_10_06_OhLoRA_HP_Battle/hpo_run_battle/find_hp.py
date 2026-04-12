@@ -354,7 +354,6 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     hp_optimize_model.eval()
 
     for i in range(HP_RANDOM_INIT_COUNT):
-        print(f'\n==== ROUND {i} ====')
         best_hps_dict = {}
         best_hps_macro_f1_score_pred = 0.0
         current_hps_dict = init_hps(all_hps_list)
@@ -378,8 +377,6 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                 best_hps_macro_f1_score_pred = macro_f1_score_pred
                 best_hps_dict = copy.deepcopy(current_hps_dict)
 
-            print('current_hps_dict :', current_hps_dict, ', pred :', macro_f1_score_pred)
-
             # predict Macro F1 Score with neighboring hyper-params
             is_better_found = False
 
@@ -397,8 +394,6 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                     current_hps_dict = copy.deepcopy(neighboring_hps_dict)
                     is_better_found = True
 
-                print('neighboring_hps_dict :', neighboring_hps_dict, ', pred :', macro_f1_score_pred_nei)
-
             if not is_better_found:
                 break
 
@@ -407,11 +402,8 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
             best_hps_macro_f1_score_pred_all_trials = best_hps_macro_f1_score_pred
             best_hps_dict_all_trials = best_hps_dict
 
-        print('best_hps_dict :', best_hps_dict)
-        print('current best score :', best_hps_macro_f1_score_pred)
-        print('entire best score :', best_hps_macro_f1_score_pred_all_trials)
-
-    raise NotImplementedError
+    optimal_hps = best_hps_dict_all_trials
+    return optimal_hps
 
 
 # 탐색한 최적 하이퍼파라미터를 이용한 학습 시의 Macro F1 Score 측정
@@ -440,8 +432,8 @@ if __name__ == '__main__':
         valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
 
         optimal_hps = find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features)
-        macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
+#        macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
 
         print(f'dataset_name : {dataset_name}')
         print(f'optimal Hyper-params: {optimal_hps}')
-        print(f'Macro F1 Score: {macro_f1_score}')
+#        print(f'Macro F1 Score: {macro_f1_score}')
