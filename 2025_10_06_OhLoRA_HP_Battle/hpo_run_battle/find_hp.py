@@ -142,6 +142,16 @@ def find_neighboring_hps_categorical(hps_dict, all_hps_list):
     return neighboring_hps
 
 
+def predict_macro_f1_score_with_input_data(input_data, hps_dict):
+    input_data_ = copy.deepcopy(input_data)
+
+    for j in range(len(input_data_)):
+        if isinstance(input_data_[j], dict):
+            input_data_[j] = hps_dict[input_data_[j]['key']]
+
+    raise NotImplementedError
+
+
 # 하이퍼파라미터 탐색 가능한 모의 데이터셋 생성
 # Create Date : 2026.04.09
 # Last Update Date : -
@@ -278,24 +288,46 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     print(all_hps_list)
 
     # find best hyper-param
-    best_hps = {}
+    best_hps_dict_all_trials = {}
+    best_hps_macro_f1_score_pred_all_trials = 0.0
 
     for i in range(HP_RANDOM_INIT_COUNT):
+        best_hps_dict = {}
+        best_hps_macro_f1_score_pred = 0.0
+
         while True:
+
+            # get hyper-params dict
             current_hps_dict = init_hps(all_hps_list)
             neighboring_hps_list_numeric = find_neighboring_hps_numeric(current_hps_dict)
             neighboring_hps_list_categorical = find_neighboring_hps_categorical(current_hps_dict, all_hps_list)
-            neighboring_hps = neighboring_hps_list_numeric + neighboring_hps_list_categorical
+            neighboring_hps_list = neighboring_hps_list_numeric + neighboring_hps_list_categorical
             current_input_data = copy.deepcopy(base_input_data)
 
-            for j in range(len(current_input_data)):
-                if isinstance(current_input_data[j], dict):
-                    current_input_data[j] = current_hps_dict[current_input_data[j]['key']]
+            # predict Macro F1 Score with current hyper-params
+            macro_f1_score_pred = predict_macro_f1_score_with_input_data(current_input_data, current_hps_dict)
+            if macro_f1_score_pred > best_hps_macro_f1_score_pred:
+                best_hps_macro_f1_score_pred = macro_f1_score_pred
+                best_hps_dict = current_hps_dict
 
-            print(current_hps_dict)
-            print(neighboring_hps)
-            print(current_input_data)
-            break
+            # predict Macro F1 Score with neighboring hyper-params
+            is_better_found = False
+
+            for neighboring_hps_dict in neighboring_hps_list:
+                macro_f1_score_pred_nei = predict_macro_f1_score_with_input_data(current_input_data, neighboring_hps_dict)
+
+                if macro_f1_score_pred_nei > best_hps_macro_f1_score_pred:
+                    best_hps_macro_f1_score_pred = macro_f1_score_pred_nei
+                    best_hps_dict = neighboring_hps_dict
+                    is_better_found = True
+
+            if not is_better_found:
+                break
+
+        # update best hyper-params for all trials
+        if best_hps_macro_f1_score_pred > best_hps_macro_f1_score_pred_all_trials:
+            best_hps_macro_f1_score_pred_all_trials = best_hps_macro_f1_score_pred
+            best_hps_dict_all_trials = best_hps_dict
 
     raise NotImplementedError
 
