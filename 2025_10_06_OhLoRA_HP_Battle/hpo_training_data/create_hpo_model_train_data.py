@@ -152,11 +152,15 @@ if __name__ == '__main__':
         print(f'\n==== DATASET: {dataset_name} ====\n')
 
         # initialize dict
-        data_dict = initialize_data_dict()
         data_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_new.csv'
 
-        # hyper params
-        current_trial = 0
+        if os.path.exists(data_csv_path):
+            data_df = pd.read_csv(data_csv_path)
+            data_dict = data_df.to_dict(orient='list')
+            current_trial = len(data_df)
+        else:
+            data_dict = initialize_data_dict()
+            current_trial = 0
 
         while current_trial < TRIALS_PER_DATASET:
             hps = {'dropout_conv_earlier': random.choice(hp_candidates['dropout_conv_earlier']),
