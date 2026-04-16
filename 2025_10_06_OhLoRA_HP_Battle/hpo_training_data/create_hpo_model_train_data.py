@@ -14,7 +14,7 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-TRIALS_PER_DATASET = 2400
+TRIALS_PER_DATASET = 3000
 
 
 def initialize_data_dict():
@@ -163,6 +163,8 @@ if __name__ == '__main__':
             current_trial = 0
 
         while current_trial < TRIALS_PER_DATASET:
+            print(f'current trial: {current_trial}')
+
             hps = {'dropout_conv_earlier': random.choice(hp_candidates['dropout_conv_earlier']),
                    'dropout_conv_later': random.choice(hp_candidates['dropout_conv_later']),
                    'dropout_fc': random.choice(hp_candidates['dropout_fc']),
