@@ -162,9 +162,9 @@ if __name__ == '__main__':
             data_dict = initialize_data_dict()
             current_trial = 0
 
-        while current_trial < TRIALS_PER_DATASET:
-            print(f'current trial: {current_trial}')
+        print(f'current trial: {current_trial}')
 
+        while current_trial < TRIALS_PER_DATASET:
             hps = {'dropout_conv_earlier': random.choice(hp_candidates['dropout_conv_earlier']),
                    'dropout_conv_later': random.choice(hp_candidates['dropout_conv_later']),
                    'dropout_fc': random.choice(hp_candidates['dropout_fc']),
