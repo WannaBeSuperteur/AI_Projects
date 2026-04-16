@@ -3,21 +3,22 @@ import pandas as pd
 import os
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+HPO_TRAINING_DATASET_PATH = f'{PROJECT_DIR_PATH}/hpo_training_data/test/'
 
 
 # 학습 데이터 분석 (입력 데이터 각 column 과 출력 column 간 상관계수)
 # Create Date: 2026.03.23
-# Last Update Date: 2026.04.04
-# - hpo_model_train_dataset_df 로 시작하는 모든 csv 파일의 통계 반영
+# Last Update Date: 2026.04.16
+# - 데이터셋 파일명 교체 ('new.csv'로 끝나는 파일명으로)
 
 # Arguments:
 # - dataset_name (str) : 데이터셋 이름 ('mnist', 'fashion_mnist' or 'cifar_10')
 
 def analyze_data(dataset_name):
     dataset_dfs = []
-    suffix_list = ['', '_2', '_3', '_4', '_5', '_6', '_7', '_8', '_9', '_10']
+    suffix_list = ['']
     for suffix in suffix_list:
-        dataset_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df{suffix}.csv'
+        dataset_csv_path = f'{HPO_TRAINING_DATASET_PATH}/{dataset_name}/hpo_model_train_dataset_df_new{suffix}.csv'
         dataset_df_part = pd.read_csv(dataset_csv_path)
         dataset_dfs.append(dataset_df_part)
     dataset_df = pd.concat(dataset_dfs, ignore_index=True)
