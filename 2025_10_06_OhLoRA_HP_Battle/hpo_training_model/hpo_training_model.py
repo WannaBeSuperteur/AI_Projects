@@ -77,8 +77,8 @@ class HPOTrainingDataset(Dataset):
 
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
 # Create Date : 2026.03.29
-# Last Update Date : 2026.04.04
-# - HPO 모델 학습용 데이터셋의 valid feature (= column) 만 반영
+# Last Update Date : 2026.04.16
+# - 데이터셋 파일명 교체 ('new.csv'로 끝나는 파일명으로)
 
 # Arguments:
 # - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
@@ -97,7 +97,7 @@ def merge_dataset_df(dataset_name, valid_features):
     hp_schedulers = ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']
 
     for csv_name in csv_names:
-        if 'hpo_model_train_dataset_df' in csv_name:
+        if 'hpo_model_train_dataset_df_new' in csv_name:
             df_path = os.path.join(csv_path, csv_name)
             df = pd.read_csv(df_path)
 
@@ -415,7 +415,7 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
 
 
 def run_threshold_cutoff_test():
-    dataset_names = ['mnist']
+    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     result_dict = {'threshold_cutoff': [], 'elapsed_time': []}
     for dataset_name in dataset_names:
@@ -428,7 +428,7 @@ def run_threshold_cutoff_test():
         result_dict[f'input_features_{dataset_name}'] = []
 
     # threshold cutoff test
-    threshold_cutoffs = np.linspace(0.302, 0.6, 150)
+    threshold_cutoffs = np.linspace(0.0, 0.4, 161)
 
     for threshold_cutoff in threshold_cutoffs:
         start_at = time.time()
@@ -444,10 +444,11 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_2.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new.csv')
 
 
 if __name__ == '__main__':
-    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.2)
-    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.175)
-    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.35)
+    run_threshold_cutoff_test()
+#    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.2)
+#    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.175)
+#    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.35)
