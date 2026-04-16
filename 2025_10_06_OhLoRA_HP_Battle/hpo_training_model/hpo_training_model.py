@@ -75,6 +75,13 @@ class HPOTrainingDataset(Dataset):
         return inputs_tensor, labels_tensor
 
 
+def is_hp(row_name):
+    return (row_name.startswith('hp_') or
+            row_name.startswith('actfunc_') or
+            row_name.startswith('opt_')
+            or row_name.startswith('sch_'))
+
+
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
 # Create Date : 2026.03.29
 # Last Update Date : 2026.04.16
@@ -318,7 +325,8 @@ def preprocess_data(dataset_df, means, stds):
 
 # HPO 모델 학습용 데이터셋의 valid feature (= column) = abs({target 과의 corr-coef}) >= cutoff 인 column 리스트 반환
 # Create Date : 2026.04.04
-# Last Update Date : -
+# Last Update Date : 2026.04.14
+# - 하이퍼파라미터에 해당하는 row name의 경우 무조건 valid 처리
 
 # Arguments:
 # - dataset_name     (str)   : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
@@ -333,7 +341,7 @@ def get_valid_feature_list(dataset_name, threshold_cutoff):
     valid_features = []
 
     for _, row in corrs_df.iterrows():
-        if abs(row[0]) >= threshold_cutoff or row.name == 'f1_score_macro':
+        if abs(row[0]) >= threshold_cutoff or row.name == 'f1_score_macro' or is_hp(str(row.name)):
             valid_features.append(row.name)
 
     return valid_features
