@@ -78,8 +78,8 @@ class HPOTrainingDataset(Dataset):
 def is_hp(row_name):
     return (row_name.startswith('hp_') or
             row_name.startswith('actfunc_') or
-            row_name.startswith('opt_')
-            or row_name.startswith('sch_'))
+            row_name.startswith('opt_') or
+            row_name.startswith('sch_'))
 
 
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
@@ -436,7 +436,7 @@ def run_threshold_cutoff_test():
         result_dict[f'input_features_{dataset_name}'] = []
 
     # threshold cutoff test
-    threshold_cutoffs = np.linspace(0.0, 0.4, 161)
+    threshold_cutoffs = np.linspace(0.0, 0.4, 401)
 
     for threshold_cutoff in threshold_cutoffs:
         start_at = time.time()
