@@ -388,6 +388,7 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
 
         train_df_raw = merged_dataset_df.iloc[:merged_dataset_train_size, :]
         test_df_raw = merged_dataset_df.iloc[merged_dataset_train_size:, :]
+        print(f'train size: {len(train_df_raw)}, test size: {len(test_df_raw)}')
 
         # pre-process train & test data
         train_means, train_stds = get_means_and_stds(train_df_raw)
@@ -436,7 +437,7 @@ def run_threshold_cutoff_test():
         result_dict[f'input_features_{dataset_name}'] = []
 
     # threshold cutoff test
-    threshold_cutoffs = np.linspace(0.0, 0.4, 401)
+    threshold_cutoffs = np.linspace(0.0, 0.3, 31)
 
     for threshold_cutoff in threshold_cutoffs:
         start_at = time.time()
@@ -452,7 +453,7 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv')
 
 
 if __name__ == '__main__':
