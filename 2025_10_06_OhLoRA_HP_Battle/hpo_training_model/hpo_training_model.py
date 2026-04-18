@@ -388,7 +388,7 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
 
         train_df_raw = merged_dataset_df.iloc[:merged_dataset_train_size, :]
         test_df_raw = merged_dataset_df.iloc[merged_dataset_train_size:, :]
-        print(f'train size: {len(train_df_raw)}, test size: {len(test_df_raw)}')
+        print(f'train size: {len(train_df_raw)}, test size: {len(test_df_raw)}, threshold cutoff: {threshold_cutoff}')
 
         # pre-process train & test data
         train_means, train_stds = get_means_and_stds(train_df_raw)
