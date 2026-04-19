@@ -125,7 +125,7 @@ def add_train_data(data_dict, hpo_model_input_data, hpo_model_output_data):
 
 
 if __name__ == '__main__':
-    dataset_names = ['fashion_mnist', 'mnist']
+    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     # load Auto-Encoder encoder models
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

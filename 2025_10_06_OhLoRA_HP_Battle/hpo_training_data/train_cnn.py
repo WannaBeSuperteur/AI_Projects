@@ -22,7 +22,7 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 3
 MIN_EPOCHS = 5
-MAX_EPOCHS = 70
+MAX_EPOCHS = 120
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
