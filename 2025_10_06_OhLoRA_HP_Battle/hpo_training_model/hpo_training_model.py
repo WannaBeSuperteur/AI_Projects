@@ -86,8 +86,8 @@ def is_hp(row_name):
 
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
 # Create Date : 2026.03.29
-# Last Update Date : 2026.04.16
-# - 데이터셋 파일명 교체 ('new.csv'로 끝나는 파일명으로)
+# Last Update Date : 2026.04.19
+# - 데이터셋 파일명 교체 ('new2.csv'로 끝나는 파일명으로)
 
 # Arguments:
 # - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
@@ -106,7 +106,7 @@ def merge_dataset_df(dataset_name, valid_features):
     hp_schedulers = ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']
 
     for csv_name in csv_names:
-        if 'hpo_model_train_dataset_df_new' in csv_name:
+        if 'hpo_model_train_dataset_df_new2' in csv_name:
             df_path = os.path.join(csv_path, csv_name)
             df = pd.read_csv(df_path)
 
@@ -604,7 +604,7 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2.csv')
 
 
 if __name__ == '__main__':
