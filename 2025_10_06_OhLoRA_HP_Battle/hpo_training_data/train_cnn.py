@@ -20,8 +20,9 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
-EARLY_STOPPING_ROUNDS = 10
-MAX_EPOCHS = 15
+EARLY_STOPPING_ROUNDS = 3
+MIN_EPOCHS = 5
+MAX_EPOCHS = 70
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 IMAGE_DATA_DIR_PATH = f'{PROJECT_DIR_PATH}/datasets'
@@ -349,7 +350,8 @@ def load_dataset(dataset_name, constraints):
 
 # Base CNN 학습 실시 및 모델 저장
 # Create Date : 2026.03.20
-# Last Update Date : -
+# Last Update Date : 2026.04.19
+# - min valid loss 갱신에 필요한 loss 감소량 1e-5 -> 0.001 로 수정
 
 # Arguments:
 # - cnn_model     (nn.Module)                : 학습할 CNN 모델
@@ -388,7 +390,7 @@ def train_cnn(cnn_model, train_dataset, valid_dataset):
 
         cnn_model.scheduler.step()
 
-        if min_val_loss is None or val_loss < min_val_loss - 1e-5:
+        if min_val_loss is None or val_loss < min_val_loss - 0.001:
             min_val_loss = val_loss
             min_val_loss_epoch = current_epoch
 
@@ -400,7 +402,7 @@ def train_cnn(cnn_model, train_dataset, valid_dataset):
             best_epoch_model.device = cnn_model.device
             best_epoch_model.to(cnn_model.device)
 
-        if current_epoch - min_val_loss_epoch >= EARLY_STOPPING_ROUNDS:
+        if current_epoch >= MIN_EPOCHS and current_epoch - min_val_loss_epoch >= EARLY_STOPPING_ROUNDS:
             break
 
         if current_epoch >= MAX_EPOCHS:
