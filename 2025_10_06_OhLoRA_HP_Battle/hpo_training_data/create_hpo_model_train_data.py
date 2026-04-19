@@ -179,9 +179,9 @@ if __name__ == '__main__':
                 load_dataset(dataset_name, constraints))
 
             # check label distribution condition
-            too_many_train_data = sum(train_dataset_label_distrib) > 1500
+            too_many_train_data = sum(train_dataset_label_distrib) > 2000
             too_few_classes = len(train_dataset_label_distrib) < 5 or len(test_dataset_label_distrib) < 5
-            too_few_minor_class_data = too_few_classes or train_dataset_label_distrib[4] < 125 or test_dataset_label_distrib[4] < 25
+            too_few_minor_class_data = too_few_classes or train_dataset_label_distrib[4] < 50 or test_dataset_label_distrib[4] < 10
 
             if too_many_train_data or too_few_minor_class_data:
                 print(f'rejected distribution: train={train_dataset_label_distrib}, test={test_dataset_label_distrib}')
