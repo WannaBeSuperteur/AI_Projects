@@ -14,7 +14,7 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-TRIALS_PER_DATASET = 3000
+TRIALS_PER_DATASET = 3600
 
 
 def initialize_data_dict():
