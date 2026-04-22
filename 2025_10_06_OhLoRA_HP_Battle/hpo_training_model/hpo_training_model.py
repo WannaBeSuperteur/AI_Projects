@@ -26,6 +26,7 @@ TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 
 
+# TODO: HPO training 딥러닝 모델 레이어 개수 늘리기 + 더 작은 learning rate 시도
 class HPOTrainingModel(nn.Module):
     def __init__(self, num_input_features):
         super(HPOTrainingModel, self).__init__()
@@ -586,13 +587,13 @@ def run_threshold_cutoff_test():
         result_dict[f'input_features_{dataset_name}'] = []
 
     # threshold cutoff test
-    threshold_cutoffs = [0.0]  # np.linspace(0.0, 0.3, 31)
+    threshold_cutoffs = np.linspace(0.0, 0.3, 31)
 
     for threshold_cutoff in threshold_cutoffs:
         start_at = time.time()
         result = generate_and_test_hpo_models(dataset_names,
                                               threshold_cutoff=threshold_cutoff,
-                                              use_tabtransformer=True)
+                                              use_tabtransformer=False)
         elapsed_time = time.time() - start_at
 
         for k, v in result.items():
