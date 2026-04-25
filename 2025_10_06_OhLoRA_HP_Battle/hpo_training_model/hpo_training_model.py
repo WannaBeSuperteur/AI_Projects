@@ -26,18 +26,20 @@ TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 
 
-# TODO: scheduler 누락 해결 + batch normalization 적용 + 더 작은 learning rate 시도
+# TODO: batch normalization 적용
 class HPOTrainingModel(nn.Module):
     def __init__(self, num_input_features):
         super(HPOTrainingModel, self).__init__()
 
         self.fc1 = nn.Sequential(
             nn.Linear(num_input_features, 1024),
+            nn.BatchNorm1d(1024),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
         self.fc2 = nn.Sequential(
             nn.Linear(1024, 512),
+            nn.BatchNorm1d(512),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
@@ -224,7 +226,7 @@ def train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name):
         val_loss_list.append(valid_loss)
 
         # update scheduler
-        hpo_model.scheduler.step()
+#        hpo_model.scheduler.step()
 
         # handle early stopping
         current_epoch += 1
