@@ -21,6 +21,34 @@
 
 ## 2. Option 설명
 
+* ```MNIST```, ```Fashion-MNIST```, ```CIFAR-10``` 데이터셋을 학습하는 **CNN 모델 (Hyper-param 최적화 대상)** 에 대한 설정
+  * 최소 epoch, 최대 epoch, early stopping patience
+  * sub-dataset 최대/최소 이미지 개수 
+* **해당 CNN 모델의 최적 Hyper-param 탐색 모델** 에 대한 설정
+  * dropout 범위 (하이퍼파라미터) 
+  * learning rate 범위 (하이퍼파라미터)
+  * 선택 가능한 scheduler 종류 (하이퍼파라미터)
+  * 학습 데이터셋 경로 및 Macro F1 Score (target 값) 와의 corr-coef threshold cutoff test 결과 파일 경로
+
+**1. Option 별 학습 데이터셋 및 하이퍼파라미터 설정**
+
+| Option   | 최소 ~ 최대 epoch | early stopping patience | sub-dataset 최대 이미지 개수 | sub-dataset 최소 이미지 개수<br>(class 별) | dropout 범위<br>(하이퍼파라미터)                          | learning rate 범위 (하이퍼파라미터) | 선택 가능한 scheduler 종류<br>(하이퍼파라미터)                                               |
+|----------|---------------|-------------------------|-----------------------|------------------------------------|--------------------------------------------------|----------------------------|--------------------------------------------------------------------------------|
+| Option 1 | 0 ~ 70        | 10                      | 1500                  | train: 125<br>test: 25             | conv: ```0.0 - 0.3```<br>fc: ```0.0 - 0.6```     | ```2e-5 - 6e-3```          | ```exp(0.9)``` ```exp(0.95)``` ```exp(0.98)``` ```cosine```                    |
+| Option 2 | 0 ~ 15        | 10                      | 1500                  | train: 125<br>test: 25             | **conv: ```0.0 - 0.9```<br>fc: ```0.0 - 0.9```** | **```1e-6 - 6e-3```**      | **```exp(0.8)```** ```exp(0.9)``` ```exp(0.95)``` ```exp(0.98)``` ```cosine``` |
+| Option 3 | **5 ~ 120**   | **3**                   | **2000**              | train: **50**<br>test: **10**      | conv: ```0.0 - 0.9```<br>fc: ```0.0 - 0.9```     | ```1e-6 - 6e-3```          | ```exp(0.8)``` ```exp(0.9)``` ```exp(0.95)``` ```exp(0.98)``` ```cosine```     |
+
+**2. Option 별 학습 데이터셋 및 Macro F1 Score (target 값) 와의 corr-coef threshold cutoff test 결과 파일 경로**
+
+* 학습+테스트 데이터 개수 (학습 데이터셋) 표시 방법
+  * ```{cifar_10 데이터 개수} / {fashion_mnist 데이터 개수} / {mnist 데이터 개수}```
+
+| Option   | 학습 데이터셋 경로                                                                      | threshold cutoff test 결과 파일 경로                                                                                                                                                                                                                                                                                            |
+|----------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Option 1 | ```hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_*.csv```    | - [```hpo_model_test_result_per_corr_threshold_cutoff.csv```](hpo_model_test_result_per_corr_threshold_cutoff.csv) (threshold 0.0 - 0.3)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff.csv) (threshold 0.3 - 0.6)                                    |
+| Option 2 | ```hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_new.csv```  | - [```hpo_model_test_result_per_corr_threshold_cutoff_new.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new.csv) (데이터 개수: 1576 / 2400 / 2400)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv) (데이터 개수: 3000 / 4800 / 4800)    |
+| Option 3 | ```hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_new2.csv``` | - [```hpo_model_test_result_per_corr_threshold_cutoff_new.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2.csv) (데이터 개수: 3600 / 3600 / 3600)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv) (데이터 개수: 6600 / 6600 / 6600) |
+
 ## 3. 테스트 결과
 
 * 테스트 결과 요약
