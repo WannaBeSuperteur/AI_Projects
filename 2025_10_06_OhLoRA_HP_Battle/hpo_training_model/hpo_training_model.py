@@ -26,7 +26,7 @@ TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 
 
-# TODO: HPO training 딥러닝 모델 레이어 개수 늘리기 + 더 작은 learning rate 시도 + scheduler 누락 해결
+# TODO: scheduler 누락 해결 + 더 작은 learning rate 시도
 class HPOTrainingModel(nn.Module):
     def __init__(self, num_input_features):
         super(HPOTrainingModel, self).__init__()
@@ -34,27 +34,21 @@ class HPOTrainingModel(nn.Module):
         self.fc1 = nn.Sequential(
             nn.Linear(num_input_features, 1024),
             nn.Tanh(),
-            nn.Dropout(0.3)
+            nn.Dropout(0.45)
         )
         self.fc2 = nn.Sequential(
             nn.Linear(1024, 512),
             nn.Tanh(),
-            nn.Dropout(0.3)
-        )
-        self.fc3 = nn.Sequential(
-            nn.Linear(512, 64),
-            nn.Tanh(),
-            nn.Dropout(0.3)
+            nn.Dropout(0.45)
         )
         self.fc_final = nn.Sequential(
-            nn.Linear(64, NUM_FEATURES_OUTPUT),
+            nn.Linear(512, NUM_FEATURES_OUTPUT),
             nn.Sigmoid()
         )
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.fc2(x)
-        x = self.fc3(x)
         x = self.fc_final(x)
         return x
 
@@ -160,7 +154,8 @@ def load_hpo_model(num_input_features):
 
 # HPO 모델 학습 및 저장
 # Create Date : 2026.04.04
-# Last Update Date : -
+# Last Update Date : 2026.04.25
+# - scheduler 누락 해결
 
 # Arguments:
 # - train_dataset      (torch.utils.data.Dataset) : 학습 (train) 데이터셋
@@ -226,6 +221,9 @@ def train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name):
         valid_loss = valid_loss_sum / valid_total_rows
         print(f'epoch: {current_epoch}, train_loss: {train_loss:.4f}, valid_loss: {valid_loss:.4f}')
         val_loss_list.append(valid_loss)
+
+        # update scheduler
+        hpo_model.scheduler.step()
 
         # handle early stopping
         current_epoch += 1
