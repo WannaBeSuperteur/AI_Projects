@@ -46,11 +46,11 @@
 * 학습+테스트 데이터 개수 (학습 데이터셋) 표시 방법
   * ```{cifar_10 데이터 개수} / {fashion_mnist 데이터 개수} / {mnist 데이터 개수}```
 
-| Option   | 학습 데이터셋 경로                                           | threshold cutoff test 결과 파일 경로                                                                                                                                                                                                                                                                                            |
-|----------|------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Option 1 | ```{base_dir}/hpo_model_train_dataset_df_*.csv```    | - [```hpo_model_test_result_per_corr_threshold_cutoff.csv```](hpo_model_test_result_per_corr_threshold_cutoff.csv) (threshold 0.0 - 0.3)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff.csv) (threshold 0.3 - 0.6)                                    |
-| Option 2 | ```{base_dir}/hpo_model_train_dataset_df_new.csv```  | - [```hpo_model_test_result_per_corr_threshold_cutoff_new.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new.csv) (데이터 개수: 1576 / 2400 / 2400)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv) (데이터 개수: 3000 / 4800 / 4800)    |
-| Option 3 | ```{base_dir}/hpo_model_train_dataset_df_new2.csv``` | - [```hpo_model_test_result_per_corr_threshold_cutoff_new.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2.csv) (데이터 개수: 3600 / 3600 / 3600)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv) (데이터 개수: 6600 / 6600 / 6600) |
+| Option   | 학습 데이터셋 경로                                           | threshold cutoff test 결과 파일 경로                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|----------|------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Option 1 | ```{base_dir}/hpo_model_train_dataset_df_*.csv```    | - [```hpo_model_test_result_per_corr_threshold_cutoff.csv```](hpo_model_test_result_per_corr_threshold_cutoff.csv) (threshold 0.0 - 0.3)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff.csv) (threshold 0.3 - 0.6)                                                                                                                                                                                                                                |
+| Option 2 | ```{base_dir}/hpo_model_train_dataset_df_new.csv```  | - [```hpo_model_test_result_per_corr_threshold_cutoff_new.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new.csv) (데이터 개수: 1576 / 2400 / 2400)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new_2.csv) (데이터 개수: 3000 / 4800 / 4800)                                                                                                                                                                                                |
+| Option 3 | ```{base_dir}/hpo_model_train_dataset_df_new2.csv``` | - [```hpo_model_test_result_per_corr_threshold_cutoff_new.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2.csv) (데이터 개수: 3600 / 3600 / 3600)<br>- [```hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv) (데이터 개수: 6600 / 6600 / 6600)<br><br>- [```hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_3.csv) (데이터 개수: 6600 / 6600 / 6600 + **HPO 모델 레이어 개수 증가**) |
 
 ## 3. 테스트 결과
 
@@ -73,6 +73,24 @@
 ![image](../../images/251006_9.png)
 
 ### 3-2. Option 2 테스트 결과
+
+* 범례
+  * 데이터 개수는 **CIFAR-10, Fashion-MNIST, MNIST** 각각 **train+test 데이터 개수** 를 의미
+  * 데이터 개수는 **최적 하이퍼파라미터 탐색 모델** 의 학습/테스트 데이터 개수를 의미
+
+| (S)                                | (L)                                |
+|------------------------------------|------------------------------------|
+| 데이터 개수 각각 **1576 / 2400 / 2400** 개 | 데이터 개수 각각 **3000 / 4800 / 4800** 개 |
+
+* 테스트 결과
+  * 최적 하이퍼파라미터 탐색 모델 성능을 **predicted / GT Macro F1 Score 간 corr-coef** 로 측정
+  * 모든 데이터셋에 대해서, **데이터 개수가 많은 (L) 경우가 적은 (S) 경우보다 성능이 좋음**
+
+| 데이터셋          | 테스트 결과                               |
+|---------------|--------------------------------------|
+| CIFAR-10      | ![image](../../images/251006_11.png) |
+| Fashion-MNIST | ![image](../../images/251006_12.png) |
+| MNIST         | ![image](../../images/251006_13.png) |
 
 ### 3-3. Option 3 테스트 결과
 
