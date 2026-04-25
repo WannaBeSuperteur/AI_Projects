@@ -26,7 +26,7 @@ TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 
 
-# TODO: scheduler 누락 해결 + 더 작은 learning rate 시도
+# TODO: scheduler 누락 해결 + batch normalization 적용 + 더 작은 learning rate 시도
 class HPOTrainingModel(nn.Module):
     def __init__(self, num_input_features):
         super(HPOTrainingModel, self).__init__()
@@ -219,7 +219,8 @@ def train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name):
             valid_total_rows += labels.size(0)
 
         valid_loss = valid_loss_sum / valid_total_rows
-        print(f'epoch: {current_epoch}, train_loss: {train_loss:.4f}, valid_loss: {valid_loss:.4f}')
+        lr = round(hpo_model.scheduler.get_last_lr()[0], 8)
+        print(f'epoch: {current_epoch}, train_loss: {train_loss:.5f}, valid_loss: {valid_loss:.5f}, lr: {lr}')
         val_loss_list.append(valid_loss)
 
         # update scheduler
@@ -609,11 +610,11 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_3.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_4.csv')
 
 
 if __name__ == '__main__':
-    print('HPO model training start')
+    print('HPO model training start ...')
     run_threshold_cutoff_test()
 #    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.2)
 #    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.175)
