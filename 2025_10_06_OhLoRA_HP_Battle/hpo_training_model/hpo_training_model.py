@@ -26,7 +26,7 @@ TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 
 
-# TODO: HPO training 딥러닝 모델 레이어 개수 늘리기 + 더 작은 learning rate 시도
+# TODO: HPO training 딥러닝 모델 레이어 개수 늘리기 + 더 작은 learning rate 시도 + scheduler 누락 해결
 class HPOTrainingModel(nn.Module):
     def __init__(self, num_input_features):
         super(HPOTrainingModel, self).__init__()
@@ -34,21 +34,27 @@ class HPOTrainingModel(nn.Module):
         self.fc1 = nn.Sequential(
             nn.Linear(num_input_features, 1024),
             nn.Tanh(),
-            nn.Dropout(0.45)
+            nn.Dropout(0.3)
         )
         self.fc2 = nn.Sequential(
             nn.Linear(1024, 512),
             nn.Tanh(),
-            nn.Dropout(0.45)
+            nn.Dropout(0.3)
+        )
+        self.fc3 = nn.Sequential(
+            nn.Linear(512, 64),
+            nn.Tanh(),
+            nn.Dropout(0.3)
         )
         self.fc_final = nn.Sequential(
-            nn.Linear(512, NUM_FEATURES_OUTPUT),
+            nn.Linear(64, NUM_FEATURES_OUTPUT),
             nn.Sigmoid()
         )
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.fc2(x)
+        x = self.fc3(x)
         x = self.fc_final(x)
         return x
 
@@ -605,10 +611,11 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_3.csv')
 
 
 if __name__ == '__main__':
+    print('HPO model training start')
     run_threshold_cutoff_test()
 #    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.2)
 #    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.175)
