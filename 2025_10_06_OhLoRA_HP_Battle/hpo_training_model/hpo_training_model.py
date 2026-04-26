@@ -33,13 +33,11 @@ class HPOTrainingModel(nn.Module):
 
         self.fc1 = nn.Sequential(
             nn.Linear(num_input_features, 1024),
-            nn.BatchNorm1d(1024),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
         self.fc2 = nn.Sequential(
             nn.Linear(1024, 512),
-            nn.BatchNorm1d(512),
             nn.Tanh(),
             nn.Dropout(0.45)
         )
