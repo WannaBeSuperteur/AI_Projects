@@ -104,6 +104,27 @@
 | M+SC    | [```hpo_model_test_result_per_corr_threshold_cutoff_new2_4.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_4.csv) | 6,600                       | 6,600                            | 6,600                    | FC 3개            | **적용**                               | 미 적용                |
 | M+BN    | [```hpo_model_test_result_per_corr_threshold_cutoff_new2_5.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_5.csv) | 6,600                       | 6,600                            | 6,600                    | FC 3개            | 미 적용                                 | **적용**              |
 
+* Option 3 테스트 결과 **(Pred - Ground Truth Macro F1 Score 간 상관계수)**
+  * 종합적으로, **M, M+LY, M+SC** 가 전반적으로 우수한 결과를 보임
+
+| 데이터셋          | 상관계수 (corr-coef) 테스트 결과              | 우수한 케이스    |
+|---------------|--------------------------------------|------------|
+| CIFAR-10      | ![image](../../images/251006_14.png) | M, M+LY    |
+| Fashion MNIST | ![image](../../images/251006_15.png) | M+SC, M    |
+| MNIST         | ![image](../../images/251006_16.png) | M+LY, M+SC |
+
+* Option 3 테스트 결과 **(Mean Squared Error = HPO 모델 Loss인 동시에 평가지표)**
+  * 종합적으로, **M, M+SC** 가 전반적으로 우수한 결과를 보임
+
+| 데이터셋          | MSE 테스트 결과                           | 우수한 케이스 |
+|---------------|--------------------------------------|---------|
+| CIFAR-10      | ![image](../../images/251006_17.png) | M       |
+| Fashion MNIST | ![image](../../images/251006_18.png) | M+SC, M |
+| MNIST         | ![image](../../images/251006_19.png) | M+SC, M |
+
+* 의문 사항
+  * Layer 개수 증가, Scheduler 적용, Batch Normalization 적용이 큰 성능 향상을 일으키지 못하는데, 그 이유가 무엇일까? 
+
 ## 4. 테스트 결과에 따른 결정
 
 ### 4-1. Option 1 테스트 결과
