@@ -140,3 +140,9 @@
 * Option 3으로 테스트 재 실시
 
 ### 4-3. Option 3 테스트 결과
+
+* 비슷한 데이터셋 규모에서 Option 2 의 **pred-true Macro F1 Score 간 corr-coef** 가 일부 케이스에 대해 더 좋게 나왔음
+* 그러나 다음과 같은 이유로 Option 2 로 되돌아가지 않음
+  * max epochs 15, early stopping patience 10 은 **실전 딥러닝 학습 설정과 다소 거리가 있음**
+  * 일부 케이스가 아닌 전체적으로 보면, Option 3 도 전반적으로 Option 2 에 밀리지 않는 **pred-true Macro F1 Score 간 corr-coef** 값을 보임
+* 따라서, Option 3 을 데이터 개수를 늘려서 재 실시
