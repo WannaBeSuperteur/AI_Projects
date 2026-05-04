@@ -610,7 +610,7 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_5.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_6.csv')
 
 
 if __name__ == '__main__':
