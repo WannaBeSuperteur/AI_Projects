@@ -20,7 +20,7 @@ from hpo_training_model.hpo_training_model import (load_trained_hpo_model,
 from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 
 
-threshold_cutoffs = {'cifar_10': 0.2, 'fashion_mnist': 0.175, 'mnist': 0.35}
+threshold_cutoffs = {'cifar_10': 0.1, 'fashion_mnist': 0.17, 'mnist': 0.37}
 HP_RANDOM_INIT_COUNT = 10
 
 categorical_hps = {
@@ -432,8 +432,8 @@ if __name__ == '__main__':
         valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
 
         optimal_hps = find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features)
-#        macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
+        macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
 
         print(f'dataset_name : {dataset_name}')
         print(f'optimal Hyper-params: {optimal_hps}')
-#        print(f'Macro F1 Score: {macro_f1_score}')
+        print(f'Macro F1 Score: {macro_f1_score}')
