@@ -42,6 +42,6 @@
 
 | cifar_10 | fashion_mnist | mnist |
 |----------|---------------|-------|
-| 0.20     | 0.175         | 0.35  |
+| 0.1      | 0.17          | 0.37  |
 
 * [상세 정보](hpo_model_cutoff_test_result.md)

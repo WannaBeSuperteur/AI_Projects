@@ -1,6 +1,7 @@
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import torch
 import torch.nn as nn
@@ -8,6 +9,7 @@ import os
 import time
 
 from torch.utils.data import Dataset, DataLoader, random_split
+from tab_transformer_pytorch import TabTransformer
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -17,13 +19,14 @@ HPO_TRAINING_MODEL_PATH = f'{PROJECT_DIR_PATH}/hpo_training_model'
 
 NUM_CLASSES = 10
 EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA = 64
-NUM_FEATURES_INPUT = 2 * EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA + NUM_CLASSES + 16
+NUM_FEATURES_INPUT = 2 * EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA + NUM_CLASSES + 17
 NUM_FEATURES_OUTPUT = 1
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
 
 
+# TODO: batch normalization 적용
 class HPOTrainingModel(nn.Module):
     def __init__(self, num_input_features):
         super(HPOTrainingModel, self).__init__()
@@ -75,10 +78,17 @@ class HPOTrainingDataset(Dataset):
         return inputs_tensor, labels_tensor
 
 
+def is_hp(row_name):
+    return (row_name.startswith('hp_') or
+            row_name.startswith('actfunc_') or
+            row_name.startswith('opt_') or
+            row_name.startswith('sch_'))
+
+
 # 학습 데이터셋을 merge 하여 최종 데이터셋 생성
 # Create Date : 2026.03.29
-# Last Update Date : 2026.04.04
-# - HPO 모델 학습용 데이터셋의 valid feature (= column) 만 반영
+# Last Update Date : 2026.04.19
+# - 데이터셋 파일명 교체 ('new2.csv'로 끝나는 파일명으로)
 
 # Arguments:
 # - dataset_name (str) : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
@@ -94,10 +104,10 @@ def merge_dataset_df(dataset_name, valid_features):
 
     hp_activate_funcs = ['relu', 'leaky_relu']
     hp_optimizers = ['adam', 'adamw']
-    hp_schedulers = ['exp_90', 'exp_95', 'exp_98', 'cosine']
+    hp_schedulers = ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']
 
     for csv_name in csv_names:
-        if 'hpo_model_train_dataset_df' in csv_name:
+        if 'hpo_model_train_dataset_df_new2' in csv_name:
             df_path = os.path.join(csv_path, csv_name)
             df = pd.read_csv(df_path)
 
@@ -144,7 +154,8 @@ def load_hpo_model(num_input_features):
 
 # HPO 모델 학습 및 저장
 # Create Date : 2026.04.04
-# Last Update Date : -
+# Last Update Date : 2026.04.25
+# - scheduler 누락 해결
 
 # Arguments:
 # - train_dataset      (torch.utils.data.Dataset) : 학습 (train) 데이터셋
@@ -208,8 +219,12 @@ def train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name):
             valid_total_rows += labels.size(0)
 
         valid_loss = valid_loss_sum / valid_total_rows
-        print(f'epoch: {current_epoch}, train_loss: {train_loss:.4f}, valid_loss: {valid_loss:.4f}')
+        lr = round(hpo_model.scheduler.get_last_lr()[0], 8)
+        print(f'epoch: {current_epoch}, train_loss: {train_loss:.5f}, valid_loss: {valid_loss:.5f}, lr: {lr}')
         val_loss_list.append(valid_loss)
+
+        # update scheduler
+#        hpo_model.scheduler.step()
 
         # handle early stopping
         current_epoch += 1
@@ -318,7 +333,8 @@ def preprocess_data(dataset_df, means, stds):
 
 # HPO 모델 학습용 데이터셋의 valid feature (= column) = abs({target 과의 corr-coef}) >= cutoff 인 column 리스트 반환
 # Create Date : 2026.04.04
-# Last Update Date : -
+# Last Update Date : 2026.04.14
+# - 하이퍼파라미터에 해당하는 row name의 경우 무조건 valid 처리
 
 # Arguments:
 # - dataset_name     (str)   : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
@@ -333,17 +349,20 @@ def get_valid_feature_list(dataset_name, threshold_cutoff):
     valid_features = []
 
     for _, row in corrs_df.iterrows():
-        if abs(row[0]) >= threshold_cutoff or row.name == 'f1_score_macro':
+        if abs(row[0]) >= threshold_cutoff or row.name == 'f1_score_macro' or is_hp(str(row.name)):
             valid_features.append(row.name)
 
     return valid_features
 
 
-def load_trained_hpo_model(num_input_features, dataset_name):
+def load_trained_hpo_model(num_input_features, dataset_name, use_tabtransformer=False):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     trained_hpo_model = HPOTrainingModel(num_input_features)
-    model_path = f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt'
+    if use_tabtransformer:
+        model_path = f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}_tabt.pt'
+    else:
+        model_path = f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt'
     trained_hpo_model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
     trained_hpo_model.to(device)
     trained_hpo_model.device = device
@@ -351,19 +370,154 @@ def load_trained_hpo_model(num_input_features, dataset_name):
     return trained_hpo_model
 
 
-# HPO 모델 생성 및 테스트 (메인 함수)
-# Create Date : 2026.04.04
-# Last Update Date : 2026.04.07
-# - dataset_names (데이터셋 이름 목록) 를 argument 로 추가
+# HPO 모델 (TabTransformer) 학습 및 저장
+# Create Date : 2026.04.19
+# Last Update Date : -
 
 # Arguments:
-# - dataset_names    (list(str)) : 데이터셋 이름 ('mnist', 'fashion_mnist' or 'cifar_10') 의 목록
-# - threshold_cutoff (float)     : Threshold cutoff (최솟값) for corr-coef
+# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - dataset_name  (str)                      : 데이터셋 이름 ('cifar_10', 'fashion_mnist' or 'mnist')
+
+def train_hpo_model_tabt(train_dataset, dataset_name):
+
+    def get_tabtransformer():
+        return TabTransformer(
+            categories=(2, 2, 5),
+            num_continuous=(2 * EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA + NUM_CLASSES + 8),
+            dim=32,
+            dim_out=1,
+            depth=6,
+            heads=8,
+            attn_dropout=0.1,
+            ff_dropout=0.1,
+            mlp_hidden_mults=(4, 2),
+            mlp_act=nn.ReLU()
+        )
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    loss_func = nn.MSELoss(reduction='sum')
+
+    n_train_size = int(0.9 * len(train_dataset))
+    n_valid_size = len(train_dataset) - n_train_size
+    train_dataset_train, train_dataset_valid = random_split(train_dataset, [n_train_size, n_valid_size])
+
+    train_loader = DataLoader(train_dataset_train, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    valid_loader = DataLoader(train_dataset_valid, batch_size=VALID_BATCH_SIZE, shuffle=True)
+    current_epoch = 0
+    lowest_loss_epoch = 0
+    lowest_loss = 999.0              # lowest valid loss
+    lowest_loss_epoch_model = None
+
+    hpo_model = get_tabtransformer()
+    hpo_model.device = device
+    hpo_model.to(device)
+    hpo_model.optimizer = torch.optim.AdamW(hpo_model.parameters(), lr=0.00025)
+
+    while True:
+        print(f'epoch {current_epoch} (lowest loss epoch : {lowest_loss_epoch})')
+
+        # train
+        hpo_model.train()
+
+        for _, train_data in enumerate(tqdm(train_loader)):
+            input_data = train_data[0]
+            labels = train_data[1]
+
+            input_data_numeric = input_data[:, :-9]
+            input_data_categorical_all = input_data[:, -9:]
+
+            input_data_categorical_actfunc = torch.argmax(input_data_categorical_all[:, :2], dim=1)
+            input_data_categorical_opt = torch.argmax(input_data_categorical_all[:, 2:4], dim=1)
+            input_data_categorical_sch = torch.argmax(input_data_categorical_all[:, 4:], dim=1)
+
+            input_data_categorical = torch.stack([input_data_categorical_actfunc,
+                                                 input_data_categorical_opt,
+                                                 input_data_categorical_sch], dim=1)
+
+            # forward & backward
+            input_data_categorical = input_data_categorical.to(device).int()
+            input_data_numeric = input_data_numeric.to(device).float()
+            labels = labels.to(device).float()
+            labels = labels.unsqueeze(1)
+
+            hpo_model.optimizer.zero_grad()  # reset gradient
+            outputs = hpo_model(input_data_categorical, input_data_numeric)
+            outputs = torch.sigmoid(outputs)
+
+            loss = loss_func(outputs, labels)
+            loss.backward()
+            hpo_model.optimizer.step()
+
+        # valid
+        valid_loss_sum = 0
+        valid_rows_count = 0
+
+        hpo_model.eval()
+
+        for _, valid_data in enumerate(tqdm(valid_loader)):
+            input_data = valid_data[0]
+            labels = valid_data[1]
+
+            input_data_numeric = input_data[:, :-9]
+            input_data_categorical_all = input_data[:, -9:]
+
+            input_data_categorical_actfunc = torch.argmax(input_data_categorical_all[:, :2], dim=1)
+            input_data_categorical_opt = torch.argmax(input_data_categorical_all[:, 2:4], dim=1)
+            input_data_categorical_sch = torch.argmax(input_data_categorical_all[:, 4:], dim=1)
+
+            input_data_categorical = torch.stack([input_data_categorical_actfunc,
+                                                  input_data_categorical_opt,
+                                                  input_data_categorical_sch], dim=1)
+
+            # forward
+            input_data_categorical = input_data_categorical.to(device).int()
+            input_data_numeric = input_data_numeric.to(device).float()
+            labels = labels.to(device).float()
+            labels = labels.unsqueeze(1)
+
+            outputs = hpo_model(input_data_categorical, input_data_numeric)
+            outputs = torch.sigmoid(outputs)
+
+            loss = loss_func(outputs, labels)
+            valid_loss_sum += loss.item()
+            valid_rows_count += labels.size(0)
+
+        # early stopping
+        valid_loss = valid_loss_sum / valid_rows_count
+        print(f'valid loss : {valid_loss:.4f}')
+
+        if valid_loss < lowest_loss:
+            lowest_loss = valid_loss
+            lowest_loss_epoch = current_epoch
+
+            lowest_loss_epoch_model = get_tabtransformer()
+            lowest_loss_epoch_model.device = hpo_model.device
+            lowest_loss_epoch_model.load_state_dict(hpo_model.state_dict())
+
+        if current_epoch - lowest_loss_epoch >= EARLY_STOPPING_ROUNDS:
+            torch.save(lowest_loss_epoch_model.state_dict(), f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}_tabt.pt')
+            break
+
+        current_epoch += 1
+
+
+# HPO 모델 생성 및 테스트 (메인 함수)
+# Create Date : 2026.04.04
+# Last Update Date : 2026.04.19
+# - TabTransformer 사용 여부 옵션 추가
+
+# Arguments:
+# - dataset_names      (list(str)) : 데이터셋 이름 ('mnist', 'fashion_mnist' or 'cifar_10') 의 목록
+# - threshold_cutoff   (float)     : Threshold cutoff (최솟값) for corr-coef
+# - use_tabtransformer (bool)      : TabTransformer 사용 여부
 
 # Returns:
 # - result (dict) : 모델 생성 및 테스트 결과
 
-def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
+def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05, use_tabtransformer=False):
+    threshold_cutoff_error_msg = 'All input columns must trained (threshold cutoff == 0.0) with TabTransformer.'
+    assert not (use_tabtransformer and threshold_cutoff > 0.0), threshold_cutoff_error_msg
+
     valid_features_dict = {}
     result = {'threshold_cutoff': threshold_cutoff}
 
@@ -380,6 +534,7 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
 
         train_df_raw = merged_dataset_df.iloc[:merged_dataset_train_size, :]
         test_df_raw = merged_dataset_df.iloc[merged_dataset_train_size:, :]
+        print(f'train size: {len(train_df_raw)}, test size: {len(test_df_raw)}, threshold cutoff: {threshold_cutoff}')
 
         # pre-process train & test data
         train_means, train_stds = get_means_and_stds(train_df_raw)
@@ -393,13 +548,22 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
         num_input_features = len(valid_features_dict[dataset_name]) - NUM_FEATURES_OUTPUT
 
         try:
-            trained_hpo_model = load_trained_hpo_model(num_input_features, dataset_name)
+            trained_hpo_model = load_trained_hpo_model(num_input_features,
+                                                       dataset_name,
+                                                       use_tabtransformer=use_tabtransformer)
             print('LOAD TRAINED HPO MODEL SUCCESSFUL !!')
         except:
             print('load trained HPO model failed, training ...')
-            hpo_model = load_hpo_model(num_input_features=num_input_features)
-            train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name)
-            trained_hpo_model = load_trained_hpo_model(num_input_features, dataset_name)
+
+            if use_tabtransformer:
+                train_hpo_model_tabt(train_dataset, dataset_name)
+            else:
+                hpo_model = load_hpo_model(num_input_features=num_input_features)
+                train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name)
+
+            trained_hpo_model = load_trained_hpo_model(num_input_features,
+                                                       dataset_name,
+                                                       use_tabtransformer=use_tabtransformer)
 
         mae_error, mse_error, pred_true_corr, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
         print(f'MAE error: {mae_error}, MSE error: {mse_error}, pred-true corr-coef: {pred_true_corr}')
@@ -415,7 +579,7 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05):
 
 
 def run_threshold_cutoff_test():
-    dataset_names = ['mnist']
+    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     result_dict = {'threshold_cutoff': [], 'elapsed_time': []}
     for dataset_name in dataset_names:
@@ -428,11 +592,13 @@ def run_threshold_cutoff_test():
         result_dict[f'input_features_{dataset_name}'] = []
 
     # threshold cutoff test
-    threshold_cutoffs = np.linspace(0.302, 0.6, 150)
+    threshold_cutoffs = np.linspace(0.0, 0.4, 41)
 
     for threshold_cutoff in threshold_cutoffs:
         start_at = time.time()
-        result = generate_and_test_hpo_models(dataset_names, threshold_cutoff=threshold_cutoff)
+        result = generate_and_test_hpo_models(dataset_names,
+                                              threshold_cutoff=threshold_cutoff,
+                                              use_tabtransformer=False)
         elapsed_time = time.time() - start_at
 
         for k, v in result.items():
@@ -444,10 +610,12 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_2.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_6.csv')
 
 
 if __name__ == '__main__':
-    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.2)
-    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.175)
-    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.35)
+    print('HPO model training start ...')
+#    run_threshold_cutoff_test()
+    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.1)
+    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.17)
+    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.37)

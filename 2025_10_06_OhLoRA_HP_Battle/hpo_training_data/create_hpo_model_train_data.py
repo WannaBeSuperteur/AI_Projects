@@ -19,7 +19,7 @@ from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoE
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-TRIALS_PER_DATASET = 400
+TRIALS_PER_DATASET = 15600
 
 
 def initialize_data_dict():
@@ -47,15 +47,17 @@ def initialize_data_dict():
 
 
 def initialize_hp_candidates():
-    return {'dropout_conv_earlier': list(np.linspace(0.0, 0.3, 301)),
-            'dropout_conv_later': list(np.linspace(0.0, 0.3, 301)),
-            'dropout_fc': list(np.linspace(0.0, 0.6, 601)),
-            'lr': [0.00002, 0.000025, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.000085, 0.0001, 0.000125,
+    return {'dropout_conv_earlier': list(np.linspace(0.0, 0.9, 901)),
+            'dropout_conv_later': list(np.linspace(0.0, 0.9, 901)),
+            'dropout_fc': list(np.linspace(0.0, 0.9, 901)),
+            'lr': [0.000001, 0.00000125, 0.0000015, 0.00000175, 0.000002, 0.0000025, 0.000003, 0.000004,
+                   0.000005, 0.000006, 0.000007, 0.0000085, 0.00001, 0.0000125, 0.000015, 0.0000175,
+                   0.00002, 0.000025, 0.00003, 0.00004, 0.00005, 0.00006, 0.00007, 0.000085, 0.0001, 0.000125,
                    0.00015, 0.000175, 0.0002, 0.00025, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007, 0.00085,
                    0.001, 0.00125, 0.0015, 0.00175, 0.002, 0.0025, 0.003, 0.004, 0.005, 0.006],
             'activation_func': ['relu', 'leaky_relu'],
             'optimizer': ['adam', 'adamw'],
-            'scheduler': ['exp_90', 'exp_95', 'exp_98', 'cosine']}
+            'scheduler': ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine']}
 
 
 def generate_constraints(dataset_name):
@@ -155,11 +157,17 @@ if __name__ == '__main__':
         print(f'\n==== DATASET: {dataset_name} ====\n')
 
         # initialize dict
-        data_dict = initialize_data_dict()
-        data_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_10.csv'
+        data_csv_path = f'{PROJECT_DIR_PATH}/hpo_training_data/test/{dataset_name}/hpo_model_train_dataset_df_new2.csv'
 
-        # hyper params
-        current_trial = 0
+        if os.path.exists(data_csv_path):
+            data_df = pd.read_csv(data_csv_path)
+            data_dict = data_df.to_dict(orient='list')
+            current_trial = len(data_df)
+        else:
+            data_dict = initialize_data_dict()
+            current_trial = 0
+
+        print(f'current trial: {current_trial}')
 
         while current_trial < TRIALS_PER_DATASET:
             hps = {'dropout_conv_earlier': random.choice(hp_candidates['dropout_conv_earlier']),
@@ -176,9 +184,9 @@ if __name__ == '__main__':
                 load_dataset(dataset_name, constraints))
 
             # check label distribution condition
-            too_many_train_data = sum(train_dataset_label_distrib) > 1500
+            too_many_train_data = sum(train_dataset_label_distrib) > 2000
             too_few_classes = len(train_dataset_label_distrib) < 5 or len(test_dataset_label_distrib) < 5
-            too_few_minor_class_data = too_few_classes or train_dataset_label_distrib[4] < 125 or test_dataset_label_distrib[4] < 25
+            too_few_minor_class_data = too_few_classes or train_dataset_label_distrib[4] < 50 or test_dataset_label_distrib[4] < 10
 
             if too_many_train_data or too_few_minor_class_data:
                 print(f'rejected distribution: train={train_dataset_label_distrib}, test={test_dataset_label_distrib}')
