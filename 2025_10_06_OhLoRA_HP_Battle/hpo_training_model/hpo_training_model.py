@@ -592,7 +592,7 @@ def run_threshold_cutoff_test():
         result_dict[f'input_features_{dataset_name}'] = []
 
     # threshold cutoff test
-    threshold_cutoffs = np.linspace(0.0, 0.4, 41)
+    threshold_cutoffs = np.linspace(0.0, 0.45, 91)
 
     for threshold_cutoff in threshold_cutoffs:
         start_at = time.time()
@@ -610,7 +610,7 @@ def run_threshold_cutoff_test():
 
         # save threshold cutoff test result
         result_df = pd.DataFrame(result_dict)
-        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_7.csv')
+        result_df.to_csv('hpo_model_test_result_per_corr_threshold_cutoff_new2_8.csv')
 
 
 if __name__ == '__main__':
