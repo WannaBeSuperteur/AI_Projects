@@ -578,6 +578,10 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05, use_tabtr
                 print(f'pred-true corr-coef={pred_true_corr} >= {estimated_corr_coef}')
                 break
             else:
+                try:
+                    os.remove(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_{dataset_name}.pt')
+                except:
+                    pass
                 print(f'pred-true corr-coef={pred_true_corr} < {estimated_corr_coef}, retry ...')
 
         print(f'input feature count: {num_input_features}')
