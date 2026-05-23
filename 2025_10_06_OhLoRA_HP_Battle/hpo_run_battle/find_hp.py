@@ -20,7 +20,7 @@ from hpo_training_model.hpo_training_model import (load_trained_hpo_model,
 from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 
 
-threshold_cutoffs = {'cifar_10': 0.1, 'fashion_mnist': 0.17, 'mnist': 0.37}
+threshold_cutoffs = {'cifar_10': 0.08, 'fashion_mnist': 0.28, 'mnist': 0.34}
 HP_RANDOM_INIT_COUNT = 10
 
 categorical_hps = {
