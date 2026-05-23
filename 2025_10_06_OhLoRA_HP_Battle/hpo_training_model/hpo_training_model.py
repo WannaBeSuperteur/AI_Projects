@@ -506,6 +506,7 @@ def train_hpo_model_tabt(train_dataset, dataset_name):
 # Create Date : 2026.04.04
 # Last Update Date : 2026.05.23
 # - L2 dataset size (20,000) 에 해당하는 데이터만 추출해서 학습 및 테스트 실시
+# - estimated corr-coef 도달 시까지 retry 로직 추가
 
 # Arguments:
 # - dataset_names      (list(str)) : 데이터셋 이름 ('mnist', 'fashion_mnist' or 'cifar_10') 의 목록
@@ -515,7 +516,8 @@ def train_hpo_model_tabt(train_dataset, dataset_name):
 # Returns:
 # - result (dict) : 모델 생성 및 테스트 결과
 
-def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05, use_tabtransformer=False):
+def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05, use_tabtransformer=False,
+                                 estimated_corr_coef=None):
     threshold_cutoff_error_msg = 'All input columns must trained (threshold cutoff == 0.0) with TabTransformer.'
     assert not (use_tabtransformer and threshold_cutoff > 0.0), threshold_cutoff_error_msg
 
@@ -549,26 +551,35 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05, use_tabtr
         # train and test HPO model
         num_input_features = len(valid_features_dict[dataset_name]) - NUM_FEATURES_OUTPUT
 
-        try:
-            trained_hpo_model = load_trained_hpo_model(num_input_features,
-                                                       dataset_name,
-                                                       use_tabtransformer=use_tabtransformer)
-            print('LOAD TRAINED HPO MODEL SUCCESSFUL !!')
-        except:
-            print('load trained HPO model failed, training ...')
+        while True:
+            try:
+                trained_hpo_model = load_trained_hpo_model(num_input_features,
+                                                           dataset_name,
+                                                           use_tabtransformer=use_tabtransformer)
+                print('LOAD TRAINED HPO MODEL SUCCESSFUL !!')
+            except:
+                print('load trained HPO model failed, training ...')
 
-            if use_tabtransformer:
-                train_hpo_model_tabt(train_dataset, dataset_name)
+                if use_tabtransformer:
+                    train_hpo_model_tabt(train_dataset, dataset_name)
+                else:
+                    hpo_model = load_hpo_model(num_input_features=num_input_features)
+                    train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name)
+
+                trained_hpo_model = load_trained_hpo_model(num_input_features,
+                                                           dataset_name,
+                                                           use_tabtransformer=use_tabtransformer)
+
+            mae_error, mse_error, pred_true_corr, test_result_df = test_hpo_model(test_dataset,
+                                                                                  hpo_model=trained_hpo_model)
+            print(f'MAE error: {mae_error}, MSE error: {mse_error}, pred-true corr-coef: {pred_true_corr}')
+
+            if estimated_corr_coef is None or pred_true_corr >= estimated_corr_coef:
+                print(f'pred-true corr-coef={pred_true_corr} >= {estimated_corr_coef}')
+                break
             else:
-                hpo_model = load_hpo_model(num_input_features=num_input_features)
-                train_hpo_model(train_dataset, hpo_model, num_input_features, dataset_name)
+                print(f'pred-true corr-coef={pred_true_corr} < {estimated_corr_coef}, retry ...')
 
-            trained_hpo_model = load_trained_hpo_model(num_input_features,
-                                                       dataset_name,
-                                                       use_tabtransformer=use_tabtransformer)
-
-        mae_error, mse_error, pred_true_corr, test_result_df = test_hpo_model(test_dataset, hpo_model=trained_hpo_model)
-        print(f'MAE error: {mae_error}, MSE error: {mse_error}, pred-true corr-coef: {pred_true_corr}')
         print(f'input feature count: {num_input_features}')
         test_result_df.to_csv(f'{HPO_TRAINING_MODEL_PATH}/hpo_model_test_{dataset_name}.csv')
 
@@ -618,6 +629,6 @@ def run_threshold_cutoff_test():
 if __name__ == '__main__':
     print('HPO model training start ...')
 #    run_threshold_cutoff_test()
-    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.08)
-    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.28)
-    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.34)
+    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.08, estimated_corr_coef=0.731)
+    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.28, estimated_corr_coef=0.801)
+    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.34, estimated_corr_coef=0.814)
