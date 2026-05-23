@@ -8,12 +8,12 @@
   * [3-1. Option 1 테스트 결과](#3-1-option-1-테스트-결과)
   * [3-2. Option 2 테스트 결과](#3-2-option-2-테스트-결과)
   * [3-3. Option 3 테스트 결과](#3-3-option-3-테스트-결과)
-  * [3-4. Option 3 테스트 결과 (데이터셋 확대 이후)](#3-4-option-3-테스트-결과-데이터셋-확대-이후)
+  * [3-4. Option 3 테스트 결과 (데이터셋 확대 이후, 최종)](#3-4-option-3-테스트-결과-데이터셋-확대-이후-최종)
 * [4. 테스트 결과에 따른 결정](#4-테스트-결과에-따른-결정)
   * [4-1. Option 1 테스트 결과](#4-1-option-1-테스트-결과)
   * [4-2. Option 2 테스트 결과](#4-2-option-2-테스트-결과)
   * [4-3. Option 3 테스트 결과](#4-3-option-3-테스트-결과)
-  * [4-4. Option 3 테스트 결과 (데이터셋 확대 이후)](#4-4-option-3-테스트-결과-데이터셋-확대-이후)
+  * [4-4. Option 3 테스트 결과 (데이터셋 확대 이후, 최종)](#4-4-option-3-테스트-결과-데이터셋-확대-이후-최종)
 
 ## 1. 테스트 목적
 
@@ -107,6 +107,7 @@
 | M+BN    | [```hpo_model_test_result_per_corr_threshold_cutoff_new2_5.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_5.csv) | 6,600                       | 6,600                            | 6,600                    | FC 3개            | 미 적용                                 | **적용**              |
 | L       | [```hpo_model_test_result_per_corr_threshold_cutoff_new2_6.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv) | 15,600                      | 15,600                           | 15,600                   | FC 3개            | 미 적용                                 | 미 적용                | 
 | L2      | [```hpo_model_test_result_per_corr_threshold_cutoff_new2_7.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv) | 20,000                      | 20,000                           | 20,000                   | FC 3개            | 미 적용                                 | 미 적용                | 
+| L3      | [```hpo_model_test_result_per_corr_threshold_cutoff_new2_8.csv```](hpo_model_test_result_per_corr_threshold_cutoff_new2_2.csv) | 24,000                      | 24,000                           | 24,000                   | FC 3개            | 미 적용                                 | 미 적용                | 
 
 * Option 3 테스트 결과 **(Pred - Ground Truth Macro F1 Score 간 상관계수)**
   * 종합적으로, **M, M+LY, M+SC** 가 전반적으로 우수한 결과를 보임
@@ -129,13 +130,13 @@
 * 의문 사항
   * Layer 개수 증가, Scheduler 적용, Batch Normalization 적용이 큰 성능 향상을 일으키지 못하는데, 그 이유가 무엇일까? 
 
-### 3-4. Option 3 테스트 결과 (데이터셋 확대 이후)
+### 3-4. Option 3 테스트 결과 (데이터셋 확대 이후, 최종)
 
-| 데이터셋          | MSE 테스트 결과                           |
+| 데이터셋          | Corr-coef 테스트 결과                     |
 |---------------|--------------------------------------|
-| CIFAR-10      | ![image](../../images/251006_20.png) |
-| Fashion MNIST | ![image](../../images/251006_21.png) |
-| MNIST         | ![image](../../images/251006_22.png) |
+| CIFAR-10      | ![image](../../images/251006_23.png) |
+| Fashion MNIST | ![image](../../images/251006_24.png) |
+| MNIST         | ![image](../../images/251006_25.png) |
 
 ## 4. 테스트 결과에 따른 결정
 
@@ -159,14 +160,14 @@
   * 일부 케이스가 아닌 전체적으로 보면, Option 3 도 전반적으로 Option 2 에 밀리지 않는 **pred-true Macro F1 Score 간 corr-coef** 값을 보임
 * 따라서, Option 3 을 데이터 개수를 늘려서 재 실시
 
-### 4-4. Option 3 테스트 결과 (데이터셋 확대 이후)
+### 4-4. Option 3 테스트 결과 (데이터셋 확대 이후, 최종)
 
 * 각 데이터셋 별로 다음과 같은 threshold cutoff 를 이용하여 모델 학습
 
 | cifar_10 | fashion_mnist | mnist |
 |----------|---------------|-------|
-| 0.1      | 0.17          | 0.37  |
+| 0.08     | 0.28          | 0.34  |
 
 * 근거
-  * [Option 3 테스트 결과 (데이터셋 확대 이후)](#3-4-option-3-테스트-결과-데이터셋-확대-이후) 에 따른 **확대 데이터셋 (L) 기준** 최대 corr-coef 값이 되는 threshold cutoff
-  * fashion_mnist 데이터셋의 경우 0.03 에서 corr-coef 가 최대이지만, 해당 cutoff 부근에서 **corr-coef 의 변동성이 큼**
+  * [Option 3 테스트 결과 (데이터셋 확대 이후)](#3-4-option-3-테스트-결과-데이터셋-확대-이후-최종) 에 따른 **확대 데이터셋 (L2) 기준** 최대 corr-coef 값이 되는 threshold cutoff
+  * mnist 데이터셋의 경우 0.40 에서 corr-coef 가 최대이지만, 해당 cutoff가 측정이 이루어진 최대 cutoff 이므로 그 주변에서 변동성이 있을 것으로 예상
