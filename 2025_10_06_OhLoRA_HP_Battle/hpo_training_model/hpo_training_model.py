@@ -24,6 +24,7 @@ NUM_FEATURES_OUTPUT = 1
 
 TRAIN_BATCH_SIZE, VALID_BATCH_SIZE, TEST_BATCH_SIZE = 16, 4, 4
 EARLY_STOPPING_ROUNDS = 10
+L2_DATA_SIZE = 20000  # 24,000 개 데이터셋인 L3 이 오히려 corr-coef 가 L2보다 낮음
 
 
 # TODO: batch normalization 적용
@@ -503,8 +504,8 @@ def train_hpo_model_tabt(train_dataset, dataset_name):
 
 # HPO 모델 생성 및 테스트 (메인 함수)
 # Create Date : 2026.04.04
-# Last Update Date : 2026.04.19
-# - TabTransformer 사용 여부 옵션 추가
+# Last Update Date : 2026.05.23
+# - L2 dataset size (20,000) 에 해당하는 데이터만 추출해서 학습 및 테스트 실시
 
 # Arguments:
 # - dataset_names      (list(str)) : 데이터셋 이름 ('mnist', 'fashion_mnist' or 'cifar_10') 의 목록
@@ -529,6 +530,7 @@ def generate_and_test_hpo_models(dataset_names, threshold_cutoff=0.05, use_tabtr
         print(f'\ndataset name : {dataset_name}')
 
         merged_dataset_df = merge_dataset_df(dataset_name, valid_features=valid_features_dict[dataset_name])
+        merged_dataset_df = merged_dataset_df[:L2_DATA_SIZE]
         merged_dataset_size = len(merged_dataset_df)
         merged_dataset_train_size = int(0.9 * merged_dataset_size)
 
@@ -615,7 +617,7 @@ def run_threshold_cutoff_test():
 
 if __name__ == '__main__':
     print('HPO model training start ...')
-    run_threshold_cutoff_test()
-#    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.1)
-#    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.17)
-#    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.37)
+#    run_threshold_cutoff_test()
+    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.08)
+    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.28)
+    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.34)
