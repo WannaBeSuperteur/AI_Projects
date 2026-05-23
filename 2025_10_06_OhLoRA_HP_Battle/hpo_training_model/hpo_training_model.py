@@ -633,6 +633,6 @@ def run_threshold_cutoff_test():
 if __name__ == '__main__':
     print('HPO model training start ...')
 #    run_threshold_cutoff_test()
-    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.08, estimated_corr_coef=0.731)
-    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.28, estimated_corr_coef=0.801)
-    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.34, estimated_corr_coef=0.814)
+    generate_and_test_hpo_models(dataset_names=['cifar_10'], threshold_cutoff=0.08, estimated_corr_coef=0.729)
+    generate_and_test_hpo_models(dataset_names=['fashion_mnist'], threshold_cutoff=0.28, estimated_corr_coef=0.799)
+    generate_and_test_hpo_models(dataset_names=['mnist'], threshold_cutoff=0.34, estimated_corr_coef=0.812)
