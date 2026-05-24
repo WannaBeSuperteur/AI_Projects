@@ -27,7 +27,7 @@ threshold_cutoffs = {'cifar_10': 0.08, 'fashion_mnist': 0.28, 'mnist': 0.34}
 HP_RANDOM_INIT_COUNT = 10
 TEST_COUNT_FOR_EACH_DATASET = 30
 
-OPTUNA_TRIAL_COUNT = 5
+OPTUNA_TRIAL_COUNT = 2
 OPTUNA_DETAIL_DIR_NAME = f'optuna_result_{OPTUNA_TRIAL_COUNT}_trials'
 
 categorical_hps = {
