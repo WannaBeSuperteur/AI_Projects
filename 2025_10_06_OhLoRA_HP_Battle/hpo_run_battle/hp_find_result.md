@@ -4,6 +4,7 @@
 * [1. 요약](#1-요약)
 * [2. dropout interval = 0.05, lr multiple = 0.8 & 1.25](#2-dropout-interval--005-lr-multiple--08--125)
 * [3. dropout interval = 0.02, lr multiple = 0.9 & 1.111](#3-dropout-interval--002-lr-multiple--09--1111)
+* [4. Optuna 와의 대결 결과](#4-optuna-와의-대결-결과)
 
 ## 1. 요약
 
