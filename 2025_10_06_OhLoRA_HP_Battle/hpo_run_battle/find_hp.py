@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 import random
 import copy
+import optuna
 
 import time
 import os
@@ -24,6 +25,10 @@ from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 
 threshold_cutoffs = {'cifar_10': 0.08, 'fashion_mnist': 0.28, 'mnist': 0.34}
 HP_RANDOM_INIT_COUNT = 10
+TEST_COUNT_FOR_EACH_DATASET = 30
+
+OPTUNA_TRIAL_COUNT = 15
+OPTUNA_DETAIL_DIR_NAME = f'optuna_result_{OPTUNA_TRIAL_COUNT}_trials'
 
 categorical_hps = {
     'actfunc': ['relu', 'leaky_relu'],
@@ -452,6 +457,9 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 # - valid_dataset (torch.utils.data.Dataset) : 검증 (valid) 데이터셋
 # - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
 
+# Returns:
+# - f1_score_macro (float) : 최적 하이퍼파라미터에 의해 학습된 모델의 Macro F1 Score
+
 def train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset):
     cnn_model = load_cnn_model_before_train(dataset_name, optimal_hps)
     val_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
@@ -461,16 +469,79 @@ def train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, t
     return f1_score_macro
 
 
+# Optuna 를 이용한 최적 하이퍼파라미터 계산 및 Macro F1 Score 측정
+# Create Date : 2026.05.24
+# Last Update Date : -
+
+# Arguments:
+# - train_dataset (torch.utils.data.Dataset) : 학습 (train) 데이터셋
+# - valid_dataset (torch.utils.data.Dataset) : 검증 (valid) 데이터셋
+# - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
+# - dataset_name  (str)                      : 데이터셋 이름 (로깅 목적)
+# - test_idx      (int)                      : 테스트 회차 정보 (로깅 목적)
+
+# Returns:
+# - optuna_optimal_hps  (dict)  : Optuna 가 결정한 최적 하이퍼파라미터
+# - best_f1_score_macro (float) : Optuna 가 결정한 하이퍼파라미터에 의해 학습된 모델의 최대 Macro F1 Score
+
+def train_and_test_with_optuna(train_dataset, valid_dataset, test_dataset, dataset_name, test_idx):
+    optuna_detail_csv_dict = {'trial_no': [], 'hps': [], 'macro_f1_score': []}
+
+    def objective(trial):
+        dropout_conv_earlier = trial.suggest_float('dropout_conv_earlier', 0.0, 0.3)
+        dropout_conv_later = trial.suggest_float('dropout_conv_later', 0.0, 0.3)
+        dropout_fc = trial.suggest_float('dropout_fc', 0.0, 0.6)
+        lr = trial.suggest_float('lr', 0.00002, 0.006, log=True)
+
+        activation_func = trial.suggest_categorical('activation_func', ['relu', 'leaky_relu'])
+        optimizer = trial.suggest_categorical('optimizer', ['adam', 'adamw'])
+        scheduler = trial.suggest_categorical('scheduler', ['exp_80', 'exp_90', 'exp_95', 'exp_98', 'cosine'])
+
+        hps = {'dropout_conv_earlier': dropout_conv_earlier,
+               'dropout_conv_later': dropout_conv_later,
+               'dropout_fc': dropout_fc,
+               'lr': lr,
+               'activation_func': activation_func,
+               'optimizer': optimizer,
+               'scheduler': scheduler}
+
+        cnn_model = load_cnn_model_before_train(dataset_name, hps)
+        _, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
+        _, f1_score_macro, _ = test_cnn(best_epoch_model, test_dataset)
+
+        optuna_detail_csv_dict['trial_no'].append(trial.number)
+        optuna_detail_csv_dict['hps'].append(str(print_dict(hps)))
+        optuna_detail_csv_dict['macro_f1_score'].append(f1_score_macro)
+        optuna_detail_csv_df = pd.DataFrame(optuna_detail_csv_dict)
+        optuna_detail_csv_df.to_csv(f'{OPTUNA_DETAIL_DIR_NAME}/{dataset_name}_{test_idx:04d}.csv')
+
+        return f1_score_macro
+
+    study = optuna.create_study(direction='maximize')
+    study.optimize(objective, n_trials=OPTUNA_TRIAL_COUNT)
+
+    # 3. 최적의 결과 출력
+    optuna_optimal_hps = study.best_params
+    best_f1_score_macro = study.best_value
+
+    return optuna_optimal_hps, best_f1_score_macro
+
+
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
-    TEST_COUNT_FOR_EACH_DATASET = 30
+    os.makedirs(OPTUNA_DETAIL_DIR_NAME, exist_ok=True)
 
     test_result_csv_dict = {'dataset': [],
                             'test_idx': [],
-                            'optimal_hp': [],
-                            'pred_macro_f1': [],
-                            'true_macro_f1': [],
-                            'elapsed_time': []}
+                            'optimal_hp_ohlora': [],
+                            'optimal_hp_optuna': [],
+                            'pred_macro_f1_ohlora': [],
+                            'true_macro_f1_ohlora': [],
+                            'true_macro_f1_optuna': [],
+                            'elapsed_time_ohlora': [],
+                            'elapsed_time_optuna': [],
+                            'optuna_detail': [],
+                            'winner': []}
 
     # run baseline CNN training & test for each dataset
     for dataset_name in dataset_names:
@@ -501,16 +572,36 @@ if __name__ == '__main__':
                                                              valid_dataset,
                                                              test_dataset)
 
+            optuna_start = time.time()
+            optuna_optimal_hps, macro_f1_score_optuna = train_and_test_with_optuna(train_dataset,
+                                                                                   valid_dataset,
+                                                                                   test_dataset,
+                                                                                   dataset_name,
+                                                                                   test_idx)
+            optuna_elapsed_time = time.time() - optuna_start
+
             print(f'dataset_name : {dataset_name}')
             print(f'optimal Hyper-params: {optimal_hps}')
+            print(f'optimal Hyper-params by Optuna: {optuna_optimal_hps}')
             print(f'Macro F1 Score: {macro_f1_score}')
+            print(f'Macro F1 Score by Optuna: {macro_f1_score_optuna}')
 
             test_result_csv_dict['dataset'].append(dataset_name)
             test_result_csv_dict['test_idx'].append(test_idx)
-            test_result_csv_dict['optimal_hp'].append(str(optimal_hps))
-            test_result_csv_dict['pred_macro_f1'].append(pred_macro_f1_score)
-            test_result_csv_dict['true_macro_f1'].append(macro_f1_score)
-            test_result_csv_dict['elapsed_time'].append(optimal_hps_elapsed_time)
+            test_result_csv_dict['optimal_hp_ohlora'].append(str(print_dict(optimal_hps)))
+            test_result_csv_dict['optimal_hp_optuna'].append(str(print_dict(optuna_optimal_hps)))
+            test_result_csv_dict['pred_macro_f1_ohlora'].append(pred_macro_f1_score)
+            test_result_csv_dict['true_macro_f1_ohlora'].append(macro_f1_score)
+            test_result_csv_dict['true_macro_f1_optuna'].append(macro_f1_score_optuna)
+            if test_result_csv_dict['true_macro_f1_ohlora'][-1] > test_result_csv_dict['true_macro_f1_optuna'][-1]:
+                test_result_csv_dict['winner'].append('Oh-LoRA')
+            elif test_result_csv_dict['true_macro_f1_ohlora'][-1] == test_result_csv_dict['true_macro_f1_optuna'][-1]:
+                test_result_csv_dict['winner'].append('-')
+            else:
+                test_result_csv_dict['winner'].append('Optuna')
+            test_result_csv_dict['elapsed_time_ohlora'].append(round(optimal_hps_elapsed_time, 4))
+            test_result_csv_dict['elapsed_time_optuna'].append(round(optuna_elapsed_time, 4))
+            test_result_csv_dict['optuna_detail'].append(f'{OPTUNA_DETAIL_DIR_NAME}/{dataset_name}_{test_idx:04d}.csv')
 
             test_result_csv_df = pd.DataFrame(test_result_csv_dict)
-            test_result_csv_df.to_csv('test_result.csv')
+            test_result_csv_df.to_csv(f'test_result_vs_optuna_{OPTUNA_TRIAL_COUNT}_trials.csv')

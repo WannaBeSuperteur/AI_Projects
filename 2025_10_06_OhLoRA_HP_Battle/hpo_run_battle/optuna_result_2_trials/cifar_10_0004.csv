@@ -1,0 +1,3 @@
+,trial_no,hps,macro_f1_score
+0,0,"{'dropout_conv_earlier': '0.15065', 'dropout_conv_later': '0.27975', 'dropout_fc': '0.52604', 'lr': '0.00203', 'activation_func': 'relu', 'optimizer': 'adamw', 'scheduler': 'cosine'}",0.0967
+1,1,"{'dropout_conv_earlier': '0.11843', 'dropout_conv_later': '0.10010', 'dropout_fc': '0.52932', 'lr': '0.00064', 'activation_func': 'relu', 'optimizer': 'adam', 'scheduler': 'cosine'}",0.1068
