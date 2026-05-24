@@ -453,17 +453,12 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 # - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
 
 def train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset):
-
-    """
     cnn_model = load_cnn_model_before_train(dataset_name, optimal_hps)
     val_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
     accuracy, f1_score_macro, f1_score_micro = test_cnn(best_epoch_model, test_dataset)
     print(f'accuracy : {accuracy}, f1_score: (macro: {f1_score_macro}, micro: {f1_score_micro})')
 
     return f1_score_macro
-    """
-
-    return 0.0  # temp
 
 
 if __name__ == '__main__':
@@ -494,6 +489,12 @@ if __name__ == '__main__':
                                                                 valid_features)
             optimal_hps_elapsed_time = time.time() - optimal_hps_start_at
             print(f'optimal HP find time : {optimal_hps_elapsed_time} seconds\n')
+
+            # convert to train_and_test_with_optimal_hps function format
+            optimal_hps = {k.replace('hp_', ''): v for k, v in optimal_hps.items()}
+            optimal_hps['activation_func'] = optimal_hps.pop('actfunc')
+            optimal_hps['optimizer'] = optimal_hps.pop('opt')
+            optimal_hps['scheduler'] = optimal_hps.pop('sch')
 
             macro_f1_score = train_and_test_with_optimal_hps(optimal_hps,
                                                              train_dataset,
