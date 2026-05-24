@@ -7,6 +7,7 @@
 * [2. 모델 전체 구조](#2-모델-전체-구조)
 * [3. 학습 데이터 구성](#3-학습-데이터-구성)
 * [4. 최적의 threshold cutoff 탐색](#4-최적의-threshold-cutoff-탐색)
+  * [4-1. 각 데이터셋 별 pred, true 분포 상세 그래프](#4-1-각-데이터셋-별-pred-true-분포-상세-그래프)
 
 ## 1. 모델 개요
 
@@ -51,3 +52,11 @@
 | **cutoff = 0.08**<br>(corr-coef = +0.732) | **cutoff = 0.28**<br>(corr-coef = +0.801) | **cutoff = 0.34**<br>(corr-coef = +0.813) |
 
 * [상세 정보](hpo_model_cutoff_test_result.md)
+
+### 4-1. 각 데이터셋 별 pred, true 분포 상세 그래프
+
+| 데이터셋          | 상세 그래프 (분포도)                         |
+|---------------|--------------------------------------|
+| CIFAR-10      | ![image](../../images/251006_26.png) |
+| Fashion MNIST | ![image](../../images/251006_27.png) |
+| MNIST         | ![image](../../images/251006_28.png) |
