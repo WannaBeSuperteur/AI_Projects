@@ -1,5 +1,6 @@
 
 import numpy as np
+import pandas as pd
 import torch
 import random
 import copy
@@ -343,6 +344,7 @@ def load_hp_optimize_model(dataset_name):
 # Create Date : 2026.04.12
 # Last Update Date : 2026.05.24
 # - verbose 옵션 추가
+# - 최적 하이퍼파라미터에 의한 예측 Macro F1 Score 반환 추가
 
 # Arguments:
 # - hp_optimize_model    (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
@@ -353,7 +355,8 @@ def load_hp_optimize_model(dataset_name):
 # - verbose              (bool)            : 상세 정보 print 여부
 
 # Returns:
-# - optimal_hps (dict) : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
+# - optimal_hps                             (dict)  : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
+# - best_hps_macro_f1_score_pred_all_trials (float) : 최적 하이퍼파라미터에 의한 예측 Macro F1 Score
 
 def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features, verbose=False):
     base_input_data, base_input_data_columns, all_hps_list = (
@@ -436,7 +439,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     print(f'optimal hp           : {best_hps_dict_all_trials}')
     print(f'(pred Macro F1)      : {best_hps_macro_f1_score_pred_all_trials}')
 
-    return optimal_hps
+    return optimal_hps, best_hps_macro_f1_score_pred_all_trials
 
 
 # 탐색한 최적 하이퍼파라미터를 이용한 학습 시의 Macro F1 Score 측정
@@ -460,35 +463,53 @@ def train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, t
     return f1_score_macro
     """
 
-    raise NotImplementedError
+    return 0.0  # temp
 
 
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
+    TEST_COUNT_FOR_EACH_DATASET = 30
+
+    test_result_csv_dict = {'dataset': [],
+                            'test_idx': [],
+                            'optimal_hp': [],
+                            'pred_macro_f1': [],
+                            'true_macro_f1': [],
+                            'elapsed_time': []}
 
     # run baseline CNN training & test for each dataset
     for dataset_name in dataset_names:
-        train_dataset, valid_dataset, test_dataset, hpo_model_input_data = create_mock_dataset(dataset_name)
-        train_means, train_stds = get_train_means_and_stds(dataset_name, threshold_cutoffs[dataset_name])
+        for test_idx in range(TEST_COUNT_FOR_EACH_DATASET):
+            train_dataset, valid_dataset, test_dataset, hpo_model_input_data = create_mock_dataset(dataset_name)
+            train_means, train_stds = get_train_means_and_stds(dataset_name, threshold_cutoffs[dataset_name])
 
-        hp_optimize_model = load_hp_optimize_model(dataset_name)
-        valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
+            hp_optimize_model = load_hp_optimize_model(dataset_name)
+            valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
 
-        optimal_hps_start_at = time.time()
-        optimal_hps = find_optimal_hps(hp_optimize_model,
-                                       hpo_model_input_data,
-                                       train_means,
-                                       train_stds,
-                                       valid_features,
-                                       verbose=True)
-        optimal_hps_elapsed_time = time.time() - optimal_hps_start_at
-        print(f'optimal HP find time : {optimal_hps_elapsed_time} seconds\n')
+            optimal_hps_start_at = time.time()
+            optimal_hps, pred_macro_f1_score = find_optimal_hps(hp_optimize_model,
+                                                                hpo_model_input_data,
+                                                                train_means,
+                                                                train_stds,
+                                                                valid_features)
+            optimal_hps_elapsed_time = time.time() - optimal_hps_start_at
+            print(f'optimal HP find time : {optimal_hps_elapsed_time} seconds\n')
 
-        macro_f1_score = train_and_test_with_optimal_hps(optimal_hps,
-                                                         train_dataset,
-                                                         valid_dataset,
-                                                         test_dataset)
+            macro_f1_score = train_and_test_with_optimal_hps(optimal_hps,
+                                                             train_dataset,
+                                                             valid_dataset,
+                                                             test_dataset)
 
-        print(f'dataset_name : {dataset_name}')
-        print(f'optimal Hyper-params: {optimal_hps}')
-        print(f'Macro F1 Score: {macro_f1_score}')
+            print(f'dataset_name : {dataset_name}')
+            print(f'optimal Hyper-params: {optimal_hps}')
+            print(f'Macro F1 Score: {macro_f1_score}')
+
+            test_result_csv_dict['dataset'].append(dataset_name)
+            test_result_csv_dict['test_idx'].append(test_idx)
+            test_result_csv_dict['optimal_hp'].append(str(optimal_hps))
+            test_result_csv_dict['pred_macro_f1'].append(pred_macro_f1_score)
+            test_result_csv_dict['true_macro_f1'].append(macro_f1_score)
+            test_result_csv_dict['elapsed_time'].append(optimal_hps_elapsed_time)
+
+            test_result_csv_df = pd.DataFrame(test_result_csv_dict)
+            test_result_csv_df.to_csv('test_result.csv')
