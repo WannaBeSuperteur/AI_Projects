@@ -4,6 +4,7 @@ import torch
 import random
 import copy
 
+import time
 import os
 import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -430,8 +431,8 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     optimal_hps = best_hps_dict_all_trials
 
     print('\n==== RESULT ====')
-    print(f'optimal hp      : {best_hps_dict_all_trials}')
-    print(f'(pred Macro F1) : {best_hps_macro_f1_score_pred_all_trials}')
+    print(f'optimal hp           : {best_hps_dict_all_trials}')
+    print(f'(pred Macro F1)      : {best_hps_macro_f1_score_pred_all_trials}')
 
     return optimal_hps
 
@@ -471,12 +472,15 @@ if __name__ == '__main__':
         hp_optimize_model = load_hp_optimize_model(dataset_name)
         valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
 
+        optimal_hps_start_at = time.time()
         optimal_hps = find_optimal_hps(hp_optimize_model,
                                        hpo_model_input_data,
                                        train_means,
                                        train_stds,
                                        valid_features,
                                        verbose=True)
+        optimal_hps_elapsed_time = time.time() - optimal_hps_start_at
+        print(f'optimal HP find time : {optimal_hps_elapsed_time} seconds\n')
 
         macro_f1_score = train_and_test_with_optimal_hps(optimal_hps,
                                                          train_dataset,
