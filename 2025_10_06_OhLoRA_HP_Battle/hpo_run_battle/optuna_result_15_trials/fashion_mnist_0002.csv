@@ -1,0 +1,16 @@
+,trial_no,hps,macro_f1_score
+0,0,"{'dropout_conv_earlier': '0.27912', 'dropout_conv_later': '0.09514', 'dropout_fc': '0.36080', 'lr': '0.00125', 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_98'}",0.09
+1,1,"{'dropout_conv_earlier': '0.09374', 'dropout_conv_later': '0.03658', 'dropout_fc': '0.39382', 'lr': '0.00354', 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_80'}",0.09
+2,2,"{'dropout_conv_earlier': '0.06160', 'dropout_conv_later': '0.09017', 'dropout_fc': '0.21072', 'lr': '0.00193', 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_80'}",0.09
+3,3,"{'dropout_conv_earlier': '0.02626', 'dropout_conv_later': '0.04889', 'dropout_fc': '0.11572', 'lr': '0.00013', 'activation_func': 'relu', 'optimizer': 'adam', 'scheduler': 'exp_98'}",0.6686
+4,4,"{'dropout_conv_earlier': '0.05468', 'dropout_conv_later': '0.04803', 'dropout_fc': '0.43335', 'lr': '0.00052', 'activation_func': 'relu', 'optimizer': 'adamw', 'scheduler': 'exp_98'}",0.6788
+5,5,"{'dropout_conv_earlier': '0.18595', 'dropout_conv_later': '0.13801', 'dropout_fc': '0.19457', 'lr': '0.00034', 'activation_func': 'relu', 'optimizer': 'adamw', 'scheduler': 'exp_98'}",0.09
+6,6,"{'dropout_conv_earlier': '0.20695', 'dropout_conv_later': '0.25422', 'dropout_fc': '0.39663', 'lr': '0.00025', 'activation_func': 'relu', 'optimizer': 'adam', 'scheduler': 'exp_90'}",0.1013
+7,7,"{'dropout_conv_earlier': '0.20384', 'dropout_conv_later': '0.14575', 'dropout_fc': '0.48172', 'lr': '0.00031', 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_98'}",0.7254
+8,8,"{'dropout_conv_earlier': '0.05981', 'dropout_conv_later': '0.14239', 'dropout_fc': '0.36167', 'lr': '0.00136', 'activation_func': 'relu', 'optimizer': 'adamw', 'scheduler': 'exp_98'}",0.1009
+9,9,"{'dropout_conv_earlier': '0.09211', 'dropout_conv_later': '0.01935', 'dropout_fc': '0.45241', 'lr': '0.00011', 'activation_func': 'relu', 'optimizer': 'adamw', 'scheduler': 'exp_80'}",0.6716
+10,10,"{'dropout_conv_earlier': '0.28819', 'dropout_conv_later': '0.23682', 'dropout_fc': '0.57625', 'lr': '0.00003', 'activation_func': 'leaky_relu', 'optimizer': 'adam', 'scheduler': 'cosine'}",0.0945
+11,11,"{'dropout_conv_earlier': '0.14882', 'dropout_conv_later': '0.18862', 'dropout_fc': '0.55575', 'lr': '0.00068', 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_95'}",0.1418
+12,12,"{'dropout_conv_earlier': '0.22736', 'dropout_conv_later': '0.19853', 'dropout_fc': '0.50291', 'lr': '0.00005', 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_98'}",0.6595
+13,13,"{'dropout_conv_earlier': '0.14202', 'dropout_conv_later': '0.09547', 'dropout_fc': '0.28758', 'lr': '0.00062', 'activation_func': 'relu', 'optimizer': 'adamw', 'scheduler': 'cosine'}",0.0903
+14,14,"{'dropout_conv_earlier': '0.00386', 'dropout_conv_later': '0.28664', 'dropout_fc': '0.49305', 'lr': '0.00016', 'activation_func': 'leaky_relu', 'optimizer': 'adam', 'scheduler': 'exp_95'}",0.6581
