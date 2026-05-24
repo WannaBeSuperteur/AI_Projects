@@ -152,7 +152,8 @@ def find_neighboring_hps_categorical(hps_dict, all_hps_list):
 
 # 기 학습된 하이퍼파라미터 탐색 모델을 이용한 Macro F1 Score 예측
 # Create Date : 2026.04.12
-# Last Update Date : -
+# Last Update Date : 2026.05.24
+# - categorical feature 에 해당하는 input data가 항상 0인 버그 해결
 
 # Arguments:
 # - input_data         (list)            : 하이퍼파라미터 탐색 모델 (= Macro F1 Score 예측 모델) 의 입력 데이터
@@ -176,7 +177,7 @@ def predict_macro_f1_score_with_input_data(input_data, input_data_columns, hps_d
                 input_data_[i] = hps_dict[input_data_[i]['key']]
             else:
                 hp_type = input_data_[i]['key'].split('_')[0]
-                hp_value = '_'.join(input_data_[i]['key'].split('_')[1])
+                hp_value = '_'.join(input_data_[i]['key'].split('_')[1:])
 
                 if hps_dict[hp_type] == hp_value:
                     input_data_[i] = 1.0
