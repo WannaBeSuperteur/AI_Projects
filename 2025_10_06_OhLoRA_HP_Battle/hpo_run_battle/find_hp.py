@@ -9,8 +9,8 @@ import sys
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
-from hpo_training_data.create_hpo_model_train_data import generate_constraints
-from hpo_training_data.train_cnn import load_dataset, encode_train_dataset
+from hpo_training_data.create_hpo_model_train_data import generate_constraints, train_cnn, test_cnn
+from hpo_training_data.train_cnn import load_dataset, encode_train_dataset, load_cnn_model_before_train
 from hpo_training_data.train_cnn import EMBEDDING_DIM_COUNT_FOR_HPO_TRAIN_DATA, NUM_CLASSES
 from hidden_representation.auto_encoder import AutoEncoderEncoder_1_28_28, AutoEncoderEncoder_3_32_32
 from hpo_training_model.hpo_training_model import (load_trained_hpo_model,
@@ -21,13 +21,18 @@ from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 
 
 threshold_cutoffs = {'cifar_10': 0.08, 'fashion_mnist': 0.28, 'mnist': 0.34}
-HP_RANDOM_INIT_COUNT = 10
+HP_RANDOM_INIT_COUNT = 1
 
 categorical_hps = {
     'actfunc': ['relu', 'leaky_relu'],
     'opt': ['adam', 'adamw'],
     'sch': ['exp_90', 'exp_95', 'exp_98', 'cosine']
 }
+
+
+def print_dict(data):
+    new_data = {k: f"{v:.6f}" if isinstance(v, (int, float)) else v for k, v in data.items()}
+    return new_data
 
 
 def convert_to_train_data(ae_encoder, train_dataset, train_dataset_label_distrib, labels_trained):
@@ -333,7 +338,8 @@ def load_hp_optimize_model(dataset_name):
 
 # 기 학습된 최적 하이퍼파라미터 탐색 모델을 이용한 최적 하이퍼파라미터 탐색 (hill-climbing 방식)
 # Create Date : 2026.04.12
-# Last Update Date : -
+# Last Update Date : 2026.05.24
+# - verbose 옵션 추가
 
 # Arguments:
 # - hp_optimize_model    (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
@@ -341,11 +347,12 @@ def load_hp_optimize_model(dataset_name):
 # - train_means          (dict(float))     : 학습 데이터셋의 각 input column 별 평균값 목록
 # - train_stds           (dict(float))     : 학습 데이터셋의 각 input column 별 표준편차 목록
 # - valid_features       (list)            : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
+# - verbose              (bool)            : 상세 정보 print 여부
 
 # Returns:
 # - optimal_hps (dict) : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
 
-def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features):
+def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features, verbose=False):
     base_input_data, base_input_data_columns, all_hps_list = (
         get_input_data_and_all_hps_list(hpo_model_input_data, valid_features))
 
@@ -354,7 +361,12 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
     best_hps_macro_f1_score_pred_all_trials = 0.0
     hp_optimize_model.eval()
 
+    if verbose:
+        print(base_input_data)
+
     for i in range(HP_RANDOM_INIT_COUNT):
+        if verbose:
+            print('\n\n ==== ' + str(i) + ' ====\n\n')
         best_hps_dict = {}
         best_hps_macro_f1_score_pred = 0.0
         current_hps_dict = init_hps(all_hps_list)
@@ -378,6 +390,10 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                 best_hps_macro_f1_score_pred = macro_f1_score_pred
                 best_hps_dict = copy.deepcopy(current_hps_dict)
 
+            if verbose:
+                print(f'{print_dict(current_hps_dict)} |'
+                      f'pred={macro_f1_score_pred:.4f}, best={best_hps_macro_f1_score_pred:.4f}')
+
             # predict Macro F1 Score with neighboring hyper-params
             is_better_found = False
 
@@ -395,6 +411,10 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                     current_hps_dict = copy.deepcopy(neighboring_hps_dict)
                     is_better_found = True
 
+                if verbose:
+                    print(f' - {print_dict(neighboring_hps_dict)} |'
+                          f'pred={macro_f1_score_pred_nei:.4f}, best={best_hps_macro_f1_score_pred:.4f}')
+
             if not is_better_found:
                 break
 
@@ -408,7 +428,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 
 
 # 탐색한 최적 하이퍼파라미터를 이용한 학습 시의 Macro F1 Score 측정
-# Create Date : 2026.04.10
+# Create Date : 2026.05.24
 # Last Update Date : -
 
 # Arguments:
@@ -418,6 +438,16 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 # - test_dataset  (torch.utils.data.Dataset) : 테스트 데이터셋
 
 def train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset):
+
+    """
+    cnn_model = load_cnn_model_before_train(dataset_name, optimal_hps)
+    val_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
+    accuracy, f1_score_macro, f1_score_micro = test_cnn(best_epoch_model, test_dataset)
+    print(f'accuracy : {accuracy}, f1_score: (macro: {f1_score_macro}, micro: {f1_score_micro})')
+
+    return f1_score_macro
+    """
+
     raise NotImplementedError
 
 
@@ -432,8 +462,17 @@ if __name__ == '__main__':
         hp_optimize_model = load_hp_optimize_model(dataset_name)
         valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
 
-        optimal_hps = find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features)
-        macro_f1_score = train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset)
+        optimal_hps = find_optimal_hps(hp_optimize_model,
+                                       hpo_model_input_data,
+                                       train_means,
+                                       train_stds,
+                                       valid_features,
+                                       verbose=True)
+
+        macro_f1_score = train_and_test_with_optimal_hps(optimal_hps,
+                                                         train_dataset,
+                                                         valid_dataset,
+                                                         test_dataset)
 
         print(f'dataset_name : {dataset_name}')
         print(f'optimal Hyper-params: {optimal_hps}')
