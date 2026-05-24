@@ -137,14 +137,15 @@ def find_neighboring_hps_numeric(hps_dict):
 def find_neighboring_hps_categorical(hps_dict, all_hps_list):
     neighboring_hps = []
 
-    for hp_type, hp_value in categorical_hps.items():
-        if hp_type in hps_dict:
-            hp_name = f'{hp_type}_{hp_value}'
+    for hp_type, hp_value_list in categorical_hps.items():
+        for hp_value in hp_value_list:
+            if hp_type in hps_dict:
+                hp_name = f'{hp_type}_{hp_value}'
 
-            if hp_name in all_hps_list and hps_dict[hp_type] != hp_value:
-                new_hps_dict = copy.deepcopy(hps_dict)
-                new_hps_dict[hp_type] = hp_value
-                neighboring_hps.append(new_hps_dict)
+                if hp_name in all_hps_list and hps_dict[hp_type] != hp_value:
+                    new_hps_dict = copy.deepcopy(hps_dict)
+                    new_hps_dict[hp_type] = hp_value
+                    neighboring_hps.append(new_hps_dict)
 
     return neighboring_hps
 
