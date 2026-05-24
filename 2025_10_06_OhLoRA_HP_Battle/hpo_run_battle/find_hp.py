@@ -21,7 +21,7 @@ from hpo_training_model.hpo_training_model import NUM_FEATURES_OUTPUT
 
 
 threshold_cutoffs = {'cifar_10': 0.08, 'fashion_mnist': 0.28, 'mnist': 0.34}
-HP_RANDOM_INIT_COUNT = 1
+HP_RANDOM_INIT_COUNT = 10
 
 categorical_hps = {
     'actfunc': ['relu', 'leaky_relu'],
@@ -31,7 +31,7 @@ categorical_hps = {
 
 
 def print_dict(data):
-    new_data = {k: f"{v:.6f}" if isinstance(v, (int, float)) else v for k, v in data.items()}
+    new_data = {k: f"{v:.5f}" if isinstance(v, (int, float)) else v for k, v in data.items()}
     return new_data
 
 
@@ -391,8 +391,10 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                 best_hps_dict = copy.deepcopy(current_hps_dict)
 
             if verbose:
-                print(f'{print_dict(current_hps_dict)} |'
-                      f'pred={macro_f1_score_pred:.4f}, best={best_hps_macro_f1_score_pred:.4f}')
+                print(f'{print_dict(current_hps_dict)} '
+                      f'pred={macro_f1_score_pred:.4f}, '
+                      f'best={best_hps_macro_f1_score_pred:.4f}, '
+                      f'all_best={best_hps_macro_f1_score_pred_all_trials:.4f}')
 
             # predict Macro F1 Score with neighboring hyper-params
             is_better_found = False
@@ -412,8 +414,10 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
                     is_better_found = True
 
                 if verbose:
-                    print(f' - {print_dict(neighboring_hps_dict)} |'
-                          f'pred={macro_f1_score_pred_nei:.4f}, best={best_hps_macro_f1_score_pred:.4f}')
+                    print(f' - {print_dict(neighboring_hps_dict)} '
+                          f'pred={macro_f1_score_pred_nei:.4f}, '
+                          f'best={best_hps_macro_f1_score_pred:.4f}, '
+                          f'all_best={best_hps_macro_f1_score_pred_all_trials:.4f}')
 
             if not is_better_found:
                 break
@@ -424,6 +428,11 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
             best_hps_dict_all_trials = best_hps_dict
 
     optimal_hps = best_hps_dict_all_trials
+
+    print('\n==== RESULT ====')
+    print(f'optimal hp      : {best_hps_dict_all_trials}')
+    print(f'(pred Macro F1) : {best_hps_macro_f1_score_pred_all_trials}')
+
     return optimal_hps
 
 
