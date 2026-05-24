@@ -13,7 +13,7 @@
 | dropout interval = **0.02**, lr multiple = **0.9 & 1.111** | 0.6135               | 0.5928              | 5.7112 s     |
 
 * 결론
-  * dropout interval 과 lr (learning rate) 에 매 탐색 step 마다 곱하는 multiple 값을 더 촘촘하게 하면, **Macro F1 Score (성능지표) 및 하이퍼파라미터 탐색 시간** 관점에서 모두 **불리하다**
+  * dropout interval 과 lr (learning rate) 에 매 탐색 step 마다 곱하는 multiple 값을 더 촘촘하게 하면, **Macro F1 Score (성능지표) 및 하이퍼파라미터 탐색 시간** 관점에서 모두 **불리하다.**
 
 ## 2. dropout interval = 0.05, lr multiple = 0.8 & 1.25
 
