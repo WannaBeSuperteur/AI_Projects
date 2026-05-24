@@ -192,7 +192,8 @@ def predict_macro_f1_score_with_input_data(input_data, input_data_columns, hps_d
 
 # 기 학습된 하이퍼파라미터 탐색 모델의 입력 데이터 (valid feature 필터링 후) 및 하이퍼파라미터 리스트 반환
 # Create Date : 2026.04.12
-# Last Update Date : -
+# Last Update Date : 2026.05.24
+# - 'sch_exp_80' 하이퍼파라미터 누락 해결
 
 # Arguments:
 # - hpo_model_input_data (dict) : 기 학습된 하이퍼파라미터 최적화 모델의 입력 데이터 (valid feature 필터링 전)
@@ -246,7 +247,7 @@ def get_input_data_and_all_hps_list(hpo_model_input_data, valid_features):
     # hyper-params (2)
     hps_2 = ['actfunc_relu', 'actfunc_leaky_relu',
              'opt_adam', 'opt_adamw',
-             'sch_exp_90', 'sch_exp_95', 'sch_exp_98', 'sch_cosine']
+             'sch_exp_80', 'sch_exp_90', 'sch_exp_95', 'sch_exp_98', 'sch_cosine']
 
     for hp in hps_2:
         if hp in valid_features:
@@ -421,7 +422,7 @@ def train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, t
 
 
 if __name__ == '__main__':
-    dataset_names = ['mnist', 'fashion_mnist', 'cifar_10']
+    dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
     # run baseline CNN training & test for each dataset
     for dataset_name in dataset_names:
