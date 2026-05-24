@@ -60,3 +60,9 @@
 | CIFAR-10      | ![image](../../images/251006_26.png) |
 | Fashion MNIST | ![image](../../images/251006_27.png) |
 | MNIST         | ![image](../../images/251006_28.png) |
+
+| 데이터셋          | pred, true 개수 히스토그램                  | pred, true 순위 별 값                    |
+|---------------|--------------------------------------|--------------------------------------|
+| CIFAR-10      | ![image](../../images/251006_29.png) | ![image](../../images/251006_32.png) |
+| Fashion MNIST | ![image](../../images/251006_30.png) | ![image](../../images/251006_33.png) |
+| MNIST         | ![image](../../images/251006_31.png) | ![image](../../images/251006_34.png) |
