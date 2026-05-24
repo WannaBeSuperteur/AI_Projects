@@ -27,8 +27,8 @@ threshold_cutoffs = {'cifar_10': 0.08, 'fashion_mnist': 0.28, 'mnist': 0.34}
 HP_RANDOM_INIT_COUNT = 10
 TEST_COUNT_FOR_EACH_DATASET = 30
 
-OPTUNA_DETAIL_DIR_NAME = 'optuna_result'
 OPTUNA_TRIAL_COUNT = 5
+OPTUNA_DETAIL_DIR_NAME = f'optuna_result_{OPTUNA_TRIAL_COUNT}_trials'
 
 categorical_hps = {
     'actfunc': ['relu', 'leaky_relu'],
@@ -604,4 +604,4 @@ if __name__ == '__main__':
             test_result_csv_dict['optuna_detail'].append(f'{OPTUNA_DETAIL_DIR_NAME}/{dataset_name}_{test_idx:04d}.csv')
 
             test_result_csv_df = pd.DataFrame(test_result_csv_dict)
-            test_result_csv_df.to_csv('test_result_vs_optuna.csv')
+            test_result_csv_df.to_csv(f'test_result_vs_optuna_{OPTUNA_TRIAL_COUNT}_trials.csv')
