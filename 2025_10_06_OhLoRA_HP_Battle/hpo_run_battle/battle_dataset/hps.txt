@@ -1,0 +1,7 @@
+{"dropout_conv_earlier": 0.0,
+ "dropout_conv_later": 0.0,
+ "dropout_fc": 0.0,
+ "lr": 0.001,
+ "activation_func": "leaky_relu",
+ "optimizer": "adamw",
+ "scheduler": "exp_95"}

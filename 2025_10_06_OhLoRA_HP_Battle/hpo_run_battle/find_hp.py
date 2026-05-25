@@ -347,9 +347,8 @@ def load_hp_optimize_model(dataset_name):
 
 # 기 학습된 최적 하이퍼파라미터 탐색 모델을 이용한 최적 하이퍼파라미터 탐색 (hill-climbing 방식)
 # Create Date : 2026.04.12
-# Last Update Date : 2026.05.24
-# - verbose 옵션 추가
-# - 최적 하이퍼파라미터에 의한 예측 Macro F1 Score 반환 추가
+# Last Update Date : 2026.05.25
+# - show_result 옵션 추가
 
 # Arguments:
 # - hp_optimize_model    (torch.nn.module) : 기 학습된 최적 하이퍼파라미터 탐색 모델
@@ -358,12 +357,15 @@ def load_hp_optimize_model(dataset_name):
 # - train_stds           (dict(float))     : 학습 데이터셋의 각 input column 별 표준편차 목록
 # - valid_features       (list)            : HPO 모델 학습용 데이터셋의 valid feature (= column) 리스트
 # - verbose              (bool)            : 상세 정보 print 여부
+# - show_result          (bool)            : 결과 출력 여부
 
 # Returns:
 # - optimal_hps                             (dict)  : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
 # - best_hps_macro_f1_score_pred_all_trials (float) : 최적 하이퍼파라미터에 의한 예측 Macro F1 Score
 
-def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features, verbose=False):
+def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train_stds, valid_features,
+                     verbose=False, show_result=True):
+
     base_input_data, base_input_data_columns, all_hps_list = (
         get_input_data_and_all_hps_list(hpo_model_input_data, valid_features))
 
@@ -440,16 +442,18 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 
     optimal_hps = best_hps_dict_all_trials
 
-    print('\n==== RESULT ====')
-    print(f'optimal hp           : {best_hps_dict_all_trials}')
-    print(f'(pred Macro F1)      : {best_hps_macro_f1_score_pred_all_trials}')
+    if show_result:
+        print('\n==== RESULT ====')
+        print(f'optimal hp           : {best_hps_dict_all_trials}')
+        print(f'(pred Macro F1)      : {best_hps_macro_f1_score_pred_all_trials}')
 
     return optimal_hps, best_hps_macro_f1_score_pred_all_trials
 
 
 # 탐색한 최적 하이퍼파라미터를 이용한 학습 시의 Macro F1 Score 측정
 # Create Date : 2026.05.24
-# Last Update Date : -
+# Last Update Date : 2026.05.25
+# - dataset_name 인수 누락 해결
 
 # Arguments:
 # - optimal_hps   (dict)                     : 학습된 탐색 모델 + hill-climbing 결과에 의한 최적 하이퍼파라미터 목록
@@ -460,7 +464,7 @@ def find_optimal_hps(hp_optimize_model, hpo_model_input_data, train_means, train
 # Returns:
 # - f1_score_macro (float) : 최적 하이퍼파라미터에 의해 학습된 모델의 Macro F1 Score
 
-def train_and_test_with_optimal_hps(optimal_hps, train_dataset, valid_dataset, test_dataset):
+def train_and_test_with_optimal_hps(dataset_name, optimal_hps, train_dataset, valid_dataset, test_dataset):
     cnn_model = load_cnn_model_before_train(dataset_name, optimal_hps)
     val_loss_list, best_epoch_model = train_cnn(cnn_model, train_dataset, valid_dataset)
     accuracy, f1_score_macro, f1_score_micro = test_cnn(best_epoch_model, test_dataset)
@@ -567,7 +571,8 @@ if __name__ == '__main__':
             optimal_hps['optimizer'] = optimal_hps.pop('opt')
             optimal_hps['scheduler'] = optimal_hps.pop('sch')
 
-            macro_f1_score = train_and_test_with_optimal_hps(optimal_hps,
+            macro_f1_score = train_and_test_with_optimal_hps(dataset_name,
+                                                             optimal_hps,
                                                              train_dataset,
                                                              valid_dataset,
                                                              test_dataset)
