@@ -1,12 +1,7 @@
 
 import json
+import shutil
 
-import os
-import sys
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-sys.path.append(PROJECT_DIR_PATH)
-
-from hpo_training_model.hpo_training_model import get_valid_feature_list
 from find_hp import (create_mock_dataset,
                      get_train_means_and_stds,
                      load_hp_optimize_model,
@@ -14,7 +9,21 @@ from find_hp import (create_mock_dataset,
                      train_and_test_with_optimal_hps)
 from find_hp import threshold_cutoffs
 
+import numpy as np
+import torch
+from torchvision.utils import save_image
+from PIL import Image
+from tqdm import tqdm
 
+import os
+import sys
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_DIR_PATH)
+
+from hpo_training_model.hpo_training_model import get_valid_feature_list
+
+
+NUM_CLASSES = 10
 HUMAN_PREDICT_INFO = """
 [ SYSTEM MESSAGE ]
 데이터셋이 battle_dataset/ 경로에 저장되었습니다.
@@ -47,6 +56,23 @@ def run_human_prediction(human_trial_no, train_dataset, valid_dataset, test_data
     return human_macro_f1_score
 
 
+def save_dataset(dataset, base_path):
+    os.makedirs(base_path, exist_ok=True)
+
+    for idx in tqdm(range(len(dataset))):
+        img, label = dataset[idx]
+        label_str = str(int(np.argmax(label)))
+        os.makedirs(os.path.join(base_path, label_str), exist_ok=True)
+
+        file_name = f"img_{idx:04d}.png"
+        save_path = os.path.join(base_path, label_str, file_name)
+
+        if isinstance(img, torch.Tensor):
+            save_image(img, save_path, normalize=True)
+        elif isinstance(img, Image.Image):
+            img.save(save_path)
+
+
 def run_battle(dataset_name):
     print(f'\n\n[ 데이터셋 이름 : {dataset_name} ]')
     train_dataset, valid_dataset, test_dataset, hpo_model_input_data = create_mock_dataset(dataset_name)
@@ -54,6 +80,15 @@ def run_battle(dataset_name):
 
     hp_optimize_model = load_hp_optimize_model(dataset_name)
     valid_features = get_valid_feature_list(dataset_name, threshold_cutoff=threshold_cutoffs[dataset_name])
+
+    # 데이터셋 저장
+    best_path_train = 'battle_dataset/train_dataset'
+    best_path_valid = 'battle_dataset/valid_dataset'
+    best_path_test = 'battle_dataset/test_dataset'
+
+    save_dataset(train_dataset, best_path_train)
+    save_dataset(valid_dataset, best_path_valid)
+    save_dataset(test_dataset, best_path_test)
 
     # Oh-LoRA 가 먼저 예측
     print('\n\n=== Oh-LoRA 👱‍♀️ 선공 예측 ===')
@@ -96,6 +131,10 @@ def run_battle(dataset_name):
         print(f'[ 최종 결과 : 무승부 ]')
     else:
         print(f'[ 최종 결과 : Oh-LoRA 👱‍♀️ 의 승리 ]')
+
+    shutil.rmtree(best_path_train)
+    shutil.rmtree(best_path_valid)
+    shutil.rmtree(best_path_test)
 
 
 if __name__ == '__main__':
