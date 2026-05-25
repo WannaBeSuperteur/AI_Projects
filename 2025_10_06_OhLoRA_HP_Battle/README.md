@@ -133,7 +133,7 @@ TBU
 | ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델을 이용한 하이퍼파라미터 탐색                                 | 04.09 목 - 04.10 금 (2d)           | ```P009-005-find-hp```               | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/50) | ✅  |
 | 🧪 모델 학습   | 최적 하이퍼파라미터 탐색 모델 학습 추가 실험 **(하이퍼파라미터 관련 feature는 pruning하지 않음)** | 04.12 일 - 05.24 일                | ```P009-006-hp-find-model-2```       | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/51) | ✅  |
 | ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 vs. Optuna 하이퍼파라미터 간 대결                         | 05.24 일 - 05.25 월 (2d)           | ```P009-007-battle-optuna```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/52) | ✅  |
-| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 vs. 인간이 결정한 하이퍼파라미터 간 대결                        | 05.25 월 (1d)                     | ```P009-008-battle-human```          | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/53) | 💨 |
+| ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 vs. 인간이 결정한 하이퍼파라미터 간 대결                        | 05.25 월 (1d)                     | ```P009-008-battle-human```          | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/53) | ✅  |
 | 📃 문서화     | "하이퍼파라미터 튜닝 대결" 개발 내용 문서화                                        | 05.26 화 - 05.27 수 (2d)           |                                      |                                                                    | ⬜  |
 
 **3. LLM을 이용한 대결 결과 표현**
