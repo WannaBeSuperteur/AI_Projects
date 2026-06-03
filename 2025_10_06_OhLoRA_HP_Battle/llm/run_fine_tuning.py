@@ -12,8 +12,8 @@ from datasets import DatasetDict, Dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, TrainingArguments, TrainerState, \
                          TrainerControl
 
-from utils import load_valid_final_prompts, get_answer_start_mark, get_stop_token_list, get_temperature, \
-                  preview_dataset, add_train_log, add_inference_log
+from utils import load_valid_final_prompts, get_answer_start_mark, get_answer_end_mark, get_stop_token_list, \
+                  get_temperature, preview_dataset, add_train_log, add_inference_log
 from inference import run_inference_kanana
 
 
@@ -21,6 +21,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 ORIGINAL_LLM_PATH = f'{PROJECT_DIR_PATH}/llm/original_models/kananai_original'
 FINE_TUNED_LLM_PATH = f'{PROJECT_DIR_PATH}/llm/models/kananai_sft_final_fine_tuned'
 ANSWER_CNT = 4
+ANSWER_END_MARK = get_answer_end_mark()
 
 
 lora_llm = None
@@ -58,6 +59,7 @@ class OhLoRACustomCallback(TrainerCallback):
                                                                              tokenizer,
                                                                              stop_token_list=stop_token_list,
                                                                              answer_start_mark=answer_start_mark)
+            llm_answer = llm_answer[:-len(ANSWER_END_MARK) + 1]
             elapsed_time = time.time() - start_at
 
             print(f'final input prompt : {final_input_prompt}')
@@ -316,6 +318,7 @@ def inference_or_fine_tune_llm():
 
             elapsed_time = time.time() - inference_start_at
 
+            llm_answer = llm_answer[:-len(ANSWER_END_MARK) + 1]
             llm_answers.append(llm_answer)
             trial_counts.append(str(trial_count))
             output_token_cnts.append(str(output_token_cnt))
