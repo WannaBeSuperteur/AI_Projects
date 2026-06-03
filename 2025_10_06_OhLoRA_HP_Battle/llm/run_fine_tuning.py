@@ -113,9 +113,7 @@ def get_lora_llm(llm, lora_rank):
 # Returns:
 # - training_args (SFTConfig) : Training Arguments
 
-def get_training_args():
-    num_train_epochs = 15
-
+def get_training_args(num_train_epochs):
     training_args = SFTConfig(
         learning_rate=0.0003,               # lower learning rate is recommended for Fine-Tuning
         num_train_epochs=num_train_epochs,
@@ -237,7 +235,7 @@ def fine_tune_kanana():
     response_template = [8, 17010, 111964, 25]  # '### 답변 :'
 
     collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
-    training_args = get_training_args()
+    training_args = get_training_args(num_train_epochs=5)
     trainer = get_sft_trainer(dataset, collator, training_args)
 
     # run Fine-Tuning
