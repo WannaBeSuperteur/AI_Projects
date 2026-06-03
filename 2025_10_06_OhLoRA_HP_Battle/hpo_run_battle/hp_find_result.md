@@ -5,6 +5,7 @@
 * [2. dropout interval = 0.05, lr multiple = 0.8 & 1.25](#2-dropout-interval--005-lr-multiple--08--125)
 * [3. dropout interval = 0.02, lr multiple = 0.9 & 1.111](#3-dropout-interval--002-lr-multiple--09--1111)
 * [4. Optuna 와의 대결 결과](#4-optuna-와의-대결-결과)
+* [5. 모의 대결 로그](#5-모의-대결-로그)
 
 ## 1. 요약
 
@@ -73,3 +74,8 @@
   * [Optuna Trials = 2](test_result_vs_optuna_2_trials.csv)
   * [Optuna Trials = 5](test_result_vs_optuna_5_trials.csv)
   * [Optuna Trials = 15](test_result_vs_optuna_15_trials.csv)
+
+## 5. 모의 대결 로그
+
+* [mock_battle_log.txt](mock_battle_log.txt)
+* [mock_battle_log_2.txt](mock_battle_log_2.txt)

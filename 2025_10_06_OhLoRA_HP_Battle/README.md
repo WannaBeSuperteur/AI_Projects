@@ -141,7 +141,7 @@ TBU
 |----------|---------------------------------------------------------------------------------------------------------------------------------------------|--------------|------------------------------|--------------------------------------------------------------------|----|
 | 🧪 모델 학습 | 대결 결과 표현 LLM Supervised Fine-Tuning 학습<br>(LLM: [Kanana-1.5 2.1B Instruct](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505)) | 06.03 수 (1d) | ```P009-009-train-LLM```     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/54) | ✅  |
 | ⚙ 기능 구현  | 대결 결과 리스트 기반 결과 표현 출력 구현                                                                                                                    | 06.03 수 (1d) | ```P009-010-battle-result``` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/55) | ✅  |
-| 📃 문서화   | "LLM을 이용한 대결 결과 표현" 개발 내용 문서화                                                                                                               | 06.03 수 (1d) |                              |                                                                    | ⬜  |
+| 📃 문서화   | "LLM을 이용한 대결 결과 표현" 개발 내용 문서화                                                                                                               | 06.03 수 (1d) |                              |                                                                    | ✅  |
 
 ## 4. 프로젝트 상세 설명
 
@@ -171,13 +171,16 @@ TBU
   * [하이퍼파라미터 탐색 최적화 모델의 입/출력 데이터 정보](hpo_training_data/README.md)
 * 실제 실험 결과
   * [실제 하이퍼파라미터 탐색 및 Optuna 와의 대결 결과](hpo_run_battle/hp_find_result.md)
-  * [사용자와의 battle 로그](hpo_run_battle/mock_battle_log.txt)
+  * [사용자와의 battle 로그 (1)](hpo_run_battle/mock_battle_log.txt)
+  * [사용자와의 battle 로그 (2)](hpo_run_battle/mock_battle_log_2.txt)
 * 기타
   * [선정 데이터셋의 hidden representation (하이퍼파라미터 탐색 최적화 모델의 입력 데이터로 사용) 정보](hidden_representation/README.md) 
   * [데이터셋 배치 관련 정보](datasets/README.md)
   * [Baseline CNN 관련 정보](base_cnn/README.md)
 
 ### 4-3. LLM을 이용한 대결 결과 표현
+
+* [LLM 학습 정보](llm/README.md)
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
