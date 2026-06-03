@@ -73,6 +73,36 @@ def save_dataset(dataset, base_path):
             img.save(save_path)
 
 
+def convert_into_llm_input(macro_f1_score, human_macro_f1_score_1, human_macro_f1_score_2):
+    def get_message(user_score, ohlora_score):
+        if user_score - ohlora_score >= 0.15:
+            return '큰 차이로 승리'
+        elif user_score - ohlora_score >= 0.02:
+            return '승리'
+        elif user_score > ohlora_score:
+            return '근소하게 승리'
+        elif user_score == ohlora_score:
+            return '무승부'
+        elif ohlora_score - user_score < 0.02:
+            return '근소하게 패배'
+        elif ohlora_score - user_score < 0.15:
+            return '패배'
+        else:
+            return '큰 차이로 패배'
+
+    first_message = get_message(human_macro_f1_score_1, macro_f1_score)
+    second_message = get_message(human_macro_f1_score_2, macro_f1_score)
+
+    if human_macro_f1_score_1 > macro_f1_score or human_macro_f1_score_2 > macro_f1_score:
+        final_result = '최종 승리'
+    elif human_macro_f1_score_1 == macro_f1_score or human_macro_f1_score_2 == macro_f1_score:
+        final_result = '무승부'
+    else:
+        final_result = '최종 패배'
+
+    return f'1차: {first_message}, 2차: {second_message}, 최종 결과: {final_result}'
+
+
 def run_battle(dataset_name):
     print(f'\n\n[ 데이터셋 이름 : {dataset_name} ]')
     train_dataset, valid_dataset, test_dataset, hpo_model_input_data = create_mock_dataset(dataset_name)
@@ -131,6 +161,15 @@ def run_battle(dataset_name):
         print(f'[ 최종 결과 : 무승부 ]')
     else:
         print(f'[ 최종 결과 : Oh-LoRA 👱‍♀️ 의 승리 ]')
+
+    print('\n ==== 상세 점수 ====')
+    print(f'Human 1st : {human_macro_f1_score_1}')
+    print(f'Human 2nd : {human_macro_f1_score_2}')
+    print(f'Oh-LoRA   : {macro_f1_score}')
+    print('================= \n')
+
+    llm_input = convert_into_llm_input(macro_f1_score, human_macro_f1_score_1, human_macro_f1_score_2)
+    print(f'llm input: {llm_input}')
 
     shutil.rmtree(best_path_train)
     shutil.rmtree(best_path_valid)
