@@ -2,7 +2,7 @@ import pandas as pd
 import os
 from datetime import datetime
 
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
 def get_answer_start_mark():
