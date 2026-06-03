@@ -134,7 +134,7 @@ TBU
 | 🧪 모델 학습   | 최적 하이퍼파라미터 탐색 모델 학습 추가 실험 **(하이퍼파라미터 관련 feature는 pruning하지 않음)** | 04.12 일 - 05.24 일                | ```P009-006-hp-find-model-2```       | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/51) | ✅  |
 | ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 vs. Optuna 하이퍼파라미터 간 대결                         | 05.24 일 - 05.25 월 (2d)           | ```P009-007-battle-optuna```         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/52) | ✅  |
 | ⚙ 기능 구현    | 최적 하이퍼파라미터 탐색 모델 vs. 인간이 결정한 하이퍼파라미터 간 대결                        | 05.25 월 (1d)                     | ```P009-008-battle-human```          | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/53) | ✅  |
-| 📃 문서화     | "하이퍼파라미터 튜닝 대결" 개발 내용 문서화                                        | 05.31 일 (1d)                     |                                      |                                                                    | ⬜  |
+| 📃 문서화     | "하이퍼파라미터 튜닝 대결" 개발 내용 문서화                                        | 06.03 수 (1d)                     |                                      |                                                                    | ✅  |
 
 **3. LLM을 이용한 대결 결과 표현**
 
@@ -164,6 +164,21 @@ TBU
 
 * Citation for **CIFAR-10** dataset
   * [Learning Multiple Layers of Features from Tiny Images](https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf), Alex Krizhevsky, 2009.
+
+### 4-2. 하이퍼파라미터 튜닝 대결
+
+* 하이퍼파라미터 탐색 최적화 모델 정보
+  * [하이퍼파라미터 탐색 최적화 모델 정보](hpo_training_model/README.md)
+  * [하이퍼파라미터 탐색 최적화 모델의 입/출력 데이터 정보](hpo_training_data/README.md)
+* 실제 실험 결과
+  * [실제 하이퍼파라미터 탐색 및 Optuna 와의 대결 결과](hpo_run_battle/hp_find_result.md)
+  * [사용자와의 battle 로그](hpo_run_battle/mock_battle_log.txt)
+* 기타
+  * [선정 데이터셋의 hidden representation (하이퍼파라미터 탐색 최적화 모델의 입력 데이터로 사용) 정보](hidden_representation/README.md) 
+  * [데이터셋 배치 관련 정보](datasets/README.md)
+  * [Baseline CNN 관련 정보](base_cnn/README.md)
+
+### 4-3. LLM을 이용한 대결 결과 표현
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
