@@ -1,5 +1,9 @@
 from transformers import StoppingCriteria, StoppingCriteriaList
-from utils import get_temperature, get_answer_end_mark
+
+try:
+    from utils import get_temperature, get_answer_end_mark
+except:
+    from llm.utils import get_temperature, get_answer_end_mark
 
 import torch
 import os
