@@ -18,6 +18,7 @@ from inference import run_inference_kanana
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+FINE_TUNED_LLM_PATH = f'{PROJECT_DIR_PATH}/llm/models/kananai_sft_final_fine_tuned'
 ANSWER_CNT = 4
 
 
@@ -113,7 +114,6 @@ def get_lora_llm(llm, lora_rank):
 # - training_args (SFTConfig) : Training Arguments
 
 def get_training_args():
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/kananai_sft_final_fine_tuned'
     num_train_epochs = 15
 
     training_args = SFTConfig(
@@ -121,7 +121,7 @@ def get_training_args():
         num_train_epochs=num_train_epochs,
         logging_steps=5,                    # logging frequency
         gradient_checkpointing=False,
-        output_dir=output_dir_path,
+        output_dir=FINE_TUNED_LLM_PATH,
         save_total_limit=3,                 # max checkpoint count to save
         per_device_train_batch_size=2,      # batch size per device during training
         per_device_eval_batch_size=1,       # batch size per device during validation
@@ -244,8 +244,7 @@ def fine_tune_kanana():
     trainer.train()
 
     # save Fine-Tuned model
-    output_dir_path = f'{PROJECT_DIR_PATH}/llm/models/kananai_sft_final_fine_tuned'
-    trainer.save_model(output_dir_path)
+    trainer.save_model(FINE_TUNED_LLM_PATH)
 
 
 # Fine-Tuning 된 LLM 로딩
@@ -257,7 +256,7 @@ def fine_tune_kanana():
 
 def load_fine_tuned_llm():
     fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
-        f'{PROJECT_DIR_PATH}/llm/models/kananai_sft_final_fine_tuned',
+        FINE_TUNED_LLM_PATH,
         trust_remote_code=True,
         torch_dtype=torch.bfloat16).cuda()
 
@@ -269,7 +268,6 @@ def load_fine_tuned_llm():
 # Last Update Date : -
 
 def inference_or_fine_tune_llm():
-    models_dir = f'{PROJECT_DIR_PATH}/llm/models'
 
     # load valid dataset
     valid_final_input_prompts = load_valid_final_prompts()
@@ -280,7 +278,7 @@ def inference_or_fine_tune_llm():
     # try load LLM -> when failed, run Fine-Tuning and save LLM
     try:
         fine_tuned_llm = load_fine_tuned_llm()
-        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/kananai_sft_final_fine_tuned')
+        tokenizer = AutoTokenizer.from_pretrained(FINE_TUNED_LLM_PATH)
         print(f'Fine-Tuned LLM - Load SUCCESSFUL! 👱‍♀️')
 
     except Exception as e:
@@ -288,7 +286,7 @@ def inference_or_fine_tune_llm():
         fine_tune_kanana()
 
         fine_tuned_llm = load_fine_tuned_llm()
-        tokenizer = AutoTokenizer.from_pretrained(f'{models_dir}/kananai_sft_final_fine_tuned')
+        tokenizer = AutoTokenizer.from_pretrained(FINE_TUNED_LLM_PATH)
 
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
     fine_tuned_llm.generation_config.pad_token_id = tokenizer.pad_token_id
