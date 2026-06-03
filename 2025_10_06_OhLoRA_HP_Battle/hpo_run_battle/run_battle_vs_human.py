@@ -14,6 +14,7 @@ import torch
 from torchvision.utils import save_image
 from PIL import Image
 from tqdm import tqdm
+from transformers import AutoTokenizer
 
 import os
 import sys
@@ -21,6 +22,9 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
 from hpo_training_model.hpo_training_model import get_valid_feature_list
+from llm.inference import run_inference_kanana
+from llm.utils import get_answer_start_mark, get_answer_end_mark, get_stop_token_list
+from llm.run_fine_tuning import load_fine_tuned_llm, FINE_TUNED_LLM_PATH
 
 
 NUM_CLASSES = 10
@@ -40,6 +44,11 @@ HUMAN_PREDICT_INFO = """
  
 (참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
 """
+
+
+ANSWER_START_MARK = get_answer_start_mark()
+ANSWER_END_MARK = get_answer_end_mark()
+STOP_TOKEN_LIST = get_stop_token_list()
 
 
 def run_human_prediction(human_trial_no, train_dataset, valid_dataset, test_dataset):
@@ -73,7 +82,37 @@ def save_dataset(dataset, base_path):
             img.save(save_path)
 
 
-def run_battle(dataset_name):
+def convert_into_llm_input(macro_f1_score, human_macro_f1_score_1, human_macro_f1_score_2):
+    def get_message(user_score, ohlora_score):
+        if user_score - ohlora_score >= 0.15:
+            return '큰 차이로 승리'
+        elif user_score - ohlora_score >= 0.02:
+            return '승리'
+        elif user_score > ohlora_score:
+            return '근소하게 승리'
+        elif user_score == ohlora_score:
+            return '무승부'
+        elif ohlora_score - user_score < 0.02:
+            return '근소하게 패배'
+        elif ohlora_score - user_score < 0.15:
+            return '패배'
+        else:
+            return '큰 차이로 패배'
+
+    first_message = get_message(human_macro_f1_score_1, macro_f1_score)
+    second_message = get_message(human_macro_f1_score_2, macro_f1_score)
+
+    if human_macro_f1_score_1 > macro_f1_score or human_macro_f1_score_2 > macro_f1_score:
+        final_result = '최종 승리'
+    elif human_macro_f1_score_1 == macro_f1_score or human_macro_f1_score_2 == macro_f1_score:
+        final_result = '무승부'
+    else:
+        final_result = '최종 패배'
+
+    return f'1차: {first_message}, 2차: {second_message}, 최종 결과: {final_result}'
+
+
+def run_battle(dataset_name, fine_tuned_llm, tokenizer):
     print(f'\n\n[ 데이터셋 이름 : {dataset_name} ]')
     train_dataset, valid_dataset, test_dataset, hpo_model_input_data = create_mock_dataset(dataset_name)
     train_means, train_stds = get_train_means_and_stds(dataset_name, threshold_cutoffs[dataset_name])
@@ -132,6 +171,21 @@ def run_battle(dataset_name):
     else:
         print(f'[ 최종 결과 : Oh-LoRA 👱‍♀️ 의 승리 ]')
 
+    print('\n ==== 상세 점수 ====')
+    print(f'Human 1st : {human_macro_f1_score_1}')
+    print(f'Human 2nd : {human_macro_f1_score_2}')
+    print(f'Oh-LoRA   : {macro_f1_score}')
+    print('================= \n')
+
+    llm_input = convert_into_llm_input(macro_f1_score, human_macro_f1_score_1, human_macro_f1_score_2)
+    llm_answer, _, _ = run_inference_kanana(fine_tuned_llm,
+                                            llm_input,
+                                            tokenizer,
+                                            stop_token_list=STOP_TOKEN_LIST,
+                                            answer_start_mark=ANSWER_START_MARK)
+    llm_answer = llm_answer[:-len(ANSWER_END_MARK) + 1]
+    print(f'\nOh-LoRA 👱‍♀️ : {llm_answer}\n')
+
     shutil.rmtree(best_path_train)
     shutil.rmtree(best_path_valid)
     shutil.rmtree(best_path_test)
@@ -140,5 +194,8 @@ def run_battle(dataset_name):
 if __name__ == '__main__':
     dataset_names = ['cifar_10', 'fashion_mnist', 'mnist']
 
+    fine_tuned_llm = load_fine_tuned_llm()
+    tokenizer = AutoTokenizer.from_pretrained(FINE_TUNED_LLM_PATH)
+
     for dataset_name in dataset_names:
-        run_battle(dataset_name)
+        run_battle(dataset_name, fine_tuned_llm, tokenizer)

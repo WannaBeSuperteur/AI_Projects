@@ -12,9 +12,14 @@ from datasets import DatasetDict, Dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback, TrainingArguments, TrainerState, \
                          TrainerControl
 
-from utils import load_valid_final_prompts, get_answer_start_mark, get_answer_end_mark, get_stop_token_list, \
-                  get_temperature, preview_dataset, add_train_log, add_inference_log
-from inference import run_inference_kanana
+try:
+    from utils import load_valid_final_prompts, get_answer_start_mark, get_answer_end_mark, get_stop_token_list, \
+                      get_temperature, preview_dataset, add_train_log, add_inference_log
+    from inference import run_inference_kanana
+except:
+    from llm.utils import load_valid_final_prompts, get_answer_start_mark, get_answer_end_mark, get_stop_token_list, \
+                          get_temperature, preview_dataset, add_train_log, add_inference_log
+    from llm.inference import run_inference_kanana
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
