@@ -18,6 +18,7 @@ from inference import run_inference_kanana
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+ORIGINAL_LLM_PATH = f'{PROJECT_DIR_PATH}/llm/original_models/kananai_original'
 FINE_TUNED_LLM_PATH = f'{PROJECT_DIR_PATH}/llm/models/kananai_sft_final_fine_tuned'
 ANSWER_CNT = 4
 
@@ -137,14 +138,12 @@ def get_training_args(num_train_epochs):
 # - original_llm (LLM) : Original Kanana-1.5 2.1B Instruct LLM
 
 def get_original_llm():
-    original_llm_path = f'{PROJECT_DIR_PATH}/llm/original_models/kananai_original'
-
     original_llm = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path=original_llm_path,
+        pretrained_model_name_or_path=ORIGINAL_LLM_PATH,
         trust_remote_code=True,
         torch_dtype=torch.bfloat16).cuda()
 
-    print(f'Original LLM load successful : {original_llm_path}')
+    print(f'Original LLM load successful : {ORIGINAL_LLM_PATH}')
     return original_llm
 
 
@@ -213,7 +212,7 @@ def fine_tune_kanana():
     # get original LLM and tokenizer
     # Kanana-1.5 2.1B original model is from https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505
     original_llm = get_original_llm()
-    tokenizer = AutoTokenizer.from_pretrained(f'{PROJECT_DIR_PATH}/llm_original_models/kananai_original')
+    tokenizer = AutoTokenizer.from_pretrained(ORIGINAL_LLM_PATH)
     tokenizer.pad_token = tokenizer.eos_token
 
     # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
