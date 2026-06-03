@@ -1,0 +1,313 @@
+[ 데이터셋 이름 : cifar_10 ]
+rejected distribution: train=[], test=[]
+...
+rejected distribution: train=[22, 19, 15, 5, 2], test=[6, 4, 2, 1]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1249/1249 [00:02<00:00, 422.81it/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 221/221 [00:00<00:00, 379.89it/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 299/299 [00:00<00:00, 381.64it/s]
+
+
+=== Oh-LoRA 👱‍♀️ 선공 예측 ===
+epoch : 0, train_loss : 2.1975, val_loss : 2.1294
+epoch : 1, train_loss : 2.1018, val_loss : 2.0656
+epoch : 2, train_loss : 2.0521, val_loss : 2.0393
+epoch : 3, train_loss : 2.0340, val_loss : 1.9930
+epoch : 4, train_loss : 1.9883, val_loss : 1.9411
+epoch : 5, train_loss : 1.9383, val_loss : 1.9933
+epoch : 6, train_loss : 1.9124, val_loss : 1.9580
+epoch : 7, train_loss : 1.8851, val_loss : 1.9103
+epoch : 8, train_loss : 1.8659, val_loss : 1.9017
+epoch : 9, train_loss : 1.8443, val_loss : 1.8846
+epoch : 10, train_loss : 1.8304, val_loss : 1.9082
+epoch : 11, train_loss : 1.8105, val_loss : 1.8811
+epoch : 12, train_loss : 1.8053, val_loss : 1.8954
+epoch : 13, train_loss : 1.7828, val_loss : 1.8694
+epoch : 14, train_loss : 1.7725, val_loss : 1.8617
+epoch : 15, train_loss : 1.7605, val_loss : 1.8290
+epoch : 16, train_loss : 1.7544, val_loss : 1.8366
+epoch : 17, train_loss : 1.7303, val_loss : 1.8262
+epoch : 18, train_loss : 1.7153, val_loss : 1.8344
+epoch : 19, train_loss : 1.7026, val_loss : 1.8110
+epoch : 20, train_loss : 1.6907, val_loss : 1.8009
+epoch : 21, train_loss : 1.6791, val_loss : 1.8159
+epoch : 22, train_loss : 1.6752, val_loss : 1.8063
+epoch : 23, train_loss : 1.6572, val_loss : 1.8123
+accuracy : 0.6154, f1_score: (macro: 0.5787, micro: 0.6154)
+
+
+=== 인간 1차 예측 ===
+
+[ SYSTEM MESSAGE ]
+데이터셋이 battle_dataset/ 경로에 저장되었습니다.
+다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
+(이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
+
+{"dropout_conv_earlier": {0.0 - 0.3 사이의 float 값},
+ "dropout_conv_later": {0.0 - 0.3 사이의 float 값},
+ "dropout_fc": {0.0 - 0.6 사이의 float 값},
+ "lr": {0.00002 - 0.006 사이의 float 값},
+ "activation_func": "{relu|leaky_relu}",
+ "optimizer": "{adam|adamw}",
+ "scheduler": "{exp_80|exp_90|exp_95|exp_98|cosine}"}
+
+(참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
+
+[ 인간의 1차 하이퍼파라미터 : {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.0, 'lr': 0.001, 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_95'} ]
+epoch : 0, train_loss : 2.1361, val_loss : 2.0665
+epoch : 1, train_loss : 2.0866, val_loss : 2.0618
+epoch : 2, train_loss : 2.0619, val_loss : 2.0320
+epoch : 3, train_loss : 2.0472, val_loss : 2.0033
+epoch : 4, train_loss : 2.0303, val_loss : 1.9985
+epoch : 5, train_loss : 1.9908, val_loss : 1.9847
+epoch : 6, train_loss : 1.9605, val_loss : 1.9132
+epoch : 7, train_loss : 1.9513, val_loss : 1.9263
+epoch : 8, train_loss : 1.9105, val_loss : 1.9243
+epoch : 9, train_loss : 1.8794, val_loss : 1.9161
+accuracy : 0.5017, f1_score: (macro: 0.4252, micro: 0.5017)
+[ 인간의 Macro F1 Score = 0.4252 ]
+
+
+=== 인간 2차 예측 ===
+
+[ SYSTEM MESSAGE ]
+데이터셋이 battle_dataset/ 경로에 저장되었습니다.
+다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
+(이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
+
+{"dropout_conv_earlier": {0.0 - 0.3 사이의 float 값},
+ "dropout_conv_later": {0.0 - 0.3 사이의 float 값},
+ "dropout_fc": {0.0 - 0.6 사이의 float 값},
+ "lr": {0.00002 - 0.006 사이의 float 값},
+ "activation_func": "{relu|leaky_relu}",
+ "optimizer": "{adam|adamw}",
+ "scheduler": "{exp_80|exp_90|exp_95|exp_98|cosine}"}
+
+(참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
+
+[ 인간의 2차 하이퍼파라미터 : {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.0, 'lr': 0.0001, 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_95'} ]
+epoch : 0, train_loss : 2.1887, val_loss : 2.0991
+epoch : 1, train_loss : 2.0968, val_loss : 2.0640
+epoch : 2, train_loss : 2.0593, val_loss : 2.0384
+epoch : 3, train_loss : 2.0318, val_loss : 2.0045
+epoch : 4, train_loss : 2.0134, val_loss : 1.9978
+epoch : 5, train_loss : 2.0083, val_loss : 1.9870
+epoch : 6, train_loss : 1.9950, val_loss : 1.9967
+epoch : 7, train_loss : 1.9877, val_loss : 1.9872
+epoch : 8, train_loss : 1.9738, val_loss : 1.9772
+epoch : 9, train_loss : 1.9612, val_loss : 1.9808
+epoch : 10, train_loss : 1.9501, val_loss : 1.9788
+epoch : 11, train_loss : 1.9337, val_loss : 1.9752
+epoch : 12, train_loss : 1.9185, val_loss : 1.9787
+epoch : 13, train_loss : 1.9079, val_loss : 1.9894
+epoch : 14, train_loss : 1.9023, val_loss : 1.9860
+accuracy : 0.4649, f1_score: (macro: 0.4004, micro: 0.4649)
+[ 인간의 Macro F1 Score = 0.4004 ]
+[ Oh-LoRA 👱‍♀️ 의 Macro F1 Score = 0.5787 ] (예측: 0.4763762354850769)
+[ Oh-LoRA 👱‍♀️ 의 하이퍼파라미터 = {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.3607600185403661, 'lr': 0.0002544624085630814, 'activation_func': 'relu', 'optimizer': 'adam', 'scheduler': 'exp_98'} ]
+[ 최종 결과 : Oh-LoRA 👱‍♀️ 의 승리 ]
+
+ ==== 상세 점수 ====
+Human 1st : 0.4252
+Human 2nd : 0.4004
+Oh-LoRA   : 0.5787
+=================
+
+
+Oh-LoRA 👱‍♀️ :  이제는 모델 학습을 다시 처음부터 해보는 건 어때? 🤔 정말 좋은 방법이 될 수도 있을 것 같아!
+
+
+
+[ 데이터셋 이름 : fashion_mnist ]
+rejected distribution: train=[], test=[]
+...
+rejected distribution: train=[882, 718, 284, 268, 103], test=[176, 107, 57, 55, 13]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1132/1132 [00:02<00:00, 477.89it/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 200/200 [00:00<00:00, 439.13it/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 234/234 [00:00<00:00, 435.16it/s]
+
+
+=== Oh-LoRA 👱‍♀️ 선공 예측 ===
+epoch : 0, train_loss : 2.0172, val_loss : 1.8307
+epoch : 1, train_loss : 1.8234, val_loss : 1.8245
+epoch : 2, train_loss : 1.7818, val_loss : 1.7866
+epoch : 3, train_loss : 1.7464, val_loss : 1.7588
+epoch : 4, train_loss : 1.7399, val_loss : 1.7566
+epoch : 5, train_loss : 1.7348, val_loss : 1.7436
+epoch : 6, train_loss : 1.7365, val_loss : 1.7652
+epoch : 7, train_loss : 1.7278, val_loss : 1.7493
+epoch : 8, train_loss : 1.7199, val_loss : 1.7562
+accuracy : 0.6838, f1_score: (macro: 0.6044, micro: 0.6838)
+
+
+=== 인간 1차 예측 ===
+
+[ SYSTEM MESSAGE ]
+데이터셋이 battle_dataset/ 경로에 저장되었습니다.
+다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
+(이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
+
+{"dropout_conv_earlier": {0.0 - 0.3 사이의 float 값},
+ "dropout_conv_later": {0.0 - 0.3 사이의 float 값},
+ "dropout_fc": {0.0 - 0.6 사이의 float 값},
+ "lr": {0.00002 - 0.006 사이의 float 값},
+ "activation_func": "{relu|leaky_relu}",
+ "optimizer": "{adam|adamw}",
+ "scheduler": "{exp_80|exp_90|exp_95|exp_98|cosine}"}
+
+(참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
+
+[ 인간의 1차 하이퍼파라미터 : {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.0, 'lr': 0.0001, 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_95'} ]
+epoch : 0, train_loss : 2.0708, val_loss : 1.8382
+epoch : 1, train_loss : 1.8249, val_loss : 1.8132
+epoch : 2, train_loss : 1.8002, val_loss : 1.7891
+epoch : 3, train_loss : 1.7590, val_loss : 1.7561
+epoch : 4, train_loss : 1.7443, val_loss : 1.7535
+epoch : 5, train_loss : 1.7358, val_loss : 1.7871
+epoch : 6, train_loss : 1.7380, val_loss : 1.7694
+epoch : 7, train_loss : 1.7300, val_loss : 1.7599
+accuracy : 0.6966, f1_score: (macro: 0.6146, micro: 0.6966)
+[ 인간의 Macro F1 Score = 0.6146 ]
+
+
+=== 인간 2차 예측 ===
+
+[ SYSTEM MESSAGE ]
+데이터셋이 battle_dataset/ 경로에 저장되었습니다.
+다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
+(이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
+
+{"dropout_conv_earlier": {0.0 - 0.3 사이의 float 값},
+ "dropout_conv_later": {0.0 - 0.3 사이의 float 값},
+ "dropout_fc": {0.0 - 0.6 사이의 float 값},
+ "lr": {0.00002 - 0.006 사이의 float 값},
+ "activation_func": "{relu|leaky_relu}",
+ "optimizer": "{adam|adamw}",
+ "scheduler": "{exp_80|exp_90|exp_95|exp_98|cosine}"}
+
+(참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
+
+[ 인간의 2차 하이퍼파라미터 : {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.0, 'lr': 5e-05, 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_95'} ]
+epoch : 0, train_loss : 2.2006, val_loss : 2.1556
+epoch : 1, train_loss : 2.0914, val_loss : 1.8674
+epoch : 2, train_loss : 1.8286, val_loss : 1.8262
+epoch : 3, train_loss : 1.8113, val_loss : 1.8034
+epoch : 4, train_loss : 1.7682, val_loss : 1.7588
+epoch : 5, train_loss : 1.7522, val_loss : 1.7534
+epoch : 6, train_loss : 1.7409, val_loss : 1.7484
+epoch : 7, train_loss : 1.7428, val_loss : 1.7475
+epoch : 8, train_loss : 1.7312, val_loss : 1.7510
+epoch : 9, train_loss : 1.7280, val_loss : 1.7518
+accuracy : 0.7009, f1_score: (macro: 0.6165, micro: 0.7009)
+[ 인간의 Macro F1 Score = 0.6165 ]
+[ Oh-LoRA 👱‍♀️ 의 Macro F1 Score = 0.6044 ] (예측: 0.698827862739563)
+[ Oh-LoRA 👱‍♀️ 의 하이퍼파라미터 = {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.0, 'lr': 0.0001512042752731689, 'activation_func': 'relu', 'optimizer': 'adamw', 'scheduler': 'cosine'} ]
+[ 최종 결과 : 인간 사용자의 승리 ]
+
+ ==== 상세 점수 ====
+Human 1st : 0.6146
+Human 2nd : 0.6165
+Oh-LoRA   : 0.6044
+=================
+
+
+Oh-LoRA 👱‍♀️ :  둘 다 아슬아슬했지만 결국 다 이겼네! 심장 쫄깃했겠다! 😊
+
+
+
+[ 데이터셋 이름 : mnist ]
+rejected distribution: train=[], test=[]
+...
+rejected distribution: train=[851, 320, 294, 192, 180], test=[142, 65, 50, 42, 40]
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1259/1259 [00:02<00:00, 504.79it/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 223/223 [00:00<00:00, 461.33it/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 238/238 [00:00<00:00, 460.37it/s]
+
+
+=== Oh-LoRA 👱‍♀️ 선공 예측 ===
+epoch : 0, train_loss : 2.1110, val_loss : 2.0621
+epoch : 1, train_loss : 2.0815, val_loss : 2.0621
+epoch : 2, train_loss : 2.0815, val_loss : 2.0621
+epoch : 3, train_loss : 2.0815, val_loss : 2.0621
+epoch : 4, train_loss : 2.0815, val_loss : 2.0621
+epoch : 5, train_loss : 2.0815, val_loss : 2.0621
+accuracy : 0.3782, f1_score: (macro: 0.1098, micro: 0.3782)
+
+
+=== 인간 1차 예측 ===
+
+[ SYSTEM MESSAGE ]
+데이터셋이 battle_dataset/ 경로에 저장되었습니다.
+다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
+(이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
+
+{"dropout_conv_earlier": {0.0 - 0.3 사이의 float 값},
+ "dropout_conv_later": {0.0 - 0.3 사이의 float 값},
+ "dropout_fc": {0.0 - 0.6 사이의 float 값},
+ "lr": {0.00002 - 0.006 사이의 float 값},
+ "activation_func": "{relu|leaky_relu}",
+ "optimizer": "{adam|adamw}",
+ "scheduler": "{exp_80|exp_90|exp_95|exp_98|cosine}"}
+
+(참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
+
+[ 인간의 1차 하이퍼파라미터 : {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.0, 'lr': 5e-05, 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_95'} ]
+epoch : 0, train_loss : 2.1337, val_loss : 2.0621
+epoch : 1, train_loss : 2.0815, val_loss : 2.0621
+epoch : 2, train_loss : 2.0815, val_loss : 2.0621
+epoch : 3, train_loss : 2.0815, val_loss : 2.0621
+epoch : 4, train_loss : 2.0815, val_loss : 2.0621
+epoch : 5, train_loss : 2.0574, val_loss : 1.9105
+epoch : 6, train_loss : 1.7787, val_loss : 1.6262
+epoch : 7, train_loss : 1.5942, val_loss : 1.5571
+epoch : 8, train_loss : 1.5413, val_loss : 1.5417
+epoch : 9, train_loss : 1.5259, val_loss : 1.5560
+epoch : 10, train_loss : 1.5190, val_loss : 1.5186
+epoch : 11, train_loss : 1.5117, val_loss : 1.5218
+epoch : 12, train_loss : 1.5064, val_loss : 1.5196
+epoch : 13, train_loss : 1.5008, val_loss : 1.5170
+epoch : 14, train_loss : 1.4989, val_loss : 1.5033
+epoch : 15, train_loss : 1.4952, val_loss : 1.4979
+epoch : 16, train_loss : 1.4932, val_loss : 1.5104
+epoch : 17, train_loss : 1.4926, val_loss : 1.4970
+epoch : 18, train_loss : 1.4922, val_loss : 1.5100
+accuracy : 0.9664, f1_score: (macro: 0.959, micro: 0.9664)
+[ 인간의 Macro F1 Score = 0.959 ]
+
+
+=== 인간 2차 예측 ===
+
+[ SYSTEM MESSAGE ]
+데이터셋이 battle_dataset/ 경로에 저장되었습니다.
+다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
+(이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
+
+{"dropout_conv_earlier": {0.0 - 0.3 사이의 float 값},
+ "dropout_conv_later": {0.0 - 0.3 사이의 float 값},
+ "dropout_fc": {0.0 - 0.6 사이의 float 값},
+ "lr": {0.00002 - 0.006 사이의 float 값},
+ "activation_func": "{relu|leaky_relu}",
+ "optimizer": "{adam|adamw}",
+ "scheduler": "{exp_80|exp_90|exp_95|exp_98|cosine}"}
+
+(참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
+
+[ 인간의 2차 하이퍼파라미터 : {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.0, 'lr': 5e-05, 'activation_func': 'leaky_relu', 'optimizer': 'adamw', 'scheduler': 'exp_95'} ]
+epoch : 0, train_loss : 2.1282, val_loss : 2.0621
+epoch : 1, train_loss : 2.0815, val_loss : 2.0621
+epoch : 2, train_loss : 2.0815, val_loss : 2.0621
+epoch : 3, train_loss : 2.0815, val_loss : 2.0621
+epoch : 4, train_loss : 2.0815, val_loss : 2.0621
+epoch : 5, train_loss : 2.0815, val_loss : 2.0621
+accuracy : 0.3782, f1_score: (macro: 0.1098, micro: 0.3782)
+[ 인간의 Macro F1 Score = 0.1098 ]
+[ Oh-LoRA 👱‍♀️ 의 Macro F1 Score = 0.1098 ] (예측: 0.6417930126190186)
+[ 최종 결과 : 인간 사용자의 승리 ]
+
+ ==== 상세 점수 ====
+Human 1st : 0.959
+Human 2nd : 0.1098
+Oh-LoRA   : 0.1098
+=================
+
+
+Oh-LoRA 👱‍♀️ :  첫 판에 완전 압살해서 다행이다! 두 번째 판은 좀 아슬아슬했지만 결국 승리! ✨
