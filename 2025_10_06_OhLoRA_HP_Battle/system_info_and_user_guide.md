@@ -348,4 +348,49 @@ zstandard==0.25.0
 
 ### 2-3. 기본 실행 방법
 
-TBU
+**1.** ```hpo_run_battle``` 경로에서 ```python run_battle_vs_human.py``` 를 실행합니다.
+
+```
+(venv) PS C:\Users\20151\Documents\AI_Projects> cd 2025_10_06_OhLoRA_HP_Battle
+(venv) PS C:\Users\20151\Documents\AI_Projects\2025_10_06_OhLoRA_HP_Battle> cd hpo_run_battle
+(venv) PS C:\Users\20151\Documents\AI_Projects\2025_10_06_OhLoRA_HP_Battle\hpo_run_battle> python run_battle_vs_human.py
+```
+
+**2.** 다음과 같은 문구가 나타나면, [```hpo_run_battle/battle_dataset/hps.txt```](hpo_run_battle/battle_dataset/hps.txt) 파일을 수정한 후 엔터 (Enter) 키를 누릅니다.
+
+* [```hpo_run_battle/battle_dataset```](hpo_run_battle/battle_dataset) 에서 데이터셋을 확인한 후, 하이퍼파라미터 값을 적절히 결정합니다.
+  * ```train_dataset``` (학습 데이터셋), ```valid_dataset``` (검증 데이터셋), ```test_dataset``` (테스트 데이터셋) 을 각각 확인합니다. 
+* 이것을 각 데이터셋 (CIFAR-10, Fashion-MNIST, MNIST) 에 대해 반복합니다.
+
+```
+다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
+(이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
+
+{"dropout_conv_earlier": {0.0 - 0.3 사이의 float 값},
+ "dropout_conv_later": {0.0 - 0.3 사이의 float 값},
+ "dropout_fc": {0.0 - 0.6 사이의 float 값},
+ "lr": {0.00002 - 0.006 사이의 float 값},
+ "activation_func": "{relu|leaky_relu}",
+ "optimizer": "{adam|adamw}",
+ "scheduler": "{exp_80|exp_90|exp_95|exp_98|cosine}"}
+
+(참고: lr은 learning rate 이고, scheduler 중 exp_N 에서 N은 gamma 값 (%) 을 의미합니다.)
+```
+
+**3.** 각 데이터셋 별 최종 결과 및 이에 대해 Oh-LoRA 👱‍♀️ LLM이 생성한 문구를 확인합니다.
+
+```
+[ 인간의 Macro F1 Score = 0.0674 ]
+[ Oh-LoRA 👱‍♀️ 의 Macro F1 Score = 0.4315 ] (예측: 0.3952408730983734)
+[ Oh-LoRA 👱‍♀️ 의 하이퍼파라미터 = {'dropout_conv_earlier': 0.0, 'dropout_conv_later': 0.0, 'dropout_fc': 0.6, 'lr': 0.000278296826514608, 'activation_func': 'relu', 'optimizer': 'adam', 'scheduler': 'exp_98'} ]
+[ 최종 결과 : 인간 사용자의 승리 ]
+
+ ==== 상세 점수 ====
+Human 1st : 0.454
+Human 2nd : 0.0674
+Oh-LoRA   : 0.4315
+=================
+
+
+Oh-LoRA 👱‍♀️ :  첫 판 덕분에 살았네! 두 번째 판은 망했지만 이겼으니 축하해! ✨
+```
