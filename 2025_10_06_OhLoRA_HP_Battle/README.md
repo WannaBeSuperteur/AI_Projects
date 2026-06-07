@@ -193,5 +193,5 @@ TBU
 
 ## 6. 사용자 가이드
 
-* 모델 정보: TBU
+* 모델 정보는 [해당 문서](MODEL_INFO.md) 참고.
 * 사용자 가이드는 [해당 문서](system_info_and_user_guide.md#2-사용자-가이드) 참고.
