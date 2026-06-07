@@ -362,6 +362,11 @@ zstandard==0.25.0
   * ```train_dataset``` (학습 데이터셋), ```valid_dataset``` (검증 데이터셋), ```test_dataset``` (테스트 데이터셋) 을 각각 확인합니다. 
 * 이것을 각 데이터셋 (CIFAR-10, Fashion-MNIST, MNIST) 에 대해 반복합니다.
 
+**[ 승패 판정 기준 ]**
+
+* 사용자에게 **총 2번의 기회** 를 제공합니다.
+* **Oh-LoRA 👱‍♀️ 가 결정한 하이퍼파라미터** 에 비해 최종 점수 (Macro F1 Score) 가 **1번이라도 더 좋으면, 사용자의 승리** 입니다.
+
 ```
 다음과 같은 형식으로 하이퍼파라미터를 저장하여 battle_dataset/hps.txt 로 저장한 다음 Enter 키를 눌러 주세요.
 (이미 battle_dataset/hps.txt 파일이 있다면 최적의 하이퍼파라미터로 수정해 주세요.)
