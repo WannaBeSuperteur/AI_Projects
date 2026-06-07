@@ -164,6 +164,10 @@ TBU
 * Citation for **CIFAR-10** dataset
   * [Learning Multiple Layers of Features from Tiny Images](https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf), Alex Krizhevsky, 2009.
 
+**3. 데이터셋 상세 정보**
+
+* [datasets/README.md](datasets/README.md) 참고.
+
 ### 4-2. 하이퍼파라미터 튜닝 대결
 
 * 하이퍼파라미터 탐색 최적화 모델 정보
