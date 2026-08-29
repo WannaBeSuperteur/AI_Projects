@@ -48,11 +48,9 @@
 * 리스트 컴프리헨션 사용이 가능한 경우, 리스트 컴프리헨션 사용
   * 조건 분기와 함께 적용 시 컴프리헨션 적용 가능한 경우
   * `join` 과 함께 리스트 컴프리헨션 적용 가능한 경우 등 포함 
-* 리스트 컴프리헨션 대신 되도록 제너레이터 표현식 사용
-* 함수형 도구 사용 권장
-  * `map` (간단한 변환의 경우)
-  * `filter`
-  * `reduce`
+* 제너레이터 표현식 사용이 가능한 경우, 리스트 컴프리헨션 대신 되도록 제너레이터 표현식 사용
+* 간단한 변환의 경우, 함수형 도구 사용 권장
+  * `map`, `filter`
 * `if-elif-else` 가 반복되는 경우 `dict` 를 이용하여 단순화 (조건 분기 남발 자제)
 * 경로를 `a/b/c` 형태가 아닌 `pathlib` 또는 `os.path.join` 사용
 * 불필요한 변수 생성 자제 (메모리 절약 목적)
@@ -74,10 +72,9 @@
   * 빈도수 계산 시 `collections` 사용
   * 반복문 처리 시 `itertools` 사용
     * `itertools.chain`, `itertools.tee` 등 
-  * 복잡한 자료형이 담긴 파일 read/write 시 `pickle` 사용
   * 파일의 경로명 조건을 이용한 리스트 추출 시 `glob` 사용
-* 함수의 인자 간소화가 가능한 경우 간소화해야 함 (예: `value_1, value_2, value_3` → `values`)
-* attribute 접근 방식으로 `hasattr` 사용 권장
+* 함수의 인자 간소화가 가능한 경우 간소화해야 함 (예: `value_1, value_2, value_3` → dataclass 기반 `values`)
+* attribute 접근 방식으로 `getattr` 사용 권장
 
 ### 1-5. 예외 및 오류 처리
 
@@ -106,7 +103,7 @@
 * `model.train()`, `model.eval()` 포함
 * inference 시 `with torch.no_grad()` 등 사용
 * scheduler 포함 및 `model.scheduler.step()` 으로 업데이트 되고 있음
-* Loss Function의 올바른 사용
-  * 다중 분류 문제에서 Categorical Cross Entropy Loss + Softmax 조합 사용
-  * 이진 분류 문제에서 Binary Cross Entropy Loss + Sigmoid 조합 사용
+* Loss Function 및 Activation Function 의 올바른 사용
+  * 다중 분류 문제에서 Categorical Cross Entropy Loss 사용
+  * 이진 분류 문제에서 Binary Cross Entropy Loss + Sigmoid 조합 사용 (`nn.BCEWithLogitsLoss` 사용 권장)
 * 데이터셋 train/valid/test 분리 시, train loader 에 `shuffle=True` 적용
