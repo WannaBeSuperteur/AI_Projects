@@ -6,7 +6,7 @@ from pathlib import Path
 class CodeReviewer:
     def __init__(self,
                  code_review_func,
-                 text_embedding_model,
+                 text_embedding_models: dict | None = None,
                  test_cases: list[dict[str, dict[str, bool]]] | None = None,
                  max_line_length: int = 120,
                  max_func_lines: int = 100):
@@ -14,7 +14,7 @@ class CodeReviewer:
         self.config = {
             'max_line_length': max_line_length,
             'max_func_lines': max_func_lines,
-            'text_embedding_model': text_embedding_model
+            'text_embedding_model': text_embedding_models
         }
 
         self.code_review_func = code_review_func
@@ -59,5 +59,5 @@ class CodeReviewer:
 
 
 if __name__ == '__main__':
-    code_reviewer = CodeReviewer(code_review_func=None, text_embedding_model=None)
+    code_reviewer = CodeReviewer(code_review_func=None, text_embedding_models=None)
     print(code_reviewer)
