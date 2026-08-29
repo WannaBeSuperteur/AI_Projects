@@ -41,7 +41,8 @@
 * 함수 관련
   * 함수 길이가 100 줄 이상인 경우 단일 책임 원칙으로 분리 권장
   * 함수 설명에 `docstring` 권장
-* 반복문 중첩으로 인해 들여쓰기가 지나치게 많이 된 경우 별도 함수로 분리 권장 
+  * type hinting 필수
+* 반복문 중첩으로 인해 들여쓰기가 지나치게 많이 된 경우 별도 함수로 분리 권장
 
 ### 1-3. Python 문법 간소화
 
@@ -101,8 +102,10 @@
   * `model.optimizer.step()` 포함 및 순서 준수
 * `model.train()`, `model.eval()` 포함
 * inference 시 `with torch.no_grad()` 등 사용
+* loss 로깅 시 `loss` 그래프 자체를 참조하는 대신, `loss.item()` 사용
 * scheduler 포함 및 `model.scheduler.step()` 으로 업데이트 되고 있음
 * Loss Function 및 Activation Function 의 올바른 사용
   * 다중 분류 문제에서 Categorical Cross Entropy Loss 사용
   * 이진 분류 문제에서 Binary Cross Entropy Loss + Sigmoid 조합 사용 (`nn.BCEWithLogitsLoss` 사용 권장)
 * 데이터셋 train/valid/test 분리 시, train loader 에 `shuffle=True` 적용
+* 재현성을 위한 `torch.manual_seed` 등 적용
