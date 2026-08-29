@@ -60,6 +60,16 @@
 * 조건문 중첩 대신 `any`, `all` 사용
 * `zip` 사용 가능한 경우 사용
 * `enumerate` 사용 가능한 경우 사용
+* 아래에서 `before`로 된 부분은 `pathlib`을 사용하여 `after`처럼 사용해야 함
+
+```python
+# before
+with open('example.txt', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# after
+content = Path('example.txt').read_text(encoding='utf-8')
+```
 
 ### 1-4. 그 외 Pythonic 한 프로그래밍
 
