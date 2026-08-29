@@ -59,8 +59,11 @@
 * `key=lambda x: x['key']` 보다, `key=itemgetter('key')` 사용 권장
 * 문자열 단순 연결보다는 f-string 사용
 * 포맷팅 방식 등은 1가지로 통일 (예: f-string 으로 통일)
-* 빈도수 계산 시 `collections` 사용
-* 반복문 처리 시 `itertools` 사용
+* 라이브러리 사용
+  * 빈도수 계산 시 `collections` 사용
+  * 반복문 처리 시 `itertools` 사용
+  * 복잡한 자료형이 담긴 파일 read/write 시 `pickle` 사용
+  * 파일의 경로명 조건을 이용한 리스트 추출 시 `glob` 사용
 
 ## 5. 예외 및 오류 처리
 
