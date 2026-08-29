@@ -71,6 +71,17 @@ with open('example.txt', 'r', encoding='utf-8') as f:
 content = Path('example.txt').read_text(encoding='utf-8')
 ```
 
+* 아래와 같은 형태는 간결하게 바꾸도록 함 (`if xxx`, `if not xxx`)
+
+```python
+if len(sentence):
+if not len(sentence):
+if len(sentence) == 0:
+if not len(sentence) == 0:
+if sentence == '':
+if not sentence == '':
+```
+
 ### 1-4. 그 외 Pythonic 한 프로그래밍
 
 * 언패킹 관련
@@ -91,6 +102,7 @@ content = Path('example.txt').read_text(encoding='utf-8')
 ### 1-5. 예외 및 오류 처리
 
 * 예외를 삼키는 경우가 없어야 함
+* 예외의 종류 (`OOOError` 등) 를 가급적 구체적으로 명시해야 함
 * 함수 관련 오류 방지
   * 함수의 인수를 변경 가능한 default value (예: `data: dict = {...}`) 로 하지 않는다.
 * assertion을 `try-except` 등을 이용한 제어 메커니즘으로 사용하지 않는다.
