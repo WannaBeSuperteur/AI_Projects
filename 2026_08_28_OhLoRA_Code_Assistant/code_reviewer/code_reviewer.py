@@ -20,22 +20,21 @@ class CodeReviewer:
         self.code_review_func = code_review_func
         self.test_cases = test_cases
 
-    def _review_py_file(self, py_file_path: str) -> dict[str, bool]:
+    def _review_codebase(self, py_file_paths: list[str]) -> dict[str, bool]:
         """Review python code file."""
 
-        py_code = Path(py_file_path).read_text(encoding='utf-8')
-        return self.code_review_func(py_code, self.config)
+        py_codes = [Path(py_file_path).read_text(encoding='utf-8') for py_file_path in py_file_paths]
+        return self.code_review_func(py_codes, self.config)
 
-    def review_codes(self, code_path: str) -> dict[dict[str, bool]]:
+    def review_codes(self, code_path: str) -> dict[str, bool]:
         """Review code in code_path (directory or file)."""
 
         if code_path.endswith('.py'):
-            py_files = [code_path]
+            py_file_paths = [code_path]
         else:
-            py_files = glob.glob('**/*.py', recursive=True)
+            py_file_paths = glob.glob('**/*.py', recursive=True)
 
-        code_review_results = {py_file_path: self._review_py_file(py_file_path)
-                               for py_file_path in py_files}
+        code_review_results = self._review_codebase(py_file_paths)
         return code_review_results
 
     def run_test(self) -> None:

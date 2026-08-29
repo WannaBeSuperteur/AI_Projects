@@ -1,5 +1,4 @@
 import ast
-from pathlib import Path
 
 from collections import defaultdict
 from operator import itemgetter
@@ -17,6 +16,20 @@ TYPE_TO_NAME = {
     ast.Constant: 'constant',
     ast.Attribute: 'attribute'
 }
+
+
+def parse_function_def(node: ast.AST) -> dict:
+    args_info = defaultdict(list)
+
+    args = node.args.args
+    defaults = node.args.defaults
+    padded_defaults = [None] * (len(args) - len(defaults)) + list(defaults)
+
+    for arg, default in zip(args, padded_defaults):
+        args_info['name'].append(arg.arg)
+        args_info['annot'].append(ast.unparse(arg.annotation) if arg.annotation else None)
+        args_info['default'].append(default.value if default else None)
+    return {'name': node.name, 'args': dict(args_info)}
 
 
 def find_unused_variables(source_code):
@@ -53,17 +66,7 @@ def find_unused_variables(source_code):
             parse_result['info'] = {'mod': mod, 'import_names': import_names}
 
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            args_info = defaultdict(list)
-
-            args = node.args.args
-            defaults = node.args.defaults
-            padded_defaults = [None] * (len(args) - len(defaults)) + list(defaults)
-
-            for arg, default in zip(args, padded_defaults):
-                args_info['name'].append(arg.arg)
-                args_info['annot'].append(ast.unparse(arg.annotation) if arg.annotation else None)
-                args_info['default'].append(default.value if default else None)
-            parse_result['info'] = {'name': node.name, 'args': dict(args_info)}
+            parse_result['info'] = parse_function_def(node)
 
         elif isinstance(node, ast.Call):
             func_name = ast.unparse(node.func)
@@ -94,9 +97,4 @@ def find_unused_variables(source_code):
 
     for parse_result in parse_results:
         print(parse_result)
-
-
-if __name__ == '__main__':
-    py_code = Path("D:/AI_Projects/2026_08_28_OhLoRA_Code_Assistant/code_reviewer/code_reviewer.py").read_text(encoding='utf-8')
-    find_unused_variables(py_code)
 
