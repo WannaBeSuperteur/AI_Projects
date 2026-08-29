@@ -1,5 +1,5 @@
 
-class DefaultCodeReviewer:
+class DefaultCodeChecker:
     def __init__(self, py_code: str, config: dict):
         self.py_code = py_code
         self.max_line_length = config.get('max_line_length')
@@ -49,6 +49,6 @@ class DefaultCodeReviewer:
 def default_code_review_func(py_code: str, config: dict) -> dict[str, bool]:
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
-    default_code_reviewer = DefaultCodeReviewer(py_code=py_code, config=config)
-    return default_code_reviewer.run_code_review()
+    default_code_checker = DefaultCodeChecker(py_code=py_code, config=config)
+    return default_code_checker.run_code_review()
 
