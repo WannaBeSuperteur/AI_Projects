@@ -6,10 +6,12 @@ from operator import itemgetter
 
 
 TYPE_TO_NAME = {
-    ast.ClassDef: 'class',
     ast.Import: 'import',
     ast.ImportFrom: 'import_from',
+    ast.ClassDef: 'class',
     ast.FunctionDef: 'function_def',
+    ast.AsyncFunctionDef: 'async_function_def',
+    ast.If: 'if',
     ast.Call: 'call',
     ast.Name: 'name',
     ast.Constant: 'constant',
@@ -50,7 +52,7 @@ def find_unused_variables(source_code):
                             for alias in node.names]
             parse_result['info'] = {'mod': mod, 'import_names': import_names}
 
-        elif isinstance(node, ast.FunctionDef):
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             args_info = defaultdict(list)
 
             args = node.args.args
@@ -77,6 +79,13 @@ def find_unused_variables(source_code):
 
         elif isinstance(node, ast.Attribute):
             parse_result['info'] = {'attr': node.attr}
+
+        elif isinstance(node, ast.If):
+            parse_result['if'] = {'test': ast.unparse(node.test)}
+
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            if docstring := ast.get_docstring(node):
+                parse_result['docstring'] = docstring
 
         parse_results.append(parse_result)
 
