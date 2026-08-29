@@ -1,10 +1,61 @@
 
+from ast_utils import parse_py_code
+
+
 class DefaultCodeChecker:
     def __init__(self, py_codes: dict[str, str], config: dict):
         self.py_codes = py_codes
         self.max_line_length = config.get('max_line_length')
         self.max_func_lines = config.get('max_func_lines')
         self.text_embedding_model = config.get('text_embedding_model')
+
+    def run_code_review(self) -> dict[str, bool]:
+        pass
+
+
+class PythonBasicsChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+
+
+class PythonBasicConventionChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+
+
+class PythonSimplificationChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+
+
+class PythonOtherPythonicChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+
+
+class PythonExceptionsChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+
+
+class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+
+
+class PyTorchChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+
+
+class EntireCodeChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict):
+        super().__init__(py_codes, config)
+        self._parse_codes()
+
+    def _parse_codes(self):
+        self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
+                                for py_file_path, py_code in self.py_codes.items()}
 
     def _check_python_basics(self) -> dict[str, bool]:
         raise NotImplementedError
@@ -49,6 +100,6 @@ class DefaultCodeChecker:
 def default_code_review_func(py_codes: dict[str, str], config: dict) -> dict[str, bool]:
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
-    default_code_checker = DefaultCodeChecker(py_codes=py_codes, config=config)
+    default_code_checker = EntireCodeChecker(py_codes=py_codes, config=config)
     return default_code_checker.run_code_review()
 

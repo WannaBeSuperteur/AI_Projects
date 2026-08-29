@@ -2,6 +2,11 @@
 import glob
 from pathlib import Path
 
+from code_review_items import default_code_review_func
+
+
+TEST_CASES_DIR = 'test_cases'
+
 
 class CodeReviewer:
     def __init__(self,
@@ -23,7 +28,8 @@ class CodeReviewer:
     def _review_codebase(self, py_file_paths: list[str]) -> dict[str, bool]:
         """Review python code file."""
 
-        py_codes = [Path(py_file_path).read_text(encoding='utf-8') for py_file_path in py_file_paths]
+        py_codes = {py_file_path: Path(py_file_path).read_text(encoding='utf-8')
+                    for py_file_path in py_file_paths}
         return self.code_review_func(py_codes, self.config)
 
     def review_codes(self, code_path: str) -> dict[str, bool]:
@@ -44,8 +50,8 @@ class CodeReviewer:
         successful = 0
 
         for test_case in self.test_cases:
-            for code_to_test, expected_result in test_case.items():
-                code_review_result = self.code_review_func(code_to_test, self.config)
+            for codebase_to_test, expected_result in test_case.items():
+                code_review_result = self.code_review_func(codebase_to_test, self.config)
                 if code_review_result == expected_result:
                     successful += 1
 
@@ -58,5 +64,6 @@ class CodeReviewer:
 
 
 if __name__ == '__main__':
-    code_reviewer = CodeReviewer(code_review_func=None, text_embedding_models=None)
+    code_reviewer = CodeReviewer(code_review_func=default_code_review_func, text_embedding_models=None)
+    code_reviewer.review_codes(TEST_CASES_DIR)
     print(code_reviewer)

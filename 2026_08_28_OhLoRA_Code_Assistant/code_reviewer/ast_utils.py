@@ -32,7 +32,7 @@ def parse_function_def(node: ast.AST) -> dict:
     return {'name': node.name, 'args': dict(args_info)}
 
 
-def find_unused_variables(source_code):
+def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
     tree = ast.parse(source_code)
     parse_results = []
 
@@ -45,7 +45,6 @@ def find_unused_variables(source_code):
         node_type = type(node)
         type_name = TYPE_TO_NAME.get(node_type, None)
         if type_name is None:
-            print(node_type, type_name)
             continue
 
         parse_result: dict = {'line': line_no, 'col': col_offset, 'type_name': type_name}
@@ -95,6 +94,9 @@ def find_unused_variables(source_code):
     parse_results.sort(key=itemgetter('col'))
     parse_results.sort(key=itemgetter('line'))
 
-    for parse_result in parse_results:
-        print(parse_result)
+    if verbose:
+        for parse_result in parse_results:
+            print(parse_result)
+
+    return parse_results
 
