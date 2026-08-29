@@ -1,7 +1,10 @@
 
 class DefaultCodeReviewer:
-    def __init__(self, py_code: str):
+    def __init__(self, py_code: str, config: dict):
         self.py_code = py_code
+        self.max_line_length = config.get('max_line_length')
+        self.max_func_lines = config.get('max_func_lines')
+        self.text_embedding_model = config.get('text_embedding_model')
 
     def _check_python_basics(self) -> dict[str, bool]:
         raise NotImplementedError
@@ -43,9 +46,9 @@ class DefaultCodeReviewer:
         return final_result
 
 
-def default_code_review_func(py_code: str) -> dict[str, bool]:
+def default_code_review_func(py_code: str, config: dict) -> dict[str, bool]:
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
-    default_code_reviewer = DefaultCodeReviewer(py_code=py_code)
+    default_code_reviewer = DefaultCodeReviewer(py_code=py_code, config=config)
     return default_code_reviewer.run_code_review()
 

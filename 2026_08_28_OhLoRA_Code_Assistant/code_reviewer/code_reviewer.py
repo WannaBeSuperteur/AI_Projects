@@ -11,18 +11,20 @@ class CodeReviewer:
                  max_line_length: int = 120,
                  max_func_lines: int = 100):
 
-        self.max_line_length = max_line_length
-        self.max_func_lines = max_func_lines
+        self.config = {
+            'max_line_length': max_line_length,
+            'max_func_lines': max_func_lines,
+            'text_embedding_model': text_embedding_model
+        }
 
         self.code_review_func = code_review_func
-        self.text_embedding_model = text_embedding_model
         self.test_cases = test_cases
 
     def _review_py_file(self, py_file_path: str) -> dict[str, bool]:
         """Review python code file."""
 
         py_code = Path(py_file_path).read_text(encoding='utf-8')
-        return self.code_review_func(py_code, self.text_embedding_model)
+        return self.code_review_func(py_code, self.config)
 
     def review_codes(self, code_path: str) -> dict[dict[str, bool]]:
         """Review code in code_path (directory or file)."""
@@ -44,7 +46,7 @@ class CodeReviewer:
 
         for test_case in self.test_cases:
             for code_to_test, expected_result in test_case.items():
-                code_review_result = self.code_review_func(code_to_test, self.text_embedding_model)
+                code_review_result = self.code_review_func(code_to_test, self.config)
                 if code_review_result == expected_result:
                     successful += 1
 
