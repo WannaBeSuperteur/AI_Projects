@@ -32,13 +32,15 @@ class CodeReviewer:
                     for py_file_path in py_file_paths}
         return self.code_review_func(py_codes, self.config)
 
-    def review_codes(self, code_path: str) -> dict[str, bool]:
+    def review_codes(self, code_path: str, except_path: str | None = None) -> dict[str, bool]:
         """Review code in code_path (directory or file)."""
 
         if code_path.endswith('.py'):
             py_file_paths = [code_path]
         else:
             py_file_paths = glob.glob('**/*.py', recursive=True)
+            if except_path is not None:
+                py_file_paths = [p for p in py_file_paths if not p.startswith(except_path)]
 
         code_review_results = self._review_codebase(py_file_paths)
         return code_review_results
