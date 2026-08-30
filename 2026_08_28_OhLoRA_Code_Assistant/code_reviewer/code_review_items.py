@@ -10,7 +10,7 @@ class DefaultCodeChecker:
         self.text_embedding_model = config.get('text_embedding_model')
 
     def run_code_review(self) -> dict[str, bool]:
-        pass
+        raise NotImplementedError
 
 
 class PythonBasicsChecker(DefaultCodeChecker):
