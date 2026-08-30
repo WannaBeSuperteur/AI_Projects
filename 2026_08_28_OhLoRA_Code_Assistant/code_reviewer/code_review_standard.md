@@ -88,6 +88,10 @@ if not sentence == '':
 result = a['b'] or a['c']
 ```
 
+* 기존 배열의 원소를 하나씩 추가하는 대신 `extend` 함수 사용
+* 개수 세기에 `count` 함수 사용
+* 인덱스 반환에 `index` 함수 사용
+
 ### 1-4. 그 외 Pythonic 한 프로그래밍
 
 * 언패킹 관련
