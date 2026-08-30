@@ -1,4 +1,6 @@
 
+import re
+
 from collections import defaultdict
 from ast_utils import parse_py_code
 
@@ -16,13 +18,19 @@ def convert_to_human_friendly_review(final_result_dict: dict[dict[list]]) -> str
 
             result = "\n".join(f"   - line {item['line']} 에 있는 {item['name']}"
                                for item in final_result_dict[py_file_path][info_key])
-            result = result or '   - (발견된 사항 없음)'
-            human_friendly_review += f' - 함수: {human_friendly_info_key}\n{result}\n\n'
+            if result:
+                human_friendly_review += f' - 함수: {human_friendly_info_key}\n{result}\n\n'
 
-        human_friendly_review = human_friendly_review or ' - (발견된 사항 없음)'
-        final_review += f'파일: {py_file_path}\n{human_friendly_review}'
+        if human_friendly_review:
+            final_review += f'파일: {py_file_path}\n{human_friendly_review}'
 
     return final_review
+
+
+def ellipse_str(original_str: str) -> str:
+    if len(original_str) >= 40:
+        return f'{original_str[:16]}  ...  {original_str[-16:]}'
+    return original_str
 
 
 class DefaultCodeChecker:
@@ -30,7 +38,7 @@ class DefaultCodeChecker:
         self.py_codes = py_codes
         self.max_line_length = config.get('max_line_length')
         self.max_func_lines = config.get('max_func_lines')
-        self.text_embedding_model = config.get('text_embedding_model')
+        self.text_embedding_models = config.get('text_embedding_models')
 
     def _parse_codes(self):
         self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
@@ -158,9 +166,45 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_unnecessary_prints(self) -> str:
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+        re_logger = '^logger\\.(debug|info|warning|error|critical)\\(.*\\)$'
+        re_print = '^print\\(.*\\)$'
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            py_code_lines = py_code.split('\n')
+            logger_loggings = [(line_no + 1, line) for line_no, line
+                               in enumerate(py_code_lines) if re.match(re_logger, line)]
+            prints = [(line_no + 1, line) for line_no, line
+                      in enumerate(py_code_lines) if re.match(re_print, line)]
+
+            print_types = (
+                (logger_loggings, 'logging'),
+                (prints, 'print')
+            )
+
+            for print_collection, print_type in print_types:
+                for line_no, line in print_collection:
+                    if text_embedding_model.get_prob(line) >= 0.5:
+                        func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                        final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line),
+                                                                           'type': print_type,
+                                                                           'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
-        print(check_unused_review)
+        check_unnecessary_prints = self._check_unnecessary_prints()
+        print(check_unnecessary_prints)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):

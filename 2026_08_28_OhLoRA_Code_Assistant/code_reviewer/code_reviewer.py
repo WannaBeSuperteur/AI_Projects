@@ -5,7 +5,7 @@ from pathlib import Path
 from code_review_items import default_code_review_func
 
 
-TEST_CASES_DIR = 'test_cases'
+TEST_CASES_DIR = 'test_cases/tc01_02.py'
 
 
 class CodeReviewer:
@@ -19,7 +19,7 @@ class CodeReviewer:
         self.config = {
             'max_line_length': max_line_length,
             'max_func_lines': max_func_lines,
-            'text_embedding_model': text_embedding_models
+            'text_embedding_models': text_embedding_models
         }
 
         self.code_review_func = code_review_func
@@ -65,7 +65,21 @@ class CodeReviewer:
         print(f'success ratio : {ratio}')
 
 
+# TODO: remove for production
+class TempTextEmbeddingModel:
+    def __init__(self):
+        pass
+
+    def get_similarity(self, text1: str, text2: str) -> float:
+        return 0.0
+
+    def get_prob(self, text) -> float:
+        return 0.7
+
+
 if __name__ == '__main__':
-    code_reviewer = CodeReviewer(code_review_func=default_code_review_func, text_embedding_models=None)
+    text_embeddimg_models = {''}
+    code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
+                                 text_embedding_models={'default': TempTextEmbeddingModel()})
     code_reviewer.review_codes(TEST_CASES_DIR)
     print(code_reviewer)
