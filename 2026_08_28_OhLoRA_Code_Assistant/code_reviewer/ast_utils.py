@@ -80,7 +80,8 @@ def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
             parse_result['info'] = {'func_name': func_name, 'args': args, 'kwargs': kwargs}
 
         elif isinstance(node, ast.Name):
-            parse_result['info'] = {'name': node.id}
+            ctx_type = type(node.ctx).__name__
+            parse_result['info'] = {'name': node.id, 'ctx': ctx_type}
 
         elif isinstance(node, ast.Constant):
             parse_result['info'] = {'value': node.value, 'type': type(node.value)}
