@@ -29,7 +29,13 @@ def parse_function_def(node: ast.AST) -> dict:
         args_info['name'].append(arg.arg)
         args_info['annot'].append(ast.unparse(arg.annotation) if arg.annotation else None)
         args_info['default'].append(default.value if default else None)
-    return {'name': node.name, 'args': dict(args_info)}
+
+    return {
+        'name': node.name,
+        'args': dict(args_info),
+        'start_line': getattr(node, 'lineno', None),
+        'end_line': getattr(node, 'end_lineno', None)
+    }
 
 
 def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
