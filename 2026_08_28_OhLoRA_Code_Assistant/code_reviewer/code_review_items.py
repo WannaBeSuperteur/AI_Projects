@@ -114,6 +114,21 @@ class DefaultCodeChecker:
 
         return defined_info, used_info
 
+    def _get_constants(self, py_file_path: str, parsed_py_code: list[dict]) -> dict[list]:
+        constant_info = defaultdict(list)
+
+        for item in parsed_py_code:
+            line_no = item['line']
+
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+            info_key = func_name or ''
+
+            if item['type_name'] == 'constant':
+                constant_with_type = {'name': item['info']['value'], 'type': 'constant', 'line': line_no}
+                constant_info[info_key].append(constant_with_type)
+
+        return constant_info
+
     def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
 
@@ -210,11 +225,35 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
     def _check_duplicates(self):
         final_result_dict = defaultdict(dict)
+        defined_constant_names = set()
+        repeated_long_strs = set()
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            for item in parsed_py_code:
-                line_no = item['line']
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            defined_info, used_info = self._get_definitions_and_usages(py_file_path, parsed_py_code)
+            constant_value_info = self._get_constants(py_file_path, parsed_py_code)
+
+            defind_constants_info = {func: [info for info in info_list
+                                            if info['name'].isupper() and info['type'] != 'import']
+                                     for func, info_list in defined_info.items()}
+            long_constant_value_info = {func: [info for info in info_list if len(str(info['name'])) >= 8]
+                                        for func, info_list in constant_value_info.items()}
+
+            for func_name, info_list in defind_constants_info.items():
+                for info in info_list:
+                    if info['name'] in defined_constant_names:
+                        final_result_dict[py_file_path][func_name].append(info)
+                    defined_constant_names.add(info['name'])
+
+            for func_name, info_list in long_constant_value_info.items():
+                for info in info_list:
+                    if info['name'] in repeated_long_strs:
+                        final_result_dict[py_file_path][func_name].append(info)
+                    repeated_long_strs.add(info['name'])
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
