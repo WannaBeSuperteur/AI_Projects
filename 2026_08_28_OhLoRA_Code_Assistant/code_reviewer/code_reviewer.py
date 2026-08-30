@@ -38,7 +38,7 @@ class CodeReviewer:
         if code_path.endswith('.py'):
             py_file_paths = [code_path]
         else:
-            py_file_paths = glob.glob('**/*.py', recursive=True)
+            py_file_paths = glob.glob(f'{code_path}/**/*.py', recursive=True)
             if except_path is not None:
                 py_file_paths = [p for p in py_file_paths if not p.startswith(except_path)]
 
