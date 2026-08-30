@@ -112,6 +112,7 @@ result = a['b'] or a['c']
   * 파일의 경로명 조건을 이용한 리스트 추출 시 `glob` 사용
 * 🔮 함수의 인자 간소화가 가능한 경우 간소화해야 함 (예: `value_1, value_2, value_3` → dataclass 기반 `values`)
 * attribute 접근 방식으로 `getattr` 사용 권장
+* `re.sub` 등 정규표현식 사용 시 표현식 string을 `r'...'` 형식으로 사용하도록 함
 
 ### 1-5. 예외 및 오류 처리
 
