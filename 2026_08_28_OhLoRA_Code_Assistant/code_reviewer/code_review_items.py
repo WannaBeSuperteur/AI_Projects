@@ -9,6 +9,10 @@ class DefaultCodeChecker:
         self.max_func_lines = config.get('max_func_lines')
         self.text_embedding_model = config.get('text_embedding_model')
 
+    def _parse_codes(self):
+        self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
+                                for py_file_path, py_code in self.py_codes.items()}
+
     def run_code_review(self) -> dict[str, bool]:
         raise NotImplementedError
 
@@ -16,42 +20,48 @@ class DefaultCodeChecker:
 class PythonBasicsChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
+        self._parse_codes()
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
+        self._parse_codes()
 
 
 class PythonSimplificationChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
+        self._parse_codes()
 
 
 class PythonOtherPythonicChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
+        self._parse_codes()
 
 
 class PythonExceptionsChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
+        self._parse_codes()
 
 
 class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
+        self._parse_codes()
 
 
 class PyTorchChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
+        self._parse_codes()
 
 
 class EntireCodeChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
-        self._parse_codes()
 
         self.python_basics_checker = PythonBasicsChecker(py_codes, config)
         self.python_basic_convention_checker = PythonBasicConventionChecker(py_codes, config)
@@ -60,10 +70,6 @@ class EntireCodeChecker(DefaultCodeChecker):
         self.python_exceptions_checker = PythonExceptionsChecker(py_codes, config)
         self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config)
         self.pytorch_checker = PyTorchChecker(py_codes, config)
-
-    def _parse_codes(self):
-        self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
-                                for py_file_path, py_code in self.py_codes.items()}
 
     def _check_python_basics(self) -> dict[str, bool]:
         return self.python_basics_checker.run_code_review()
