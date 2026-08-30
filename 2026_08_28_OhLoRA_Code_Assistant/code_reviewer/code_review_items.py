@@ -6,6 +6,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 from collections import defaultdict
 from ast_utils import parse_py_code
 
+# TODO: iou계산시 빈 line제거 + iou->longest common subsequence (or 연속 8+ lines 동일) + python키워드 대체 안함 + re.sub 안티패턴제거
+#       line 413-423 리팩토링 (통합)
+
 
 def simplify_code(original_code: str) -> str:
     result = re.sub('\\d+(?:\\.\\d+)?', '0', original_code)
@@ -381,12 +384,54 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_similar_func_args(self):
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+        all_funcion_defs_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
+            function_defs_dict = defaultdict(list)
+
+            for item in function_defs:
+                print(item)
+                func_args = item['info']['args']
+                if func_args:
+                    for name in func_args['name']:
+                        function_defs_dict[''].append({'name': name,
+                                                       'type': 'arg',
+                                                       'line': item['line']})
+
+            all_funcion_defs_dict[py_file_path] = function_defs_dict
+        all_similar_arg_name_pairs = self._find_all_similar_text_pairs(text_embedding_model, all_funcion_defs_dict)
+
+        for info in all_similar_arg_name_pairs:
+            line_no = info['line']
+            py_file_path = info['py_file_path']
+
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+            final_result_dict[py_file_path][func_name].append({'name': info['name'],
+                                                               'type': 'name',
+                                                               'line': info['line']})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
         check_duplicates_review = self._check_duplicates()
-        print(check_duplicates_review)
         check_similar_variables_review = self._check_similar_variables()
+        check_similar_func_args_review = self._check_similar_func_args()
+        print(check_similar_func_args_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
