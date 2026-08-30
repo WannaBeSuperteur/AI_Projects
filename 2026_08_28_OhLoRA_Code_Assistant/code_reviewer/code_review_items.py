@@ -3,6 +3,28 @@ from collections import defaultdict
 from ast_utils import parse_py_code
 
 
+def convert_to_human_friendly_review(final_result_dict: dict[dict[list]]) -> str:
+    """Convert json-like format review result into human-friendly review style."""
+
+    final_review = ''
+
+    for py_file_path in final_result_dict:
+        human_friendly_review = ''
+
+        for info_key in final_result_dict[py_file_path].keys():
+            human_friendly_info_key = info_key or '(최상위 레벨)'
+
+            result = "\n".join(f"   - line {item['line']} 에 있는 {item['name']}"
+                               for item in final_result_dict[py_file_path][info_key])
+            result = result or '   - (발견된 사항 없음)'
+            human_friendly_review += f' - 함수: {human_friendly_info_key}\n{result}\n\n'
+
+        human_friendly_review = human_friendly_review or ' - (발견된 사항 없음)'
+        final_review += f'파일: {py_file_path}\n{human_friendly_review}'
+
+    return final_review
+
+
 class DefaultCodeChecker:
     def __init__(self, py_codes: dict[str, str], config: dict):
         self.py_codes = py_codes
@@ -45,6 +67,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self._get_function_name_by_line()
 
     def check_unused(self) -> str:
+        final_result_dict = defaultdict(dict)
+
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             defined_info = defaultdict(list)
             used_info = defaultdict(list)
@@ -86,7 +110,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                             'line': line_no} for arg_name in arg_names]
                     defined_info[info_key].extend(arg_names_with_type)
 
-            print(py_file_path)
+            all_unused_list = defaultdict(list)
+
             for k in list(set(list(defined_info.keys()) + list(used_info.keys()))):
                 defined_info_list = dict(defined_info).get(k, [])
                 used_names = dict(used_info).get(k, [])
@@ -96,19 +121,15 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 used_set = set(used_names)
                 unused_set = defined_set - used_set
                 unused_list = [item for item in defined_info_list if item['name'] in unused_set]
+                all_unused_list[k].extend(unused_list)
 
-                print('')
-                print('key     :', k)
-                print('defined :', defined_info_list or None)
-                print('used    :', dict(used_info).get(k) or None)
-                print('unused  :', unused_list)
+            final_result_dict[py_file_path] = dict(all_unused_list)
+
+        return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
-        for k, v in self.parsed_py_codes.items():
-            print(k)
-            for code in v:
-                print(code)
-        self.check_unused()
+        check_unused_review = self.check_unused()
+        print(check_unused_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
