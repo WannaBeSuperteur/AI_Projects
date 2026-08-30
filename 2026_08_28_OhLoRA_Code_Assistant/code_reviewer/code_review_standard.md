@@ -82,6 +82,12 @@ if sentence == '':
 if not sentence == '':
 ```
 
+* `a['b']`가 None이면 `a['c']`를 사용한다는 문법은 아래와 같이 간소화
+
+```python
+result = a['b'] or a['c']
+```
+
 ### 1-4. 그 외 Pythonic 한 프로그래밍
 
 * 언패킹 관련
