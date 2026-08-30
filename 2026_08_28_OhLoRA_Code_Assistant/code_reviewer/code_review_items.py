@@ -1,6 +1,8 @@
 
 import re
 
+from sklearn.metrics.pairwise import cosine_similarity
+
 from collections import defaultdict
 from ast_utils import parse_py_code
 
@@ -256,11 +258,68 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: dict[dict[list]]) -> list[dict]:
+        text_embedding_logs = []
+        all_similar_text_pairs = []
+
+        def check_text_similar_with_prevs(info, py_file_path):
+            embedding_vector = text_embedding_model.get_embedding(info['name'])
+            info['embedding'] = embedding_vector
+            info['py_file_path'] = py_file_path
+
+            for log in text_embedding_logs:
+                cos_sim = cosine_similarity(log['embedding'], embedding_vector)
+                if log['name'] != info['name'] and cos_sim >= 0.95:
+                    all_similar_text_pairs.append(info)
+                    break
+            text_embedding_logs.append(info)
+
+        for py_file_path in value_dict.keys():
+            for func_name, info_list in value_dict[py_file_path].items():
+                for info in info_list:
+                    check_text_similar_with_prevs(info, py_file_path)
+
+        return all_similar_text_pairs
+
+    def _check_similar_variables(self):
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+        all_variables_dict = defaultdict(dict)
+
+        for py_file_path in self.parsed_py_codes.keys():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            defined_info, _ = self._get_definitions_and_usages(py_file_path, parsed_py_code)
+
+            variable_info = {func: [info for info in info_list if info['type'] == 'name']
+                                    for func, info_list in defined_info.items()}
+            all_variables_dict[py_file_path] = variable_info
+
+        all_similar_text_pairs = self._find_all_similar_text_pairs(text_embedding_model, all_variables_dict)
+
+        for info in all_similar_text_pairs:
+            line_no = info['line']
+            py_file_path = info['py_file_path']
+
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+            final_result_dict[py_file_path][func_name].append({'name': info['name'],
+                                                               'type': 'name',
+                                                               'line': info['line']})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
         check_duplicates_review = self._check_duplicates()
-        print(check_duplicates_review)
+        check_similar_variables_review = self._check_similar_variables()
+        print(check_similar_variables_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):

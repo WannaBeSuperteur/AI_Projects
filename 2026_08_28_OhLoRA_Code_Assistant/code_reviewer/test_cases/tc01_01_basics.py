@@ -24,6 +24,7 @@ def abc():
 
 
 nparray = np.array([0.1, 0.2, 0.3])
+nparray2 = np.array([0.1, 0.2, 0.3])
 
 
 def similar_func1(similar: float, same: float, unused_arg: str):

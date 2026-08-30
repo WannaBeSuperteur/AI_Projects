@@ -2,6 +2,8 @@
 import glob
 from pathlib import Path
 
+import numpy as np
+
 from code_review_items import default_code_review_func
 
 
@@ -77,6 +79,9 @@ class TempTextEmbeddingModel:
 
     def get_prob(self, text) -> float:
         return 0.7
+
+    def get_embedding(self, text):
+        return np.array([[1.0, 0.0, -0.5, 1.4, 0.6, 0.7]])
 
 
 if __name__ == '__main__':
