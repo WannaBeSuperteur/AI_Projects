@@ -1,6 +1,8 @@
 TEST_DUPLICATED = 10
 TEST_STR = 'dddd abbbcccccddddd'
 
+from tc01_01_basics import IMPORT_NUM, imported_function, imported_value, imported_but_unused_value
+
 
 def similar_func3(similar_value: int, same_value: int, unused_arg: str):
     print(similar_value, same_value)
@@ -12,3 +14,7 @@ def similar_func3(similar_value: int, same_value: int, unused_arg: str):
 def get_current_version():
     return 'v1.2.7'
 
+
+print(IMPORT_NUM)
+imported_function()
+print(imported_value)

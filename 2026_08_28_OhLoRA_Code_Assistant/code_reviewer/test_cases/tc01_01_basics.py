@@ -6,6 +6,7 @@ import os
 
 unused_variable = 123
 TEST_DUPLICATED = 10
+IMPORT_NUM = 0
 
 
 def unused_function():
@@ -61,6 +62,15 @@ def check_single_responsibility():
 python_code_no = 300
 python_code_num = 300
 test = python_code_no + python_code_num
+
+
+def imported_function():
+    print('do not use anti-patterns')
+
+
+imported_value = 'import me'
+imported_but_unused_value = 'why do you want to import me'
+
 
 # print(111)
 # if a > 3:

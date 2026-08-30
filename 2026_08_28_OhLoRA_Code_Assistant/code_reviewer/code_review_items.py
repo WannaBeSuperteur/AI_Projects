@@ -66,8 +66,31 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
-    def check_unused(self) -> str:
+    def _delete_imported_review_items(self, file_name_include: str, item_name: str | None):
+        for py_file_path in list(self.final_result_dict.keys()):
+            file_name_format = f'{file_name_include}.py'
+            if not py_file_path.endswith(file_name_format):
+                continue
+
+            if item_name is None:  # import ...
+                del self.final_result_dict[py_file_path]
+            elif item_name == '*':  # from ... import *
+                del self.final_result_dict[py_file_path]
+            else:  # from ... import ...
+                self.final_result_dict[py_file_path][''] = [item for item in self.final_result_dict[py_file_path]['']
+                                                            if item['name'] != item_name]
+
+    def _mark_used_as_imported(self):
+        for py_file_path, import_info in self.imported_dict.items():
+            for info in import_info:
+                if info['from'] is not None:  # from ... import ...
+                    self._delete_imported_review_items(file_name_include=info['from'], item_name=info['name'])
+                else:
+                    self._delete_imported_review_items(file_name_include=info['name'], item_name=None)
+
+    def _check_unused(self) -> str:
         final_result_dict = defaultdict(dict)
+        imported_dict = defaultdict(list)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             defined_info = defaultdict(list)
@@ -82,12 +105,15 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 info_key = func_name or ''
                 info_key_for_func_def = func_name_for_func_def or ''
 
-                if item['type_name'] == 'import':
+                if item['type_name'] in ['import', 'import_from']:
                     import_infos = [info.get('as_name') or info['name'] for info in item['info']['import_names']]
                     import_infos_with_type = [{'name': info,
                                                'type': 'import',
                                                'line': line_no} for info in import_infos]
                     defined_info[info_key].extend(import_infos_with_type)
+
+                    imported_dict[py_file_path].extend([{'from': item['info'].get('mod', None), 'name': info['name']}
+                                                        for info in import_infos_with_type])
 
                 elif item['type_name'] == 'name':
                     name = item['info']['name']
@@ -125,10 +151,20 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             final_result_dict[py_file_path] = dict(all_unused_list)
 
+        self.final_result_dict = final_result_dict
+        self.imported_dict = imported_dict
+
+        print(dict(final_result_dict))
+        print('=========')
+        print(dict(imported_dict))
+        print('=========')
+        self._mark_used_as_imported()
+        print(dict(final_result_dict))
+
         return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
-        check_unused_review = self.check_unused()
+        check_unused_review = self._check_unused()
         print(check_unused_review)
 
 
