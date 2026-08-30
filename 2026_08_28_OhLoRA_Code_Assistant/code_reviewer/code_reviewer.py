@@ -12,7 +12,7 @@ class CodeReviewer:
     def __init__(self,
                  code_review_func,
                  text_embedding_models: dict | None = None,
-                 test_cases: list[dict[str, dict[str, bool]]] | None = None,
+                 test_cases: list[dict[str, dict[str, str]]] | None = None,
                  max_line_length: int = 120,
                  max_func_lines: int = 100):
 
@@ -25,14 +25,14 @@ class CodeReviewer:
         self.code_review_func = code_review_func
         self.test_cases = test_cases
 
-    def _review_codebase(self, py_file_paths: list[str]) -> dict[str, bool]:
+    def _review_codebase(self, py_file_paths: list[str]) -> dict[str, str]:
         """Review python code file."""
 
         py_codes = {py_file_path: Path(py_file_path).read_text(encoding='utf-8')
                     for py_file_path in py_file_paths}
         return self.code_review_func(py_codes, self.config)
 
-    def review_codes(self, code_path: str, except_path: str | None = None) -> dict[str, bool]:
+    def review_codes(self, code_path: str, except_path: str | None = None) -> dict[str, str]:
         """Review code in code_path (directory or file)."""
 
         if code_path.endswith('.py'):

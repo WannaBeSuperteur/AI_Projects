@@ -28,7 +28,7 @@ def parse_function_def(node: ast.AST) -> dict:
     for arg, default in zip(args, padded_defaults):
         args_info['name'].append(arg.arg)
         args_info['annot'].append(ast.unparse(arg.annotation) if arg.annotation else None)
-        args_info['default'].append(default.value if default else None)
+        args_info['default'].append(getattr(default, 'value', None) if default else None)
 
     return {
         'name': node.name,

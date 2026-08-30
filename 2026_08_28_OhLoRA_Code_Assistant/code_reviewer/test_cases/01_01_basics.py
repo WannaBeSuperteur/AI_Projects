@@ -17,8 +17,12 @@ logger = logging.getLogger()
 logger.info("3335555")
 a = 300
 
+
 def abc():
     common_value = 'dddd abbbcccccddddd'
+
+
+nparray = np.array([0.1, 0.2, 0.3])
 
 
 def similar_func1(similar: float, same: float, unused_arg: str):
@@ -38,6 +42,14 @@ def similar_func2(similar_: int, same: int, unused_arg: str):
 def get_current_version():
     return 'v1.2.6'
 
+
+default_version = 'v1.0.0'
+
+
+def get_current_ver(version=default_version):
+    return version
+
+
 next_level = get_current_version()
 
 
@@ -48,6 +60,7 @@ def check_single_responsibility():
 
 python_code_no = 300
 python_code_num = 300
+test = python_code_no + python_code_num
 
 # print(111)
 # if a > 3:

@@ -1,4 +1,5 @@
 
+from collections import defaultdict
 from ast_utils import parse_py_code
 
 
@@ -13,7 +14,27 @@ class DefaultCodeChecker:
         self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
                                 for py_file_path, py_code in self.py_codes.items()}
 
-    def run_code_review(self) -> dict[str, bool]:
+    def _get_function_name_by_line(self):
+        self.function_name_by_line_for_codebase = defaultdict(list)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            if not parsed_py_code:
+                continue
+
+            max_line_no = max(item['line'] for item in parsed_py_code)
+            function_name_by_line = ['' for _ in range(max_line_no + 1)]
+
+            for item in parsed_py_code:
+                if item['type_name'] == 'function_def':
+                    start_line_no = item['info']['start_line']
+                    end_line_no = item['info']['end_line']
+
+                    for i in range(start_line_no, end_line_no + 1):
+                        function_name_by_line[i] = item['info']['name']
+
+            self.function_name_by_line_for_codebase[py_file_path] = function_name_by_line
+
+    def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
 
 
@@ -21,6 +42,73 @@ class PythonBasicsChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
         self._parse_codes()
+        self._get_function_name_by_line()
+
+    def check_unused(self) -> str:
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            defined_info = defaultdict(list)
+            used_info = defaultdict(list)
+
+            for item in parsed_py_code:
+                line_no = item['line']
+
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                func_name_for_func_def = self.function_name_by_line_for_codebase[py_file_path][line_no - 1]
+
+                info_key = func_name or ''
+                info_key_for_func_def = func_name_for_func_def or ''
+
+                if item['type_name'] == 'import':
+                    import_infos = [info.get('as_name') or info['name'] for info in item['info']['import_names']]
+                    import_infos_with_type = [{'name': info,
+                                               'type': 'import',
+                                               'line': line_no} for info in import_infos]
+                    defined_info[info_key].extend(import_infos_with_type)
+
+                elif item['type_name'] == 'name':
+                    name = item['info']['name']
+
+                    if item['info']['ctx'] == 'Store':
+                        defined_info[info_key].append({'name': name,
+                                                       'type': 'name',
+                                                       'line': line_no})
+                    elif item['info']['ctx'] == 'Load':
+                        used_info[info_key_for_func_def].append(item['info']['name'])
+
+                elif item['type_name'] == 'function_def':
+                    defined_info[info_key_for_func_def].append({'name': item['info']['name'],
+                                                                'type': 'func',
+                                                                'line': line_no})
+
+                    arg_names = item['info']['args'].get('name', [])
+                    arg_names_with_type = [{'name': arg_name,
+                                            'type': 'arg',
+                                            'line': line_no} for arg_name in arg_names]
+                    defined_info[info_key].extend(arg_names_with_type)
+
+            print(py_file_path)
+            for k in list(set(list(defined_info.keys()) + list(used_info.keys()))):
+                defined_info_list = dict(defined_info).get(k, [])
+                used_names = dict(used_info).get(k, [])
+                defined_names = [item['name'] for item in defined_info_list]
+
+                defined_set = set(defined_names)
+                used_set = set(used_names)
+                unused_set = defined_set - used_set
+                unused_list = [item for item in defined_info_list if item['name'] in unused_set]
+
+                print('')
+                print('key     :', k)
+                print('defined :', defined_info_list or None)
+                print('used    :', dict(used_info).get(k) or None)
+                print('unused  :', unused_list)
+
+    def run_code_review(self) -> dict[str, str]:
+        for k, v in self.parsed_py_codes.items():
+            print(k)
+            for code in v:
+                print(code)
+        self.check_unused()
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
@@ -71,28 +159,28 @@ class EntireCodeChecker(DefaultCodeChecker):
         self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config)
         self.pytorch_checker = PyTorchChecker(py_codes, config)
 
-    def _check_python_basics(self) -> dict[str, bool]:
+    def _check_python_basics(self) -> dict[str, str]:
         return self.python_basics_checker.run_code_review()
 
-    def _check_basic_convention(self) -> dict[str, bool]:
+    def _check_basic_convention(self) -> dict[str, str]:
         return self.python_basic_convention_checker.run_code_review()
 
-    def _check_simplification(self) -> dict[str, bool]:
+    def _check_simplification(self) -> dict[str, str]:
         return self.python_simplification_checker.run_code_review()
 
-    def _check_other_pythonic(self) -> dict[str, bool]:
+    def _check_other_pythonic(self) -> dict[str, str]:
         return self.python_other_pythonic_checker.run_code_review()
 
-    def _check_exceptions(self) -> dict[str, bool]:
+    def _check_exceptions(self) -> dict[str, str]:
         return self.python_exceptions_checker.run_code_review()
 
-    def _check_cohesiveness_and_class(self) -> dict[str, bool]:
+    def _check_cohesiveness_and_class(self) -> dict[str, str]:
         return self.python_cohesiveness_and_class_checker.run_code_review()
 
-    def _check_pytorch(self) -> dict[str, bool]:
+    def _check_pytorch(self) -> dict[str, str]:
         return self.pytorch_checker.run_code_review()
 
-    def run_code_review(self) -> dict[str, bool]:
+    def run_code_review(self) -> dict[str, str]:
         python_basics_result = self._check_python_basics()
         basic_convention_result = self._check_basic_convention()
         simplification_result = self._check_simplification()
@@ -100,6 +188,21 @@ class EntireCodeChecker(DefaultCodeChecker):
         exceptions_result = self._check_exceptions()
         cohesiveness_and_class_result = self._check_cohesiveness_and_class()
         pytorch_result = self._check_pytorch()
+
+        print('====')
+        print(python_basics_result)
+        print('====')
+        print(basic_convention_result)
+        print('====')
+        print(simplification_result)
+        print('====')
+        print(other_pythonic_result)
+        print('====')
+        print(exceptions_result)
+        print('====')
+        print(cohesiveness_and_class_result)
+        print('====')
+        print(pytorch_result)
 
         final_result = {**python_basics_result,
                         **basic_convention_result,
@@ -111,7 +214,7 @@ class EntireCodeChecker(DefaultCodeChecker):
         return final_result
 
 
-def default_code_review_func(py_codes: dict[str, str], config: dict) -> dict[str, bool]:
+def default_code_review_func(py_codes: dict[str, str], config: dict) -> dict[str, str]:
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
     default_code_checker = EntireCodeChecker(py_codes=py_codes, config=config)
