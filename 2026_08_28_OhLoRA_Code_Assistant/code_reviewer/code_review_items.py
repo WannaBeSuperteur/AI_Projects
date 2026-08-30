@@ -64,6 +64,56 @@ class DefaultCodeChecker:
 
             self.function_name_by_line_for_codebase[py_file_path] = function_name_by_line
 
+    def _get_definitions_and_usages(self, py_file_path: str, parsed_py_code: list[dict],
+                                    imported_dict: dict[list] | None = None) -> tuple[dict[list], dict[list]]:
+
+        defined_info = defaultdict(list)
+        used_info = defaultdict(list)
+
+        for item in parsed_py_code:
+            line_no = item['line']
+
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+            func_name_for_func_def = self.function_name_by_line_for_codebase[py_file_path][line_no - 1]
+
+            info_key = func_name or ''
+            info_key_for_func_def = func_name_for_func_def or ''
+
+            if item['type_name'] in ['import', 'import_from']:
+                import_infos = [info.get('as_name') or info['name'] for info in item['info']['import_names']
+                                if info['name'] != '*']
+                import_infos_with_type = [{'name': info,
+                                           'type': 'import',
+                                           'line': line_no} for info in import_infos]
+                defined_info[info_key].extend(import_infos_with_type)
+
+                if imported_dict is not None:
+                    imported_dict[py_file_path].extend([{'from': item['info'].get('mod', None), 'name': info['name']}
+                                                        for info in import_infos_with_type])
+
+            elif item['type_name'] == 'name':
+                name = item['info']['name']
+
+                if item['info']['ctx'] == 'Store':
+                    defined_info[info_key].append({'name': name,
+                                                   'type': 'name',
+                                                   'line': line_no})
+                elif item['info']['ctx'] == 'Load':
+                    used_info[info_key_for_func_def].append(item['info']['name'])
+
+            elif item['type_name'] == 'function_def':
+                defined_info[info_key_for_func_def].append({'name': item['info']['name'],
+                                                            'type': 'func',
+                                                            'line': line_no})
+
+                arg_names = item['info']['args'].get('name', [])
+                arg_names_with_type = [{'name': arg_name,
+                                        'type': 'arg',
+                                        'line': line_no} for arg_name in arg_names]
+                defined_info[info_key].extend(arg_names_with_type)
+
+        return defined_info, used_info
+
     def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
 
@@ -101,53 +151,10 @@ class PythonBasicsChecker(DefaultCodeChecker):
         imported_dict = defaultdict(list)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            defined_info = defaultdict(list)
-            used_info = defaultdict(list)
-
-            for item in parsed_py_code:
-                line_no = item['line']
-
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-                func_name_for_func_def = self.function_name_by_line_for_codebase[py_file_path][line_no - 1]
-
-                info_key = func_name or ''
-                info_key_for_func_def = func_name_for_func_def or ''
-
-                if item['type_name'] in ['import', 'import_from']:
-                    import_infos = [info.get('as_name') or info['name'] for info in item['info']['import_names']
-                                    if info['name'] != '*']
-                    import_infos_with_type = [{'name': info,
-                                               'type': 'import',
-                                               'line': line_no} for info in import_infos]
-                    defined_info[info_key].extend(import_infos_with_type)
-
-                    imported_dict[py_file_path].extend([{'from': item['info'].get('mod', None), 'name': info['name']}
-                                                        for info in import_infos_with_type])
-
-                elif item['type_name'] == 'name':
-                    name = item['info']['name']
-
-                    if item['info']['ctx'] == 'Store':
-                        defined_info[info_key].append({'name': name,
-                                                       'type': 'name',
-                                                       'line': line_no})
-                    elif item['info']['ctx'] == 'Load':
-                        used_info[info_key_for_func_def].append(item['info']['name'])
-
-                elif item['type_name'] == 'function_def':
-                    defined_info[info_key_for_func_def].append({'name': item['info']['name'],
-                                                                'type': 'func',
-                                                                'line': line_no})
-
-                    arg_names = item['info']['args'].get('name', [])
-                    arg_names_with_type = [{'name': arg_name,
-                                            'type': 'arg',
-                                            'line': line_no} for arg_name in arg_names]
-                    defined_info[info_key].extend(arg_names_with_type)
-
+            defined_info, used_info = self._get_definitions_and_usages(py_file_path, parsed_py_code, imported_dict)
             all_unused_list = defaultdict(list)
 
-            for k in list(set(list(defined_info.keys()) + list(used_info.keys()))):
+            for k in set(defined_info).union(used_info):
                 defined_info_list = dict(defined_info).get(k, [])
                 used_names = dict(used_info).get(k, [])
                 defined_names = [item['name'] for item in defined_info_list]
@@ -201,10 +208,19 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_duplicates(self):
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            for item in parsed_py_code:
+                line_no = item['line']
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
-        check_unnecessary_prints = self._check_unnecessary_prints()
-        print(check_unnecessary_prints)
+        check_unnecessary_prints_review = self._check_unnecessary_prints()
+        check_duplicates_review = self._check_duplicates()
+        print(check_duplicates_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):

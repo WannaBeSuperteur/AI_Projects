@@ -5,7 +5,7 @@ from pathlib import Path
 from code_review_items import default_code_review_func
 
 
-TEST_CASES_DIR = 'test_cases/tc01_02.py'
+TEST_CASES_DIR = 'test_cases'
 
 
 class CodeReviewer:
