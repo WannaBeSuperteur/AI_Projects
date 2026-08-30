@@ -106,7 +106,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 info_key_for_func_def = func_name_for_func_def or ''
 
                 if item['type_name'] in ['import', 'import_from']:
-                    import_infos = [info.get('as_name') or info['name'] for info in item['info']['import_names']]
+                    import_infos = [info.get('as_name') or info['name'] for info in item['info']['import_names']
+                                    if info['name'] != '*']
                     import_infos_with_type = [{'name': info,
                                                'type': 'import',
                                                'line': line_no} for info in import_infos]
@@ -153,13 +154,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         self.final_result_dict = final_result_dict
         self.imported_dict = imported_dict
-
-        print(dict(final_result_dict))
-        print('=========')
-        print(dict(imported_dict))
-        print('=========')
         self._mark_used_as_imported()
-        print(dict(final_result_dict))
 
         return convert_to_human_friendly_review(final_result_dict)
 
