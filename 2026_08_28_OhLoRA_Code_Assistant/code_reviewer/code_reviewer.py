@@ -14,11 +14,13 @@ class CodeReviewer:
                  text_embedding_models: dict | None = None,
                  test_cases: list[dict[str, dict[str, str]]] | None = None,
                  max_line_length: int = 120,
-                 max_func_lines: int = 100):
+                 max_func_lines: int = 100,
+                 code_indent: int = 4):
 
         self.config = {
             'max_line_length': max_line_length,
             'max_func_lines': max_func_lines,
+            'code_indent': code_indent,
             'text_embedding_models': text_embedding_models
         }
 

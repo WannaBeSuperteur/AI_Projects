@@ -38,6 +38,7 @@ class DefaultCodeChecker:
         self.py_codes = py_codes
         self.max_line_length = config.get('max_line_length')
         self.max_func_lines = config.get('max_func_lines')
+        self.code_indent = config.get('code_indent')
         self.text_embedding_models = config.get('text_embedding_models')
 
     def _parse_codes(self):
