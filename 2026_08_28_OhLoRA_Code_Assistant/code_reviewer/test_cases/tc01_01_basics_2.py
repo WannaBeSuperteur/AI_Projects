@@ -6,6 +6,8 @@ from tc01_01_basics import IMPORT_NUM, imported_function, imported_value, import
 
 def similar_func3(similar_value: int, same_value: int, unused_arg: str):
     print(similar_value, same_value)
+    print("Let's start!")
+
     for idx in range(30):
         print('a')
         print('bb')

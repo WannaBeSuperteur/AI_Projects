@@ -7,6 +7,22 @@ from collections import defaultdict
 from ast_utils import parse_py_code
 
 
+def simplify_code(original_code: str) -> str:
+    result = re.sub('\\d+(?:\\.\\d+)?', '0', original_code)
+    result = re.sub("\\b[a-zA-Z_][a-zA-Z0-9_]*\\b", "name", result)
+
+    result = re.sub('""".*\\\"""', 'doc', result)
+    result = re.sub("'''.*\\\'''", 'doc', result)
+    result = re.sub('"[^"]*"', 'str', result)
+    result = re.sub("'[^']*'", 'str', result)
+
+    while '  ' in result:
+        result = result.replace('  ', ' ')
+    result = result.strip().replace('\n', ';')
+
+    return result
+
+
 def convert_to_human_friendly_review(final_result_dict: dict[dict[list]]) -> str:
     """Convert json-like format review result into human-friendly review style."""
 
@@ -132,6 +148,24 @@ class DefaultCodeChecker:
 
         return constant_info
 
+    def _get_function_bodies(self) -> dict[list]:
+        function_bodies_info = defaultdict(list)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            if not parsed_py_code:
+                continue
+
+            for item in parsed_py_code:
+                if item['type_name'] == 'function_def':
+                    function_name = item['info']['name']
+                    function_body = item['info']['body']
+                    start_line_no = item['info']['start_line']
+                    function_bodies_info[py_file_path].append({'name': function_name,
+                                                               'body': function_body,
+                                                               'start_line': start_line_no})
+
+        return dict(function_bodies_info)
+
     def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
 
@@ -163,6 +197,18 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     self._delete_imported_review_items(file_name_include=info['from'], item_name=info['name'])
                 else:
                     self._delete_imported_review_items(file_name_include=info['name'], item_name=None)
+
+    def _is_function_bodies_similar(self, body_1: str, body_2: str) -> bool:
+        body_1_lines = [line.strip() for line in body_1.split(';')]
+        body_2_lines = [line.strip() for line in body_2.split(';')]
+
+        body_1_line_set, body_2_line_set = set(body_1_lines), set(body_2_lines)
+
+        intersection = len(body_1_line_set.intersection(body_2_line_set))
+        union = len(body_1_line_set.union(body_2_line_set))
+        iou = intersection / union if union > 0 else 0
+
+        return iou >= 0.5 and intersection >= 3
 
     def _check_unused(self) -> str:
         final_result_dict = defaultdict(dict)
@@ -230,6 +276,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         final_result_dict = defaultdict(dict)
         defined_constant_names = set()
         repeated_long_strs = set()
+        simplified_function_body_list = []
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
@@ -254,6 +301,26 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     if info['name'] in repeated_long_strs:
                         final_result_dict[py_file_path][func_name].append(info)
                     repeated_long_strs.add(info['name'])
+
+        function_bodies_info = self._get_function_bodies()
+
+        for py_file_path, function_body_items in function_bodies_info.items():
+            for item in function_body_items:
+                function_name = item['name']
+                function_body = item['body']
+                start_line = item['start_line']
+
+                simplified_body = simplify_code(str(function_body))
+                for existing_simplified_body in simplified_function_body_list:
+                    if self._is_function_bodies_similar(existing_simplified_body['body'], simplified_body):
+                        final_result_dict[py_file_path][function_name].append({'name': function_name,
+                                                                               'type': 'func',
+                                                                               'line': start_line})
+                        break
+
+                simplified_function_body_list.append({'name': function_name,
+                                                      'body': simplified_body,
+                                                      'start_line': start_line})
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
@@ -318,8 +385,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
         check_duplicates_review = self._check_duplicates()
+        print(check_duplicates_review)
         check_similar_variables_review = self._check_similar_variables()
-        print(check_similar_variables_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):

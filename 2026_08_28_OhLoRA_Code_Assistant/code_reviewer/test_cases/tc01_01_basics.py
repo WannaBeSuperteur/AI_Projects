@@ -29,6 +29,8 @@ nparray2 = np.array([0.1, 0.2, 0.3])
 
 def similar_func1(similar: float, same: float, unused_arg: str):
     print(similar, same)
+    print("Let's start!")
+
     for i in range(10):
         print('a')
         print('bb')
@@ -36,6 +38,8 @@ def similar_func1(similar: float, same: float, unused_arg: str):
 
 def similar_func2(similar_: int, same: int, unused_arg: str):
     print(similar_, same)
+    print("Let's start!")
+
     for idx in range(20):
         print('a')
         print('bb')
