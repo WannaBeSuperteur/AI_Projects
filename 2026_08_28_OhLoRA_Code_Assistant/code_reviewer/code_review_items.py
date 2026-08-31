@@ -392,7 +392,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_similar_func_args(self):
+    def _check_same_func_args(self):
         func_annot_dict = {}
 
         final_result_dict = defaultdict(dict)
@@ -428,8 +428,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_unnecessary_prints_review = self._check_unnecessary_prints()
         check_duplicates_review = self._check_duplicates()
         check_similar_variables_review = self._check_similar_variables()
-        check_similar_func_args_review = self._check_similar_func_args()
-        print(check_similar_func_args_review)
+        check_same_func_args_review = self._check_same_func_args()
+        print(check_same_func_args_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
