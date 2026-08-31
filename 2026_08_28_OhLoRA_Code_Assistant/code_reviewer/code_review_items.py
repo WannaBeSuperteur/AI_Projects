@@ -2,13 +2,13 @@
 import re
 import keyword
 import builtins
+from difflib import SequenceMatcher
 
 from sklearn.metrics.pairwise import cosine_similarity
 
 from collections import defaultdict
 from ast_utils import parse_py_code
 
-# TODO: iou->longest common subsequence (or 연속 8+ lines 동일)
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
 
@@ -210,13 +210,12 @@ class PythonBasicsChecker(DefaultCodeChecker):
         body_1_lines = [line.strip() for line in body_1.split(';')]
         body_2_lines = [line.strip() for line in body_2.split(';')]
 
-        body_1_line_set, body_2_line_set = set(body_1_lines), set(body_2_lines)
+        seq_matcher = SequenceMatcher(None, body_1_lines, body_2_lines)
+        lcs = seq_matcher.find_longest_match(0, len(body_1_lines), 0, len(body_2_lines))
 
-        intersection = len(body_1_line_set.intersection(body_2_line_set))
-        union = len(body_1_line_set.union(body_2_line_set))
-        iou = intersection / union if union > 0 else 0
-
-        return iou >= 0.5 and intersection >= 3
+        cond_1 = lcs.size >= 7 and lcs.size >= 0.5 * min(len(body_1_lines), len(body_2_lines))
+        cond_2 = lcs.size >= 3 and lcs.size >= 0.75 * min(len(body_1_lines), len(body_2_lines))
+        return cond_1 or cond_2
 
     def _check_unused(self) -> str:
         final_result_dict = defaultdict(dict)
