@@ -1,17 +1,23 @@
 
 import re
+import keyword
+import builtins
 
 from sklearn.metrics.pairwise import cosine_similarity
 
 from collections import defaultdict
 from ast_utils import parse_py_code
 
-# TODO: iou계산시 빈 line제거 + iou->longest common subsequence (or 연속 8+ lines 동일) + python키워드 대체 안함 + re.sub 안티패턴제거
+# TODO: iou->longest common subsequence (or 연속 8+ lines 동일)
+
+PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
 
 
 def simplify_code(original_code: str) -> str:
     result = re.sub(r'\d+(?:\.\d+)?', '0', original_code)
-    result = re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b", "name", result)
+    result = re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b",
+                    lambda m: m.group(0) if m.group(0) in PRESERVED_WORDS else "name",
+                    result)
 
     result = re.sub(r'""".*\"""', 'doc', result)
     result = re.sub(r"'''.*\'''", 'doc', result)
