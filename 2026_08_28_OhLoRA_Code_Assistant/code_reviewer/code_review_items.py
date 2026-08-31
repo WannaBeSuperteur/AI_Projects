@@ -328,7 +328,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: dict[dict[list]]) -> list[dict]:
+    def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: dict[dict[list]],
+                                     only_same: bool = False,
+                                     include_same: bool = False) -> list[dict]:
         text_embedding_logs = []
         all_similar_text_pairs = []
 
@@ -338,10 +340,16 @@ class PythonBasicsChecker(DefaultCodeChecker):
             info['py_file_path'] = py_file_path
 
             for log in text_embedding_logs:
-                cos_sim = cosine_similarity(log['embedding'], embedding_vector)
-                if log['name'] != info['name'] and cos_sim >= 0.95:
-                    all_similar_text_pairs.append(info)
-                    break
+                if only_same:
+                    if log['name'] == info['name']:
+                        all_similar_text_pairs.append(info)
+                        break
+                else:
+                    cos_sim = cosine_similarity(log['embedding'], embedding_vector)
+                    if (include_same or log['name'] != info['name']) and cos_sim >= 0.95:
+                        all_similar_text_pairs.append(info)
+                        break
+
             text_embedding_logs.append(info)
 
         for py_file_path in value_dict.keys():
@@ -385,45 +393,35 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_similar_func_args(self):
-        if self.text_embedding_models.get('default') is None:
-            return "no text embedding model"
-
-        text_embedding_model = self.text_embedding_models.get('default')
+        func_annot_dict = {}
 
         final_result_dict = defaultdict(dict)
-        all_funcion_defs_dict = defaultdict(dict)
-
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
-            function_defs_dict = defaultdict(list)
 
             for item in function_defs:
-                print(item)
                 func_args = item['info']['args']
+                line_no = item['line']
+
                 if func_args:
-                    for name in func_args['name']:
-                        function_defs_dict[''].append({'name': name,
-                                                       'type': 'arg',
-                                                       'line': item['line']})
+                    func_arg_names = func_args['name']
+                    func_annots = func_args['annot']
 
-            all_funcion_defs_dict[py_file_path] = function_defs_dict
-        all_similar_arg_name_pairs = self._find_all_similar_text_pairs(text_embedding_model, all_funcion_defs_dict)
+                    for arg_name, annot in zip(func_arg_names, func_annots):
+                        existing_annot = func_annot_dict.get(arg_name)
 
-        for info in all_similar_arg_name_pairs:
-            line_no = info['line']
-            py_file_path = info['py_file_path']
-
-            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-            final_result_dict[py_file_path][func_name].append({'name': info['name'],
-                                                               'type': 'name',
-                                                               'line': info['line']})
+                        if existing_annot and existing_annot != annot:
+                            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                            final_result_dict[py_file_path][func_name].append({'name': arg_name,
+                                                                               'type': 'arg',
+                                                                               'line': line_no})
+                        func_annot_dict[arg_name] = annot
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
-
 
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
