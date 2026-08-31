@@ -7,17 +7,16 @@ from collections import defaultdict
 from ast_utils import parse_py_code
 
 # TODO: iou계산시 빈 line제거 + iou->longest common subsequence (or 연속 8+ lines 동일) + python키워드 대체 안함 + re.sub 안티패턴제거
-#       line 413-423 리팩토링 (통합)
 
 
 def simplify_code(original_code: str) -> str:
-    result = re.sub('\\d+(?:\\.\\d+)?', '0', original_code)
-    result = re.sub("\\b[a-zA-Z_][a-zA-Z0-9_]*\\b", "name", result)
+    result = re.sub(r'\d+(?:\.\d+)?', '0', original_code)
+    result = re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b", "name", result)
 
-    result = re.sub('""".*\\\"""', 'doc', result)
-    result = re.sub("'''.*\\\'''", 'doc', result)
-    result = re.sub('"[^"]*"', 'str', result)
-    result = re.sub("'[^']*'", 'str', result)
+    result = re.sub(r'""".*\"""', 'doc', result)
+    result = re.sub(r"'''.*\'''", 'doc', result)
+    result = re.sub(r'"[^"]*"', 'str', result)
+    result = re.sub(r"'[^']*'", 'str', result)
 
     while '  ' in result:
         result = result.replace('  ', ' ')
@@ -247,8 +246,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model = self.text_embedding_models.get('default')
 
         final_result_dict = defaultdict(dict)
-        re_logger = '^logger\\.(debug|info|warning|error|critical)\\(.*\\)$'
-        re_print = '^print\\(.*\\)$'
+        re_logger = r'^logger\.(debug|info|warning|error|critical)\(.*\)$'
+        re_print = r'^print\(.*\)$'
 
         for py_file_path, py_code in self.py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
@@ -429,7 +428,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_duplicates_review = self._check_duplicates()
         check_similar_variables_review = self._check_similar_variables()
         check_same_func_args_review = self._check_same_func_args()
-        print(check_same_func_args_review)
+        print(check_duplicates_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
