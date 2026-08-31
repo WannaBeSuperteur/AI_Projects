@@ -85,7 +85,7 @@ if sentence == '':
 if not sentence == '':
 ```
 
-* `a['b']`가 None이면 `a['c']`를 사용한다는 문법은 아래와 같이 간소화
+* `a['b']`가 None이면 `a['c']`를 사용한다는 문법은 아래와 같이 간소화 (권장사항 정도)
 
 ```python
 result = a['b'] or a['c']
@@ -95,6 +95,7 @@ result = a['b'] or a['c']
 * 개수 세기에 `count` 함수 사용
 * 인덱스 반환에 `index` 함수 사용
 * str 단순 `+=` 대신 `join` 사용
+* `if 'b' in a and a['b'] ...` → `if a.get('b') ...` 형태로 수정
 
 ### 1-4. 그 외 Pythonic 한 프로그래밍
 
