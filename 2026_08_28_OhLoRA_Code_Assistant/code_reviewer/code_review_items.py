@@ -538,7 +538,6 @@ class PythonBasicsChecker(DefaultCodeChecker):
             third_party_imported = False
             local_imported = False
 
-            print(py_file_path)
             if not parsed_py_code:
                 continue
 
@@ -581,6 +580,38 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_func_single_responsibility(self) -> str:
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            func_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
+            func_docstrings_info = [{'line': item['line'],
+                                     'name': item['info']['name'],
+                                     'docstring': item.get('docstring', None)} for item in func_defs]
+            func_docstrings_info = [{'line': item['line'],
+                                     'name': item['name'],
+                                     'docstring': item['docstring'].replace('\n', ' ')}
+                                    for item in func_docstrings_info if item['docstring'] is not None]
+
+            for item in func_docstrings_info:
+                if text_embedding_model.get_similarity(item['name'], item['docstring']) >= 0.5:
+                    line_no = item['line']
+
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    final_result_dict[py_file_path][func_name].append({'name': item['name'],
+                                                                       'type': 'docstring',
+                                                                       'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
@@ -590,7 +621,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_names_review = self._check_names()
         check_return_matched_with_func_name_review = self._check_return_matched_with_func_name()
         check_library_orders_review = self._check_library_orders()
-        print(check_library_orders_review)
+        check_func_single_responsibility_review = self._check_func_single_responsibility()
+        print(check_func_single_responsibility_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):

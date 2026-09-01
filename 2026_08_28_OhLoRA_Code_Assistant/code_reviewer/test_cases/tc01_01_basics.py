@@ -46,6 +46,9 @@ def similar_func2(similar_: int, same: int, unused_arg: str):
 
 
 def get_current_version():
+    """Return current version.
+    Now, the current version is v1.2.6.
+    """
     return 'v1.2.6'
 
 
@@ -53,6 +56,7 @@ default_version = 'v1.0.0'
 
 
 def get_current_ver(version=default_version):
+    """Return current version."""
     return version
 
 

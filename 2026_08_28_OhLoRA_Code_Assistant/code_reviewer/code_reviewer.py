@@ -77,7 +77,7 @@ class TempTextEmbeddingModel:
         pass
 
     def get_similarity(self, text1: str, text2: str) -> float:
-        return 0.0
+        return 0.7
 
     def get_prob(self, text) -> float:
         return 0.7
