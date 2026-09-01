@@ -676,7 +676,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_empty_file(self):
+    def _check_empty_file(self) -> str:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, py_code in self.py_codes.items():
