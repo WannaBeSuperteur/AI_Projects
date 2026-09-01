@@ -676,6 +676,28 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_empty_file(self):
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            py_code_lines = py_code.split('\n')
+            is_empty = True
+
+            for line_idx, line in enumerate(py_code_lines):
+                comment = extract_comment(line)
+                if comment != line:
+                    is_empty = False
+                    break
+
+            if is_empty and 'TODO' not in py_code.upper():
+                final_result_dict[py_file_path][''].append({'name': '파일이 비어 있지만 TODO 코멘트가 없습니다.',
+                                                            'type': 'empty file',
+                                                            'line': 1})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
@@ -687,7 +709,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_library_orders_review = self._check_library_orders()
         check_func_docstring_review = self._check_func_docstring()
         check_commented_codes_review = self._check_commented_codes()
-        print(check_commented_codes_review)
+        check_empty_file_review = self._check_empty_file()
+        print(check_empty_file_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
