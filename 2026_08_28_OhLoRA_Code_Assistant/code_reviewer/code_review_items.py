@@ -220,16 +220,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
         seq_matcher = SequenceMatcher(None, body_1_lines, body_2_lines)
         lcs = seq_matcher.find_longest_match(0, len(body_1_lines), 0, len(body_2_lines))
 
-        cond_lcs_1 = lcs.size >= 7 and lcs.size >= 0.5 * min(len(body_1_lines), len(body_2_lines))
-        cond_lcs_2 = lcs.size >= 3 and lcs.size >= 0.75 * min(len(body_1_lines), len(body_2_lines))
+        cond_lcs_1 = lcs.size >= 7
+        cond_lcs_2 = lcs.size >= 4 and lcs.size >= 0.5 * min(len(body_1_lines), len(body_2_lines))
+        cond_lcs_3 = lcs.size >= 3 and lcs.size >= 0.75 * min(len(body_1_lines), len(body_2_lines))
 
-        cond_first_last_1 = (len(body_1_lines) >= 4 and
-                             (body_1_lines[:4] == body_2_lines[:4] or body_1_lines[-4:] == body_2_lines[-4:]))
-        cond_first_last_2 = (len(body_1_lines) >= 3 and
-                             ((body_1_lines[:3] == body_2_lines[:3] and sum(map(len, body_1_lines[:3])) >= 80)
-                             or (body_1_lines[-3:] == body_2_lines[-3:] and sum(map(len, body_1_lines[-3:])) >= 80)))
-
-        return cond_lcs_1 or cond_lcs_2 or cond_first_last_1 or cond_first_last_2
+        return cond_lcs_1 or cond_lcs_2 or cond_lcs_3
 
     def _check_unused(self) -> str:
         final_result_dict = defaultdict(dict)
@@ -622,7 +617,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_return_matched_with_func_name_review = self._check_return_matched_with_func_name()
         check_library_orders_review = self._check_library_orders()
         check_func_single_responsibility_review = self._check_func_single_responsibility()
-        print(check_func_single_responsibility_review)
+        print(check_duplicates_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
