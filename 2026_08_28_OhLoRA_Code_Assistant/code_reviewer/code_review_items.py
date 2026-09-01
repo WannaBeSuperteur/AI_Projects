@@ -1,3 +1,4 @@
+import os
 import re
 import keyword
 import builtins
@@ -445,7 +446,6 @@ class PythonBasicsChecker(DefaultCodeChecker):
                           if item['type_name'] == 'function_def']
             names = chain(var_names, func_names)
 
-            print(py_file_path)
             for name_info in names:
                 line_no = name_info['line']
                 name = name_info['name']
@@ -459,6 +459,62 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_return_matched_with_func_name(self) -> str:
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+        py_file_paths = self.parsed_py_codes.keys()
+        py_file_names = [os.path.splitext(os.path.basename(path))[0] for path in py_file_paths]
+        py_file_names_set = set(py_file_names)
+        return_pattern_dict = {}
+
+        for py_file_path, parsed_py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            if not parsed_py_code:
+                continue
+
+            func_names_info = [{'line': item['line'], 'name': item['info']['name']} for item in parsed_py_code
+                               if item['type_name'] == 'function_def']
+            imported_names_info = [{'line': item['line'], 'name': [info['name'] for info in item['info']['import_names']]}
+                                   for item in parsed_py_code
+                                   if item['type_name'] == 'import_from' and item['info']['mod'] in py_file_names_set]
+
+            func_names = [info['name'] for info in func_names_info]
+            imported_names = [info['name'] for info in imported_names_info]
+            func_and_imported_names = list(chain(func_names, *imported_names))
+
+            func_list = '|'.join(map(re.escape, func_and_imported_names))
+            pattern = rf'^\s*([a-zA-Z_]\w*)\s*=\s*({func_list})\s*\(.*\)'
+
+            py_file_path_ = re.sub(r'\\+', ' ', py_file_path)
+            return_pattern_dict[py_file_path_] = pattern
+
+        for py_file_path, py_code in self.py_codes.items():
+            py_file_path_ = re.sub(r'\\+', ' ', py_file_path)
+            pattern = return_pattern_dict.get(py_file_path_, None)
+            if pattern is None:
+                continue
+
+            for line_no, line in enumerate(py_code.split('\n')):
+                match = re.match(pattern, line)
+                if match:
+                    var_name = match.group(1)
+                    func_name = match.group(2)
+
+                    if text_embedding_model.get_similarity(var_name, func_name) < 0.5:
+                        func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                        final_result_dict[py_file_path][func_name].append({'name': f'{var_name} = {func_name}(...)',
+                                                                           'type': 'func_return',
+                                                                           'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
@@ -466,7 +522,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_similar_variables_review = self._check_similar_variables()
         check_same_func_args_review = self._check_same_func_args()
         check_names_review = self._check_names()
-        print(check_names_review)
+        check_return_matched_with_func_name_review = self._check_return_matched_with_func_name()
+        print(check_return_matched_with_func_name_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
