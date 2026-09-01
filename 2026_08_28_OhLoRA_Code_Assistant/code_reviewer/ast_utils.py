@@ -1,7 +1,8 @@
-import ast
 
 from collections import defaultdict
 from operator import itemgetter
+
+import ast_comments as ast
 
 
 TYPE_TO_NAME = {

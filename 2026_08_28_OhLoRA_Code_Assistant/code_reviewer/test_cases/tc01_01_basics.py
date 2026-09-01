@@ -62,6 +62,8 @@ def get_current_ver(version=default_version):
 
 next_level = get_current_version()
 
+# test
+
 
 def check_single_responsibility():
     """Check if the code follows single responsibility rule and suggest improvement points."""
@@ -72,9 +74,16 @@ python_code_no = 300
 python_code_num = 300
 test = python_code_no + python_code_num
 
+# print('Zealot is stronger than Zergling')
+
 
 def imported_function():
+    # imported function
     print('do not use anti-patterns')
+    # 3333
+
+# 1234
+# 5678
 
 
 imported_value = 'import me'
@@ -84,3 +93,5 @@ imported_but_unused_value = 'why do you want to import me'
 # print(111)
 # if a > 3:
 #     print('abcd')
+
+# print(3)

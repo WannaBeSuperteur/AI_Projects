@@ -1,8 +1,10 @@
 import os
 import sys
+import io
 import importlib.metadata
 
 import re
+import tokenize
 import keyword
 import builtins
 from difflib import SequenceMatcher
@@ -63,6 +65,17 @@ def ellipse_str(original_str: str) -> str:
     return original_str
 
 
+def extract_comment(line):
+    try:
+        readline = io.StringIO(line).readline
+        for token in tokenize.generate_tokens(readline):
+            if token.type == tokenize.COMMENT:
+                return token.string
+    except tokenize.TokenError:
+        pass
+    return ""
+
+
 class DefaultCodeChecker:
     def __init__(self, py_codes: dict[str, str], config: dict):
         self.py_codes = py_codes
@@ -85,7 +98,7 @@ class DefaultCodeChecker:
             if not parsed_py_code:
                 continue
 
-            max_line_no = max(item['line'] for item in parsed_py_code)
+            max_line_no = len(self.py_codes[py_file_path].split('\n')) + 1
             function_name_by_line = ['' for _ in range(max_line_no + 1)]
 
             for item in parsed_py_code:
@@ -97,6 +110,15 @@ class DefaultCodeChecker:
                         function_name_by_line[i] = item['info']['name']
 
             self.function_name_by_line_for_codebase[py_file_path] = function_name_by_line
+
+        for py_file_path, parsed_py_code in self.py_codes.items():
+            py_file_path_ = py_file_path.replace(r"\\", r"\"")
+
+            max_line_no = len(self.py_codes[py_file_path_].split('\n')) + 1
+            function_name_by_line = ['' for _ in range(max_line_no + 1)]
+
+            if py_file_path_ not in self.function_name_by_line_for_codebase:
+                self.function_name_by_line_for_codebase[py_file_path_] = function_name_by_line
 
     def _get_definitions_and_usages(self, py_file_path: str, parsed_py_code: list[dict],
                                     imported_dict: dict[list] | None = None) -> tuple[dict[list], dict[list]]:
@@ -480,7 +502,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         py_file_names_set = set(py_file_names)
         return_pattern_dict = {}
 
-        for py_file_path, parsed_py_code in self.py_codes.items():
+        for py_file_path, _ in self.py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -613,6 +635,47 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_commented_codes(self) -> str:
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            py_code_lines = py_code.split('\n')
+            comments = []
+            current_comment = ''
+
+            for line_idx, line in enumerate(py_code_lines):
+                comment = extract_comment(line)
+
+                if comment == line and comment:
+                    current_comment += comment[1:].strip() + ' '
+                else:
+                    if current_comment:
+                        comments.append({'line': line_idx, 'comment': current_comment})
+                    current_comment = ''
+                    if comment:
+                        comments.append({'line': line_idx + 1, 'comment': comment[1:]})
+
+                if line_idx == len(py_code_lines) - 1 and current_comment:
+                    comments.append({'line': line_idx, 'comment': current_comment})
+
+            for comment in comments:
+                if text_embedding_model.get_prob(comment) >= 0.5:
+                    line_no = comment['line']
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                    final_result_dict[py_file_path][func_name].append({'name': comment['comment'],
+                                                                       'type': 'comment',
+                                                                       'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
@@ -623,7 +686,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_return_matched_with_func_name_review = self._check_return_matched_with_func_name()
         check_library_orders_review = self._check_library_orders()
         check_func_docstring_review = self._check_func_docstring()
-        print(check_func_docstring_review)
+        check_commented_codes_review = self._check_commented_codes()
+        print(check_commented_codes_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
