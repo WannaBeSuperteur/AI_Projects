@@ -278,7 +278,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_duplicates(self):
+    def _check_duplicates(self) -> str:
         final_result_dict = defaultdict(dict)
         defined_constant_names = set()
         repeated_long_strs = set()
@@ -362,7 +362,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         return all_similar_text_pairs
 
-    def _check_similar_variables(self):
+    def _check_similar_variables(self) -> str:
         if self.text_embedding_models.get('default') is None:
             return "no text embedding model"
 
@@ -395,7 +395,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_same_func_args(self):
+    def _check_same_func_args(self) -> str:
         func_annot_dict = {}
 
         final_result_dict = defaultdict(dict)
@@ -426,7 +426,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_names(self):
+    def _check_names(self) -> str:
         if self.text_embedding_models.get('default') is None:
             return "no text embedding model"
 
