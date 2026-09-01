@@ -1,4 +1,3 @@
-
 import re
 import keyword
 import builtins
@@ -7,8 +6,8 @@ from difflib import SequenceMatcher
 from sklearn.metrics.pairwise import cosine_similarity
 
 from collections import defaultdict
+from itertools import chain
 from ast_utils import parse_py_code
-
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
 
@@ -379,7 +378,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
             defined_info, _ = self._get_definitions_and_usages(py_file_path, parsed_py_code)
 
             variable_info = {func: [info for info in info_list if info['type'] == 'name']
-                                    for func, info_list in defined_info.items()}
+                             for func, info_list in defined_info.items()}
             all_variables_dict[py_file_path] = variable_info
 
         all_similar_text_pairs = self._find_all_similar_text_pairs(text_embedding_model, all_variables_dict)
@@ -427,13 +426,47 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_names(self):
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            if not parsed_py_code:
+                continue
+
+            final_result_dict[py_file_path] = defaultdict(list)
+            var_names = [{'line': item['line'], 'name': item['info']['name']} for item in parsed_py_code
+                         if item['type_name'] == 'name' and item['info']['ctx'] == 'Store']
+            func_names = [{'line': item['line'], 'name': item['info']['name']} for item in parsed_py_code
+                          if item['type_name'] == 'function_def']
+            names = chain(var_names, func_names)
+
+            print(py_file_path)
+            for name_info in names:
+                line_no = name_info['line']
+                name = name_info['name']
+
+                if text_embedding_model.get_prob(name) >= 0.5:
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    final_result_dict[py_file_path][func_name].append({'name': name,
+                                                                       'type': 'var_or_func',
+                                                                       'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
         check_duplicates_review = self._check_duplicates()
         check_similar_variables_review = self._check_similar_variables()
         check_same_func_args_review = self._check_same_func_args()
-        print(check_duplicates_review)
+        check_names_review = self._check_names()
+        print(check_names_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
