@@ -98,6 +98,7 @@ result = a['b'] or a['c']
 * 인덱스 반환에 `index` 함수 사용
 * str 단순 `+=` 대신 `join` 사용
 * `if 'b' in a and a['b'] ...` → `if a.get('b') ...` 형태로 수정
+* `sum(len(line) for line in body_1_lines[:3])` → `sum(map(len, body_1_lines[:3]))` 형태로 수정
 
 ### 1-4. 그 외 Pythonic 한 프로그래밍
 
