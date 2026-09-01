@@ -264,7 +264,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 defined_set = set(defined_names)
                 used_set = set(used_names)
                 unused_set = defined_set - used_set
-                unused_list = [item for item in defined_info_list if item['name'] in unused_set]
+                unused_list = [item for item in defined_info_list if item['name'] in unused_set and item['name'] != '_']
                 all_unused_list[k].extend(unused_list)
 
             final_result_dict[py_file_path] = dict(all_unused_list)
