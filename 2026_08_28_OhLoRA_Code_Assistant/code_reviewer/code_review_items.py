@@ -1,8 +1,12 @@
 import os
+import sys
+import importlib.metadata
+
 import re
 import keyword
 import builtins
 from difflib import SequenceMatcher
+from operator import itemgetter
 
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -66,6 +70,9 @@ class DefaultCodeChecker:
         self.max_func_lines = config.get('max_func_lines')
         self.code_indent = config.get('code_indent')
         self.text_embedding_models = config.get('text_embedding_models')
+
+        self.python_libraries = set(list(sys.stdlib_module_names))
+        self.third_party_libraries = set(dist.metadata['Name'] for dist in importlib.metadata.distributions())
 
     def _parse_codes(self):
         self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
@@ -522,6 +529,58 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_library_orders(self) -> str:
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            third_party_imported = False
+            local_imported = False
+
+            print(py_file_path)
+            if not parsed_py_code:
+                continue
+
+            parsed_imports = [item for item in parsed_py_code if item['type_name'] in ['import', 'import_from']]
+            lib_names_import = [{'line': item['line'], 'name': item['info']['import_names']}
+                                for item in parsed_imports
+                                if item['type_name'] == 'import']
+            lib_names_import = [{'line': item['line'], 'names': [info['name'] for info in item['name']]}
+                                for item in lib_names_import]
+
+            lib_names_import_from = [{'line': item['line'], 'names': [item['info']['mod']]}
+                                     for item in parsed_imports
+                                     if item['type_name'] == 'import_from']
+
+            imported_lib_names = list(chain(lib_names_import, lib_names_import_from))
+            imported_lib_names.sort(key=itemgetter('line'))
+
+            for info in imported_lib_names:
+                line_no = info['line']
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                for name in info['names']:
+                    if (third_party_imported or local_imported) and name in self.python_libraries:
+                        final_result_dict[py_file_path][func_name].append({'name': f'import of builtin "{name}"',
+                                                                           'type': 'wrong_builtin_import',
+                                                                           'line': line_no})
+
+                    if local_imported and name in self.third_party_libraries:
+                        final_result_dict[py_file_path][func_name].append({'name': f'import of 3rd-party "{name}"',
+                                                                           'type': 'wrong_third_party_import',
+                                                                           'line': line_no})
+
+                    if name in self.third_party_libraries:
+                        third_party_imported = True
+                    elif name in self.python_libraries:
+                        pass
+                    else:
+                        local_imported = True
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         check_unused_review = self._check_unused()
         check_unnecessary_prints_review = self._check_unnecessary_prints()
@@ -530,7 +589,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_same_func_args_review = self._check_same_func_args()
         check_names_review = self._check_names()
         check_return_matched_with_func_name_review = self._check_return_matched_with_func_name()
-        print(check_duplicates_review)
+        check_library_orders_review = self._check_library_orders()
+        print(check_library_orders_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
