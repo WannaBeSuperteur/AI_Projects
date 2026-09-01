@@ -28,6 +28,7 @@ class CodeReviewer:
 
         self.code_review_func = code_review_func
         self.test_cases = test_cases
+        self.current_code_path = None
 
     def _review_codebase(self, py_file_paths: list[str]) -> dict[str, str]:
         """Review python code file."""
@@ -46,6 +47,7 @@ class CodeReviewer:
             if except_path is not None:
                 py_file_paths = [p for p in py_file_paths if not p.startswith(except_path)]
 
+        self.current_code_path = code_path
         code_review_results = self._review_codebase(py_file_paths)
         return code_review_results
 
