@@ -575,11 +575,12 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_func_single_responsibility(self) -> str:
+    def _check_func_docstring(self) -> str:
         if self.text_embedding_models.get('default') is None:
             return "no text embedding model"
 
-        text_embedding_model = self.text_embedding_models.get('default')
+        text_embedding_model_single_responsibility = self.text_embedding_models.get('default')
+        text_embedding_model_docstring_and_name = self.text_embedding_models.get('default')
 
         final_result_dict = defaultdict(dict)
 
@@ -596,11 +597,16 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                     for item in func_docstrings_info if item['docstring'] is not None]
 
             for item in func_docstrings_info:
-                if text_embedding_model.get_similarity(item['name'], item['docstring']) >= 0.5:
-                    line_no = item['line']
+                line_no = item['line']
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-                    final_result_dict[py_file_path][func_name].append({'name': item['name'],
+                if text_embedding_model_single_responsibility.get_prob(item['docstring']) >= 0.5:
+                    final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} 단일 책임 원칙 위반",
+                                                                       'type': 'docstring',
+                                                                       'line': line_no})
+
+                if text_embedding_model_docstring_and_name.get_similarity(item['name'], item['docstring']) >= 0.5:
+                    final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} - docstring 불일치",
                                                                        'type': 'docstring',
                                                                        'line': line_no})
 
@@ -616,8 +622,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_names_review = self._check_names()
         check_return_matched_with_func_name_review = self._check_return_matched_with_func_name()
         check_library_orders_review = self._check_library_orders()
-        check_func_single_responsibility_review = self._check_func_single_responsibility()
-        print(check_duplicates_review)
+        check_func_docstring_review = self._check_func_docstring()
+        print(check_func_docstring_review)
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
