@@ -725,9 +725,39 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
+
     def __init__(self, py_codes: dict[str, str], config: dict):
         super().__init__(py_codes, config)
         self._parse_codes()
+        self._get_function_name_by_line()
+
+    def _check_const(self) -> str:
+        pass
+
+    def _check_line_length(self) -> str:
+        pass
+
+    def _check_files(self) -> str:
+        pass
+
+    def _check_functions(self) -> str:
+        pass
+
+    def _check_indent(self) -> str:
+        pass
+
+    def run_code_review(self) -> dict[str, str]:
+        check_const_review = self._check_const()
+        check_line_length_review = self._check_line_length()
+        check_files_review = self._check_files()
+        check_functions_review = self._check_functions()
+        check_indent_review = self._check_indent()
+
+        return {'02_const': check_const_review,
+                '02_line_length': check_line_length_review,
+                '02_files': check_files_review,
+                '02_functions': check_functions_review,
+                '02_indent': check_indent_review}
 
 
 class PythonSimplificationChecker(DefaultCodeChecker):
