@@ -710,7 +710,18 @@ class PythonBasicsChecker(DefaultCodeChecker):
         check_func_docstring_review = self._check_func_docstring()
         check_commented_codes_review = self._check_commented_codes()
         check_empty_file_review = self._check_empty_file()
-        print(check_empty_file_review)
+
+        return {'01_unused': check_unused_review,
+                '01_unnecessary_prints': check_unnecessary_prints_review,
+                '01_duplicates': check_duplicates_review,
+                '01_similar_variables': check_similar_variables_review,
+                '01_same_func_args': check_same_func_args_review,
+                '01_names': check_names_review,
+                '01_return_matched_with_func_name': check_return_matched_with_func_name_review,
+                '01_library_orders': check_library_orders_review,
+                '01_func_docstring': check_func_docstring_review,
+                '01_commented_codes': check_commented_codes_review,
+                '01_empty_file': check_empty_file_review}
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
