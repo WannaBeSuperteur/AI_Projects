@@ -1082,7 +1082,15 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_any_all(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=(r'([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(False|True)\s+' +
+                   r'for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+' +
+                   r'if(\s+[^:]+):\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(True|False)\s+'),
+            match_func=lambda x: len(x) >= 7 and x[0] == x[5] and x[1] != x[6] and x[2] in x[4],
+            forward_window_size=7)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_zip(self) -> str:
         pass
@@ -1142,8 +1150,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_path_format())
-        print(self._check_defaultdict())
+        print(self._check_any_all())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
