@@ -62,7 +62,7 @@
 * 불필요한 변수 생성 자제 (메모리 절약 목적) → `defaultdict` 등 사용 권장
 * 조건문 중첩 대신 `any`, `all` 사용
 * `zip` 사용 가능한 경우 사용
-* `enumerate` 사용 가능한 경우 사용
+* `enumerate` 사용 가능한 경우 사용 (`for i in range(len(names)):` 등)
 * 아래에서 `before`로 된 부분은 `pathlib`을 사용하여 `after`처럼 사용해야 함
   * `read_text` 뿐만 아니라 `write_text` 도 마찬가지 
 
