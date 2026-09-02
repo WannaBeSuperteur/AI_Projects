@@ -36,7 +36,8 @@ def parse_function_def(node: ast.AST) -> dict:
         'args': dict(args_info),
         'start_line': getattr(node, 'lineno', None),
         'end_line': getattr(node, 'end_lineno', None),
-        'body': ast.unparse(node.body)
+        'body': ast.unparse(node.body),
+        'return_type': ast.unparse(node.returns) if node.returns else None
     }
 
 

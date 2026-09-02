@@ -94,6 +94,16 @@ def check_regex_matched_lines(py_code: str, regex: str, except_comment: bool = T
     return matched_lines
 
 
+def is_valid_code(line: str) -> bool:
+    if not line:
+        return False
+    if line.strip().startswith('#'):  # comment
+        return False
+    if line.strip().startswith('"""'):  # docstring
+        return False
+    return True
+
+
 class DefaultCodeChecker:
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         self.py_codes = py_codes
@@ -807,19 +817,92 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                 if required_file == 'pyproject.toml' and len(self.py_codes.keys()) < 3:
                     continue
 
-                final_result_dict[code_path_str][code_path_str].append(
-                    {'name': f'오류: {required_file} 파일이 없습니다.',
-                     'type': 'no_file',
-                     'line': 0})
+                final_result_dict[code_path_str][code_path_str].append({'name': f'오류: {required_file} 파일이 없습니다.',
+                                                                        'type': 'no_file',
+                                                                        'line': 0})
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_functions(self) -> str:
-        pass
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            func_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
+
+            for item in func_defs:
+                line_no = item['line']
+                start_line = item['info']['start_line']
+                end_line = item['info']['end_line']
+                func_name = item['info']['name']
+                func_length = end_line - start_line + 1
+
+                if func_length > self.max_func_lines:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'{func_name} 너무 긺 ({func_length} 줄 > {self.max_func_lines} 줄)',
+                         'type': 'too_long_function',
+                         'line': line_no})
+
+                if func_length >= 10 and not item.get('docstring', None):
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'{func_name} docstring 없음',
+                         'type': 'no_docstring',
+                         'line': line_no})
+
+                annotations = item['info']['args'].get('annot', None)
+                if annotations and None in annotations:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'{func_name} 의 일부 또는 전체 인수에 type hint 없음',
+                         'type': 'no_type_hint_args',
+                         'line': line_no})
+
+                return_type = item['info'].get('return_type', None)
+                if return_type is None:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'{func_name} 의 return 값에 type hint 없음',
+                         'type': 'no_type_hint_return',
+                         'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def _check_indent(self) -> str:
-        pass
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            lines = py_code.split('\n')
+            current_base_indent = 0
+            current_depth = 0
+
+            for line_idx, line in enumerate(lines):
+                line_no = line_idx + 1
+                current_indent = int((len(line) - len(line.lstrip())) / self.code_indent)
+
+                if line.strip().startswith('def '):
+                    current_base_indent = current_indent + 1
+                    current_depth = 0
+
+                elif current_indent < current_base_indent and is_valid_code(line):
+                    current_base_indent = current_indent
+                    current_depth = 0
+
+                if current_indent < current_depth and is_valid_code(line):
+                    current_depth = current_indent
+
+                if len(line) - len(line.lstrip()) == (current_depth + 1) * self.code_indent:
+                    current_depth += 1
+
+                if current_depth - current_base_indent >= 4 and is_valid_code(line):
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line.strip()),
+                                                                       'type': 'too much indent',
+                                                                       'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
         check_const_review = self._check_const()
@@ -827,7 +910,6 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         check_files_review = self._check_files()
         check_functions_review = self._check_functions()
         check_indent_review = self._check_indent()
-        print(check_files_review)
 
         return {'02_const': check_const_review,
                 '02_line_length': check_line_length_review,
