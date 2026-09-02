@@ -117,6 +117,7 @@ result = a['b'] or a['c']
 * attribute 접근 방식으로 `getattr` 사용 권장
 * `re.sub` 등 정규표현식 사용 시 표현식 string을 `r'...'` 형식으로 사용하도록 함
 * `f = lambda x: ...` 보다는 `def f(x): return ...` 를 사용한다.
+  * 단, 함수의 인자로 함수를 지정하여 호출하는 경우 제외 
 * prefix, suffix 검사 시 `startswith()`, `endswith()` 를 사용한다.
 
 ### 1-5. 예외 및 오류 처리
