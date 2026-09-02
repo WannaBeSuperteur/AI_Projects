@@ -1093,7 +1093,19 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_zip(self) -> str:
-        pass
+        def _match_zip(matched: list[str]) -> bool:
+            idx_matched = matched[0] == matched[3] and matched[3] == matched[5]
+            name_matched = matched[1] == f'len({matched[2]})' or matched[1] == f'len({matched[4]})'
+            return idx_matched and name_matched
+
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=(r"for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+range\s*\(\s*(len\s*\([a-zA-Z_][a-zA-Z0-9_]*\))\s*\)\s*:" +
+                   2 * r"[\s\S]*?([a-zA-Z_][a-zA-Z0-9_]*)\s*\[\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\]"),
+            match_func=_match_zip,
+            forward_window_size=15)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_enumerate(self) -> str:
         pass
@@ -1150,7 +1162,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_any_all())
+        print(self._check_zip())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
