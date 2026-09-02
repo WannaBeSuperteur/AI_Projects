@@ -919,9 +919,100 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
 
 class PythonSimplificationChecker(DefaultCodeChecker):
+    def _check_suggest_list_comprehension(self) -> str:
+        pass
+
+    def _check_generator_expression(self) -> str:
+        pass
+
+    def _check_if_to_dict(self) -> str:
+        pass
+
+    def _check_path_format(self) -> str:
+        pass
+
+    def _check_defaultdict(self) -> str:
+        pass
+
+    def _check_any_all(self) -> str:
+        pass
+
+    def _check_zip(self) -> str:
+        pass
+
+    def _check_enumerate(self) -> str:
+        pass
+
+    def _check_just_read_write_to_read_write_text(self) -> str:
+        pass
+
+    def _check_sentence_empty(self) -> str:
+        pass
+
+    def _check_handle_none(self) -> str:
+        pass
+
+    def _check_extend(self) -> str:
+        pass
+
+    def _check_count(self) -> str:
+        pass
+
+    def _check_index(self) -> str:
+        pass
+
+    def _check_str_join(self) -> str:
+        pass
+
+    def _check_use_get(self) -> str:
+        pass
+
+    def _check_use_map(self) -> str:
+        pass
+
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         super().__init__(py_codes, config, code_path)
         self._parse_codes()
+        self._get_function_name_by_line()
+
+    def run_code_review(self) -> dict[str, str]:
+        check_suggest_list_comprehension_review = self._check_suggest_list_comprehension()
+        check_generator_expression_review = self._check_generator_expression()
+        check_if_to_dict_review = self._check_if_to_dict()
+        check_path_format_review = self._check_path_format()
+        check_defaultdict_review = self._check_defaultdict()
+        check_any_all_review = self._check_any_all()
+        check_zip_review = self._check_zip()
+        check_enumerate_review = self._check_enumerate()
+        check_just_read_write_to_read_write_text_review = self._check_just_read_write_to_read_write_text()
+        check_sentence_empty_review = self._check_sentence_empty()
+        check_handle_none_review = self._check_handle_none()
+        check_extend_review = self._check_extend()
+        check_count_review = self._check_count()
+        check_index_review = self._check_index()
+        check_str_join_review = self._check_str_join()
+        check_use_get_review = self._check_use_get()
+        check_use_map_review = self._check_use_map()
+
+        return {
+            '03_suggest_list_comprehension': check_suggest_list_comprehension_review,
+            '03_generator_expression': check_generator_expression_review,
+            '03_if_to_dict': check_if_to_dict_review,
+            '03_path_format': check_path_format_review,
+            '03_defaultdict': check_defaultdict_review,
+            '03_any_all': check_any_all_review,
+            '03_zip': check_zip_review,
+            '03_enumerate': check_enumerate_review,
+            '03_just_read_write_to_read_write_text': check_just_read_write_to_read_write_text_review,
+            '03_sentence_empty': check_sentence_empty_review,
+            '03_handle_none': check_handle_none_review,
+            '03_extend': check_extend_review,
+            '03_count': check_count_review,
+            '03_index': check_index_review,
+            '03_str_join': check_str_join_review,
+            '03_use_get': check_use_get_review,
+            '03_use_map': check_use_map_review,
+        }
 
 
 class PythonOtherPythonicChecker(DefaultCodeChecker):
