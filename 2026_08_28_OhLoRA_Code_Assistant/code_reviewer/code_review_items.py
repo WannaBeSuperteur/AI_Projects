@@ -7,6 +7,8 @@ import re
 import tokenize
 import keyword
 import builtins
+
+from typing import Callable, Optional
 from difflib import SequenceMatcher
 from operator import itemgetter
 
@@ -122,6 +124,7 @@ class DefaultCodeChecker:
 
         self.python_libraries = set(list(sys.stdlib_module_names))
         self.third_party_libraries = set(dist.metadata['Name'] for dist in importlib.metadata.distributions())
+        self.final_result_dict = defaultdict(dict)
 
     def _parse_codes(self):
         self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
@@ -239,7 +242,7 @@ class DefaultCodeChecker:
 
         return dict(function_bodies_info)
 
-    def _add_regex_matched_lines(self, regex: str, match_func: callable, type_name: str = 'regex',
+    def _add_regex_matched_lines(self, regex: str, match_func: Optional[Callable] = None, type_name: str = 'regex',
                                  forward_window_size: int = 5) -> None:
 
         for py_file_path, py_code in self.py_codes.items():
@@ -261,7 +264,7 @@ class DefaultCodeChecker:
                     if len(lines_to_show) > 40:
                         lines_to_show = lines_to_show[:36] + ' ...'
 
-                    if match_func(matched_groups):
+                    if match_func is None or match_func(matched_groups):
                         self.final_result_dict[py_file_path][func_name].append({'name': lines_to_show,
                                                                                 'type': type_name,
                                                                                 'line': line_no})
@@ -983,10 +986,64 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_generator_expression(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r'.*\b(sum|max|min|all|any|set)\s*\(\s*\[\s*(.+?\bfor\b.+?)\s*\]\s*\)')
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_if_to_dict(self) -> str:
-        pass
+        final_result_dict = defaultdict(dict)
+        str_pattern_1 = '"[^"]*"'
+        str_pattern_2 = "'[^']*'"
+
+        regex = (r"^\s*(if|elif)\b\s*\(?\s*([a-zA-Z_]\w*)\s*" +
+                 rf"(<=|>=|==)\s*([a-zA-Z_]\w*|\d+(?:\.\d+)?|{str_pattern_1}|{str_pattern_2})\s*\)?\s*:")
+
+        def update_final_result_dict(py_file_path: str, line_no: int, current_if_elifs: list[dict]):
+            if (len(current_if_elifs) >= 3
+                    and len(set(info['var_name'] for info in current_if_elifs)) == 1
+                    and len(set(info['simplified_body'] for info in current_if_elifs)) == 1):
+
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                final_result_dict[py_file_path][func_name].append({'name': 'if-elif-elif-else 패턴',
+                                                                   'type': 'if-elif-elif-else',
+                                                                   'line': line_no})
+
+            current_if_elifs.clear()
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            lines = py_code.split('\n')
+
+            last_if_elif_line_idx = -1
+            current_if_elifs = []
+
+            for line_idx, line in enumerate(lines):
+                line_no = line_idx + 1
+                matched = re.match(regex, line)
+
+                if matched:
+                    matched_groups = list(matched.groups())
+                    keyword = matched_groups[0]
+                    var_name = matched_groups[1]
+
+                    if keyword in ['if', 'elif']:
+                        last_if_elif_line_idx = line_idx
+
+                    current_if_elifs.append({'keyword': keyword, 'var_name': var_name})
+
+                elif line_idx - last_if_elif_line_idx >= 2:
+                    update_final_result_dict(py_file_path, line_no, current_if_elifs)
+
+                elif line_idx - last_if_elif_line_idx == 1:
+                    if len(current_if_elifs) >= 1:
+                        current_if_elifs[-1]['simplified_body'] = simplify_code(line)
+
+                if line_idx == len(lines) - 1:
+                    update_final_result_dict(py_file_path, line_no, current_if_elifs)
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def _check_path_format(self) -> str:
         pass
@@ -1051,7 +1108,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_suggest_list_comprehension())
+        print(self._check_generator_expression())
+        print(self._check_if_to_dict())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
