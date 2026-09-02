@@ -15,10 +15,12 @@ from operator import itemgetter
 from sklearn.metrics.pairwise import cosine_similarity
 
 from collections import defaultdict
-from itertools import chain
+from itertools import chain, product
 from ast_utils import parse_py_code
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
+QUOTES = "'" + '"'
+TWO_DOUBLE_QUOTES = '""'
 
 
 def simplify_code(original_code: str) -> str:
@@ -968,7 +970,6 @@ class PythonSimplificationChecker(DefaultCodeChecker):
 
     def _check_suggest_list_comprehension(self) -> str:
         self._init_final_result_dict()
-        quotes = "'" + '"'
 
         self._add_regex_matched_lines(
             regex=r"for\s+(\w+)\s+in\s+([^\n:]+):\s*\n\s*(\w+)\.append\(([^)]+)\)",
@@ -979,7 +980,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             match_func=lambda x: check_a_in_b(a=x[0], b=x[2]) and check_a_in_b(a=x[0], b=x[4]))
 
         self._add_regex_matched_lines(
-            regex=(rf'(\w+)\s*=\s*[{quotes}][{quotes}]\s*\n' +
+            regex=(rf'(\w+)\s*=\s*[{QUOTES}][{QUOTES}]\s*\n' +
                    r'\s*for\s+(\w+)\s+in\s+([^\n:]+):\s*\n\s*(\w+)\s*\+=\s*([^\n]+)'),
             match_func=lambda x: x[0] == x[3] and check_a_in_b(a=x[1], b=x[4]))
 
@@ -1046,10 +1047,39 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_path_format(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=rf'.*([{QUOTES}])(?:[a-zA-Z]:)?[/\\]*(?:[^/\\\r\n]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])',
+            forward_window_size=1)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_defaultdict(self) -> str:
-        pass
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            definition_lines = check_regex_matched_lines(
+                py_code, r"([a-zA-Z_]\w*)\s*=\s*\{\}")
+            value_definition_lines = check_regex_matched_lines(
+                py_code, rf"([a-zA-Z_]\w*)\s*\[.*?\]\s*=\s*(?:\[\]|0|''|{TWO_DOUBLE_QUOTES})")
+
+            for def_line, val_line in product(definition_lines, value_definition_lines):
+                val_line_no = val_line['line_no']
+                def_line_no = def_line['line_no']
+                val_line_ = val_line['line']
+                def_line_ = def_line['line']
+
+                if val_line_no > def_line_no:
+                    if def_line_.split('=')[0].strip() == val_line_.split('[')[0].strip():
+                        func_name = self.function_name_by_line_for_codebase[py_file_path][def_line_no]
+                        final_result_dict[py_file_path][func_name].append({'name': ellipse_str(val_line_.strip()),
+                                                                           'type': 'should use defaultdict',
+                                                                           'line': def_line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def _check_any_all(self) -> str:
         pass
@@ -1108,8 +1138,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_generator_expression())
-        print(self._check_if_to_dict())
+        print(self._check_path_format())
+        print(self._check_defaultdict())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
