@@ -76,6 +76,24 @@ def extract_comment(line):
     return ""
 
 
+def check_regex_matched_lines(py_code: str, regex: str, except_comment: bool = True,
+                              except_docstring: bool = True) -> list[dict[str]]:
+
+    lines = py_code.split('\n')
+    lines = [{'line_no': i + 1, 'line': line} for i, line in enumerate(lines)]
+
+    pattern = re.compile(regex)
+    matched_lines = [line for line in lines if pattern.search(line['line'])]
+
+    if except_comment:
+        matched_lines = [line for line in matched_lines if not line['line'].strip().startswith("# ")]
+    if except_docstring:
+        matched_lines = [line for line in matched_lines
+                         if not line['line'].strip().startswith('"""') and not line['line'].strip().endswith('"""')]
+
+    return matched_lines
+
+
 class DefaultCodeChecker:
     def __init__(self, py_codes: dict[str, str], config: dict):
         self.py_codes = py_codes
@@ -732,7 +750,28 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self._get_function_name_by_line()
 
     def _check_const(self) -> str:
-        pass
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            matched_lines = check_regex_matched_lines(py_code, r'(".*?"|\'.*?\'|\b\d+(?:\.\d+)?\b)')
+            for line in matched_lines:
+                if text_embedding_model.get_prob(line) >= 0.5:
+                    line_no = line['line_no']
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                    final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line['line'].strip()),
+                                                                       'type': 'const value',
+                                                                       'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def _check_line_length(self) -> str:
         pass
@@ -752,6 +791,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         check_files_review = self._check_files()
         check_functions_review = self._check_functions()
         check_indent_review = self._check_indent()
+        print(check_const_review)
 
         return {'02_const': check_const_review,
                 '02_line_length': check_line_length_review,
