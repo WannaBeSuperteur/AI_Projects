@@ -35,7 +35,7 @@ class CodeReviewer:
 
         py_codes = {py_file_path: Path(py_file_path).read_text(encoding='utf-8')
                     for py_file_path in py_file_paths}
-        return self.code_review_func(py_codes, self.config)
+        return self.code_review_func(py_codes, self.config, self.current_code_path)
 
     def review_codes(self, code_path: str, except_path: str | None = None) -> dict[str, str]:
         """Review code in code_path (directory or file)."""

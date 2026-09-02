@@ -95,12 +95,14 @@ def check_regex_matched_lines(py_code: str, regex: str, except_comment: bool = T
 
 
 class DefaultCodeChecker:
-    def __init__(self, py_codes: dict[str, str], config: dict):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         self.py_codes = py_codes
         self.max_line_length = config.get('max_line_length')
         self.max_func_lines = config.get('max_func_lines')
         self.code_indent = config.get('code_indent')
         self.text_embedding_models = config.get('text_embedding_models')
+
+        self.code_path = code_path
 
         self.python_libraries = set(list(sys.stdlib_module_names))
         self.third_party_libraries = set(dist.metadata['Name'] for dist in importlib.metadata.distributions())
@@ -226,8 +228,8 @@ class DefaultCodeChecker:
 
 
 class PythonBasicsChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -744,8 +746,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
 
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -774,10 +776,44 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_line_length(self) -> str:
-        pass
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            lines = py_code.split('\n')
+
+            for line_idx, line in enumerate(lines):
+                line_no = line_idx + 1
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                if len(line) > self.max_line_length:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'{ellipse_str(line.strip())} with length {len(line)}',
+                         'type': 'const value',
+                         'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def _check_files(self) -> str:
-        pass
+        code_path_str = '(코드 전체 경로)'
+        final_result_dict = defaultdict(dict)
+        final_result_dict[code_path_str] = defaultdict(list)
+
+        required_files = ['README.md', 'pyproject.toml']
+
+        for required_file in required_files:
+            if not os.path.exists(os.path.join(self.code_path, required_file)):
+                if required_file == 'pyproject.toml' and len(self.py_codes.keys()) < 3:
+                    continue
+
+                final_result_dict[code_path_str][code_path_str].append(
+                    {'name': f'오류: {required_file} 파일이 없습니다.',
+                     'type': 'no_file',
+                     'line': 0})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def _check_functions(self) -> str:
         pass
@@ -791,7 +827,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         check_files_review = self._check_files()
         check_functions_review = self._check_functions()
         check_indent_review = self._check_indent()
-        print(check_const_review)
+        print(check_files_review)
 
         return {'02_const': check_const_review,
                 '02_line_length': check_line_length_review,
@@ -801,46 +837,46 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
 
 class PythonSimplificationChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
         self._parse_codes()
 
 
 class PythonOtherPythonicChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
         self._parse_codes()
 
 
 class PythonExceptionsChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
         self._parse_codes()
 
 
 class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
         self._parse_codes()
 
 
 class PyTorchChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
         self._parse_codes()
 
 
 class EntireCodeChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict):
-        super().__init__(py_codes, config)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
 
-        self.python_basics_checker = PythonBasicsChecker(py_codes, config)
-        self.python_basic_convention_checker = PythonBasicConventionChecker(py_codes, config)
-        self.python_simplification_checker = PythonSimplificationChecker(py_codes, config)
-        self.python_other_pythonic_checker = PythonOtherPythonicChecker(py_codes, config)
-        self.python_exceptions_checker = PythonExceptionsChecker(py_codes, config)
-        self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config)
-        self.pytorch_checker = PyTorchChecker(py_codes, config)
+        self.python_basics_checker = PythonBasicsChecker(py_codes, config, code_path)
+        self.python_basic_convention_checker = PythonBasicConventionChecker(py_codes, config, code_path)
+        self.python_simplification_checker = PythonSimplificationChecker(py_codes, config, code_path)
+        self.python_other_pythonic_checker = PythonOtherPythonicChecker(py_codes, config, code_path)
+        self.python_exceptions_checker = PythonExceptionsChecker(py_codes, config, code_path)
+        self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config, code_path)
+        self.pytorch_checker = PyTorchChecker(py_codes, config, code_path)
 
     def _check_python_basics(self) -> dict[str, str]:
         return self.python_basics_checker.run_code_review()
@@ -897,8 +933,8 @@ class EntireCodeChecker(DefaultCodeChecker):
         return final_result
 
 
-def default_code_review_func(py_codes: dict[str, str], config: dict) -> dict[str, str]:
+def default_code_review_func(py_codes: dict[str, str], config: dict, code_path: str) -> dict[str, str]:
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
-    default_code_checker = EntireCodeChecker(py_codes=py_codes, config=config)
+    default_code_checker = EntireCodeChecker(py_codes=py_codes, config=config, code_path=code_path)
     return default_code_checker.run_code_review()
