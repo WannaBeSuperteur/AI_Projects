@@ -65,6 +65,7 @@
 * `zip` 사용 가능한 경우 사용
 * `enumerate` 사용 가능한 경우 사용
 * 아래에서 `before`로 된 부분은 `pathlib`을 사용하여 `after`처럼 사용해야 함
+  * `read_text` 뿐만 아니라 `write_text` 도 마찬가지 
 
 ```python
 # before
