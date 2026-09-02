@@ -729,29 +729,24 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
-        check_unused_review = self._check_unused()
-        check_unnecessary_prints_review = self._check_unnecessary_prints()
-        check_duplicates_review = self._check_duplicates()
-        check_similar_variables_review = self._check_similar_variables()
-        check_same_func_args_review = self._check_same_func_args()
-        check_names_review = self._check_names()
-        check_return_matched_with_func_name_review = self._check_return_matched_with_func_name()
-        check_library_orders_review = self._check_library_orders()
-        check_func_docstring_review = self._check_func_docstring()
-        check_commented_codes_review = self._check_commented_codes()
-        check_empty_file_review = self._check_empty_file()
+        checks = [
+            'unused',
+            'unnecessary_prints',
+            'duplicates',
+            'similar_variables',
+            'same_func_args',
+            'names',
+            'return_matched_with_func_name',
+            'library_orders',
+            'func_docstring',
+            'commented_codes',
+            'empty_file'
+        ]
 
-        return {'01_unused': check_unused_review,
-                '01_unnecessary_prints': check_unnecessary_prints_review,
-                '01_duplicates': check_duplicates_review,
-                '01_similar_variables': check_similar_variables_review,
-                '01_same_func_args': check_same_func_args_review,
-                '01_names': check_names_review,
-                '01_return_matched_with_func_name': check_return_matched_with_func_name_review,
-                '01_library_orders': check_library_orders_review,
-                '01_func_docstring': check_func_docstring_review,
-                '01_commented_codes': check_commented_codes_review,
-                '01_empty_file': check_empty_file_review}
+        return {
+            f'01_{name}': getattr(self, f'_check_{name}')()
+            for name in checks
+        }
 
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
@@ -905,20 +900,26 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
-        check_const_review = self._check_const()
-        check_line_length_review = self._check_line_length()
-        check_files_review = self._check_files()
-        check_functions_review = self._check_functions()
-        check_indent_review = self._check_indent()
+        checks = [
+            'const',
+            'line_length',
+            'files',
+            'functions',
+            'indent'
+        ]
 
-        return {'02_const': check_const_review,
-                '02_line_length': check_line_length_review,
-                '02_files': check_files_review,
-                '02_functions': check_functions_review,
-                '02_indent': check_indent_review}
+        return {
+            f'02_{name}': getattr(self, f'_check_{name}')()
+            for name in checks
+        }
 
 
 class PythonSimplificationChecker(DefaultCodeChecker):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+        super().__init__(py_codes, config, code_path)
+        self._parse_codes()
+        self._get_function_name_by_line()
+
     def _check_suggest_list_comprehension(self) -> str:
         pass
 
@@ -970,48 +971,30 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def _check_use_map(self) -> str:
         pass
 
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
-        self._parse_codes()
-        self._get_function_name_by_line()
-
     def run_code_review(self) -> dict[str, str]:
-        check_suggest_list_comprehension_review = self._check_suggest_list_comprehension()
-        check_generator_expression_review = self._check_generator_expression()
-        check_if_to_dict_review = self._check_if_to_dict()
-        check_path_format_review = self._check_path_format()
-        check_defaultdict_review = self._check_defaultdict()
-        check_any_all_review = self._check_any_all()
-        check_zip_review = self._check_zip()
-        check_enumerate_review = self._check_enumerate()
-        check_just_read_write_to_read_write_text_review = self._check_just_read_write_to_read_write_text()
-        check_sentence_empty_review = self._check_sentence_empty()
-        check_handle_none_review = self._check_handle_none()
-        check_extend_review = self._check_extend()
-        check_count_review = self._check_count()
-        check_index_review = self._check_index()
-        check_str_join_review = self._check_str_join()
-        check_use_get_review = self._check_use_get()
-        check_use_map_review = self._check_use_map()
+        checks = [
+            'suggest_list_comprehension',
+            'generator_expression',
+            'if_to_dict',
+            'path_format',
+            'defaultdict',
+            'any_all',
+            'zip',
+            'enumerate',
+            'just_read_write_to_read_write_text',
+            'sentence_empty',
+            'handle_none',
+            'extend',
+            'count',
+            'index',
+            'str_join',
+            'use_get',
+            'use_map',
+        ]
 
         return {
-            '03_suggest_list_comprehension': check_suggest_list_comprehension_review,
-            '03_generator_expression': check_generator_expression_review,
-            '03_if_to_dict': check_if_to_dict_review,
-            '03_path_format': check_path_format_review,
-            '03_defaultdict': check_defaultdict_review,
-            '03_any_all': check_any_all_review,
-            '03_zip': check_zip_review,
-            '03_enumerate': check_enumerate_review,
-            '03_just_read_write_to_read_write_text': check_just_read_write_to_read_write_text_review,
-            '03_sentence_empty': check_sentence_empty_review,
-            '03_handle_none': check_handle_none_review,
-            '03_extend': check_extend_review,
-            '03_count': check_count_review,
-            '03_index': check_index_review,
-            '03_str_join': check_str_join_review,
-            '03_use_get': check_use_get_review,
-            '03_use_map': check_use_map_review,
+            f'03_{name}': getattr(self, f'_check_{name}')()
+            for name in checks
         }
 
 
