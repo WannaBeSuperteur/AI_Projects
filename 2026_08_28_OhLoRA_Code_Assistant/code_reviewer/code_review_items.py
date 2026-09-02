@@ -1090,6 +1090,9 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def _check_enumerate(self) -> str:
         pass
 
+    def _check_itertools_product(self) -> str:
+        pass
+
     def _check_just_read_write_to_read_write_text(self) -> str:
         pass
 
@@ -1127,6 +1130,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'any_all',
             'zip',
             'enumerate',
+            'itertools_product',
             'just_read_write_to_read_write_text',
             'sentence_empty',
             'handle_none',
