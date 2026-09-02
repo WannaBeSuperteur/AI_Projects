@@ -1108,13 +1108,33 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_enumerate(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"\bfor\s+\w+\s+in\s+range\s*\(\s*len\s*\([^)]+\)\s*\)\s*:",
+                                      forward_window_size=1)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_itertools_product(self) -> str:
-        pass
+        self._init_final_result_dict()
+
+        regex_for_in_range = r'for\s+\w+\s+in\s+range\s*\((.*?)\)\s*:'
+        self._add_regex_matched_lines(regex=rf"\b{regex_for_in_range}\s+{regex_for_in_range}",
+                                      forward_window_size=2)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_just_read_write_to_read_write_text(self) -> str:
-        pass
+        def _match_open_format(matched: list[str]) -> bool:
+            print(matched)
+
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=(r"with\s+open\s*\(.*?\)\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+" +
+                   r"(?:(?:([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\1\.read\s*\(\s*\))|(?:\1\.write\s*\(.*?\)))"),
+            match_func=_match_open_format,
+            forward_window_size=2)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_sentence_empty(self) -> str:
         pass
@@ -1162,7 +1182,9 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_zip())
+        print(self._check_enumerate())
+        print(self._check_itertools_product())
+        print(self._check_just_read_write_to_read_write_text())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()

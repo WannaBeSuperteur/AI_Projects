@@ -135,3 +135,19 @@ for idx in range(len(k_list)):
     k = k_list[idx]
     v = v_list[idx]
     target[k] = v
+
+for itertool1 in range(100):
+    for itertool2 in range(len(target)):
+        print(400)
+
+with open('example1.txt', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+with open('example2.txt', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+with open('example3.txt', 'r') as f:
+    content = f.read()
+
+with open('example4.txt', 'w') as f:
+    f.write(content)
