@@ -60,9 +60,10 @@ def convert_to_human_friendly_review(final_result_dict: dict[dict[list]]) -> str
 
 
 def ellipse_str(original_str: str) -> str:
-    if len(original_str) >= 40:
-        return f'{original_str[:16]}  ...  {original_str[-16:]}'
-    return original_str
+    replaced_newline_str = original_str.replace('\n', ' ')
+    if len(replaced_newline_str) >= 40:
+        return f'{replaced_newline_str[:16]}  ...  {replaced_newline_str[-16:]}'
+    return replaced_newline_str
 
 
 def extract_comment(line):
@@ -102,6 +103,11 @@ def is_valid_code(line: str) -> bool:
     if line.strip().startswith('"""'):  # docstring
         return False
     return True
+
+
+def check_a_in_b(a: str, b: str) -> bool:
+    tokens = re.sub(r'[^a-zA-Z0-9_]', ' ', b).split()
+    return a in tokens
 
 
 class DefaultCodeChecker:
@@ -232,6 +238,38 @@ class DefaultCodeChecker:
                                                                'start_line': start_line_no})
 
         return dict(function_bodies_info)
+
+    def _add_regex_matched_lines(self, regex: str, match_func: callable, type_name: str = 'regex',
+                                 forward_window_size: int = 5) -> None:
+
+        for py_file_path, py_code in self.py_codes.items():
+            lines = [line.strip() for line in py_code.split('\n')]
+            lines = [line[:len(line)-len(extract_comment(line))] for line in lines]
+
+            line_idx = 0
+            while line_idx < len(lines):
+                line_no = line_idx + 1
+                lines_to_search = '\n'.join(lines[line_idx:line_idx+forward_window_size])
+                matched = re.match(regex, lines_to_search)
+
+                if matched:
+                    matched_text = matched.group(0)
+                    matched_groups = list(matched.groups())
+
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    lines_to_show = lines_to_search.replace('\n', ' ')
+                    if len(lines_to_show) > 40:
+                        lines_to_show = lines_to_show[:36] + ' ...'
+
+                    if match_func(matched_groups):
+                        self.final_result_dict[py_file_path][func_name].append({'name': lines_to_show,
+                                                                                'type': type_name,
+                                                                                'line': line_no})
+                        line_idx += matched_text.count('\n') + 1
+                    else:
+                        line_idx += 1
+                else:
+                    line_idx += 1
 
     def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
@@ -920,8 +958,29 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
+    def _init_final_result_dict(self) -> None:
+        self.final_result_dict = defaultdict(dict)
+        for py_file_path, py_code in self.py_codes.items():
+            self.final_result_dict[py_file_path] = defaultdict(list)
+
     def _check_suggest_list_comprehension(self) -> str:
-        pass
+        self._init_final_result_dict()
+        quotes = "'" + '"'
+
+        self._add_regex_matched_lines(
+            regex=r"for\s+(\w+)\s+in\s+([^\n:]+):\s*\n\s*(\w+)\.append\(([^)]+)\)",
+            match_func=lambda x: check_a_in_b(a=x[0], b=x[3]))
+
+        self._add_regex_matched_lines(
+            regex=r"for\s+(\w+)\s+in\s+([^\n:]+):\s*\n\s*if\s+(.*?):\s*\n\s*(\w+)\.append\(([^)]+)\)",
+            match_func=lambda x: check_a_in_b(a=x[0], b=x[2]) and check_a_in_b(a=x[0], b=x[4]))
+
+        self._add_regex_matched_lines(
+            regex=(rf'(\w+)\s*=\s*[{quotes}][{quotes}]\s*\n' +
+                   r'\s*for\s+(\w+)\s+in\s+([^\n:]+):\s*\n\s*(\w+)\s*\+=\s*([^\n]+)'),
+            match_func=lambda x: x[0] == x[3] and check_a_in_b(a=x[1], b=x[4]))
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_generator_expression(self) -> str:
         pass
@@ -991,6 +1050,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_get',
             'use_map',
         ]
+
+        print(self._check_suggest_list_comprehension())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
