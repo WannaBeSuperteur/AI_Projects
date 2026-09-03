@@ -1310,7 +1310,40 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_args_bindable(self) -> str:
-        pass
+        final_result_dict = defaultdict(dict)
+
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model_bindable = self.text_embedding_models.get('default')
+        text_embedding_model_dynamic = self.text_embedding_models.get('default')
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
+
+            for item in function_defs:
+                line_no = item['line']
+                func_name = item['info']['name']
+                arg_names = item['info'].get('args', None).get('name', None)
+
+                if arg_names is not None:
+                    arg_name_list = ','.join(arg_names)
+
+                    if text_embedding_model_bindable.get_prob(arg_name_list) >= 0.5:
+                        final_result_dict[py_file_path][func_name].append(
+                            {'name': f'{func_name}({ellipse_str(arg_name_list)})',
+                             'type': 'bindable_args',
+                             'line': line_no})
+
+                    if text_embedding_model_dynamic.get_prob(arg_name_list) >= 0.5:
+                        final_result_dict[py_file_path][func_name].append(
+                            {'name': f'{func_name}({ellipse_str(arg_name_list)})',
+                             'type': 'dynamic_args',
+                             'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def _check_attribute_getattr(self) -> str:
         pass
@@ -1338,7 +1371,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
             'prefix_suffix'
         ]
 
-        print(self._check_collections_itertools_glob())
+        print(self._check_func_args_bindable())
 
         return {
             f'04_{name}': getattr(self, f'_check_{name}')()

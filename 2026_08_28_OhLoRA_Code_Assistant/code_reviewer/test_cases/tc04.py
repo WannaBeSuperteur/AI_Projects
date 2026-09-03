@@ -106,3 +106,12 @@ for filename in os.listdir(target_dir):
         txt_files.append(full_path)
 
 print(txt_files)
+
+# 6. func args bindable
+
+
+def test_func(value_1: int, value_2: int, value_3: int) -> int:
+    return value_1 + value_2 + value_3
+
+def test_func2() -> int:
+    return 0
