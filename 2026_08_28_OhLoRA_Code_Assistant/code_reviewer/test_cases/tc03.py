@@ -169,3 +169,11 @@ if sentence:
     print(7)
 if not sentence:
     print(8)
+
+a = {}
+dddd = 'b' in a and a['b'] is not None
+eeee = dddd in a and a[dddd] is not None
+if 'b' in a and a['b'] is not None:
+    print(a)
+
+'b' in a and a['b'] is not None

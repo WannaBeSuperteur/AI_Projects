@@ -1146,7 +1146,11 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_handle_none(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=rf".*?([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s+in\s+([\w.]+)\s+and\s+\2\s*\[\s*\1\s*\]\s+is\s+not\s+None")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_extend(self) -> str:
         pass
@@ -1188,7 +1192,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_sentence_empty())
+        print(self._check_handle_none())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
