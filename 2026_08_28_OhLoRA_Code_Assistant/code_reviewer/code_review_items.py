@@ -1423,10 +1423,20 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         self._get_function_name_by_line()
 
     def _check_exception_ignored(self):
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"except\s*:\s*\n\s*pass")
+        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s*:\s*\n\s*pass")
+        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s+as\s+([\w.]+):\s*\n\s*pass")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_exception_type(self):
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"except\s*:\s*\n")
+        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s*:\s*\n")
+        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s+as\s+([\w.]+):\s*\n")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_arg_error_prevent(self):
         pass
@@ -1445,6 +1455,8 @@ class PythonExceptionsChecker(DefaultCodeChecker):
             'assertion_try_except',
             'python_keywords_args'
         ]
+        print(self._check_exception_ignored())
+        print(self._check_exception_type())
 
         return {
             f'05_{name}': getattr(self, f'_check_{name}')()

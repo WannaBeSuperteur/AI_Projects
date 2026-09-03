@@ -7,7 +7,7 @@ import numpy as np
 from code_review_items import default_code_review_func
 
 
-TEST_CASES_DIR = 'test_cases/tc04.py'
+TEST_CASES_DIR = 'test_cases/tc05.py'
 
 
 class CodeReviewer:
