@@ -149,5 +149,5 @@ if not sentence == '':
 * Loss Function 및 Activation Function 의 올바른 사용
   * 다중 분류 문제에서 Categorical Cross Entropy Loss 사용
   * 이진 분류 문제에서 Binary Cross Entropy Loss + Sigmoid 조합 사용 (`nn.BCEWithLogitsLoss` 사용 권장)
-* 데이터셋 train/valid/test 분리 시, train loader 에 `shuffle=True` 적용
+* 데이터셋 train/valid/test 분리 시, train loader 에 `shuffle=True` 적용, valid/test loader 에는 `shuffle=False` 적용
 * 재현성을 위한 `torch.manual_seed` 등 적용
