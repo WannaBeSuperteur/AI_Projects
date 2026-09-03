@@ -1089,7 +1089,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._add_regex_matched_lines(
             regex=(r'([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(False|True)\s+' +
                    r'for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+' +
-                   r'if(\s+[^:]+):\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(True|False)\s+'),
+                   r'if(\s+[^:]+):\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(True|False)'),
             match_func=lambda x: len(x) >= 7 and x[0] == x[5] and x[1] != x[6] and x[2] in x[4],
             forward_lines=7)
 
@@ -1225,10 +1225,6 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_get',
             'use_map',
         ]
-
-        print(self._check_handle_none())
-        print(self._check_count())
-        print(self._check_index())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
