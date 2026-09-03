@@ -1410,11 +1410,6 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
             'prefix_suffix'
         ]
 
-        print(self._check_attribute_getattr())
-        print(self._check_regex_r())
-        print(self._check_func_lambda())
-        print(self._check_prefix_suffix())
-
         return {
             f'04_{name}': getattr(self, f'_check_{name}')()
             for name in checks
@@ -1425,6 +1420,36 @@ class PythonExceptionsChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         super().__init__(py_codes, config, code_path)
         self._parse_codes()
+        self._get_function_name_by_line()
+
+    def _check_exception_ignored(self):
+        pass
+
+    def _check_exception_type(self):
+        pass
+
+    def _check_func_arg_error_prevent(self):
+        pass
+
+    def _check_assertion_try_except(self):
+        pass
+
+    def _check_python_keywords_args(self):
+        pass
+
+    def run_code_review(self) -> dict[str, str]:
+        checks = [
+            'exception_ignored',
+            'exception_type',
+            'func_arg_error_prevent',
+            'assertion_try_except',
+            'python_keywords_args'
+        ]
+
+        return {
+            f'05_{name}': getattr(self, f'_check_{name}')()
+            for name in checks
+        }
 
 
 class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
