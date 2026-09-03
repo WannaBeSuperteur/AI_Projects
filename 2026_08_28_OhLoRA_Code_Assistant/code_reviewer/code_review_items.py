@@ -1230,9 +1230,6 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_str_join())
-        print(self._check_use_map())
-
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
             for name in checks
@@ -1243,6 +1240,55 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         super().__init__(py_codes, config, code_path)
         self._parse_codes()
+
+    def _check_unpacking(self) -> str:
+        pass
+
+    def _check_open_file(self) -> str:
+        pass
+
+    def _check_key_itemgetter(self) -> str:
+        pass
+
+    def _check_f_string(self) -> str:
+        pass
+
+    def _check_collections_itertools_glob(self) -> str:
+        pass
+
+    def _check_func_args_bindable(self) -> str:
+        pass
+
+    def _check_attribute_getattr(self) -> str:
+        pass
+
+    def _check_regex_r(self) -> str:
+        pass
+
+    def _check_func_lambda(self) -> str:
+        pass
+
+    def _check_prefix_suffix(self) -> str:
+        pass
+
+    def run_code_review(self) -> dict[str, str]:
+        checks = [
+            'unpacking',
+            'open_file',
+            'key_itemgetter',
+            'f_string',
+            'collections_itertools_glob',
+            'func_args_bindable',
+            'attribute_getattr',
+            'regex_r',
+            'func_lambda',
+            'prefix_suffix'
+        ]
+
+        return {
+            f'04_{name}': getattr(self, f'_check_{name}')()
+            for name in checks
+        }
 
 
 class PythonExceptionsChecker(DefaultCodeChecker):
