@@ -1240,18 +1240,41 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         super().__init__(py_codes, config, code_path)
         self._parse_codes()
+        self._get_function_name_by_line()
 
     def _check_unpacking(self) -> str:
-        pass
+        value_assign = rf"([\w.]+)\s*=\s*([\w.]+)\s*\[({QUOTES_BOUND}|[\w.]+|[\w.]+:)]"
+
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=rf"{value_assign}\s*\n\s*{value_assign}",
+            match_func=lambda x: x[1] == x[4])
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_open_file(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=rf"([\w.]+)\s*=\s*open\s*\(\s*{ANY_CONST_OR_VAR}\s*,\s*{ANY_CONST_OR_VAR}\s*\)")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_key_itemgetter(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=rf"([\w.]+)\s*.\s*sort\s*\(\s*key\s*=\s*lambda\s+([\w.]+)\s*:\s*\2\s*\[{ANY_CONST_OR_VAR}\]\)")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_f_string(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=rf"^..*?({QUOTES_BOUND}\s*\+\s*([\w.]+)|([\w.]+)\s*\+\s*{QUOTES_BOUND})")
+
+        self._add_regex_matched_lines(
+            regex=rf"^..*?({QUOTES_BOUND}\s*\+\s*\(.*?\)|\(.*?\)\s*\+\s*{QUOTES_BOUND})")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_collections_itertools_glob(self) -> str:
         pass
@@ -1284,6 +1307,11 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
             'func_lambda',
             'prefix_suffix'
         ]
+
+        print(self._check_unpacking())
+        print(self._check_open_file())
+        print(self._check_key_itemgetter())
+        print(self._check_f_string())
 
         return {
             f'04_{name}': getattr(self, f'_check_{name}')()

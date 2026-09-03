@@ -72,6 +72,13 @@ class CodeReviewer:
 
 
 # TODO: remove for production
+# TODO: 전체 완료후, 전체 코드리뷰 결과 텍스트파일 저장 -> code_review_items.py 분리 -> 코드리뷰 재실시 -> 결과 비교 -> 차이 수정
+"""
+for name in checks:
+    print(getattr(self, f'_check_{name}')())
+"""
+
+
 class TempTextEmbeddingModel:
     def __init__(self):
         pass
