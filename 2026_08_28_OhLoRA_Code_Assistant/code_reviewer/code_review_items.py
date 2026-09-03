@@ -1196,13 +1196,18 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_str_join(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=fr"([\w.]+)\s*=\s*(''|{TWO_DOUBLE_QUOTES})\s*(\n|\n\s*\n)\s*for.*?:\n\1\s*\+=")
 
-    def _check_use_get(self) -> str:
-        pass
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_use_map(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=r".*?(sum|max|min)\s*\(\s*([\w.]+)\s*\(\s*([\w.]+)\s*\)\s+for\s+\3\s+in[^\n]*\)")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
@@ -1222,11 +1227,11 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'count',
             'index',
             'str_join',
-            'use_get',
             'use_map',
         ]
 
-        print(self._check_handle_none())
+        print(self._check_str_join())
+        print(self._check_use_map())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()

@@ -258,3 +258,27 @@ while i < len(data):
     if data[i] == "search_me":
         break
     i += 1
+
+
+# string -> join refactoring needed
+result = ''
+for i in range(1000):
+    result += f"Data {i}\n"
+
+result = ""
+for word in words:
+    result += word + ", "
+result = result[:-2]  # 마지막 쉼표 제거
+
+numbers = [1, 2, 3, 4, 5]
+result = ""
+for num in numbers:
+    if num % 2 != 0:  # 홀수만 골라서 변환
+        result += str(num)
+
+# list comprehension -> mapping
+a = sum(len(line) for line in result[:3])
+b = max(len(line) for line in result)
+c = min(len(x) for x in ['ive', 'lesserafim', 'idle', 'newjeans', 'rescene', 'nmixx'])
+d = sum(len(line) for line in result[:3]) + 300
+e = max(len(line) for line in result) + len('dddd')
