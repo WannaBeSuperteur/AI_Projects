@@ -49,3 +49,60 @@ e = "a" + "bb" + "ccc" + str(1234)
 f = key_name + key_name
 g = int('123') + numeric
 h = numeric + (int("123"))
+
+# 5. collections & itertools use
+## 5-1. collections (빈도수)
+
+words = ["apple", "banana", "apple", "cherry", "banana", "apple"]
+word_counts = {}
+
+for word in words:
+    if word in word_counts:
+        word_counts[word] += 1
+    else:
+        word_counts[word] = 1
+
+word_counts = {}
+for word in words:
+    word_counts[word] = word_counts.get(word, 0) + 1
+
+## 5-2. itertools.chain
+
+matrix = [[1, 2], [3, 4], [5, 6]]
+
+flattened = []
+for row in matrix:
+    for item in row:
+        flattened.append(item)
+
+my_list = [1, 2]
+my_tuple = (3, 4)
+my_set = {5, 6}
+
+# 타입을 맞추기 위해 불필요한 변환이 일어남
+combined = my_list + list(my_tuple) + list(my_set)
+for item in combined:
+    print(item)
+
+dict_a = {'a': 1, 'b': 2}
+dict_b = {'c': 3, 'd': 4}
+
+# keys()나 values()를 리스트로 변환해 합치는 낭비 발생
+all_values = list(dict_a.values()) + list(dict_b.values())
+all_values_ = list(dict_a.values()) + my_list
+
+## 5-3. glob.glob 사용 (파일 경로명 조건 리스트)
+
+import os
+
+target_dir = "./my_folder"
+txt_files = []
+
+for filename in os.listdir(target_dir):
+    # 파일명 조건 검사 (문자열 매칭)
+    if filename.endswith(".txt"):
+        # 경로명을 다시 결합해야 하는 번거로움 발생
+        full_path = os.path.join(target_dir, filename)
+        txt_files.append(full_path)
+
+print(txt_files)

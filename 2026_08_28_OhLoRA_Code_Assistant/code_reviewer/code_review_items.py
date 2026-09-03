@@ -1277,7 +1277,37 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_collections_itertools_glob(self) -> str:
-        pass
+        self._init_final_result_dict()
+
+        # 1. collections
+        self._add_regex_matched_lines(
+            regex=(r"for\s+([\w.]+)\s+in\s+([\w.]+)\s*:\s*\n" +
+                   r"\s*if\s+\1\s+in\s+([\w.]+)\s*:\s*\n" +
+                   r"\s*\3\s*\[\s*\1\s*\]\s*\+=\s*1\s*\n" +
+                   r"\s*else\s*:\s*\n" +
+                   r"\s*\3\s*\[\s*\1\s*\]\s*=\s*1"),
+            forward_lines=10)
+
+        self._add_regex_matched_lines(
+            regex=(r"\s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:\s*\n" +
+                   r"\s*([\w.]+)\s*\[\s*\1\s*\]\s*=\s*\3\s*.\s*get\s*\(\s*\1\s*,\s*0\s*\)\s*\+\s*1"))
+
+        # 2. itertools.chain
+        self._add_regex_matched_lines(
+            regex=(r"\s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:\s*\n" +
+                   r"\s*for\s+([\w.]+)\s+in\s+\1\s*:\s*\n" +
+                   r".*?.\s*append\s*\(\s*\3\s*\)"))
+
+        self._add_regex_matched_lines(
+            regex=rf"^..*?({ANY_CONST_OR_VAR}\s*\+\s*list\s*\(.*?\)|list\s*\(.*?\)\s*\+\s*{ANY_CONST_OR_VAR})")
+
+        # 3. glob
+        self._add_regex_matched_lines(
+            regex=(r"for\s+([\w.]+)\s+in\s+os\s*.\s*listdir\s*\(\s*[\w.]+\s*\)\s*:\s*\n" +
+                   r"\s*if(\s+.*?\s*):\s*\n"),
+            match_func=lambda x: x[0] in x[1])
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_args_bindable(self) -> str:
         pass
@@ -1308,10 +1338,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
             'prefix_suffix'
         ]
 
-        print(self._check_unpacking())
-        print(self._check_open_file())
-        print(self._check_key_itemgetter())
-        print(self._check_f_string())
+        print(self._check_collections_itertools_glob())
 
         return {
             f'04_{name}': getattr(self, f'_check_{name}')()
