@@ -245,7 +245,7 @@ class DefaultCodeChecker:
         return dict(function_bodies_info)
 
     def _add_regex_matched_lines(self, regex: str, match_func: Optional[Callable] = None, type_name: str = 'regex',
-                                 forward_window_size: int = 5) -> None:
+                                 forward_lines: int = 5) -> None:
 
         for py_file_path, py_code in self.py_codes.items():
             lines = [line.strip() for line in py_code.split('\n')]
@@ -254,7 +254,7 @@ class DefaultCodeChecker:
             line_idx = 0
             while line_idx < len(lines):
                 line_no = line_idx + 1
-                lines_to_search = '\n'.join(lines[line_idx:line_idx+forward_window_size])
+                lines_to_search = '\n'.join(lines[line_idx:line_idx+forward_lines])
                 matched = re.match(regex, lines_to_search)
 
                 if matched:
@@ -1050,7 +1050,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=rf'.*([{QUOTES}])(?:[a-zA-Z]:)?[/\\]*(?:[^/\\\r\n]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])',
-            forward_window_size=1)
+            forward_lines=1)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1088,7 +1088,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
                    r'for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+' +
                    r'if(\s+[^:]+):\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(True|False)\s+'),
             match_func=lambda x: len(x) >= 7 and x[0] == x[5] and x[1] != x[6] and x[2] in x[4],
-            forward_window_size=7)
+            forward_lines=7)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1103,14 +1103,14 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             regex=(r"for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+range\s*\(\s*(len\s*\([a-zA-Z_][a-zA-Z0-9_]*\))\s*\)\s*:" +
                    2 * r"[\s\S]*?([a-zA-Z_][a-zA-Z0-9_]*)\s*\[\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\]"),
             match_func=_match_zip,
-            forward_window_size=15)
+            forward_lines=15)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_enumerate(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"\bfor\s+\w+\s+in\s+range\s*\(\s*len\s*\([^)]+\)\s*\)\s*:",
-                                      forward_window_size=1)
+                                      forward_lines=1)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1119,7 +1119,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
 
         regex_for_in_range = r'for\s+\w+\s+in\s+range\s*\((.*?)\)\s*:'
         self._add_regex_matched_lines(regex=rf"\b{regex_for_in_range}\s+{regex_for_in_range}",
-                                      forward_window_size=2)
+                                      forward_lines=2)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1128,20 +1128,20 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._add_regex_matched_lines(
             regex=(r"with\s+open\s*\((.*?)\)\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+" +
                    r"(?:(?:([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\2\.read\s*\((\s*)\))|(?:\2\.write\s*\((.*?)\)))"),
-            forward_window_size=2)
+            forward_lines=2)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_sentence_empty(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*:",
-                                      forward_window_size=1)
+                                      forward_lines=1)
 
         self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*==\s*0\s*:",
-                                      forward_window_size=1)
+                                      forward_lines=1)
 
         self._add_regex_matched_lines(regex=rf"if\s+(?:not\s+)?([a-zA-Z_]\w*)\s*==\s*[{QUOTES}][{QUOTES}]\s*:",
-                                      forward_window_size=1)
+                                      forward_lines=1)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
