@@ -1346,16 +1346,43 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_attribute_getattr(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=(rf"if\s+hasattr\s*\(\s*([\w.]+)\s*,\s*{ANY_CONST_OR_VAR}\s*\)\s*:\s*\n" +
+                   r"\s*([\w.]+)\s*=\s+(.*)\n\s*else\s*:\s*\n" +
+                   r"\s*([\w.]+)\s*=\s+"),
+            match_func=lambda x: x[2] == x[4])
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_regex_r(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=(r"^..*?re\s*.\s*(sub|match|search|compile|findall|finditer|split|fullmatch)\s*" +
+                   fr"\(\s*{QUOTES_BOUND}.*\)"))
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_lambda(self) -> str:
-        pass
+        stored_name_dict = defaultdict(set)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            stored_names = [item for item in parsed_py_code
+                            if item['type_name'] == 'name' and item['info'].get('ctx', None) == 'Store']
+
+            for item in stored_names:
+                stored_name_dict[item['line']].add(item['info']['name'])
+
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"([\w.]+)\s*=\s*lambda\s+([\w.|\s*,\s*]+)\s*:\s*")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_prefix_suffix(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"^..*?([\w.]+)\s*\[(:[0-9]+|-[0-9]+:)\]\s*==")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
@@ -1371,7 +1398,10 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
             'prefix_suffix'
         ]
 
-        print(self._check_func_args_bindable())
+        print(self._check_attribute_getattr())
+        print(self._check_regex_r())
+        print(self._check_func_lambda())
+        print(self._check_prefix_suffix())
 
         return {
             f'04_{name}': getattr(self, f'_check_{name}')()

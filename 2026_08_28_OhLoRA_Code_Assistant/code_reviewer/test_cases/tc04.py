@@ -115,3 +115,111 @@ def test_func(value_1: int, value_2: int, value_3: int) -> int:
 
 def test_func2() -> int:
     return 0
+
+# 7. attribute getattr
+
+class UserProfile:
+    def __init__(self):
+        self.theme = "dark"
+        self.language = "ko"
+
+user = UserProfile()
+setting_key = "font_size"  # 사용자나 설정에 따라 동적으로 요구되는 속성
+
+# 속성이 없을 때를 대비해 hasattr과 if문을 번거롭게 사용해야 합니다.
+if hasattr(user, setting_key):
+    value = user.font_size
+else:
+    value = "14px"  # 기본값 설정
+
+if hasattr(user, "font_size"):
+    value = 1
+else:
+    value = 0  # 기본값 설정
+
+if hasattr(user, "font_size"):
+    test = "abc"
+else:
+    value = 0  # 기본값 설정
+
+# 8. re anti-patterns
+
+import re
+text = "Hello 123 World\nNext Line\tTabbed"
+
+# 1. re.compile
+# 안티패턴: '\d'가 일반 문자열로 처리됨 (파이썬 버전에 따라 경고 발생)
+# 올바른 표현: re.compile(r'\d+')
+bad_compile = re.compile('\d+')
+
+# 2. re.match
+# 안티패턴: 문자열 시작부터 알파벳을 매칭하려 하나 '\w'에 이스케이프 누락 위험
+# 올바른 표현: re.match(r'\w+', text)
+bad_match = re.match("\w+", text)
+
+# 3. re.search
+# 안티패턴: 텍스트 중간의 공백과 단어 경계를 찾을 때 이스케이프 혼선 가능
+# 올바른 표현: re.search(r'\s\w+', text)
+bad_search = re.search('\s\w+', text)
+
+# 4. re.fullmatch
+# 안티패턴: 전체 문자열 검증 시 패턴이 길어질수록 백슬래시 해석 오류 확률 증가
+# 올바른 표현: re.fullmatch(r'[\s\S]+', text)
+bad_fullmatch = re.fullmatch("[\s\S]+", text)
+
+# 5. re.findall
+# 안티패턴: 모든 숫자를 찾으려 할 때 일반 문자열 사용
+# 올바른 표현: re.findall(r'\d', text)
+bad_findall = re.findall('\d', text)
+
+# 6. re.finditer
+# 안티패턴: 반복자(Iterator) 반환 시에도 패턴 해석 단계에서 문제 유발 가능
+# 올바른 표현: re.finditer(r'\b\w+\b', text)
+bad_finditer = re.finditer("\b\w+\b", text)
+
+# 7. re.split
+# 안티패턴: 줄바꿈이나 공백 기준으로 쪼갤 때 이스케이프 오작동 위험
+# 올바른 표현: re.split(r'\s+', text)
+bad_split = re.split('\s+', text)
+
+# 8. re.sub
+# 안티패턴: 치환 패턴과 대체 텍스트 모두에서 백슬래시 처리 문제 발생 가능
+# 올바른 표현: re.sub(r'\d+', r'NUMBER', text)
+bad_sub = re.sub("\d+", 'NUMBER', text)
+
+# 9. f = lambda x: ... -> def f(x): return ...
+
+import math
+
+f = lambda x: pow(x, 2)
+function = lambda x, y: x + y
+distance = lambda x, y, z: math.sqrt(x*x + y*y + z*z)
+
+
+def test_function(function1: callable, function2: callable, function3: callable):
+    return function1(1) + function2(1, 2) + function3(1, 2, 3)
+
+
+function_result = test_function(
+    function1=lambda x: pow(x, 2),
+    function2=lambda x, y: x + y,
+    function3=lambda x, y, z: math.sqrt(x*x + y*y + z*z)
+)
+print(function_result)
+
+# 10. prefix & suffix
+
+test_str = 'abcdefgh'
+
+if test_str[:2] == 'ab':
+    print(1)
+if test_str[:4] == 'abcd':
+    print(2)
+if test_str[-2:] == 'gh':
+    print(3)
+if test_str[-3:] == 'fgh':
+    print(4)
+if test_str[len(test_str)-1:] == 'h':
+    print(5)
+if test_str[len(test_str) - 2:] == 'gh':
+    print(6)
