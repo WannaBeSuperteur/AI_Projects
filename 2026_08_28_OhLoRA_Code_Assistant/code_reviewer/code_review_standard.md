@@ -108,7 +108,10 @@ if not sentence == '':
   * 반복문 처리 시 `itertools` 사용
     * `itertools.chain`, `itertools.tee` 등 
   * 파일의 경로명 조건을 이용한 리스트 추출 시 `glob` 사용
-* 🔮 함수의 인자 간소화가 가능한 경우 간소화해야 함 (예: `value_1, value_2, value_3` → dataclass 기반 `values`)
+* 🔮 함수의 인자가 하나로 묶을 수 있거나 유동적인 경우 처리 필요
+  * 🔮 예: 하나로 묶을 수 있는 경우 `value_1, value_2, value_3` → dataclass 기반 `values`
+  * 🔮 예: 유동적인 경우 `value_1, value_2, value_3` → `dict` 또는 `**kwargs` 를 활용
+  * 묶기 가능성, 유동성은 서로 다른 모델로 판단
 * attribute 접근 방식으로 `getattr` 사용 권장
 * `re.sub` 등 정규표현식 사용 시 표현식 string을 `r'...'` 형식으로 사용하도록 함
 * `f = lambda x: ...` 보다는 `def f(x): return ...` 를 사용한다.
