@@ -1109,8 +1109,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
 
     def _check_enumerate(self) -> str:
         self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"\bfor\s+\w+\s+in\s+range\s*\(\s*len\s*\([^)]+\)\s*\)\s*:",
-                                      forward_lines=1)
+        self._add_regex_matched_lines(regex=r"\bfor\s+\w+\s+in\s+range\s*\(\s*len\s*\([^)]+\)\s*\)\s*:")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1118,8 +1117,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._init_final_result_dict()
 
         regex_for_in_range = r'for\s+\w+\s+in\s+range\s*\((.*?)\)\s*:'
-        self._add_regex_matched_lines(regex=rf"\b{regex_for_in_range}\s+{regex_for_in_range}",
-                                      forward_lines=2)
+        self._add_regex_matched_lines(regex=rf"\b{regex_for_in_range}\s+{regex_for_in_range}")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1127,21 +1125,15 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r"with\s+open\s*\((.*?)\)\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+" +
-                   r"(?:(?:([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\2\.read\s*\((\s*)\))|(?:\2\.write\s*\((.*?)\)))"),
-            forward_lines=2)
+                   r"(?:(?:([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\2\.read\s*\((\s*)\))|(?:\2\.write\s*\((.*?)\)))"))
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_sentence_empty(self) -> str:
         self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*:",
-                                      forward_lines=1)
-
-        self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*==\s*0\s*:",
-                                      forward_lines=1)
-
-        self._add_regex_matched_lines(regex=rf"if\s+(?:not\s+)?([a-zA-Z_]\w*)\s*==\s*[{QUOTES}][{QUOTES}]\s*:",
-                                      forward_lines=1)
+        self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*:")
+        self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*==\s*0\s*:")
+        self._add_regex_matched_lines(regex=rf"if\s+(?:not\s+)?([a-zA-Z_]\w*)\s*==\s*[{QUOTES}][{QUOTES}]\s*:")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1192,7 +1184,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_handle_none())
+        print(self._check_itertools_product())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
