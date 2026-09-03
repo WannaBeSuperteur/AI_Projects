@@ -247,7 +247,11 @@ class DefaultCodeChecker:
 
         return dict(function_bodies_info)
 
-    def _add_regex_matched_lines(self, regex: str, match_func: Optional[Callable] = None, type_name: str = 'regex',
+    def _add_regex_matched_lines(self,
+                                 regex: str,
+                                 match_func: Optional[Callable] = None,
+                                 line_match_func: Optional[Callable] = None,
+                                 type_name: str = 'regex',
                                  forward_lines: int = 5) -> None:
 
         for py_file_path, py_code in self.py_codes.items():
@@ -269,7 +273,10 @@ class DefaultCodeChecker:
                     if len(lines_to_show) > 40:
                         lines_to_show = lines_to_show[:36] + ' ...'
 
-                    if match_func is None or match_func(matched_groups):
+                    is_matched = match_func is None or match_func(matched_groups)
+                    is_line_matched = line_match_func is None or line_match_func(matched_groups, line_no)
+
+                    if is_matched and is_line_matched:
                         self.final_result_dict[py_file_path][func_name].append({'name': lines_to_show,
                                                                                 'type': type_name,
                                                                                 'line': line_no})
@@ -1366,6 +1373,10 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_func_lambda(self) -> str:
         stored_name_dict = defaultdict(set)
 
+        def lmf(matched_groups, line_no):
+            func_name = matched_groups[0]
+            return func_name in stored_name_dict[line_no]
+
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             stored_names = [item for item in parsed_py_code
                             if item['type_name'] == 'name' and item['info'].get('ctx', None) == 'Store']
@@ -1374,7 +1385,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                 stored_name_dict[item['line']].add(item['info']['name'])
 
         self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"([\w.]+)\s*=\s*lambda\s+([\w.|\s*,\s*]+)\s*:\s*")
+        self._add_regex_matched_lines(regex=r"([\w.]+)\s*=\s*lambda\s+([\w.|\s*,\s*]+)\s*:\s*",
+                                      line_match_func=lmf)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
