@@ -1143,7 +1143,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def _check_handle_none(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=rf".*?{ANY_CONST_OR_VAR}\s+in\s+([\w.]+)\s+and\s+\2\s*\[\s*\1\s*\]\s+is\s+not\s+None")
+            regex=rf".*?{ANY_CONST_OR_VAR}\s+in\s+([\w.]+)\s+and\s+\2\s*\[\s*\1\s*\]")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1225,6 +1225,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_get',
             'use_map',
         ]
+
+        print(self._check_handle_none())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
