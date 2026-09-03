@@ -19,8 +19,10 @@ from itertools import chain, product
 from ast_utils import parse_py_code
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
+
 QUOTES = "'" + '"'
 TWO_DOUBLE_QUOTES = '""'
+QUOTES_BOUND = f"[{QUOTES}].*?[{QUOTES}]"
 
 
 def simplify_code(original_code: str) -> str:
@@ -1140,7 +1142,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def _check_handle_none(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=rf".*?([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s+in\s+([\w.]+)\s+and\s+\2\s*\[\s*\1\s*\]\s+is\s+not\s+None")
+            regex=rf".*?({QUOTES_BOUND}|[\w.]+)\s+in\s+([\w.]+)\s+and\s+\2\s*\[\s*\1\s*\]\s+is\s+not\s+None")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1158,15 +1160,15 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*0\s*\n\s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:" +
-                   rf"\s*\n\s*if\s+\2\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*:\s*\n\s*\1\s*\+=\s*1"))
+                   rf"\s*\n\s*if\s+\2\s*==\s*({QUOTES_BOUND}|[\w.]+)\s*:\s*\n\s*\1\s*\+=\s*1"))
 
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*len\s*\(\s*\[\s*([\w.]+)\s+" +
-                   rf"for\s+\2\s+in\s+([\w.]+)\s+if\s+\2\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*\]\s*\)"))
+                   rf"for\s+\2\s+in\s+([\w.]+)\s+if\s+\2\s*==\s*({QUOTES_BOUND}|[\w.]+)\s*\]\s*\)"))
 
         self._add_regex_matched_lines(
             regex=(rf".*?len\s*\(\s*list\s*\(\s*filter\s*\(\s*lambda\s+([\w.]+)\s*:" +
-                   rf"\s*\1\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*,\s*([\w.]+)\s*\)\s*\)?\s*\)"))
+                   rf"\s*\1\s*==\s*({QUOTES_BOUND}|[\w.]+)\s*,\s*([\w.]+)\s*\)\s*\)?\s*\)"))
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1178,21 +1180,21 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*([-\w.]+|[\w.]+)\s*\n" +
-                   rf"\s*for\s+([\w.]+)\s+in\s+range\s*\(\s*len\s*\(\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*\)\s*\)\s*:\s*\n" +
-                   rf"\s*if\s+\4\s*\[\s*\3\s*\]\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*:\s*\n" +
+                   rf"\s*for\s+([\w.]+)\s+in\s+range\s*\(\s*len\s*\(\s*({QUOTES_BOUND}|[\w.]+)\s*\)\s*\)\s*:\s*\n" +
+                   rf"\s*if\s+\4\s*\[\s*\3\s*\]\s*==\s*({QUOTES_BOUND}|[\w.]+)\s*:\s*\n" +
                    r"\s*([\w.]+)\s*=\s*\3\s*\n\s*break"),
             match_func=test,
             forward_lines=10)
 
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*next\s*\(\s*([\w.]+)\s+for\s+\2\s*,\s*([\w.]+)\s+" +
-                   rf"in\s+enumerate\s*\(\s*([\w.]+)\s*\)\s+if\s+\3\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)"),
+                   rf"in\s+enumerate\s*\(\s*([\w.]+)\s*\)\s+if\s+\3\s*==\s*({QUOTES_BOUND}|[\w.]+)"),
             match_func=test)
 
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*([\w.]+)\s*\n" +
                    r"\s*while\s+\1\s*<\s*len\s*\(\s*([\w.]+)\s*\)\s*:\s*\n" +
-                   rf"\s*if\s+\3\s*\[\s*\1\s*\]\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*:\s*\n" +
+                   rf"\s*if\s+\3\s*\[\s*\1\s*\]\s*==\s*({QUOTES_BOUND}|[\w.]+)\s*:\s*\n" +
                    r"\s*break\s*\n\s*\1\s*\+=\s*1"),
             match_func=test,
             forward_lines=10)
@@ -1229,6 +1231,10 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_get',
             'use_map',
         ]
+
+        print(self._check_handle_none())
+        print(self._check_count())
+        print(self._check_index())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
