@@ -1145,13 +1145,59 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_extend(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=r".*?for\s+([\w.]+)\s+in\s+([\w.]+)\s*:\s*\n\s*([\w.]+)\.append\s*\(\s*\1\s*\)")
+
+        self._add_regex_matched_lines(
+            regex=r".*?([\w.]+)\s*\+=\s*\[\s*(.*?)\s+for\s+([\w.]+)\s+in\s+([\w.]+)\s*\]")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_count(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=(r".*?([\w.]+)\s*=\s*0\s*\n\s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:" +
+                   rf"\s*\n\s*if\s+\2\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*:\s*\n\s*\1\s*\+=\s*1"))
+
+        self._add_regex_matched_lines(
+            regex=(r".*?([\w.]+)\s*=\s*len\s*\(\s*\[\s*([\w.]+)\s+" +
+                   rf"for\s+\2\s+in\s+([\w.]+)\s+if\s+\2\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*\]\s*\)"))
+
+        self._add_regex_matched_lines(
+            regex=(rf".*?len\s*\(\s*list\s*\(\s*filter\s*\(\s*lambda\s+([\w.]+)\s*:" +
+                   rf"\s*\1\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*,\s*([\w.]+)\s*\)\s*\)?\s*\)"))
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_index(self) -> str:
-        pass
+        def test(matched):
+            print(matched)
+            return True
+
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=(r".*?([\w.]+)\s*=\s*([-\w.]+|[\w.]+)\s*\n" +
+                   rf"\s*for\s+([\w.]+)\s+in\s+range\s*\(\s*len\s*\(\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*\)\s*\)\s*:\s*\n" +
+                   rf"\s*if\s+\4\s*\[\s*\3\s*\]\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*:\s*\n" +
+                   r"\s*([\w.]+)\s*=\s*\3\s*\n\s*break"),
+            match_func=test,
+            forward_lines=10)
+
+        self._add_regex_matched_lines(
+            regex=(r".*?([\w.]+)\s*=\s*next\s*\(\s*([\w.]+)\s+for\s+\2\s*,\s*([\w.]+)\s+" +
+                   rf"in\s+enumerate\s*\(\s*([\w.]+)\s*\)\s+if\s+\3\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)"),
+            match_func=test)
+
+        self._add_regex_matched_lines(
+            regex=(r".*?([\w.]+)\s*=\s*([\w.]+)\s*\n" +
+                   r"\s*while\s+\1\s*<\s*len\s*\(\s*([\w.]+)\s*\)\s*:\s*\n" +
+                   rf"\s*if\s+\3\s*\[\s*\1\s*\]\s*==\s*([{QUOTES}].*?[{QUOTES}]|[\w.]+)\s*:\s*\n" +
+                   r"\s*break\s*\n\s*\1\s*\+=\s*1"),
+            match_func=test,
+            forward_lines=10)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_str_join(self) -> str:
         pass
@@ -1183,8 +1229,6 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_get',
             'use_map',
         ]
-
-        print(self._check_itertools_product())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()
