@@ -102,7 +102,7 @@ if not sentence == '':
 * 파일 열기, 닫기 시 컨텍스트 매니저 방식인 `with open(...)` 사용
 * `key=lambda x: x['key']` 보다, `key=itemgetter('key')` 사용 권장
 * 문자열 단순 연결보다는 f-string 사용
-* 포맷팅 방식 등은 1가지로 통일 (예: f-string 으로 통일)
+  * 즉, 포맷팅 방식 등은 1가지로 통일 (예: f-string 으로 통일)
 * 라이브러리 사용
   * 빈도수 계산 시 `collections` 사용
   * 반복문 처리 시 `itertools` 사용
