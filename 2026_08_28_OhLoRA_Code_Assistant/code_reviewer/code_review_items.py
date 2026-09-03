@@ -1133,7 +1133,17 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_sentence_empty(self) -> str:
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*:",
+                                      forward_window_size=1)
+
+        self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*==\s*0\s*:",
+                                      forward_window_size=1)
+
+        self._add_regex_matched_lines(regex=rf"if\s+(?:not\s+)?([a-zA-Z_]\w*)\s*==\s*[{QUOTES}][{QUOTES}]\s*:",
+                                      forward_window_size=1)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_handle_none(self) -> str:
         pass
@@ -1178,9 +1188,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             'use_map',
         ]
 
-        print(self._check_enumerate())
-        print(self._check_itertools_product())
-        print(self._check_just_read_write_to_read_write_text())
+        print(self._check_sentence_empty())
 
         return {
             f'03_{name}': getattr(self, f'_check_{name}')()

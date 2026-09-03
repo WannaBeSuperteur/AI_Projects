@@ -151,3 +151,21 @@ with open('example3.txt', 'r') as f:
 
 with open('example4.txt', 'w') as f:
     f.write(content2)
+
+sentence = '123'
+if len(sentence):
+    print(1)
+if not len(sentence):
+    print(2)
+if len(sentence) == 0:
+    print(3)
+if not len(sentence) == 0:
+    print(4)
+if sentence == '':
+    print(5)
+if not sentence == '':
+    print(6)
+if sentence:
+    print(7)
+if not sentence:
+    print(8)
