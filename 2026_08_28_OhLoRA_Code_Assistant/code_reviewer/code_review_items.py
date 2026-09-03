@@ -279,6 +279,11 @@ class DefaultCodeChecker:
                 else:
                     line_idx += 1
 
+    def _init_final_result_dict(self) -> None:
+        self.final_result_dict = defaultdict(dict)
+        for py_file_path, py_code in self.py_codes.items():
+            self.final_result_dict[py_file_path] = defaultdict(list)
+
     def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
 
@@ -965,11 +970,6 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         super().__init__(py_codes, config, code_path)
         self._parse_codes()
         self._get_function_name_by_line()
-
-    def _init_final_result_dict(self) -> None:
-        self.final_result_dict = defaultdict(dict)
-        for py_file_path, py_code in self.py_codes.items():
-            self.final_result_dict[py_file_path] = defaultdict(list)
 
     def _check_suggest_list_comprehension(self) -> str:
         self._init_final_result_dict()
