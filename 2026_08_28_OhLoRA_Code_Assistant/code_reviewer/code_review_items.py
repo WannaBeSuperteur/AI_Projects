@@ -1124,14 +1124,10 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_just_read_write_to_read_write_text(self) -> str:
-        def _match_open_format(matched: list[str]) -> bool:
-            print(matched)
-
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=(r"with\s+open\s*\(.*?\)\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+" +
-                   r"(?:(?:([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\1\.read\s*\(\s*\))|(?:\1\.write\s*\(.*?\)))"),
-            match_func=_match_open_format,
+            regex=(r"with\s+open\s*\((.*?)\)\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+" +
+                   r"(?:(?:([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\2\.read\s*\((\s*)\))|(?:\2\.write\s*\((.*?)\)))"),
             forward_window_size=2)
 
         return convert_to_human_friendly_review(self.final_result_dict)

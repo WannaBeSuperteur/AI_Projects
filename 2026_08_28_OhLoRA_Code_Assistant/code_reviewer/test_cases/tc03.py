@@ -141,13 +141,13 @@ for itertool1 in range(100):
         print(400)
 
 with open('example1.txt', 'r', encoding='utf-8') as f:
-    content = f.read()
+    content1 = f.read()
 
 with open('example2.txt', 'w', encoding='utf-8') as f:
-    f.write(content)
+    f.write(content1)
 
 with open('example3.txt', 'r') as f:
-    content = f.read()
+    content2 = f.read()
 
 with open('example4.txt', 'w') as f:
-    f.write(content)
+    f.write(content2)
