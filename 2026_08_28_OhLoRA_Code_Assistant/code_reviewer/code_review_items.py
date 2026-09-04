@@ -1562,6 +1562,9 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
                 items_ = list(items)
                 for item in items_:
+                    if not item.get('args_name', None):
+                        continue
+
                     arg_name_set = set(item['args_name'])
                     intersection_size = len(arg_name_discovered.intersection(arg_name_set))
                     arg_name_discovered.update(arg_name_set)
