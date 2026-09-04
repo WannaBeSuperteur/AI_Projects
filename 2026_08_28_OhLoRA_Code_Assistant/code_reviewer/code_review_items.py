@@ -1470,7 +1470,10 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_assertion_try_except(self):
-        pass
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"except\s+AssertionError\s*(\s*as\s+([\w.]+)\s*:|:)")
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_python_keywords_args(self):
         pass
@@ -1483,6 +1486,9 @@ class PythonExceptionsChecker(DefaultCodeChecker):
             'assertion_try_except',
             'python_keywords_args'
         ]
+
+        print(self._check_assertion_try_except())
+        print(self._check_python_keywords_args())
 
         return {
             f'05_{name}': getattr(self, f'_check_{name}')()

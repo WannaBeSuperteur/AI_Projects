@@ -86,3 +86,26 @@ def configure_settings_1(
 ):
     options["debug"] = True  # 특정 상황에서 디버그 모드를 켬
     return options
+
+
+# 3. assertion을 exception handling으로 사용
+
+def get_user_age():
+    try:
+        age = int(input("나이를 입력하세요: "))
+        # ❌ 잘못된 사용: 입력값 검증을 assert로 수행
+        assert age >= 0, "나이는 음수가 될 수 없습니다."
+        return age
+    except AssertionError as e:
+        print(f"입력 오류: {e}")
+        return 0
+
+
+def process_payment(amount, balance):
+    try:
+        # ❌ 잘못된 사용: 잔액 부족 체크를 assert와 try-except로 제어
+        assert amount <= balance, "잔액이 부족합니다."
+        balance -= amount
+        return balance, "결제 성공"
+    except AssertionError:
+        return balance, "결제 실패"
