@@ -1481,7 +1481,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
 
-            store_cases = [item for item in parsed_py_code if item.get('info', None).get('ctx', None) == 'Store']
+            store_cases = [item for item in parsed_py_code if item.get('info', {}).get('ctx', None) == 'Store']
             store_cases_bad = [item for item in store_cases if item['info']['name'] in PRESERVED_WORDS]
 
             for item in store_cases_bad:
@@ -1495,7 +1495,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
             function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
             function_args = [{'line': item['line'],
                               'func_name': item['info']['name'],
-                              'args': item['info'].get('args', None).get('name', None)}
+                              'args': item['info'].get('args', {}).get('name', None)}
                              for item in function_defs]
             function_args_bad = [{'line': item['line'],
                                   'func_name': item['func_name'],
@@ -1552,11 +1552,13 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
-            'refactor_into_class_1_same_args',
-            'refactor_into_class_2_state_vars_if_else',
+            'refactor_into_class_case_1_same_args',
+            'refactor_into_class_case_2_state_vars_if_else',
             'cohesion',
             'prefix_for_only_in_class_methods'
         ]
+
+        print(self._check_refactor_into_class_case_1_same_args())
 
         return {
             f'06_{name}': getattr(self, f'_check_{name}')()
