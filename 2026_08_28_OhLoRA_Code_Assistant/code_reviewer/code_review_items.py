@@ -1538,7 +1538,10 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
-    def _check_refactor_into_class(self) -> str:
+    def _check_refactor_into_class_case_1_same_args(self) -> str:
+        pass
+
+    def _check_refactor_into_class_case_2_state_vars_if_else(self) -> str:
         pass
 
     def _check_cohesion(self) -> str:
@@ -1549,7 +1552,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
-            'refactor_into_class',
+            'refactor_into_class_1_same_args',
+            'refactor_into_class_2_state_vars_if_else',
             'cohesion',
             'prefix_for_only_in_class_methods'
         ]
