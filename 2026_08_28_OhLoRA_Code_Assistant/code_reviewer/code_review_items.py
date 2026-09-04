@@ -36,6 +36,7 @@ def simplify_code(original_code: str) -> str:
     result = re.sub(r"'''.*\'''", 'doc', result)
     result = re.sub(r'"[^"]*"', 'str', result)
     result = re.sub(r"'[^']*'", 'str', result)
+    result = re.sub(r"\[.*?\]", "[values]", result)
 
     while '  ' in result:
         result = result.replace('  ', ' ')
