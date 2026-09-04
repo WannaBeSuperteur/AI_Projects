@@ -1276,7 +1276,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_key_itemgetter(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=rf"([\w.]+)\s*.\s*sort\s*\(\s*key\s*=\s*lambda\s+([\w.]+)\s*:\s*\2\s*\[{ANY_CONST_OR_VAR}\]\)")
+            regex=rf"([\w.]+)\s*\.\s*sort\s*\(\s*key\s*=\s*lambda\s+([\w.]+)\s*:\s*\2\s*\[{ANY_CONST_OR_VAR}\]\)")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1304,7 +1304,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
         self._add_regex_matched_lines(
             regex=(r"\s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:\s*\n" +
-                   r"\s*([\w.]+)\s*\[\s*\1\s*\]\s*=\s*\3\s*.\s*get\s*\(\s*\1\s*,\s*0\s*\)\s*\+\s*1"))
+                   r"\s*([\w.]+)\s*\[\s*\1\s*\]\s*=\s*\3\s*\.\s*get\s*\(\s*\1\s*,\s*0\s*\)\s*\+\s*1"))
 
         # 2. itertools.chain
         self._add_regex_matched_lines(
@@ -1317,7 +1317,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
         # 3. glob
         self._add_regex_matched_lines(
-            regex=(r"for\s+([\w.]+)\s+in\s+os\s*.\s*listdir\s*\(\s*[\w.]+\s*\)\s*:\s*\n" +
+            regex=(r"for\s+([\w.]+)\s+in\s+os\s*\.\s*listdir\s*\(\s*[\w.]+\s*\)\s*:\s*\n" +
                    r"\s*if(\s+.*?\s*):\s*\n"),
             match_func=lambda x: x[0] in x[1])
 
@@ -1372,7 +1372,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_regex_r(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=(r"^..*?re\s*.\s*(sub|match|search|compile|findall|finditer|split|fullmatch)\s*" +
+            regex=(r"^..*?re\s*\.\s*(sub|match|search|compile|findall|finditer|split|fullmatch)\s*" +
                    fr"\(\s*{QUOTES_BOUND}.*\)"))
 
         return convert_to_human_friendly_review(self.final_result_dict)
