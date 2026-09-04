@@ -209,3 +209,4 @@
 venv
 venv/*
 requirements_v3.10.11.txt
+*/.ruff_cache
