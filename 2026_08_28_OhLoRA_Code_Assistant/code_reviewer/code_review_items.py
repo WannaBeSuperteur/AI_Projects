@@ -1536,6 +1536,28 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         super().__init__(py_codes, config, code_path)
         self._parse_codes()
+        self._get_function_name_by_line()
+
+    def _check_refactor_into_class(self) -> str:
+        pass
+
+    def _check_cohesion(self) -> str:
+        pass
+
+    def _check_prefix_for_only_in_class_methods(self) -> str:
+        pass
+
+    def run_code_review(self) -> dict[str, str]:
+        checks = [
+            'refactor_into_class',
+            'cohesion',
+            'prefix_for_only_in_class_methods'
+        ]
+
+        return {
+            f'06_{name}': getattr(self, f'_check_{name}')()
+            for name in checks
+        }
 
 
 class PyTorchChecker(DefaultCodeChecker):
