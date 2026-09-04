@@ -109,3 +109,24 @@ def process_payment(amount, balance):
         return balance, "결제 성공"
     except AssertionError:
         return balance, "결제 실패"
+
+
+def fetch_from_database(user_id: str):
+    try:
+        print(user_id)
+    except Exception as e:
+        print(e)
+
+
+def get_active_user_profile(user_id):
+    db_response = fetch_from_database(user_id)  # 유저 정보 조회 (딕셔너리 또는 None)
+
+    try:
+        # ❌ 잘못된 사용: 외부 데이터 존재 여부 확인을 assert로 처리
+        assert db_response is not None, "존재하지 않는 사용자"
+        return db_response['profile']
+    except AssertionError:
+        # 유저가 없을 때 기본 프로필을 반환하는 흐름 제어
+        return {"name": "Guest", "role": "anonymous"}
+
+
