@@ -1594,9 +1594,6 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self.final_result_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
         return convert_to_human_friendly_review(self.final_result_dict)
 
-    def _check_cohesion(self) -> str:
-        pass
-
     def _check_prefix_for_only_in_class_methods(self) -> str:
         pass
 
@@ -1604,7 +1601,6 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         checks = [
             'refactor_into_class_case_1_same_args',
             'refactor_into_class_case_2_state_vars_if_else',
-            'cohesion',
             'prefix_for_only_in_class_methods'
         ]
 
