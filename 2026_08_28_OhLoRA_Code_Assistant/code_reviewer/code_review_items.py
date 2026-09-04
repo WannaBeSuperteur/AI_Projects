@@ -1339,7 +1339,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
             for item in function_defs:
                 line_no = item['line']
                 func_name = item['info']['name']
-                arg_names = item['info'].get('args', None).get('name', None)
+                arg_names = item['info'].get('args', {}).get('name', None)
 
                 if arg_names is not None:
                     arg_name_list = ','.join(arg_names)
@@ -1459,7 +1459,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
             function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
 
             for item in function_defs:
-                arg_names = item['info'].get('args', None).get('name', None)
+                arg_names = item['info'].get('args', {}).get('name', None)
 
                 if arg_names is not None:
                     start_line = item['line']

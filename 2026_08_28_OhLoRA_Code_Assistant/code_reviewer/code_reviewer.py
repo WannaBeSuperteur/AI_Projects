@@ -72,7 +72,6 @@ class CodeReviewer:
 
 
 # TODO: remove for production
-# TODO: result = item.get('info', {}).get('ctx', None) 형태로 수정 및 검증
 # TODO: 전체 완료후, 전체 코드리뷰 결과 텍스트파일 저장 -> code_review_items.py 분리 -> 코드리뷰 재실시 -> 결과 비교 -> 차이 수정
 """
 for name in checks:
