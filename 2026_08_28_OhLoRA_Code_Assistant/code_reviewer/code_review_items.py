@@ -1426,7 +1426,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
-    def _check_exception_ignored(self):
+    def _check_exception_ignored(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"except\s*:\s*\n\s*pass")
         self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s*:\s*\n\s*pass")
@@ -1434,7 +1434,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
-    def _check_exception_type(self):
+    def _check_exception_type(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"except\s*:\s*\n")
         self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s*:\s*\n")
@@ -1442,7 +1442,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
-    def _check_func_arg_error_prevent(self):
+    def _check_func_arg_error_prevent(self) -> str:
         stored_arg_name_dict = defaultdict(dict)
 
         def flmf(matched_groups, py_file_path, line_no):
@@ -1469,13 +1469,13 @@ class PythonExceptionsChecker(DefaultCodeChecker):
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
-    def _check_assertion_try_except(self):
+    def _check_assertion_try_except(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"except\s+AssertionError\s*(\s*as\s+([\w.]+)\s*:|:)")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
-    def _check_python_keywords_args(self):
+    def _check_python_keywords_args(self) -> str:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1525,9 +1525,6 @@ class PythonExceptionsChecker(DefaultCodeChecker):
             'assertion_try_except',
             'python_keywords_args'
         ]
-
-        print(self._check_assertion_try_except())
-        print(self._check_python_keywords_args())
 
         return {
             f'05_{name}': getattr(self, f'_check_{name}')()
