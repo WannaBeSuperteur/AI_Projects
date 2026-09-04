@@ -15,7 +15,7 @@ from operator import itemgetter
 from sklearn.metrics.pairwise import cosine_similarity
 
 from collections import defaultdict
-from itertools import chain, product
+from itertools import chain, product, groupby
 from ast_utils import parse_py_code
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
@@ -1539,7 +1539,22 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self._get_function_name_by_line()
 
     def _check_refactor_into_class_case_1_same_args(self) -> str:
-        pass
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
+            function_and_args = [{'line': item['line'],
+                                  'func_name': self.function_name_by_line_for_codebase[py_file_path][item['line'] - 1],
+                                  'args_name': item['info'].get('args', {}).get('name', None)}
+                                 for item in function_defs]
+            function_and_args_ = groupby(function_and_args, key=itemgetter('func_name'))
+            print(function_and_args_)
+
+            for func_name, items in function_and_args_:
+                print(func_name)
+                items_ = list(items)
+                for item in items_:
+                    print(item)
 
     def _check_refactor_into_class_case_2_state_vars_if_else(self) -> str:
         pass
