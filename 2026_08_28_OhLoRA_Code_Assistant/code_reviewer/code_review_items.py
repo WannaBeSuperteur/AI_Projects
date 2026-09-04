@@ -293,6 +293,61 @@ class DefaultCodeChecker:
         for py_file_path, py_code in self.py_codes.items():
             self.final_result_dict[py_file_path] = defaultdict(list)
 
+    def _find_if_elif_else_patterns(self, additional_check_func: Optional[Callable] = None) -> defaultdict:
+        final_result_dict = defaultdict(dict)
+        str_pattern_1 = '"[^"]*"'
+        str_pattern_2 = "'[^']*'"
+
+        regex = (r"^\s*(if|elif)\b\s*\(?\s*([a-zA-Z_](\w|\.)*)\s*" +
+                 rf"(<=|>=|==)\s*([a-zA-Z_]\w*|\d+(?:\.\d+)?|{str_pattern_1}|{str_pattern_2})\s*\)?\s*:")
+
+        def update_final_result_dict(py_file_path: str, line_no: int, current_if_elifs: list[dict],
+                                     additional_check_func: Optional[Callable] = None):
+
+            if (len(current_if_elifs) >= 3
+                    and len(set(info['var_name'] for info in current_if_elifs)) == 1
+                    and len(set(info['simplified_body'] for info in current_if_elifs)) == 1
+                    and (additional_check_func is None or additional_check_func(current_if_elifs))):
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                final_result_dict[py_file_path][func_name].append({'name': 'if-elif-elif-else 패턴',
+                                                                   'type': 'if-elif-elif-else',
+                                                                   'line': line_no})
+
+            current_if_elifs.clear()
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            lines = py_code.split('\n')
+
+            last_if_elif_line_idx = -1
+            current_if_elifs = []
+
+            for line_idx, line in enumerate(lines):
+                line_no = line_idx + 1
+                matched = re.match(regex, line)
+
+                if matched:
+                    matched_groups = list(matched.groups())
+                    keyword = matched_groups[0]
+                    var_name = matched_groups[1]
+
+                    if keyword in ['if', 'elif']:
+                        last_if_elif_line_idx = line_idx
+
+                    current_if_elifs.append({'keyword': keyword, 'var_name': var_name})
+
+                elif line_idx - last_if_elif_line_idx >= 2:
+                    update_final_result_dict(py_file_path, line_no, current_if_elifs, additional_check_func)
+
+                elif line_idx - last_if_elif_line_idx == 1:
+                    if len(current_if_elifs) >= 1:
+                        current_if_elifs[-1]['simplified_body'] = simplify_code(line)
+
+                if line_idx == len(lines) - 1:
+                    update_final_result_dict(py_file_path, line_no, current_if_elifs, additional_check_func)
+
+        return final_result_dict
+
     def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
 
@@ -1005,58 +1060,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_if_to_dict(self) -> str:
-        final_result_dict = defaultdict(dict)
-        str_pattern_1 = '"[^"]*"'
-        str_pattern_2 = "'[^']*'"
-
-        regex = (r"^\s*(if|elif)\b\s*\(?\s*([a-zA-Z_]\w*)\s*" +
-                 rf"(<=|>=|==)\s*([a-zA-Z_]\w*|\d+(?:\.\d+)?|{str_pattern_1}|{str_pattern_2})\s*\)?\s*:")
-
-        def update_final_result_dict(py_file_path: str, line_no: int, current_if_elifs: list[dict]):
-            if (len(current_if_elifs) >= 3
-                    and len(set(info['var_name'] for info in current_if_elifs)) == 1
-                    and len(set(info['simplified_body'] for info in current_if_elifs)) == 1):
-
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-                final_result_dict[py_file_path][func_name].append({'name': 'if-elif-elif-else 패턴',
-                                                                   'type': 'if-elif-elif-else',
-                                                                   'line': line_no})
-
-            current_if_elifs.clear()
-
-        for py_file_path, py_code in self.py_codes.items():
-            final_result_dict[py_file_path] = defaultdict(list)
-            lines = py_code.split('\n')
-
-            last_if_elif_line_idx = -1
-            current_if_elifs = []
-
-            for line_idx, line in enumerate(lines):
-                line_no = line_idx + 1
-                matched = re.match(regex, line)
-
-                if matched:
-                    matched_groups = list(matched.groups())
-                    keyword = matched_groups[0]
-                    var_name = matched_groups[1]
-
-                    if keyword in ['if', 'elif']:
-                        last_if_elif_line_idx = line_idx
-
-                    current_if_elifs.append({'keyword': keyword, 'var_name': var_name})
-
-                elif line_idx - last_if_elif_line_idx >= 2:
-                    update_final_result_dict(py_file_path, line_no, current_if_elifs)
-
-                elif line_idx - last_if_elif_line_idx == 1:
-                    if len(current_if_elifs) >= 1:
-                        current_if_elifs[-1]['simplified_body'] = simplify_code(line)
-
-                if line_idx == len(lines) - 1:
-                    update_final_result_dict(py_file_path, line_no, current_if_elifs)
-
-        self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        self.final_result_dict = self._find_if_elif_else_patterns()
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_path_format(self) -> str:
         self._init_final_result_dict()
@@ -1572,7 +1577,17 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_refactor_into_class_case_2_state_vars_if_else(self) -> str:
-        pass
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+
+        def check_is_state_value(info):
+            text = f"if {info[0]['var_name']}: {info[0]['simplified_body']}"
+            return text_embedding_model.get_prob(text) >= 0.5
+
+        self.final_result_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_cohesion(self) -> str:
         pass
@@ -1589,6 +1604,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         ]
 
         print(self._check_refactor_into_class_case_1_same_args())
+        print(self._check_refactor_into_class_case_2_state_vars_if_else())
 
         return {
             f'06_{name}': getattr(self, f'_check_{name}')()
