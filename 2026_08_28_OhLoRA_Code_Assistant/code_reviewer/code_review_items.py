@@ -1439,14 +1439,30 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_arg_error_prevent(self):
-        final_result_dict = defaultdict(dict)
+        stored_arg_name_dict = defaultdict(set)
+
+        def lmf(matched_groups, line_no):
+            arg_name = matched_groups[0]
+            return arg_name in stored_arg_name_dict[line_no]
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            final_result_dict[py_file_path] = defaultdict(list)
-
             function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
-            print(function_defs)
-        pass
+
+            for item in function_defs:
+                arg_names = item['info'].get('args', None).get('name', None)
+
+                if arg_names is not None:
+                    start_line = item['line']
+                    def_end_line = item['info']['end_line'] - item['info']['body'].count('\n') - 1
+
+                    for line_no in range(start_line, def_end_line + 1):
+                        stored_arg_name_dict[line_no].update(set(arg_names))
+
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"^..*?\s*([\w.]+)\s*:\s*(dict|list)\s*=\s*(\{|\[).*(\}|\])\s*\)",
+                                      line_match_func=lmf)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_assertion_try_except(self):
         pass
