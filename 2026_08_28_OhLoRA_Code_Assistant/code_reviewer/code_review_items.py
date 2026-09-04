@@ -1220,7 +1220,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def _check_use_map(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=r".*?(sum|max|min)\s*\(\s*([\w.]+)\s*\(\s*([\w.]+)\s*\)\s+for\s+\3\s+in[^\n]*\)")
+            regex=r".*?(sum|max|min)\s*\(\s*([\w.]+)\s*\(\s*([\w.]+)\s*\)\s+for\s+\3\s+in[^\n]*\)",
+            forward_lines=1)
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
