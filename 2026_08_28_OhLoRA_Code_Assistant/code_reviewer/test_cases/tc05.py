@@ -130,3 +130,32 @@ def get_active_user_profile(user_id):
         return {"name": "Guest", "role": "anonymous"}
 
 
+# 4. Python 예약어를 변수명이나 함수의 인수명으로 사용하지 않는다.
+
+def calculate_items(id, list, print):
+    # 4~6: 지역 변수명(Variable)으로 내장 타입/함수명을 잘못 사용한 예시 (str, int, sum)
+    str = "결과 값"
+    int = 10
+    sum = 0
+
+    # 전달받은 list(실제로는 리스트 데이터)의 합을 구하려 하지만,
+    # 위에서 sum 변수를 0으로 덮어썼기 때문에 sum() 함수를 사용하지 못하고 에러 발생!
+    # sum = sum(list) <- TypeError: 'int' object is not callable 발생
+
+    for item in list:
+        sum += item
+
+    # 위에서 print 인수를 선언했기 때문에 화면 출력을 하려 해도
+    # 기존 내장 함수 print()가 아닌 전달받은 인수가 실행되어 정상 작동하지 않습니다.
+    # print(f"ID: {id}, {str}: {sum * int}")
+
+    return f"ID: {id}, {str}: {sum * int}"
+
+
+# 함수 호출 테스트 (오류 없이 정의되고 실행됨)
+result = calculate_items(id=101, list=[1, 2, 3], print="출력값역할")
+print("최종 반환:", result)
+
+dict = 333
+abs = 123
+

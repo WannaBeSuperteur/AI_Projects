@@ -1476,7 +1476,46 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_python_keywords_args(self):
-        pass
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            store_cases = [item for item in parsed_py_code if item.get('info', None).get('ctx', None) == 'Store']
+            store_cases_bad = [item for item in store_cases if item['info']['name'] in PRESERVED_WORDS]
+
+            for item in store_cases_bad:
+                line_no = item['line']
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                final_result_dict[py_file_path][func_name].append({'name': f"변수 {item['info']['name']}",
+                                                                   'type': 'bad_store_cases',
+                                                                   'line': line_no})
+
+            function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
+            function_args = [{'line': item['line'],
+                              'func_name': item['info']['name'],
+                              'args': item['info'].get('args', None).get('name', None)}
+                             for item in function_defs]
+            function_args_bad = [{'line': item['line'],
+                                  'func_name': item['func_name'],
+                                  'args': {x for x in item['args'] if x in PRESERVED_WORDS}}
+                                 for item in function_args
+                                 if item['args'] is not None]
+            function_args_bad = [item for item in function_args_bad if isinstance(item['args'], set)]
+
+            for item in function_args_bad:
+                line_no = item['line']
+                arg_names = item['args']
+                func_name = item['func_name']
+
+                for arg_name in arg_names:
+                    final_result_dict[py_file_path][func_name].append({'name': f"함수 {func_name}의 인자 {arg_name}",
+                                                                       'type': 'bad_func_args',
+                                                                       'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
