@@ -1439,6 +1439,13 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_arg_error_prevent(self):
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
+            print(function_defs)
         pass
 
     def _check_assertion_try_except(self):
@@ -1455,8 +1462,9 @@ class PythonExceptionsChecker(DefaultCodeChecker):
             'assertion_try_except',
             'python_keywords_args'
         ]
-        print(self._check_exception_ignored())
-        print(self._check_exception_type())
+        print(self._check_func_arg_error_prevent())
+        print(self._check_assertion_try_except())
+        print(self._check_python_keywords_args())
 
         return {
             f'05_{name}': getattr(self, f'_check_{name}')()
