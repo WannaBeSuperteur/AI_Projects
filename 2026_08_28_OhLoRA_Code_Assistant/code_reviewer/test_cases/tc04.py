@@ -1,5 +1,5 @@
 
-# 1. unpacking
+# 1. unpacking case 1
 
 my_list = [10, 20, 30]
 
@@ -19,6 +19,24 @@ if __name__ == '__main__':
     print('test')
     f = my_list[0]
     g = my_list[1:]
+
+# 2. unpacking case 2
+
+values = [0, 0, 0]
+values[0], values[1], values[2] = list([10, 20, 30])
+# 결과: values는 [10, 20, 30]이 됩니다.
+
+aaa, bbb, ccc = list([10, 30, 50])
+
+if True:
+    position = [0, 0]
+    position[0], position[1] = list([150, 240])
+    # 결과: position은 [150, 240]이 됩니다.
+
+    rgb_color = [0, 0, 0]
+    rgb_color[0], rgb_color[1], rgb_color[2] = list([255, 128, 64])
+    rgb_color[0], rgb_color[1], rgb_color[2] = [255, 128, 64]
+    # 결과: rgb_color는 [255, 128, 64]가 됩니다.
 
 # 2. open file
 
