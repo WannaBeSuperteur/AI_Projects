@@ -15,7 +15,7 @@ from operator import itemgetter
 from sklearn.metrics.pairwise import cosine_similarity
 
 from collections import defaultdict
-from itertools import chain, product, groupby
+from itertools import chain, product, groupby, tee
 from ast_utils import parse_py_code
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
@@ -1635,11 +1635,69 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
+    def _check_similar_function_names(self) -> str:
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model = self.text_embedding_models.get('default')
+        final_result_dict = defaultdict(dict)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            if not parsed_py_code:
+                continue
+
+            final_result_dict[py_file_path] = defaultdict(list)
+
+            func_names = [{'line': item['line'],
+                           'name': item['info']['name'],
+                           'embedding': text_embedding_model.get_embedding(item['info']['name'])}
+                          for item in parsed_py_code
+                          if item['type_name'] == 'function_def']
+            func_names.sort(key=itemgetter('line'))
+            func_count = len(func_names)
+            func_sim_matrix = [['mid' for _ in range(func_count)] for _ in range(func_count)]
+
+            embeddings_0, embeddings_1 = tee([info['embedding'] for info in func_names], 2)
+            embeddings_0, embeddings_1 = list(embeddings_0), list(embeddings_1)
+
+            for idx_0, emb_0 in enumerate(embeddings_0):
+                for idx_1, emb_1 in enumerate(embeddings_1):
+                    cos_sim = cosine_similarity(emb_0, emb_1)
+
+                    if cos_sim >= 0.95:
+                        func_sim_matrix[idx_0][idx_1] = 'high'
+                    elif cos_sim < 0.75:
+                        func_sim_matrix[idx_0][idx_1] = 'low'
+
+            for idx_0, func_name_item in enumerate(func_names):
+                first_similar_idx = None
+                func_reorder_needed = False
+
+                for idx_1 in range(func_count):
+                    if func_sim_matrix[idx_0][idx_1] == 'high':
+                        if first_similar_idx is None:
+                            first_similar_idx = idx_1
+                        elif idx_1 - first_similar_idx >= 2:
+                            func_reorder_needed = True
+                            break
+
+                if func_reorder_needed:
+                    func_name = func_name_item['name']
+                    line_no = func_name_item['line']
+
+                    final_result_dict[py_file_path][func_name].append({'name': f'유사 함수 재정렬 필요: {func_name}',
+                                                                       'type': 'reorder_needed',
+                                                                       'line': line_no})
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def run_code_review(self) -> dict[str, str]:
         checks = [
             'refactor_into_class_case_1_same_args',
             'refactor_into_class_case_2_state_vars_if_else',
-            'prefix_for_only_in_class_methods'
+            'prefix_for_only_in_class_methods',
+            'similar_function_names'
         ]
 
         print(self._check_prefix_for_only_in_class_methods())
