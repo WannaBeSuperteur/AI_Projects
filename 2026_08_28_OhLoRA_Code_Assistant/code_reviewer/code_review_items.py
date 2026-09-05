@@ -1700,8 +1700,6 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
             'similar_function_names'
         ]
 
-        print(self._check_prefix_for_only_in_class_methods())
-
         return {
             f'06_{name}': getattr(self, f'_check_{name}')()
             for name in checks
