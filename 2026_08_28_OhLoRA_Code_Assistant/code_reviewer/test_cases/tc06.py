@@ -103,3 +103,57 @@ def check_permission(user_grade):
         return ["VIEW_POST", "WRITE_POST", "VIP_LOUNGE"]
     else:
         return []
+
+
+# 3. 객체의 인터페이스 공개용이 아닌 (= 클래스 내부에서만 쓰이는) 속성, 메서드에 접두사 _ 있을때 호출
+
+class Notebook:
+    def __init__(self):
+        # 내부적으로만 사용하겠다는 신호 (관례적 Private)
+        self._os = "Linux"
+
+    def _display_system(self):
+        return f"System OS: {self._os}"
+
+# 인스턴스 생성
+my_pc = Notebook()
+
+# 관례를 깨고 외부에 직접 호출 가능
+print(my_pc._os)                  # 출력: Linux
+print(my_pc._display_system())     # 출력: System OS: Linux
+
+
+class Smartphone:
+    def __init__(self):
+        # 이름 맹글링이 적용되는 속성
+        self.__pin_code = "1234"
+
+    def __boot_kernel(self):
+        return "Kernel booting..."
+
+phone = Smartphone()
+
+# phone.__pin_code 로 호출하면 AttributeError 발생
+# '_클래스명__멤버명' 형태로 우회하여 호출
+print(phone._Smartphone__pin_code)       # 출력: 1234
+print(phone._Smartphone__boot_kernel())  # 출력: Kernel booting...
+
+
+class CustomList:
+    def __init__(self, items):
+        self.items = items
+
+    # len() 함수를 쓸 때 자동 호출되는 매직 메서드
+    def __len__(self):
+        return len(self.items)
+
+my_list = CustomList([1, 2, 3, 4, 5])
+
+# 방법 A: 일반적인 사용법 (내부적으로 __len__을 호출함)
+print(len(my_list))          # 출력: 5
+
+# 방법 B: 매직 메서드를 직접 명시적으로 호출
+print(my_list.__len__())     # 출력: 5
+
+
+

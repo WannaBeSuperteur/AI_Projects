@@ -60,7 +60,10 @@ def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
 
         if isinstance(node, ast.ClassDef):
             bases = [ast.unparse(b) for b in node.bases]
-            parse_result['info'] = {'name': node.name, 'bases': bases}
+            parse_result['info'] = {'name': node.name,
+                                    'bases': bases,
+                                    'start_line': node.lineno,
+                                    'end_line': node.end_lineno}
 
         elif isinstance(node, ast.Import):
             import_names = [{'name': alias.name, 'as_name': alias.asname} if alias.asname else {'name': alias.name}

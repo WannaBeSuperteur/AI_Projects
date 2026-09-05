@@ -165,6 +165,35 @@ class DefaultCodeChecker:
             if py_file_path_ not in self.function_name_by_line_for_codebase:
                 self.function_name_by_line_for_codebase[py_file_path_] = function_name_by_line
 
+    def _get_class_name_by_line(self):
+        self.class_name_by_line_for_codebase = defaultdict(list)
+
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
+            if not parsed_py_code:
+                continue
+
+            max_line_no = len(self.py_codes[py_file_path].split('\n')) + 1
+            class_name_by_line = ['' for _ in range(max_line_no + 1)]
+
+            for item in parsed_py_code:
+                if item['type_name'] == 'class':
+                    start_line_no = item['info']['start_line']
+                    end_line_no = item['info']['end_line']
+
+                    for i in range(start_line_no, end_line_no + 1):
+                        class_name_by_line[i] = item['info']['name']
+
+            self.class_name_by_line_for_codebase[py_file_path] = class_name_by_line
+
+        for py_file_path, parsed_py_code in self.py_codes.items():
+            py_file_path_ = py_file_path.replace(r"\\", r"\"")
+
+            max_line_no = len(self.py_codes[py_file_path_].split('\n')) + 1
+            class_name_by_line = ['' for _ in range(max_line_no + 1)]
+
+            if py_file_path_ not in self.class_name_by_line_for_codebase:
+                self.class_name_by_line_for_codebase[py_file_path_] = class_name_by_line
+
     def _get_definitions_and_usages(self, py_file_path: str, parsed_py_code: list[dict],
                                     imported_dict: dict[list] | None = None) -> tuple[dict[list], dict[list]]:
 
@@ -1544,6 +1573,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         super().__init__(py_codes, config, code_path)
         self._parse_codes()
         self._get_function_name_by_line()
+        self._get_class_name_by_line()
 
     def _check_refactor_into_class_case_1_same_args(self) -> str:
         final_result_dict = defaultdict(dict)
@@ -1595,7 +1625,15 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_prefix_for_only_in_class_methods(self) -> str:
-        pass
+        def flmf(matched_groups, py_file_path, line_no):
+            class_name = self.class_name_by_line_for_codebase[py_file_path][line_no]
+            return not class_name and '__' not in matched_groups[1]
+
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(regex=r"^..*?\s*([\w.]+)\s*\.\s*(_[a-zA-Z_]\w*)",
+                                      file_line_match_func=flmf)
+
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
@@ -1604,8 +1642,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
             'prefix_for_only_in_class_methods'
         ]
 
-        print(self._check_refactor_into_class_case_1_same_args())
-        print(self._check_refactor_into_class_case_2_state_vars_if_else())
+        print(self._check_prefix_for_only_in_class_methods())
 
         return {
             f'06_{name}': getattr(self, f'_check_{name}')()
