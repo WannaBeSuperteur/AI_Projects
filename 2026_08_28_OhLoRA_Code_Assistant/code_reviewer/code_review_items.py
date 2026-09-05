@@ -383,7 +383,7 @@ class DefaultCodeChecker:
 
         return final_result_dict
 
-    def run_ruff_check(self, rules: list[str]) -> None:
+    def run_ruff_check(self, rules: list[str], extra_args: list = None) -> None:
         self.final_result_dict = defaultdict(dict)
 
         rules_str = ','.join(rules)
@@ -393,6 +393,8 @@ class DefaultCodeChecker:
         command = ["ruff", "check", self.code_path, "--select", rules_str, "--output-format", "json"]
         if self.except_path is not None:
             command.extend(["--exclude", self.except_path])
+        if extra_args:
+            command.extend(extra_args)
 
         result = subprocess.run(
             command,
@@ -945,24 +947,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_line_length(self) -> str:
-        final_result_dict = defaultdict(dict)
-
-        for py_file_path, py_code in self.py_codes.items():
-            final_result_dict[py_file_path] = defaultdict(list)
-            lines = py_code.split('\n')
-
-            for line_idx, line in enumerate(lines):
-                line_no = line_idx + 1
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-
-                if len(line) > self.max_line_length:
-                    final_result_dict[py_file_path][func_name].append(
-                        {'name': f'{ellipse_str(line.strip())} with length {len(line)}',
-                         'type': 'const value',
-                         'line': line_no})
-
-        self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        self.run_ruff_check(['E501'], extra_args=["--line-length", str(self.max_line_length)])
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_files(self) -> str:
         code_path_str = '(코드 전체 경로)'
@@ -983,7 +969,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_functions(self) -> str:
+    def _check_functions_length_and_docstring(self) -> str:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1010,22 +996,12 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                          'type': 'no_docstring',
                          'line': line_no})
 
-                annotations = item['info']['args'].get('annot', None)
-                if annotations and None in annotations:
-                    final_result_dict[py_file_path][func_name].append(
-                        {'name': f'{func_name} 의 일부 또는 전체 인수에 type hint 없음',
-                         'type': 'no_type_hint_args',
-                         'line': line_no})
-
-                return_type = item['info'].get('return_type', None)
-                if return_type is None:
-                    final_result_dict[py_file_path][func_name].append(
-                        {'name': f'{func_name} 의 return 값에 type hint 없음',
-                         'type': 'no_type_hint_return',
-                         'line': line_no})
-
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
+
+    def _check_functions_type_hint(self) -> str:
+        self.run_ruff_check(['ANN001', 'ANN002', 'ANN003', 'ANN201', 'ANN202'])
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_indent(self) -> str:
         final_result_dict = defaultdict(dict)
@@ -1068,7 +1044,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
             'const',
             'line_length',
             'files',
-            'functions',
+            'functions_length_and_docstring',
+            'functions_type_hint',
             'indent'
         ]
 
@@ -1769,8 +1746,8 @@ class EntireCodeChecker(DefaultCodeChecker):
                         **exceptions_result,
                         **cohesiveness_and_class_result}
 
-        for result_key, result_value in python_basics_result.items():
-            print(result_key)
+        for result_key, result_value in final_result.items():
+            print(f'\n==== RULE : {result_key} ====\n')
             print(result_value)
 
         return final_result
