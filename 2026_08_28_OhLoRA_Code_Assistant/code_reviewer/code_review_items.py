@@ -1706,12 +1706,6 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         }
 
 
-class PyTorchChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
-        self._parse_codes()
-
-
 class EntireCodeChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
         super().__init__(py_codes, config, code_path)
@@ -1722,7 +1716,6 @@ class EntireCodeChecker(DefaultCodeChecker):
         self.python_other_pythonic_checker = PythonOtherPythonicChecker(py_codes, config, code_path)
         self.python_exceptions_checker = PythonExceptionsChecker(py_codes, config, code_path)
         self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config, code_path)
-        self.pytorch_checker = PyTorchChecker(py_codes, config, code_path)
 
     def _check_python_basics(self) -> dict[str, str]:
         return self.python_basics_checker.run_code_review()
@@ -1742,9 +1735,6 @@ class EntireCodeChecker(DefaultCodeChecker):
     def _check_cohesiveness_and_class(self) -> dict[str, str]:
         return self.python_cohesiveness_and_class_checker.run_code_review()
 
-    def _check_pytorch(self) -> dict[str, str]:
-        return self.pytorch_checker.run_code_review()
-
     def run_code_review(self) -> dict[str, str]:
         python_basics_result = self._check_python_basics()
         basic_convention_result = self._check_basic_convention()
@@ -1752,7 +1742,6 @@ class EntireCodeChecker(DefaultCodeChecker):
         other_pythonic_result = self._check_other_pythonic()
         exceptions_result = self._check_exceptions()
         cohesiveness_and_class_result = self._check_cohesiveness_and_class()
-        pytorch_result = self._check_pytorch()
 
         print('====')
         print(python_basics_result)
@@ -1766,16 +1755,13 @@ class EntireCodeChecker(DefaultCodeChecker):
         print(exceptions_result)
         print('====')
         print(cohesiveness_and_class_result)
-        print('====')
-        print(pytorch_result)
 
         final_result = {**python_basics_result,
                         **basic_convention_result,
                         **simplification_result,
                         **other_pythonic_result,
                         **exceptions_result,
-                        **cohesiveness_and_class_result,
-                        **pytorch_result}
+                        **cohesiveness_and_class_result}
         return final_result
 
 
