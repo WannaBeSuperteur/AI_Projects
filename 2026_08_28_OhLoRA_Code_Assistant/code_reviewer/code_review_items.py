@@ -1302,10 +1302,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_open_file(self) -> str:
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(
-            regex=rf"([\w.]+)\s*=\s*open\s*\(\s*{ANY_CONST_OR_VAR}\s*,\s*{ANY_CONST_OR_VAR}\s*\)")
-
+        self.run_ruff_check(['SIM115'])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_key_itemgetter(self) -> str:
@@ -1397,7 +1394,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_attribute_getattr(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=(rf"if\s+hasattr\s*\(\s*([\w.]+)\s*,\s*{ANY_CONST_OR_VAR}\s*\)\s*:\s*\n" +
+            regex=(rf"if\s+hasattr\s*\(\s*([\w.]+)\s*,\s*([\w.]+)\s*\)\s*:\s*\n" +
                    r"\s*([\w.]+)\s*=\s+(.*)\n\s*else\s*:\s*\n" +
                    r"\s*([\w.]+)\s*=\s+"),
             match_func=lambda x: x[2] == x[4])
@@ -1405,33 +1402,11 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_regex_r(self) -> str:
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(
-            regex=(r"^..*?re\s*\.\s*(sub|match|search|compile|findall|finditer|split|fullmatch)\s*" +
-                   fr"\(\s*{QUOTES_BOUND}.*\)"))
-
+        self.run_ruff_check(['RUF039'], extra_args=["--preview"])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_lambda(self) -> str:
-        stored_name_dict = defaultdict(dict)
-
-        def flmf(matched_groups, py_file_path, line_no):
-            func_name = matched_groups[0]
-            return func_name in stored_name_dict[py_file_path][line_no]
-
-        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            stored_name_dict[py_file_path] = defaultdict(set)
-
-            stored_names = [item for item in parsed_py_code
-                            if item['type_name'] == 'name' and item['info'].get('ctx', None) == 'Store']
-
-            for item in stored_names:
-                stored_name_dict[py_file_path][item['line']].add(item['info']['name'])
-
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"([\w.]+)\s*=\s*lambda\s+([\w.|\s*,\s*]+)\s*:\s*",
-                                      file_line_match_func=flmf)
-
+        self.run_ruff_check(['E731'])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_prefix_suffix(self) -> str:
@@ -1468,46 +1443,15 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         self._get_function_name_by_line()
 
     def _check_exception_ignored(self) -> str:
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"except\s*:\s*\n\s*pass")
-        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s*:\s*\n\s*pass")
-        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s+as\s+([\w.]+):\s*\n\s*pass")
-
+        self.run_ruff_check(['S110', 'S112'])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_exception_type(self) -> str:
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"except\s*:\s*\n")
-        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s*:\s*\n")
-        self._add_regex_matched_lines(regex=r"except\s+(BaseException|Exception)\s+as\s+([\w.]+):\s*\n")
-
+        self.run_ruff_check(['E722', 'BLE001'])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_func_arg_error_prevent(self) -> str:
-        stored_arg_name_dict = defaultdict(dict)
-
-        def flmf(matched_groups, py_file_path, line_no):
-            arg_name = matched_groups[0]
-            return arg_name in stored_arg_name_dict[py_file_path][line_no]
-
-        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            stored_arg_name_dict[py_file_path] = defaultdict(set)
-            function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
-
-            for item in function_defs:
-                arg_names = item['info'].get('args', {}).get('name', None)
-
-                if arg_names is not None:
-                    start_line = item['line']
-                    def_end_line = item['info']['end_line'] - item['info']['body'].count('\n') - 1
-
-                    for line_no in range(start_line, def_end_line + 1):
-                        stored_arg_name_dict[py_file_path][line_no].update(set(arg_names))
-
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"^..*?\s*([\w.]+)\s*:\s*(dict|list)\s*=\s*(\{|\[).*(\}|\])\s*\)",
-                                      file_line_match_func=flmf)
-
+        self.run_ruff_check(['B006'])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_assertion_try_except(self) -> str:
@@ -1517,46 +1461,8 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_python_keywords_args(self) -> str:
-        final_result_dict = defaultdict(dict)
-
-        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            final_result_dict[py_file_path] = defaultdict(list)
-
-            store_cases = [item for item in parsed_py_code if item.get('info', {}).get('ctx', None) == 'Store']
-            store_cases_bad = [item for item in store_cases if item['info']['name'] in PRESERVED_WORDS]
-
-            for item in store_cases_bad:
-                line_no = item['line']
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-
-                final_result_dict[py_file_path][func_name].append({'name': f"변수 {item['info']['name']}",
-                                                                   'type': 'bad_store_cases',
-                                                                   'line': line_no})
-
-            function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
-            function_args = [{'line': item['line'],
-                              'func_name': item['info']['name'],
-                              'args': item['info'].get('args', {}).get('name', None)}
-                             for item in function_defs]
-            function_args_bad = [{'line': item['line'],
-                                  'func_name': item['func_name'],
-                                  'args': {x for x in item['args'] if x in PRESERVED_WORDS}}
-                                 for item in function_args
-                                 if item['args'] is not None]
-            function_args_bad = [item for item in function_args_bad if isinstance(item['args'], set)]
-
-            for item in function_args_bad:
-                line_no = item['line']
-                arg_names = item['args']
-                func_name = item['func_name']
-
-                for arg_name in arg_names:
-                    final_result_dict[py_file_path][func_name].append({'name': f"함수 {func_name}의 인자 {arg_name}",
-                                                                       'type': 'bad_func_args',
-                                                                       'line': line_no})
-
-        self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        self.run_ruff_check(['A'])
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
@@ -1630,14 +1536,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_prefix_for_only_in_class_methods(self) -> str:
-        def flmf(matched_groups, py_file_path, line_no):
-            class_name = self.class_name_by_line_for_codebase[py_file_path][line_no]
-            return not class_name and '__' not in matched_groups[1]
-
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"^..*?\s*([\w.]+)\s*\.\s*(_[a-zA-Z_]\w*)",
-                                      file_line_match_func=flmf)
-
+        self.run_ruff_check(['SLF001'])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_similar_function_names(self) -> str:

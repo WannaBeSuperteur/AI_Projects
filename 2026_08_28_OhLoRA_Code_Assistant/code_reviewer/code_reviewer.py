@@ -73,8 +73,8 @@ class CodeReviewer:
         print(f'success ratio : {ratio}')
 
 
-# TODO: ruff 로 먼저 대체
-# TODO: remove for production
+# TODO: line 번호에 따라 최종 결과 출력 정렬
+# TODO: remove TempTextEmbeddingModel for production
 # TODO: 전체 완료후, 전체 코드리뷰 결과 텍스트파일 저장 -> code_review_items.py 분리 -> 코드리뷰 재실시 -> 결과 비교 -> 차이 수정
 # TODO: _get_function_name_by_line, _get_class_name_by_line 통합
 # TODO: ast.ClassDef: 'class' -> 'class_def'로 수정
