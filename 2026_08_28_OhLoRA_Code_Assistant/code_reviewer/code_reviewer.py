@@ -7,7 +7,7 @@ import numpy as np
 from code_review_items import default_code_review_func
 
 
-TEST_CASES_DIR = 'test_cases/tc06_func_order.py'
+TEST_CASES_DIR = 'test_cases'
 
 
 class CodeReviewer:
@@ -99,6 +99,6 @@ class TempTextEmbeddingModel:
 if __name__ == '__main__':
     text_embeddimg_models = {''}
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
-                                 text_embedding_models={'default': TempTextEmbeddingModel()})
+                                 text_embedding_models={})
     code_reviewer.review_codes(TEST_CASES_DIR)
     print(code_reviewer)

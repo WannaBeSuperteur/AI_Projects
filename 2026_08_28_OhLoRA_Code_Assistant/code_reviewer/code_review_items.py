@@ -887,7 +887,6 @@ class PythonBasicsChecker(DefaultCodeChecker):
             'commented_codes',
             'empty_file'
         ]
-
         return {
             f'01_{name}': getattr(self, f'_check_{name}')()
             for name in checks
@@ -1743,25 +1742,17 @@ class EntireCodeChecker(DefaultCodeChecker):
         exceptions_result = self._check_exceptions()
         cohesiveness_and_class_result = self._check_cohesiveness_and_class()
 
-        print('====')
-        print(python_basics_result)
-        print('====')
-        print(basic_convention_result)
-        print('====')
-        print(simplification_result)
-        print('====')
-        print(other_pythonic_result)
-        print('====')
-        print(exceptions_result)
-        print('====')
-        print(cohesiveness_and_class_result)
-
         final_result = {**python_basics_result,
                         **basic_convention_result,
                         **simplification_result,
                         **other_pythonic_result,
                         **exceptions_result,
                         **cohesiveness_and_class_result}
+
+        for result_key, result_value in python_basics_result.items():
+            print(result_key)
+            print(result_value)
+
         return final_result
 
 
