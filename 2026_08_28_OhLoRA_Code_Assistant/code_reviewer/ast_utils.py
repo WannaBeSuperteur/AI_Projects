@@ -1,6 +1,7 @@
 
 from collections import defaultdict
 from operator import itemgetter
+from pathlib import Path
 
 import ast_comments as ast
 
@@ -112,4 +113,18 @@ def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
             print(parse_result)
 
     return parse_results
+
+
+def get_function_name_at_line(file_name: str, line_no: int) -> str:
+    source = Path(file_name).read_text(encoding="utf-8")
+    tree = ast.parse(source, filename=file_name)
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            start = node.lineno
+            end = getattr(node, "end_lineno", line_no)
+            if start <= line_no <= end:
+                return node.name
+
+    return ''  # global scope
 

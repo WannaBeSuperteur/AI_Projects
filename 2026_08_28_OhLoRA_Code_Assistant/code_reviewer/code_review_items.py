@@ -3,6 +3,9 @@ import sys
 import io
 import importlib.metadata
 
+import json
+import subprocess
+
 import re
 import tokenize
 import keyword
@@ -12,11 +15,12 @@ from typing import Callable, Optional
 from difflib import SequenceMatcher
 from operator import itemgetter
 
+from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
 
 from collections import defaultdict
 from itertools import chain, product, groupby, tee
-from ast_utils import parse_py_code
+from ast_utils import parse_py_code, get_function_name_at_line
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
 
@@ -69,8 +73,8 @@ def convert_to_human_friendly_review(final_result_dict: dict[dict[list]]) -> str
 
 def ellipse_str(original_str: str) -> str:
     replaced_newline_str = original_str.replace('\n', ' ')
-    if len(replaced_newline_str) >= 40:
-        return f'{replaced_newline_str[:16]}  ...  {replaced_newline_str[-16:]}'
+    if len(replaced_newline_str) >= 48:
+        return f'{replaced_newline_str[:20]}  ...  {replaced_newline_str[-20:]}'
     return replaced_newline_str
 
 
@@ -119,7 +123,7 @@ def check_a_in_b(a: str, b: str) -> bool:
 
 
 class DefaultCodeChecker:
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
         self.py_codes = py_codes
         self.max_line_length = config.get('max_line_length')
         self.max_func_lines = config.get('max_func_lines')
@@ -127,6 +131,7 @@ class DefaultCodeChecker:
         self.text_embedding_models = config.get('text_embedding_models')
 
         self.code_path = code_path
+        self.except_path = except_path
 
         self.python_libraries = set(list(sys.stdlib_module_names))
         self.third_party_libraries = set(dist.metadata['Name'] for dist in importlib.metadata.distributions())
@@ -378,13 +383,51 @@ class DefaultCodeChecker:
 
         return final_result_dict
 
+    def run_ruff_check(self, rules: list[str]) -> None:
+        self.final_result_dict = defaultdict(dict)
+
+        rules_str = ','.join(rules)
+        full_code_path = str(Path(self.code_path).resolve())
+        full_code_path_for_ruff = full_code_path.replace(r'\\', r'\\\\')
+
+        command = ["ruff", "check", self.code_path, "--select", rules_str, "--output-format", "json"]
+        if self.except_path is not None:
+            command.extend(["--exclude", self.except_path])
+
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=False,
+            encoding="utf-8"
+        )
+
+        if not result.stdout.strip():
+            return None
+
+        try:
+            result_json = json.loads(result.stdout)
+            for item in result_json:
+                file_path = item['filename'][len(full_code_path_for_ruff):].replace('\\\\', '\\')[1:]
+                line_no = item['location']['row']
+                full_file_path = os.path.join(full_code_path, file_path)
+                function_name = get_function_name_at_line(full_file_path, line_no)
+
+                self.final_result_dict[file_path].setdefault(function_name, []).append(
+                    {'name': f"{item['message']} (ruff)",
+                     'type': f"{item['code']} from ruff",
+                     'line': line_no})
+
+        except json.JSONDecodeError:
+            pass
+
     def run_code_review(self) -> dict[str, str]:
         raise NotImplementedError
 
 
 class PythonBasicsChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+        super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -424,31 +467,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return cond_lcs_1 or cond_lcs_2 or cond_lcs_3
 
     def _check_unused(self) -> str:
-        final_result_dict = defaultdict(dict)
-        imported_dict = defaultdict(list)
-
-        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            defined_info, used_info = self._get_definitions_and_usages(py_file_path, parsed_py_code, imported_dict)
-            all_unused_list = defaultdict(list)
-
-            for k in set(defined_info).union(used_info):
-                defined_info_list = dict(defined_info).get(k, [])
-                used_names = dict(used_info).get(k, [])
-                defined_names = [item['name'] for item in defined_info_list]
-
-                defined_set = set(defined_names)
-                used_set = set(used_names)
-                unused_set = defined_set - used_set
-                unused_list = [item for item in defined_info_list if item['name'] in unused_set and item['name'] != '_']
-                all_unused_list[k].extend(unused_list)
-
-            final_result_dict[py_file_path] = dict(all_unused_list)
-
-        self.final_result_dict = final_result_dict
-        self.imported_dict = imported_dict
-        self._mark_used_as_imported()
-
-        return convert_to_human_friendly_review(final_result_dict)
+        self.run_ruff_check(['F401', 'F841'])
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_unnecessary_prints(self) -> str:
         if self.text_embedding_models.get('default') is None:
@@ -895,8 +915,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
 
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+        super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1059,8 +1079,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
 
 class PythonSimplificationChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+        super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1281,8 +1301,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
 
 
 class PythonOtherPythonicChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+        super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1456,8 +1476,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
 
 class PythonExceptionsChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+        super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1568,8 +1588,8 @@ class PythonExceptionsChecker(DefaultCodeChecker):
 
 
 class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+        super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
         self._get_class_name_by_line()
@@ -1706,15 +1726,15 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
 
 class EntireCodeChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str):
-        super().__init__(py_codes, config, code_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+        super().__init__(py_codes, config, code_path, except_path)
 
-        self.python_basics_checker = PythonBasicsChecker(py_codes, config, code_path)
-        self.python_basic_convention_checker = PythonBasicConventionChecker(py_codes, config, code_path)
-        self.python_simplification_checker = PythonSimplificationChecker(py_codes, config, code_path)
-        self.python_other_pythonic_checker = PythonOtherPythonicChecker(py_codes, config, code_path)
-        self.python_exceptions_checker = PythonExceptionsChecker(py_codes, config, code_path)
-        self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config, code_path)
+        self.python_basics_checker = PythonBasicsChecker(py_codes, config, code_path, except_path)
+        self.python_basic_convention_checker = PythonBasicConventionChecker(py_codes, config, code_path, except_path)
+        self.python_simplification_checker = PythonSimplificationChecker(py_codes, config, code_path, except_path)
+        self.python_other_pythonic_checker = PythonOtherPythonicChecker(py_codes, config, code_path, except_path)
+        self.python_exceptions_checker = PythonExceptionsChecker(py_codes, config, code_path, except_path)
+        self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config, code_path, except_path)
 
     def _check_python_basics(self) -> dict[str, str]:
         return self.python_basics_checker.run_code_review()
@@ -1756,8 +1776,15 @@ class EntireCodeChecker(DefaultCodeChecker):
         return final_result
 
 
-def default_code_review_func(py_codes: dict[str, str], config: dict, code_path: str) -> dict[str, str]:
+def default_code_review_func(py_codes: dict[str, str],
+                             config: dict,
+                             code_path: str,
+                             except_path: str | None = None) -> dict[str, str]:
+
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
-    default_code_checker = EntireCodeChecker(py_codes=py_codes, config=config, code_path=code_path)
+    default_code_checker = EntireCodeChecker(py_codes=py_codes,
+                                             config=config,
+                                             code_path=code_path,
+                                             except_path=except_path)
     return default_code_checker.run_code_review()
