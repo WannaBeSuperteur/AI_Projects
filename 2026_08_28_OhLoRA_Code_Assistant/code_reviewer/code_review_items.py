@@ -404,6 +404,11 @@ class DefaultCodeChecker:
             encoding="utf-8"
         )
 
+        if 'PLR1733' in rules_str:
+            print(result)
+            print(str(result.stdout)[:500])
+            print(1 / 0)
+
         if not result.stdout.strip():
             return None
 
@@ -1165,11 +1170,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_just_read_write_to_read_write_text(self) -> str:
-        self._init_final_result_dict()
-        self._add_regex_matched_lines(
-            regex=(r"with\s+open\s*\((.*?)\)\s+as\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s+" +
-                   r"(?:(?:([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*\2\.read\s*\((\s*)\))|(?:\2\.write\s*\((.*?)\)))"))
-
+        self.run_ruff_check(['FURB101', 'FURB103'], extra_args=["--preview"])
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_sentence_empty(self) -> str:
@@ -1283,13 +1284,20 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
-    def _check_unpacking(self) -> str:
+    def _check_unpacking_case_1(self) -> str:
         value_assign = rf"([\w.]+)\s*=\s*([\w.]+)\s*\[({QUOTES_BOUND}|[\w.]+|[\w.]+:)]"
 
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=rf"{value_assign}\s*\n\s*{value_assign}",
             match_func=lambda x: x[1] == x[4])
+
+        return convert_to_human_friendly_review(self.final_result_dict)
+
+    def _check_unpacking_case_2(self) -> str:
+        self._init_final_result_dict()
+        self._add_regex_matched_lines(
+            regex=r"(?:[\w.]+\s*\[\s*\d+\s*\]\s*,\s*)+[\w.]+\s*\[\s*\d+\s*\]\s*=\s*(?:list\s*\(.*?\)|\[.*?\])")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1434,7 +1442,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
     def run_code_review(self) -> dict[str, str]:
         checks = [
-            'unpacking',
+            'unpacking_case_1',
+            'unpacking_case_2',
             'open_file',
             'key_itemgetter',
             'f_string',
