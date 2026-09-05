@@ -73,6 +73,7 @@ class CodeReviewer:
         print(f'success ratio : {ratio}')
 
 
+# TODO: ruff 대체된 부분을 code_reviewer/code_review_standard.md 에 추가
 # TODO: line 번호에 따라 최종 결과 출력 정렬
 # TODO: remove TempTextEmbeddingModel for production
 # TODO: 전체 완료후, 전체 코드리뷰 결과 텍스트파일 저장 -> code_review_items.py 분리 -> 코드리뷰 재실시 -> 결과 비교 -> 차이 수정
@@ -103,4 +104,3 @@ if __name__ == '__main__':
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models={})
     code_reviewer.review_codes(code_path=TEST_CASES_DIR)
-    print(code_reviewer)

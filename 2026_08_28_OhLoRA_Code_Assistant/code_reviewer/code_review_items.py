@@ -40,7 +40,7 @@ def simplify_code(original_code: str) -> str:
     result = re.sub(r"'''.*\'''", 'doc', result)
     result = re.sub(r'"[^"]*"', 'str', result)
     result = re.sub(r"'[^']*'", 'str', result)
-    result = re.sub(r"\[.*?\]", "[values]", result)
+    result = re.sub(r"\[[^\[\]]\]", "[values]", result)
 
     while '  ' in result:
         result = result.replace('  ', ' ')
@@ -404,11 +404,6 @@ class DefaultCodeChecker:
             encoding="utf-8"
         )
 
-        if 'PLR1733' in rules_str:
-            print(result)
-            print(str(result.stdout)[:500])
-            print(1 / 0)
-
         if not result.stdout.strip():
             return None
 
@@ -421,7 +416,7 @@ class DefaultCodeChecker:
                 function_name = get_function_name_at_line(full_file_path, line_no)
 
                 self.final_result_dict[file_path].setdefault(function_name, []).append(
-                    {'name': f"{item['message']} (ruff)",
+                    {'name': f"(ruff) {item['message']}",
                      'type': f"{item['code']} from ruff",
                      'line': line_no})
 
@@ -467,9 +462,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         seq_matcher = SequenceMatcher(None, body_1_lines, body_2_lines)
         lcs = seq_matcher.find_longest_match(0, len(body_1_lines), 0, len(body_2_lines))
 
-        cond_lcs_1 = lcs.size >= 7
-        cond_lcs_2 = lcs.size >= 4 and lcs.size >= 0.5 * min(len(body_1_lines), len(body_2_lines))
-        cond_lcs_3 = lcs.size >= 3 and lcs.size >= 0.75 * min(len(body_1_lines), len(body_2_lines))
+        cond_lcs_1 = lcs.size >= 12
+        cond_lcs_2 = lcs.size >= 7 and lcs.size >= 0.5 * min(len(body_1_lines), len(body_2_lines))
+        cond_lcs_3 = lcs.size >= 4 and lcs.size >= 0.75 * min(len(body_1_lines), len(body_2_lines))
 
         return cond_lcs_1 or cond_lcs_2 or cond_lcs_3
 
@@ -525,9 +520,13 @@ class PythonBasicsChecker(DefaultCodeChecker):
             constant_value_info = self._get_constants(py_file_path, parsed_py_code)
 
             defined_constants_info = {func: [info for info in info_list
-                                            if info['name'].isupper() and info['type'] != 'import']
+                                             if info['name'].isupper() and info['type'] != 'import']
                                       for func, info_list in defined_info.items()}
-            long_constant_value_info = {func: [info for info in info_list if len(str(info['name'])) >= 8]
+
+            long_constant_value_info = {func: [info for info in info_list
+                                               if (len(str(info['name'])) >= 16
+                                                   or (not str(info['name']).islower()
+                                                       and len(str(info['name'])) >= 8))]
                                         for func, info_list in constant_value_info.items()}
 
             for func_name, info_list in defined_constants_info.items():
@@ -553,7 +552,15 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 simplified_body = simplify_code(str(function_body))
                 for existing_simplified_body in simplified_function_body_list:
                     if self._is_function_bodies_similar(existing_simplified_body['body'], simplified_body):
-                        final_result_dict[py_file_path][function_name].append({'name': function_name,
+                        existing_func_name = existing_simplified_body['name']
+                        existing_message = f'{function_name} 함수는 {existing_func_name} 과 유사 구조 존재'
+
+                        prev_line = max(start_line - 1, 0)
+                        parent_function_name = self.function_name_by_line_for_codebase[py_file_path][prev_line]
+                        if existing_func_name == parent_function_name:
+                            continue
+
+                        final_result_dict[py_file_path][function_name].append({'name': existing_message,
                                                                                'type': 'func',
                                                                                'line': start_line})
                         break
@@ -650,7 +657,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     for arg_name, annot in zip(func_arg_names, func_annots):
                         existing_annot = func_annot_dict.get(arg_name)
 
-                        if existing_annot and existing_annot != annot:
+                        if existing_annot and annot and existing_annot != annot:
                             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
                             final_result_dict[py_file_path][func_name].append({'name': arg_name,
                                                                                'type': 'arg',
@@ -995,7 +1002,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                          'type': 'too_long_function',
                          'line': line_no})
 
-                if func_length >= 10 and not item.get('docstring', None):
+                if func_length >= 10 and not item.get('docstring', None) and func_name != '__init__':
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f'{func_name} docstring 없음',
                          'type': 'no_docstring',
@@ -1144,7 +1151,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         def _match_zip(matched: list[str]) -> bool:
             idx_matched = matched[0] == matched[3] and matched[3] == matched[5]
             name_matched = matched[1] == f'len({matched[2]})' or matched[1] == f'len({matched[4]})'
-            return idx_matched and name_matched
+            list_name_unmatched = matched[2] != matched[4]
+            return idx_matched and name_matched and list_name_unmatched
 
         self._init_final_result_dict()
         self._add_regex_matched_lines(
@@ -1285,7 +1293,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         self._get_function_name_by_line()
 
     def _check_unpacking_case_1(self) -> str:
-        value_assign = rf"([\w.]+)\s*=\s*([\w.]+)\s*\[({QUOTES_BOUND}|[\w.]+|[\w.]+:)]"
+        value_assign = rf"([\w.]+)\s*=\s*([\w.]+)\s*\[\s*([0-9]+|[0-9]+:|:[0-9]+)\s*]"
 
         self._init_final_result_dict()
         self._add_regex_matched_lines(
@@ -1315,10 +1323,10 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_f_string(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=rf"^..*?({QUOTES_BOUND}\s*\+\s*([\w.]+)|([\w.]+)\s*\+\s*{QUOTES_BOUND})")
+            regex=rf"^..*?({QUOTES_BOUND}\s*[^\n]\+[^\n]\s*([\w.]+)|([\w.]+)\s*[^\n]\+[^\n]\s*{QUOTES_BOUND})")
 
         self._add_regex_matched_lines(
-            regex=rf"^..*?({QUOTES_BOUND}\s*\+\s*\(.*?\)|\(.*?\)\s*\+\s*{QUOTES_BOUND})")
+            regex=rf"^..*?({QUOTES_BOUND}\s*[^\n]\+[^\n]\s*\(.*?\)|\(.*?\)\s*[^\n]\+[^\n]\s*{QUOTES_BOUND})")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1411,7 +1419,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
     def _check_prefix_suffix(self) -> str:
         self._init_final_result_dict()
-        self._add_regex_matched_lines(regex=r"^..*?([\w.]+)\s*\[(:[0-9]+|-[0-9]+:)\]\s*==")
+        self._add_regex_matched_lines(
+            regex=r"^..*?([\w.]+)\s*\[(\s*:\s*[0-9]+\s*|(?:\s*len\s*\(\s*\1\s*\)\s*)\s*-\s*[0-9]+\s*:\s*)\]\s*==")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1654,9 +1663,15 @@ class EntireCodeChecker(DefaultCodeChecker):
                         **exceptions_result,
                         **cohesiveness_and_class_result}
 
+        # temp logging code (TODO: remove for production)
+        result_str = ''
         for result_key, result_value in final_result.items():
-            print(f'\n==== RULE : {result_key} ====\n')
-            print(result_value)
+            result_str += f'\n==== RULE : {result_key} ====\n'
+            result_str += str(result_value)
+
+        from datetime import datetime
+        now = datetime.now().strftime('%Y%m%d%H%M%S')
+        Path(f'log_{now}.txt').write_text(result_str, encoding='utf-8')
 
         return final_result
 
