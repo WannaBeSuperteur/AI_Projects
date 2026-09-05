@@ -32,6 +32,7 @@
 * **Pythonic 한 코드를 지향** 하는 코드 리뷰 (리스트 컴프리헨션 등) 는 `ruff` 로 가능하지만 본 repo의 이전 커밋에서 직접 구현한 이유:
   * [Python Study](https://github.com/WannaBeSuperteur/Python-study-2026/tree/main) 내용의 실전 구현 연습
   * regex 기본 사용법 익히기
+  * 최종 구현물의 테스트 케이스로 활용 (2026.07 Python Study 이후 이를 반영하여 개발한 코드이므로)
 
 ### 1-1. Oh-LoRA 👱‍♀️✨ (오로라) 소개
 
