@@ -29,7 +29,9 @@
 | 과제/문제       | 다음 조건을 만족시키는 **AI 기반 코드 리뷰 도구** 개발<br>- 기존 자동 검사 도구의 한계점을 보완<br>- AI를 이용한 문맥 파악 역량 존재                                                                                                                                                                                                                                          |
 | 기존 도구와의 차별점 | **Text Embedding 기반 코드 문맥 파악** (응집성 등) 역량<br>- Python 뿐만 아니라 **PyTorch 를 이용한 딥러닝 연구개발** 관련 코드 리뷰 기능                                                                                                                                                                        |
 
-* **Pythonic 한 코드를 지향** 하는 코드 리뷰 (리스트 컴프리헨션 등) 는 `ruff` 로 가능하지만 본 repo의 이전 커밋에서 직접 구현한 이유: [Python Study](https://github.com/WannaBeSuperteur/Python-study-2026/tree/main) 내용의 실전 구현 연습
+* **Pythonic 한 코드를 지향** 하는 코드 리뷰 (리스트 컴프리헨션 등) 는 `ruff` 로 가능하지만 본 repo의 이전 커밋에서 직접 구현한 이유:
+  * [Python Study](https://github.com/WannaBeSuperteur/Python-study-2026/tree/main) 내용의 실전 구현 연습
+  * regex 기본 사용법 익히기
 
 ### 1-1. Oh-LoRA 👱‍♀️✨ (오로라) 소개
 
