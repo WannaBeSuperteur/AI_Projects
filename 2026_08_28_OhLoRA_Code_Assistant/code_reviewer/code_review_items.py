@@ -517,13 +517,13 @@ class PythonBasicsChecker(DefaultCodeChecker):
             defined_info, used_info = self._get_definitions_and_usages(py_file_path, parsed_py_code)
             constant_value_info = self._get_constants(py_file_path, parsed_py_code)
 
-            defind_constants_info = {func: [info for info in info_list
+            defined_constants_info = {func: [info for info in info_list
                                             if info['name'].isupper() and info['type'] != 'import']
-                                     for func, info_list in defined_info.items()}
+                                      for func, info_list in defined_info.items()}
             long_constant_value_info = {func: [info for info in info_list if len(str(info['name'])) >= 8]
                                         for func, info_list in constant_value_info.items()}
 
-            for func_name, info_list in defind_constants_info.items():
+            for func_name, info_list in defined_constants_info.items():
                 for info in info_list:
                     if info['name'] in defined_constant_names:
                         final_result_dict[py_file_path][func_name].append(info)
