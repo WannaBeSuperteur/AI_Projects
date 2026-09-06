@@ -1666,16 +1666,6 @@ class EntireCodeChecker(DefaultCodeChecker):
                         **exceptions_result,
                         **cohesiveness_and_class_result}
 
-        # temp logging code (TODO: remove for production)
-        result_str = ''
-        for result_key, result_value in final_result.items():
-            result_str += f'\n==== RULE : {result_key} ====\n'
-            result_str += str(result_value)
-
-        from datetime import datetime
-        now = datetime.now().strftime('%Y%m%d%H%M%S')
-        Path(f'log_{now}.txt').write_text(result_str, encoding='utf-8')
-
         return final_result
 
 
