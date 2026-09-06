@@ -1420,7 +1420,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_prefix_suffix(self) -> str:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=r"^..*?([\w.]+)\s*\[(\s*:\s*[0-9]+\s*|(?:\s*len\s*\(\s*\1\s*\)\s*)\s*-\s*[0-9]+\s*:\s*)\]\s*==")
+            regex=r"^..*?([\w.]+)\s*\[(\s*:\s*[0-9]+\s*|(\s*len\s*\(\s*\1\s*\)\s*|\s*)-\s*[0-9]+\s*:\s*)\]\s*==")
 
         return convert_to_human_friendly_review(self.final_result_dict)
 
@@ -1524,7 +1524,10 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
                 if duplicate_count_except_first >= 4:
                     line_no = items_[0]['line']
-                    final_result_dict[py_file_path][func_name].append({'name': f"중복된 함수 인수 너무 많음",
+                    func_name_current_line = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    duplicated_message = f"중복된 함수 인수 너무 많음 ({func_name_current_line} 등)"
+
+                    final_result_dict[py_file_path][func_name].append({'name': duplicated_message,
                                                                        'type': 'bad_func_args',
                                                                        'line': line_no})
 
