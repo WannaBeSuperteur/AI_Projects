@@ -844,7 +844,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_commented_codes(self) -> str:
+    def _check_commented_codes(self) -> str:  # TODO: replace into ast-based or ruff-based check
         if self.text_embedding_models.get('default') is None:
             return "no text embedding model"
 
