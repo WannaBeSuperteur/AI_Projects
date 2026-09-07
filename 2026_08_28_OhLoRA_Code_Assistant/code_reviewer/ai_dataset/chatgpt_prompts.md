@@ -92,7 +92,7 @@
 | 함수명과 반환값이 서로 잘 match 되어야 함             | 유사도 비교   | [해당 부분](#3-4-목적-설명-함수명-반환값-match) 참고      | `01_return_matched_with_func_name`                 |
 | 함수의 단일 책임 원칙 준수 여부 (docstring 으로 판단)   | 확률 예측    | [해당 부분](#3-5-목적-설명-함수의-단일-책임-원칙-준수-여부) 참고 | `01_func_docstring_single_responsibility`          |
 | 함수 docstring과 함수명이 서로 일치하는지            | 유사도 비교   | [해당 부분](#3-6-목적-설명-docstring---함수명-일치) 참고 | `01_func_docstring_docstring_and_name`             |
-| 주석 처리된 코드 제거                           | 확률 예측    |                                           | `01_commented_codes`                               |
+| 주석 처리된 코드 제거                           | 확률 예측    | (AI 미 이용, `ast` 기반 문법 파싱으로 대체 예정)         | `01_commented_codes`                               |
 | 고정값은 맨 위쪽에 상수로 빼 놓는 것이 좋음              | 확률 예측    |                                           | `02_const`                                         |
 | 함수의 인자가 하나로 묶을 수 있는 경우 처리 필요           | 확률 예측    |                                           | `04_func_args_bindable`                            |
 | 함수의 인자가 유동적인 경우 처리 필요                  | 확률 예측    |                                           | `04_func_args_dynamic`                             |
