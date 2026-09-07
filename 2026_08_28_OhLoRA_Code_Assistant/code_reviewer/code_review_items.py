@@ -934,7 +934,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
-    def _check_const(self) -> str:
+    def _check_const(self) -> str:  # TODO: 소문자 변수명에 한해, 재 할당 여부 기반 판단 (ast or ruff check) 으로 대체
         if self.text_embedding_models.get('default') is None:
             return "no text embedding model"
 
