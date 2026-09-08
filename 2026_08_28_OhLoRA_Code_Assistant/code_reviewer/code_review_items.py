@@ -844,7 +844,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_commented_codes(self) -> str:
+    def _check_commented_codes(self) -> str:  # TODO: replace into ast-based or ruff-based check
         if self.text_embedding_models.get('default') is None:
             return "no text embedding model"
 
@@ -934,7 +934,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
-    def _check_const(self) -> str:
+    def _check_const(self) -> str:  # TODO: 소문자 변수명에 한해, 재 할당 여부 기반 판단 (ast or ruff check) 으로 대체
         if self.text_embedding_models.get('default') is None:
             return "no text embedding model"
 
