@@ -21,6 +21,8 @@ EPOCHS = 7
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
 MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/checkpoints'
 
+HIDDEN_SIZE = {"codefuse-ai/F2LLM-v2-330M": 896}
+
 
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0]
@@ -56,10 +58,11 @@ class SingleTextDataset(Dataset):
 
 
 class EmbeddingProbPredictor(nn.Module):
-    def __init__(self, base_model):
+    def __init__(self, base_model, hidden_size: int):
         super().__init__()
         self.base_model = base_model
-        self.predictor = nn.Linear(base_model.config.hidden_size, 1)
+        self.hidden_size = hidden_size
+        self.predictor = nn.Linear(hidden_size, 1)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.base_model(input_ids=input_ids, attention_mask=attention_mask)
@@ -69,10 +72,10 @@ class EmbeddingProbPredictor(nn.Module):
 
 
 class EmbeddingProbTrainer(nn.Module):
-    def __init__(self, predictor, datasets: dict):
+    def __init__(self, predictor, datasets: dict, hidden_size: int):
         super().__init__()
         self.predictor = predictor
-        self.classifier = nn.Linear(predictor.config.hidden_size, 1)
+        self.classifier = nn.Linear(hidden_size, 1)
         self.datasets = datasets
 
 
@@ -81,8 +84,9 @@ def train_probability_predictor(model_path: str, dataset_path: str):
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModel.from_pretrained(model_path)
+    hidden_size = HIDDEN_SIZE[model_path]
 
-    predictor = EmbeddingProbPredictor(model)
+    predictor = EmbeddingProbPredictor(model, hidden_size)
     dataset_df = pd.read_csv(dataset_path)
     dataset_size = len(dataset_df)
     dataset = SingleTextDataset(dataset_df, tokenizer)
@@ -94,7 +98,7 @@ def train_probability_predictor(model_path: str, dataset_path: str):
     train_dataset, valid_dataset, test_dataset = random_split(dataset, [n_train_size, n_valid_size, n_test_size])
     datasets = {'train': train_dataset, 'valid': valid_dataset, 'test': test_dataset}
 
-    trainer = EmbeddingProbTrainer(predictor, datasets)
+    trainer = EmbeddingProbTrainer(predictor, datasets, hidden_size)
 
 
 if __name__ == '__main__':
