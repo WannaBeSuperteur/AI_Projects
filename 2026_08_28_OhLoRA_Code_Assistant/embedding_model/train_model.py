@@ -14,12 +14,12 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
-SBERT_TRAIN_BATCH_SIZE = 16
-SBERT_VALID_BATCH_SIZE = 4
-SBERT_EPOCHS = 7
+TRAIN_BATCH_SIZE = 16
+VALID_BATCH_SIZE = 4
+EPOCHS = 7
 
-SBERT_MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
-SBERT_MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/checkpoints'
+MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
+MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/checkpoints'
 
 
 def mean_pooling(model_output, attention_mask):
