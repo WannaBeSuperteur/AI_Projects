@@ -43,8 +43,8 @@
 
 * 선정 모델
 
-| 최종 선정 벤치마크                   | 최종 선정 모델 | 해당하는 Oh-LoRA v7 규칙                                                         |
-|------------------------------|----------|----------------------------------------------------------------------------|
-| `CodeSearchNetCCRetrieval`   |          | - 불필요한 print, logging 등이 없어야 함                                             |
-| `COIRCodeSearchNetRetrieval` |          | - 함수의 단일 책임 원칙 준수 여부 (docstring 으로 판단)<br>- 함수 docstring과 함수명이 서로 일치하는지 판단 |
-| `CodeTransOceanContest`      |          | 나머지 7개                                                                     |
+| 최종 선정 벤치마크                   | 최종 선정 모델                                                                                                | 해당하는 Oh-LoRA v7 규칙                                                         |
+|------------------------------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| `CodeSearchNetCCRetrieval`   | [gte-modernbert-base](https://huggingface.co/Alibaba-NLP/gte-modernbert-base)                           | - 불필요한 print, logging 등이 없어야 함                                             |
+| `COIRCodeSearchNetRetrieval` | [F2LLM-v2-330M](https://huggingface.co/codefuse-ai/F2LLM-v2-330M)                                       | - 함수의 단일 책임 원칙 준수 여부 (docstring 으로 판단)<br>- 함수 docstring과 함수명이 서로 일치하는지 판단 |
+| `CodeTransOceanContest`      | [Giga-Embeddings-instruct-480M-0826](https://huggingface.co/ai-sage/Giga-Embeddings-instruct-480M-0826) | 나머지 7개                                                                     |
