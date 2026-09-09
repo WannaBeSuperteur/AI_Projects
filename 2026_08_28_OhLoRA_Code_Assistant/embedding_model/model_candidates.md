@@ -1,7 +1,24 @@
 
 # Text Embedding Model 후보 목록
 
-## 1. 리더보드 및 벤치마크 선택
+## 목차
+
+* [1. 요약](#1-요약)
+* [2. 리더보드 및 벤치마크 선택](#2-리더보드-및-벤치마크-선택)
+* [3. 최종 모델 선정](#3-최종-모델-선정)
+
+## 1. 요약
+
+* 최종 선정 벤치마크
+  * `CodeSearchNetCCRetrieval` (1개 규칙)
+  * `CodeTransOceanContest` (7개 규칙)
+  * `COIRCodeSearchNetRetrieval` (2개 규칙)
+* 최종 선정 모델
+  * `gte-modernbert-base`
+  * `F2LLM-v2-330M`
+  * `Giga-Embeddings-instruct-480M-0826`
+
+## 2. 리더보드 및 벤치마크 선택
 
 * 리더보드
   * **선택: [MTEB leaderboard](https://huggingface.co/spaces/mteb/leaderboard)**
@@ -34,7 +51,7 @@
 | 상태 값으로 판단되는 값을 조건으로 하는지 여부             | `CodeTransOceanContest`      | 상동                                                                                                                                          |
 | 한 모듈 (*.py 파일) 내에서, 유사한 이름의 함수끼리 거리 검사 | `CodeTransOceanContest`      | 상동                                                                                                                                          |
 
-## 2. 최종 모델 선정
+## 3. 최종 모델 선정
 
 * 선정 기준
   * 500M 이하 (메모리 부담 없이 신속한 코드 리뷰 가능한, 빠르게 추론 가능한 모델) 모델 필터링
