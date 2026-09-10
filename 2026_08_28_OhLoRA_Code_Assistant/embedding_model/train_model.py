@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import sklearn
 
 import torch
 from torch.utils.data import Dataset, random_split, DataLoader
@@ -102,35 +103,71 @@ class EmbeddingProbTrainer:
         for idx, items in enumerate(self.train_loader):
             items = {k: v.to(self.device) for k, v in items.items()}
             inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
-            prob_labels_ = prob_labels.reshape(-1, 1)
+            prob_labels = prob_labels.reshape(-1, 1)
 
             # train 실시
             self.predictor.optimizer.zero_grad()
             outputs = self.predictor(inputs, attention_mask).to(torch.float32)
 
-            loss = self.loss_func(outputs, prob_labels_)
+            loss = self.loss_func(outputs, prob_labels)
             loss.backward()
             self.predictor.optimizer.step()
 
+            outputs = outputs.detach().cpu().numpy()
+            prob_labels = prob_labels.detach().cpu().numpy()
+
             train_loss_sum += loss.item()
-            total += prob_labels.size(0)
+            total += prob_labels.shape[0]
 
             # test
-            print(f'\n{idx} / loss: {loss.item()}')
-            print(f'outputs     : {np.round(np.array(list(outputs.detach().cpu().flatten()) + [-0.01]), 2)}')
-            print(f'prob_labels_: {np.round(np.array(list(prob_labels.detach().cpu()) + [-0.01]), 2)}')
+            print(f'\n{self.current_epoch} / {idx} / loss: {loss.item()}')
+            print(f'outputs     : {np.round(np.array(list(outputs.flatten()) + [-0.01]), 2)}')
+            print(f'prob_labels_: {np.round(np.array(list(prob_labels.flatten()) + [-0.01]), 2)}')
 
-            corr_coef = np.corrcoef(list(outputs.detach().cpu().flatten()), list(prob_labels.detach().cpu()))[0][1]
+            corr_coef = np.corrcoef(list(outputs.flatten()), list(prob_labels.flatten()))[0][1]
             print(f'corr coef   : {corr_coef}')
 
         train_loss = train_loss_sum / total
         return train_loss
 
     def _run_validation_or_test(self, model: nn.Module, data_loader: DataLoader):
-        pass
+        model.eval()
+        total = 0
+        val_mse_sum, val_loss_sum = 0.0, 0.0
+
+        with torch.no_grad():
+            for idx, items in enumerate(data_loader):
+                items = {k: v.to(self.device) for k, v in items.items()}
+
+                inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
+                outputs = self.predictor(inputs, attention_mask).to(torch.float32)
+                prob_labels = prob_labels.reshape(-1, 1)
+
+                outputs = outputs.detach().cpu().numpy()
+                prob_labels = prob_labels.detach().cpu().numpy()
+
+                val_loss_batch = self.loss_func(outputs, prob_labels)
+                val_mse_batch = sklearn.metrics.mean_squared_error(outputs, prob_labels)
+                val_loss_sum += val_loss_batch
+                val_mse_sum += val_mse_batch
+
+                # test
+                print(f'\n{self.current_epoch} / {idx}')
+                print(f'outputs     : {np.round(np.array(list(outputs.flatten()) + [-0.01]), 2)}')
+                print(f'prob_labels_: {np.round(np.array(list(prob_labels.flatten()) + [-0.01]), 2)}')
+
+                corr_coef = np.corrcoef(list(outputs.flatten()), list(prob_labels.flatten()))[0][1]
+                print(f'corr={corr_coef}, loss={val_loss_batch}, mse={val_mse_batch}')
+
+                total += prob_labels.shape[0]
+
+        val_mse = val_mse_sum / total
+        val_loss = val_loss_sum / total
+
+        return val_mse, val_loss
 
     def _run_all_process(self):
-        current_epoch = 0
+        self.current_epoch = 0
         min_valid_loss_epoch = -1  # Loss-based Early Stopping
         min_valid_loss = None
         best_epoch_model = None
