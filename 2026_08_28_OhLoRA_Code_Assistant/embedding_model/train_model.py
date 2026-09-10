@@ -33,7 +33,7 @@ EARLY_STOPPING_PATIENCE = 7
 
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
 MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/checkpoints'
-TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/'
+TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_log'
 
 HIDDEN_SIZE = {"codefuse-ai/F2LLM-v2-330M": 896}
 
@@ -146,7 +146,7 @@ class EmbeddingProbTrainer:
                 prob_labels = prob_labels.reshape(-1, 1)
 
                 val_loss_batch = self.loss_func(outputs, prob_labels)
-                val_loss_sum += val_loss_batch.detech().cpu()
+                val_loss_sum += float(val_loss_batch.detach().cpu())
 
                 preds = preds.detach().cpu()
                 prob_labels = prob_labels.detach().cpu()
@@ -176,7 +176,8 @@ class EmbeddingProbTrainer:
             'epoch': [],
             'epoch_time': [],
             'valid_mse': [],
-            'valid_loss': []
+            'valid_loss': [],
+            'torch_memory': []
         }
 
         while True:
@@ -213,9 +214,10 @@ class EmbeddingProbTrainer:
                 torch.save(best_epoch_model.state_dict(), ckpt_path)
 
             train_log['epoch'].append(self.current_epoch)
-            train_log['epoch_time'].append(time.time() - start_at)
-            train_log['valid_mse'].append(valid_mse)
-            train_log['valid_loss'].append(valid_loss)
+            train_log['epoch_time'].append(round(time.time() - start_at, 3))
+            train_log['valid_mse'].append(round(valid_mse, 6))
+            train_log['valid_loss'].append(round(valid_loss, 6))
+            train_log['torch_memory'].append(torch.cuda.memory_allocated())
             pd.DataFrame(train_log).to_csv(train_log_path)
 
             if self.current_epoch + 1 >= MAX_EPOCHS or self.current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE:
@@ -241,9 +243,10 @@ class EmbeddingProbTrainer:
                                                            data_loader=self.test_loader)
 
         train_log['epoch'].append('test')
-        train_log['epoch_time'].append(time.time() - test_start_at)
+        train_log['epoch_time'].append(round(time.time() - test_start_at, 3))
         train_log['valid_mse'].append(test_mse)
         train_log['valid_loss'].append(test_loss)
+        train_log['torch_memory'].append(torch.cuda.memory_allocated())
         pd.DataFrame(train_log).to_csv(train_log_path)
 
         if os.path.exists(ckpt_dir_path):
@@ -380,7 +383,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     test_start_at = time.time()
     test_mse = test_similarity_predictor(model_dir_path, device, test_dataloader)
     test_log = {
-        'test_time': [test_start_at],
+        'test_time': [round(time.time() - test_start_at, 3)],
         'test_mse': [test_mse]
     }
     pd.DataFrame(test_log).to_csv(test_log_path)
