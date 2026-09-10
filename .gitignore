@@ -206,6 +206,10 @@
 2025_10_06_OhLoRA_HP_Battle/llm/models/*
 2025_10_06_OhLoRA_HP_Battle/llm/original_models
 2025_10_06_OhLoRA_HP_Battle/llm/original_models/*
+2026_08_28_OhLoRA_Code_Assistant/embedding_model/checkpoints
+2026_08_28_OhLoRA_Code_Assistant/embedding_model/checkpoints/*
+2026_08_28_OhLoRA_Code_Assistant/embedding_model/models
+2026_08_28_OhLoRA_Code_Assistant/embedding_model/models/*
 venv
 venv/*
 requirements_v3.10.11.txt
