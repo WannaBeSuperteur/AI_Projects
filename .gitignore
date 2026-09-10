@@ -210,6 +210,8 @@
 2026_08_28_OhLoRA_Code_Assistant/embedding_model/checkpoints/*
 2026_08_28_OhLoRA_Code_Assistant/embedding_model/models
 2026_08_28_OhLoRA_Code_Assistant/embedding_model/models/*
+2026_08_28_OhLoRA_Code_Assistant/embedding_model/train_log
+2026_08_28_OhLoRA_Code_Assistant/embedding_model/train_log/*
 venv
 venv/*
 requirements_v3.10.11.txt
