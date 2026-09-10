@@ -27,8 +27,8 @@ EPOCHS = 7
 MAX_EPOCHS = 100
 EARLY_STOPPING_PATIENCE = 10
 
-MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/trained_sbert_model'
-MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/ai_qna/models/rag_sbert/checkpoints'
+MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
+MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/checkpoints'
 
 HIDDEN_SIZE = {"codefuse-ai/F2LLM-v2-330M": 896}
 
@@ -81,8 +81,10 @@ class EmbeddingProbPredictor(nn.Module):
 
 
 class EmbeddingProbTrainer:
-    def __init__(self, predictor: EmbeddingProbPredictor, data_loaders: dict):
+    def __init__(self, predictor: EmbeddingProbPredictor, data_loaders: dict, task_name: str):
         super().__init__()
+        self.task_name = task_name
+
         self.predictor = predictor
         self.predictor.optimizer = torch.optim.AdamW(self.predictor.parameters(), lr=5e-5)
         self.predictor.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.predictor.optimizer,
@@ -205,6 +207,11 @@ class EmbeddingProbTrainer:
                 best_epoch_model.device = self.device
                 best_epoch_model.load_state_dict(self.predictor.state_dict())
 
+                ckpt_dir_path = os.path.join(MODEL_CKPT_PATH, self.task_name)
+                os.makedirs(ckpt_dir_path, exist_ok=True)
+                ckpt_path = os.path.join(ckpt_dir_path, f"epoch_{self.current_epoch:04d}.pth")
+                torch.save(best_epoch_model.state_dict(), ckpt_path)
+
             if self.current_epoch + 1 >= MAX_EPOCHS or self.current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE:
                 break
 
@@ -226,13 +233,18 @@ class EmbeddingProbTrainer:
         test_mse, test_loss = self._run_validation_or_test(model=best_epoch_model,
                                                            data_loader=self.test_loader)
 
+        model_dir_path = os.path.join(MODEL_SAVE_PATH, self.task_name)
+        os.makedirs(model_dir_path, exist_ok=True)
+        model_path = os.path.join(model_dir_path, f"epoch_{self.current_epoch:%04d}.pth")
+        torch.save(best_epoch_model.state_dict(), model_path)
+
         return val_loss_list, test_mse, best_epoch_model
 
     def run(self):
         self._run_all_process()
 
 
-def train_probability_predictor(model_path: str, dataset_path: str):
+def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding probability predictor."""
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -255,7 +267,7 @@ def train_probability_predictor(model_path: str, dataset_path: str):
 
     data_loaders = {'train': train_loader, 'valid': valid_loader, 'test': test_loader}
 
-    trainer = EmbeddingProbTrainer(predictor, data_loaders)
+    trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name)
     trainer.run()
 
 
@@ -265,5 +277,6 @@ if __name__ == '__main__':
                                 "code_reviewer",
                                 "ai_dataset",
                                 "dataset_01_func_docstring_single_responsibility.csv")
+    task_name = "func_docstring_single_responsibility"
 
-    train_probability_predictor(model_path, dataset_path)
+    train_probability_predictor(model_path, dataset_path, task_name)
