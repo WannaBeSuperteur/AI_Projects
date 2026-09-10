@@ -181,10 +181,10 @@ class EmbeddingProbTrainer:
 
         while True:
             self._run_train()
-            valid_accuracy, valid_loss = self._run_validation_or_test(model=self.predictor,
-                                                                      data_loader=self.valid_loader)
+            valid_mse, valid_loss = self._run_validation_or_test(model=self.predictor,
+                                                                 data_loader=self.valid_loader)
 
-            print(f'epoch={current_epoch}, val_acc={valid_accuracy:.6f}, val_loss={valid_loss:.6f}')
+            print(f'epoch={self.current_epoch}, val_mse={valid_mse:.6f}, val_loss={valid_loss:.6f}')
             val_loss_list.append(valid_loss)
 
             if self.predictor.scheduler is not None:
@@ -193,8 +193,8 @@ class EmbeddingProbTrainer:
             # update best epoch model
             if min_valid_loss is None or valid_loss < min_valid_loss:
                 min_valid_loss = valid_loss
-                min_valid_loss_epoch = current_epoch
-                best_epoch_model_valid_accuracy = valid_accuracy
+                min_valid_loss_epoch = self.current_epoch
+                best_epoch_model_valid_mse = valid_mse
 
                 pretrained_model = EmbeddingProbPredictor(base_model=self.predictor.base_model,
                                                           hidden_size=self.predictor.hidden_size)
@@ -203,28 +203,28 @@ class EmbeddingProbTrainer:
                 best_epoch_model.device = self.device
                 best_epoch_model.load_state_dict(self.predictor.state_dict())
 
-            if current_epoch + 1 >= MAX_EPOCHS or current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE:
+            if self.current_epoch + 1 >= MAX_EPOCHS or self.current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE:
                 break
 
-            current_epoch += 1
+            self.current_epoch += 1
 
         # assert best epoch model accuracy & loss
-        checked_valid_accuracy, checked_valid_loss = self._run_validation_or_test(model=best_epoch_model,
-                                                                                  data_loader=self.valid_loader)
+        checked_valid_mse, checked_valid_loss = self._run_validation_or_test(model=best_epoch_model,
+                                                                             data_loader=self.valid_loader)
 
-        print(f'[best model] val_acc={best_epoch_model_valid_accuracy}, val_loss={min_valid_loss}')
-        print(f'[check] val_acc={checked_valid_accuracy}, val_loss={checked_valid_loss}')
+        print(f'[best model] val_mse={best_epoch_model_valid_mse}, val_loss={min_valid_loss}')
+        print(f'[check] val_mse={checked_valid_mse}, val_loss={checked_valid_loss}')
 
-        assert abs(best_epoch_model_valid_accuracy - checked_valid_accuracy) <= 1e-6
+        assert abs(best_epoch_model_valid_mse - checked_valid_mse) <= 1e-6
         assert abs(min_valid_loss - checked_valid_loss) <= 1e-6
 
         # run test
         print('testing ...')
 
-        test_accuracy, _, test_result = self._run_validation_or_test(model=best_epoch_model,
-                                                                     data_loader=self.test_loader)
+        test_mse, test_loss = self._run_validation_or_test(model=best_epoch_model,
+                                                           data_loader=self.test_loader)
 
-        return val_loss_list, test_accuracy, best_epoch_model
+        return val_loss_list, test_mse, best_epoch_model
 
     def run(self):
         self._run_all_process()
