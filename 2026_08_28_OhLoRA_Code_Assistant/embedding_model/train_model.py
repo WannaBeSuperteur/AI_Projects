@@ -370,16 +370,16 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     os.makedirs(model_dir_path, exist_ok=True)
 
     train_dataloader = samples_and_dataloaders['train_loader']
-    total_train_steps = len(train_dataloader) * 10
-    warmup_steps = int(total_train_steps * 0.2)
+    total_train_steps = len(train_dataloader) * 5
+    warmup_steps = int(total_train_steps * 0.4)
 
     model.fit(
         train_objectives=[(train_dataloader, train_loss)],
         evaluator=valid_evaluator,
-        epochs=10,
-        evaluation_steps=30,
+        epochs=5,
+        evaluation_steps=50,
         warmup_steps=warmup_steps,
-        optimizer_params={"lr": 1e-5},
+        optimizer_params={"lr": 2.5e-6},
         output_path=model_dir_path
     )
 
