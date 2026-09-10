@@ -396,18 +396,34 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
 if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
-    model_path = "codefuse-ai/F2LLM-v2-330M"
 
-#    dataset_path = os.path.join(PROJECT_DIR_PATH,
-#                                "code_reviewer",
-#                                "ai_dataset",
-#                                "dataset_01_func_docstring_single_responsibility.csv")
-#    task_name = "func_docstring_single_responsibility"
-#    train_probability_predictor(model_path, dataset_path, task_name)
+    GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
+    GIGA_EMBEDDINGS_INSTRUCT = 'ai-sage/Giga-Embeddings-instruct-480M-0826'
+    F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
 
-    dataset_path = os.path.join(PROJECT_DIR_PATH,
-                                "code_reviewer",
-                                "ai_dataset",
-                                "dataset_01_func_docstring_docstring_and_name.csv")
-    task_name = "return_matched_with_func_name"
-    train_similarity_predictor(model_path, dataset_path, task_name)
+    task_name_to_info = {
+        '01_unnecessary_prints': {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
+        '01_similar_variables': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
+        '01_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
+        '01_return_matched_with_func_name': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
+        '01_func_docstring_single_responsibility': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
+        '01_func_docstring_docstring_and_name': {'model_path': F2LLM_V2_330M, 'task_type': 'sim'},
+        '04_func_args_bindable': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
+        '04_func_args_dynamic': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
+        '06_refactor_into_class_case_2_state_vars_if_else': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
+        '06_similar_function_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'}
+    }
+
+    for task_name, task_info in task_name_to_info.items():
+        dataset_path = os.path.join(PROJECT_DIR_PATH,
+                                    "code_reviewer",
+                                    "ai_dataset",
+                                    f"dataset_{task_name}.csv")
+
+        model_path = task_info['model_path']
+        task_type = task_info['task_type']
+
+        if task_type == 'prob':
+            train_probability_predictor(model_path, dataset_path, task_name)
+        elif task_type == 'sim':
+            train_similarity_predictor(model_path, dataset_path, task_name)
