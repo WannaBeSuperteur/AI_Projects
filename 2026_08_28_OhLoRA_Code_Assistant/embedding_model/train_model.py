@@ -1,5 +1,6 @@
 
 import os
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -165,6 +166,9 @@ class EmbeddingProbTrainer:
         best_epoch_model = None
         val_loss_list = []
 
+        ckpt_dir_path = os.path.join(MODEL_CKPT_PATH, self.task_name)
+        model_dir_path = os.path.join(MODEL_SAVE_PATH, self.task_name)
+
         while True:
             self._run_train()
             valid_mse, valid_loss = self._run_validation_or_test(model=self.predictor,
@@ -189,7 +193,9 @@ class EmbeddingProbTrainer:
                 best_epoch_model.device = self.device
                 best_epoch_model.load_state_dict(self.predictor.state_dict())
 
-                ckpt_dir_path = os.path.join(MODEL_CKPT_PATH, self.task_name)
+                if os.path.exists(ckpt_dir_path):
+                    shutil.rmtree(ckpt_dir_path)
+
                 os.makedirs(ckpt_dir_path, exist_ok=True)
                 ckpt_path = os.path.join(ckpt_dir_path, f"epoch_{self.current_epoch:04d}.pth")
                 torch.save(best_epoch_model.state_dict(), ckpt_path)
@@ -215,7 +221,9 @@ class EmbeddingProbTrainer:
         test_mse, test_loss = self._run_validation_or_test(model=best_epoch_model,
                                                            data_loader=self.test_loader)
 
-        model_dir_path = os.path.join(MODEL_SAVE_PATH, self.task_name)
+        if os.path.exists(ckpt_dir_path):
+            shutil.rmtree(ckpt_dir_path)
+
         os.makedirs(model_dir_path, exist_ok=True)
         model_path = os.path.join(model_dir_path, f"epoch_{self.current_epoch:%04d}.pth")
         torch.save(best_epoch_model.state_dict(), model_path)
@@ -350,16 +358,16 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 if __name__ == '__main__':
     model_path = "codefuse-ai/F2LLM-v2-330M"
 
-#    dataset_path = os.path.join(PROJECT_DIR_PATH,
-#                                "code_reviewer",
-#                                "ai_dataset",
-#                                "dataset_01_func_docstring_single_responsibility.csv")
-#    task_name = "func_docstring_single_responsibility"
-#    train_probability_predictor(model_path, dataset_path, task_name)
-
     dataset_path = os.path.join(PROJECT_DIR_PATH,
                                 "code_reviewer",
                                 "ai_dataset",
-                                "dataset_01_return_matched_with_func_name.csv")
-    task_name = "return_matched_with_func_name"
-    train_similarity_predictor(model_path, dataset_path, task_name)
+                                "dataset_01_func_docstring_single_responsibility.csv")
+    task_name = "func_docstring_single_responsibility"
+    train_probability_predictor(model_path, dataset_path, task_name)
+
+#    dataset_path = os.path.join(PROJECT_DIR_PATH,
+#                                "code_reviewer",
+#                                "ai_dataset",
+#                                "dataset_01_return_matched_with_func_name.csv")
+#    task_name = "return_matched_with_func_name"
+#    train_similarity_predictor(model_path, dataset_path, task_name)
