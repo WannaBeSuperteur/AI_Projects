@@ -146,7 +146,7 @@ class EmbeddingProbTrainer:
                 prob_labels = prob_labels.reshape(-1, 1)
 
                 val_loss_batch = self.loss_func(outputs, prob_labels)
-                val_loss_sum += val_loss_batch
+                val_loss_sum += val_loss_batch.detech().cpu()
 
                 preds = preds.detach().cpu()
                 prob_labels = prob_labels.detach().cpu()
@@ -214,7 +214,7 @@ class EmbeddingProbTrainer:
 
             train_log['epoch'].append(self.current_epoch)
             train_log['epoch_time'].append(time.time() - start_at)
-            train_log['valid_mae'].append(valid_mse)
+            train_log['valid_mse'].append(valid_mse)
             train_log['valid_loss'].append(valid_loss)
             pd.DataFrame(train_log).to_csv(train_log_path)
 
@@ -242,7 +242,7 @@ class EmbeddingProbTrainer:
 
         train_log['epoch'].append('test')
         train_log['epoch_time'].append(time.time() - test_start_at)
-        train_log['valid_mae'].append(test_mse)
+        train_log['valid_mse'].append(test_mse)
         train_log['valid_loss'].append(test_loss)
         pd.DataFrame(train_log).to_csv(train_log_path)
 
