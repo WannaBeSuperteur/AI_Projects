@@ -36,7 +36,13 @@ MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
 MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/checkpoints'
 TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_log'
 
-HIDDEN_SIZE = {"codefuse-ai/F2LLM-v2-330M": 896}
+GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
+GIGA_EMBEDDINGS_INSTRUCT = 'ai-sage/Giga-Embeddings-instruct-480M-0826'
+F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
+
+HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
+               GIGA_EMBEDDINGS_INSTRUCT: 1024,
+               F2LLM_V2_330M: 896}
 
 
 def mean_pooling(model_output, attention_mask):
@@ -264,8 +270,8 @@ class EmbeddingProbTrainer:
 def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding probability predictor."""
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-    model = AutoModel.from_pretrained(model_path)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
     hidden_size = HIDDEN_SIZE[model_path]
 
     predictor = EmbeddingProbPredictor(model, hidden_size)
@@ -318,7 +324,7 @@ def create_samples_and_dataloaders_for_tvt(dataset_df: pd.DataFrame):
 def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader: DataLoader):
     """test text embedding probability predictor."""
 
-    best_model = SentenceTransformer(model_dir_path, device=device)
+    best_model = SentenceTransformer(model_dir_path, device=device, trust_remote_code=True)
     best_model.eval()
 
     true_labels = []
@@ -349,7 +355,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     """train text embedding similarity predictor."""
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = SentenceTransformer(model_path, device=device)
+    model = SentenceTransformer(model_path, device=device, trust_remote_code=True)
     test_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
 
     dataset_df = pd.read_csv(dataset_path)
@@ -396,10 +402,6 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
 if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
-
-    GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
-    GIGA_EMBEDDINGS_INSTRUCT = 'ai-sage/Giga-Embeddings-instruct-480M-0826'
-    F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
 
     task_name_to_info = {
         '01_unnecessary_prints': {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
