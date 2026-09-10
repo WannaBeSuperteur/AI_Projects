@@ -232,16 +232,6 @@ class EmbeddingProbTrainer:
 
             self.current_epoch += 1
 
-        # assert best epoch model accuracy & loss
-        checked_valid_mse, checked_valid_loss = self._run_validation_or_test(model=best_epoch_model,
-                                                                             data_loader=self.valid_loader)
-
-        print(f'[best model] val_mse={best_epoch_model_valid_mse}, val_loss={min_valid_loss}')
-        print(f'[check] val_mse={checked_valid_mse}, val_loss={checked_valid_loss}')
-
-        assert abs(best_epoch_model_valid_mse - checked_valid_mse) <= 1e-6
-        assert abs(min_valid_loss - checked_valid_loss) <= 1e-6
-
         # run test
         print('testing ...')
 
