@@ -12,6 +12,7 @@ from transformers import AutoTokenizer, AutoModel
 
 
 np.set_printoptions(linewidth=160)
+torch.manual_seed(2026)
 
 # to prevent force system off during S-BERT training
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
