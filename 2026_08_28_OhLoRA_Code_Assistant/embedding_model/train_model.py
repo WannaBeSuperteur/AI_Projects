@@ -84,7 +84,9 @@ class EmbeddingProbTrainer:
     def __init__(self, predictor: EmbeddingProbPredictor, data_loaders: dict):
         super().__init__()
         self.predictor = predictor
-        self.predictor.optimizer = torch.optim.AdamW(self.predictor.parameters(), lr=3e-5)
+        self.predictor.optimizer = torch.optim.AdamW(self.predictor.parameters(), lr=5e-5)
+        self.predictor.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.predictor.optimizer,
+                                                                          gamma=0.95)
         self.loss_func = nn.BCEWithLogitsLoss()
 
         self.data_loaders = data_loaders
