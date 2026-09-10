@@ -1,6 +1,7 @@
 
 import os
 
+import numpy as np
 import pandas as pd
 
 import torch
@@ -8,6 +9,8 @@ from torch.utils.data import Dataset, random_split, DataLoader
 import torch.nn as nn
 from transformers import AutoTokenizer, AutoModel
 
+
+np.set_printoptions(linewidth=160)
 
 # to prevent force system off during S-BERT training
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -57,7 +60,7 @@ class SingleTextDataset(Dataset):
         return {
             "input_ids": inputs["input_ids"].squeeze(0),
             "attention_mask": inputs["attention_mask"].squeeze(0),
-            "prob": torch.tensor(self.probs[idx], dtype=torch.long)
+            "prob": torch.tensor(self.probs[idx], dtype=torch.float16)
         }
 
 
@@ -66,16 +69,16 @@ class EmbeddingProbPredictor(nn.Module):
         super().__init__()
         self.base_model = base_model
         self.hidden_size = hidden_size
-        self.predictor = nn.Linear(hidden_size, 1)
+        self.final_linear = nn.Linear(hidden_size, 1)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.base_model(input_ids=input_ids, attention_mask=attention_mask)
         emb = mean_pooling(outputs, attention_mask)
-        prob = self.predictor(emb)
+        prob = self.final_linear(emb)
         return prob
 
 
-class EmbeddingProbTrainer(nn.Module):
+class EmbeddingProbTrainer:
     def __init__(self, predictor: EmbeddingProbPredictor, data_loaders: dict):
         super().__init__()
         self.predictor = predictor
@@ -88,25 +91,37 @@ class EmbeddingProbTrainer(nn.Module):
         self.test_loader = self.data_loaders['test']
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.predictor.to(self.device)
 
     def _run_train(self):
         self.predictor.train()
+
         total = 0
         train_loss_sum = 0.0
 
-        for idx, item in enumerate(self.train_loader):
-            inputs, prob_labels = item['input_items'], item['prob']
+        for idx, items in enumerate(self.train_loader):
+            items = {k: v.to(self.device) for k, v in items.items()}
+            inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
+            prob_labels_ = prob_labels.reshape(-1, 1)
 
             # train 실시
             self.predictor.optimizer.zero_grad()
-            outputs = self.predictor(inputs).to(torch.float32)
+            outputs = self.predictor(inputs, attention_mask).to(torch.float32)
 
-            loss = self.loss_func(outputs, prob_labels)
+            loss = self.loss_func(outputs, prob_labels_)
             loss.backward()
             self.predictor.optimizer.step()
 
             train_loss_sum += loss.item()
             total += prob_labels.size(0)
+
+            # test
+            print(f'\n{idx} / loss: {loss.item()}')
+            print(f'outputs     : {np.round(np.array(list(outputs.detach().cpu().flatten()) + [-0.01]), 2)}')
+            print(f'prob_labels_: {np.round(np.array(list(prob_labels.detach().cpu()) + [-0.01]), 2)}')
+
+            corr_coef = np.corrcoef(list(outputs.detach().cpu().flatten()), list(prob_labels.detach().cpu()))[0][1]
+            print(f'corr coef   : {corr_coef}')
 
         train_loss = train_loss_sum / total
         return train_loss
