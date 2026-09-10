@@ -8,12 +8,13 @@ import pandas as pd
 import sklearn
 
 import torch
+import torch.nn as nn
+
 from sentence_transformers import SentenceTransformer, InputExample, losses
 from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
+from sentence_transformers.util import cos_sim
 from torch.utils.data import Dataset, random_split, DataLoader
-import torch.nn as nn
-from transformers import AutoTokenizer, AutoModel
-
+from transformers import AutoTokenizer, AutoModel, TrainerCallback
 
 np.set_printoptions(linewidth=160)
 torch.manual_seed(2026)
@@ -331,8 +332,8 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader:
 
             embeddings1 = best_model.encode(texts1, convert_to_tensor=True, show_progress_bar=False)
             embeddings2 = best_model.encode(texts2, convert_to_tensor=True, show_progress_bar=False)
-            cos_sim = best_model.similarity(embeddings1, embeddings2)
-            preds = torch.diagonal(cos_sim).cpu().numpy()
+            cos_sims = best_model.similarity(embeddings1, embeddings2)
+            preds = torch.diagonal(cos_sims).cpu().numpy()
 
             predicted_scores.extend(preds)
             true_labels.extend(labels)
@@ -363,18 +364,22 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         name="valid-eval"
     )
 
-    train_loss = losses.CosineSimilarityLoss(model=model)
+    train_loss = losses.CoSENTLoss(model=model)
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
     os.makedirs(model_dir_path, exist_ok=True)
 
     train_dataloader = samples_and_dataloaders['train_loader']
+    total_train_steps = len(train_dataloader) * 10
+    warmup_steps = int(total_train_steps * 0.2)
+
     model.fit(
         train_objectives=[(train_dataloader, train_loss)],
         evaluator=valid_evaluator,
         epochs=10,
-        evaluation_steps=10,
-        warmup_steps=5,
+        evaluation_steps=30,
+        warmup_steps=warmup_steps,
+        optimizer_params={"lr": 1e-5},
         output_path=model_dir_path
     )
 
@@ -393,16 +398,16 @@ if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
     model_path = "codefuse-ai/F2LLM-v2-330M"
 
-    dataset_path = os.path.join(PROJECT_DIR_PATH,
-                                "code_reviewer",
-                                "ai_dataset",
-                                "dataset_01_func_docstring_single_responsibility.csv")
-    task_name = "func_docstring_single_responsibility"
-    train_probability_predictor(model_path, dataset_path, task_name)
-
 #    dataset_path = os.path.join(PROJECT_DIR_PATH,
 #                                "code_reviewer",
 #                                "ai_dataset",
-#                                "dataset_01_return_matched_with_func_name.csv")
-#    task_name = "return_matched_with_func_name"
-#    train_similarity_predictor(model_path, dataset_path, task_name)
+#                                "dataset_01_func_docstring_single_responsibility.csv")
+#    task_name = "func_docstring_single_responsibility"
+#    train_probability_predictor(model_path, dataset_path, task_name)
+
+    dataset_path = os.path.join(PROJECT_DIR_PATH,
+                                "code_reviewer",
+                                "ai_dataset",
+                                "dataset_01_func_docstring_docstring_and_name.csv")
+    task_name = "return_matched_with_func_name"
+    train_similarity_predictor(model_path, dataset_path, task_name)
