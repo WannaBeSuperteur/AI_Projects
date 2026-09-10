@@ -118,20 +118,10 @@ class EmbeddingProbTrainer:
             loss.backward()
             self.predictor.optimizer.step()
 
-            outputs = outputs.detach().cpu().numpy()
             prob_labels = prob_labels.detach().cpu().numpy()
 
             train_loss_sum += loss.item()
             total += prob_labels.shape[0]
-
-            # test
-            print(f'\n{self.current_epoch} / {idx} / loss: {loss.item()}')
-            print(f'outputs     : {np.round(np.array(list(outputs.flatten()) + [-0.01]), 2)}')
-            print(f'prob_labels_: {np.round(np.array(list(prob_labels.flatten()) + [-0.01]), 2)}')
-
-            corr_coef = np.corrcoef(list(outputs.flatten()), list(prob_labels.flatten()))[0][1]
-            print(f'corr coef   : {corr_coef}')
-            print(f'memory      : {torch.cuda.memory_allocated(self.device)}')
 
         train_loss = train_loss_sum / total
         return train_loss
@@ -153,21 +143,11 @@ class EmbeddingProbTrainer:
                 val_loss_batch = self.loss_func(outputs, prob_labels)
                 val_loss_sum += val_loss_batch
 
-                outputs = outputs.detach().cpu()
                 preds = preds.detach().cpu()
                 prob_labels = prob_labels.detach().cpu()
 
                 val_mse_batch = sklearn.metrics.mean_squared_error(preds, prob_labels)
                 val_mse_sum += val_mse_batch
-
-                # test
-                print(f'\n{self.current_epoch} / {idx}')
-                print(f'preds       : {np.round(np.array(list(preds.flatten()) + [-0.01]), 2)}')
-                print(f'prob_labels_: {np.round(np.array(list(prob_labels.flatten()) + [-0.01]), 2)}')
-
-                corr_coef = np.corrcoef(list(outputs.flatten()), list(prob_labels.flatten()))[0][1]
-                print(f'corr={corr_coef}, loss={val_loss_batch}, mse={val_mse_batch}')
-                print(f'memory={torch.cuda.memory_allocated(self.device)}')
 
                 total += prob_labels.shape[0]
 
