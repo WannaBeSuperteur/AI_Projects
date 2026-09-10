@@ -1,6 +1,7 @@
 
 import os
 import shutil
+import time
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,7 @@ EARLY_STOPPING_PATIENCE = 7
 
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
 MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/checkpoints'
+TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/'
 
 HIDDEN_SIZE = {"codefuse-ai/F2LLM-v2-330M": 896}
 
@@ -168,8 +170,18 @@ class EmbeddingProbTrainer:
 
         ckpt_dir_path = os.path.join(MODEL_CKPT_PATH, self.task_name)
         model_dir_path = os.path.join(MODEL_SAVE_PATH, self.task_name)
+        train_log_path = os.path.join(TRAIN_LOG_PATH, f'{self.task_name}.csv')
+
+        train_log = {
+            'epoch': [],
+            'epoch_time': [],
+            'valid_mse': [],
+            'valid_loss': []
+        }
 
         while True:
+            start_at = time.time()
+
             self._run_train()
             valid_mse, valid_loss = self._run_validation_or_test(model=self.predictor,
                                                                  data_loader=self.valid_loader)
@@ -200,6 +212,12 @@ class EmbeddingProbTrainer:
                 ckpt_path = os.path.join(ckpt_dir_path, f"epoch_{self.current_epoch:04d}.pth")
                 torch.save(best_epoch_model.state_dict(), ckpt_path)
 
+            train_log['epoch'].append(self.current_epoch)
+            train_log['epoch_time'].append(time.time() - start_at)
+            train_log['valid_mae'].append(valid_mse)
+            train_log['valid_loss'].append(valid_loss)
+            pd.DataFrame(train_log).to_csv(train_log_path)
+
             if self.current_epoch + 1 >= MAX_EPOCHS or self.current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE:
                 break
 
@@ -218,8 +236,15 @@ class EmbeddingProbTrainer:
         # run test
         print('testing ...')
 
+        test_start_at = time.time()
         test_mse, test_loss = self._run_validation_or_test(model=best_epoch_model,
                                                            data_loader=self.test_loader)
+
+        train_log['epoch'].append('test')
+        train_log['epoch_time'].append(time.time() - test_start_at)
+        train_log['valid_mae'].append(test_mse)
+        train_log['valid_loss'].append(test_loss)
+        pd.DataFrame(train_log).to_csv(train_log_path)
 
         if os.path.exists(ckpt_dir_path):
             shutil.rmtree(ckpt_dir_path)
@@ -227,8 +252,6 @@ class EmbeddingProbTrainer:
         os.makedirs(model_dir_path, exist_ok=True)
         model_path = os.path.join(model_dir_path, f"epoch_{self.current_epoch:%04d}.pth")
         torch.save(best_epoch_model.state_dict(), model_path)
-
-        return val_loss_list, test_mse, best_epoch_model
 
     def run(self):
         self._run_all_process()
@@ -314,8 +337,8 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader:
             print(f'preds : {preds}')
             print(f'labels : {true_labels}')
 
-    mse_result = sklearn.metrics.mean_squared_error(true_labels, predicted_scores)
-    return mse_result
+    test_mse = sklearn.metrics.mean_squared_error(true_labels, predicted_scores)
+    return test_mse
 
 
 def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
@@ -323,6 +346,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = SentenceTransformer(model_path, device=device)
+    test_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
 
     dataset_df = pd.read_csv(dataset_path)
     dataset_df = dataset_df.sample(frac=1)
@@ -352,10 +376,18 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     )
 
     test_dataloader = samples_and_dataloaders['test_loader']
-    test_similarity_predictor(model_dir_path, device, test_dataloader)
+
+    test_start_at = time.time()
+    test_mse = test_similarity_predictor(model_dir_path, device, test_dataloader)
+    test_log = {
+        'test_time': [test_start_at],
+        'test_mse': [test_mse]
+    }
+    pd.DataFrame(test_log).to_csv(test_log_path)
 
 
 if __name__ == '__main__':
+    os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
     model_path = "codefuse-ai/F2LLM-v2-330M"
 
     dataset_path = os.path.join(PROJECT_DIR_PATH,
