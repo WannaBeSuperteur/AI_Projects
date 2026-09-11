@@ -468,7 +468,7 @@ if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
 
     task_name_to_info = {
-#        '01_unnecessary_prints': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
+        '01_unnecessary_prints': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
         '01_similar_variables': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
         '01_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
         '01_return_matched_with_func_name': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
