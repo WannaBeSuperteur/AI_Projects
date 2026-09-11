@@ -427,8 +427,10 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     training_args = SentenceTransformerTrainingArguments(
         output_dir=model_dir_path,
         num_train_epochs=MAX_EPOCHS,
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
         eval_strategy="steps",
-        eval_steps=20,
+        eval_steps=30,
         learning_rate=base_lr,
         warmup_steps=warmup_steps,
         load_best_model_at_end=False,
