@@ -9,12 +9,12 @@ import sklearn
 
 import torch
 import torch.nn as nn
-
-from sentence_transformers import SentenceTransformer, InputExample, losses
-from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
-from sentence_transformers.util import cos_sim
 from torch.utils.data import Dataset, random_split, DataLoader
-from transformers import AutoTokenizer, AutoModel, TrainerCallback
+
+from sentence_transformers import SentenceTransformer, InputExample, util
+from sentence_transformers.sentence_transformer import losses
+from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
+from transformers import AutoTokenizer, AutoModel
 
 np.set_printoptions(linewidth=160)
 torch.manual_seed(2026)
@@ -287,7 +287,7 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     trainer.run()
 
 
-def create_samples_and_dataloaders_for_tvt(dataset_df: pd.DataFrame):
+def create_samples_and_dataloaders_for_tvt(dataset_df: pd.DataFrame, model: SentenceTransformer):
     dataset_size = len(dataset_df)
     n_train_size = int(0.75 * dataset_size)
     n_valid_size = int(0.125 * dataset_size)
@@ -297,7 +297,10 @@ def create_samples_and_dataloaders_for_tvt(dataset_df: pd.DataFrame):
             InputExample(texts=[row['code_1'], row['code_2']], label=row['similarity'])
             for _, row in df.iterrows()
         ]
-        return samples, DataLoader(samples, shuffle=shuffle, batch_size=2)
+        return samples, DataLoader(samples,
+                                   shuffle=shuffle,
+                                   batch_size=4,
+                                   collate_fn=model.smart_batching_collate)
 
     train_df = dataset_df[:n_train_size]
     valid_df = dataset_df[n_train_size:n_train_size + n_valid_size]
@@ -332,20 +335,20 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader:
 def valid_or_test_similarity_predictor(model, val_or_test_dataloader):
     predicted_scores, true_labels = [], []
 
-    print(val_or_test_dataloader)
-
     for batch in val_or_test_dataloader:
-        texts1 = [ex.texts[0] for ex in batch]
-        texts2 = [ex.texts[1] for ex in batch]
-        labels = [ex.label for ex in batch]
+        text1_dict, text2_dict, labels = batch[0][0], batch[0][1], batch[1]
 
-        embeddings1 = model.encode(texts1, convert_to_tensor=True, show_progress_bar=False)
-        embeddings2 = model.encode(texts2, convert_to_tensor=True, show_progress_bar=False)
-        cos_sims = model.similarity(embeddings1, embeddings2)
-        preds = torch.diagonal(cos_sims).cpu().numpy()
+        inputs1 = {k: v.to(model.device) for k, v in text1_dict.items()
+                   if k in ['input_ids', 'attention_mask', 'token_type_ids']}
+        inputs2 = {k: v.to(model.device) for k, v in text2_dict.items()
+                   if k in ['input_ids', 'attention_mask', 'token_type_ids']}
 
-        predicted_scores.extend(preds)
-        true_labels.extend(labels)
+        emb1 = model(inputs1)['sentence_embedding']
+        emb2 = model(inputs2)['sentence_embedding']
+        similarity = util.pairwise_cos_sim(emb1, emb2)
+
+        predicted_scores.extend(similarity.cpu().tolist())
+        true_labels.extend(labels.tolist())
 
     return predicted_scores, true_labels
 
@@ -379,7 +382,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     dataset_df = pd.read_csv(dataset_path)
     dataset_df = dataset_df.sample(frac=1)
-    samples_and_dataloaders = create_samples_and_dataloaders_for_tvt(dataset_df)
+    samples_and_dataloaders = create_samples_and_dataloaders_for_tvt(dataset_df, model)
 
     valid_samples = samples_and_dataloaders['valid_samples']
     valid_dataloader = samples_and_dataloaders['valid_dataloader']
@@ -413,8 +416,6 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     )
 
     test_dataloader = samples_and_dataloaders['test_loader']
-
-    test_start_at = time.time()
     test_mse = test_similarity_predictor(model_dir_path, device, test_dataloader)
 
     train_log['epochs'].append('test')
