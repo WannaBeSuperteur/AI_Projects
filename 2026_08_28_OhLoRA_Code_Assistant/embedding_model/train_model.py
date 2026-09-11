@@ -323,7 +323,7 @@ def create_datasets_for_tvt(dataset_df: pd.DataFrame):
     }
 
 
-def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader: DataLoader):
+def test_similarity_predictor(model_dir_path: str, device: str, test_dataset):
     """test text embedding probability predictor."""
 
     best_model = SentenceTransformer(model_dir_path, device=device, trust_remote_code=True)
@@ -331,17 +331,17 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader:
 
     with torch.no_grad():
         predicted_scores, true_labels = valid_or_test_similarity_predictor(model=best_model,
-                                                                           val_or_test_dataloader=test_dataloader)
+                                                                           val_or_test_dataset=test_dataset)
 
     test_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
     test_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
     return test_mse, test_mae
 
 
-def valid_or_test_similarity_predictor(model, val_or_test_dataloader):
+def valid_or_test_similarity_predictor(model, val_or_test_dataset):
     predicted_scores, true_labels = [], []
 
-    for batch in val_or_test_dataloader:
+    for batch in val_or_test_dataset:
         text1_dict, text2_dict, labels = batch[0][0], batch[0][1], batch[1]
 
         inputs1 = {k: v.to(model.device) for k, v in text1_dict.items()
@@ -373,7 +373,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     def log_training(score: float, epoch: float, steps: int):
         with torch.no_grad():
             predicted_scores, true_labels = valid_or_test_similarity_predictor(model=model,
-                                                                               val_or_test_dataloader=valid_dataloader)
+                                                                               val_or_test_dataset=valid_dataset)
 
         valid_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
         valid_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
@@ -392,11 +392,12 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     dataset_df = pd.read_csv(dataset_path)
     dataset_df = dataset_df.sample(frac=1)
     datasets = create_datasets_for_tvt(dataset_df)
+    train_dataset, valid_dataset, test_dataset = datasets['train'], datasets['valid'], datasets['test']
 
     valid_evaluator = EmbeddingSimilarityEvaluator(
-        sentences1=datasets['valid_dataset']['sentence1'],
-        sentences2=datasets['valid_dataset']['sentence2'],
-        scores=datasets['valid_dataset']['label'],
+        sentences1=valid_dataset['sentence1'],
+        sentences2=valid_dataset['sentence2'],
+        scores=valid_dataset['label'],
         name='valid'
     )
 
@@ -405,7 +406,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
     os.makedirs(model_dir_path, exist_ok=True)
 
-    steps_per_epoch = math.ceil(len(datasets['train_dataset']) / 2)
+    steps_per_epoch = math.ceil(len(train_dataset) / 2)
     total_train_steps = steps_per_epoch * 5
 
     warmup_fraction = LEARNING_RATE[model_path]['warmup_fraction']
@@ -434,8 +435,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     )
     trainer.train()
 
-    test_dataloader = DataLoader(datasets['test_dataset'], batch_size=2)
-    test_mse, test_mae = test_similarity_predictor(model_dir_path, device, test_dataloader)
+    test_mse, test_mae = test_similarity_predictor(model_dir_path, device, test_dataset)
 
     train_log['epochs'].append('test')
     train_log['steps'].append('test')
