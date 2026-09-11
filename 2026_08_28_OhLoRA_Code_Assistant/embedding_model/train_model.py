@@ -18,7 +18,10 @@ from sentence_transformers import SentenceTransformer, util, SentenceTransformer
                                   SentenceTransformerTrainer
 from sentence_transformers.sentence_transformer import losses
 from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
-from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback
+from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback, TrainerCallback
+
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 np.set_printoptions(linewidth=160)
 torch.manual_seed(2026)
@@ -342,21 +345,29 @@ def valid_or_test_similarity_predictor(model, val_or_test_dataset):
     predicted_scores, true_labels = [], []
 
     for batch in val_or_test_dataset:
-        text1_dict, text2_dict, labels = batch[0][0], batch[0][1], batch[1]
+        sentence1, sentence2, label = batch['sentence1'], batch['sentence2'], batch['label']
 
-        inputs1 = {k: v.to(model.device) for k, v in text1_dict.items()
-                   if k in ['input_ids', 'attention_mask', 'token_type_ids']}
-        inputs2 = {k: v.to(model.device) for k, v in text2_dict.items()
-                   if k in ['input_ids', 'attention_mask', 'token_type_ids']}
+        emb1 = np.array([model.encode(sentence1)])
+        emb2 = np.array([model.encode(sentence2)])
+        similarity = cosine_similarity(emb1, emb2)
 
-        emb1 = model(inputs1)['sentence_embedding']
-        emb2 = model(inputs2)['sentence_embedding']
-        similarity = util.pairwise_cos_sim(emb1, emb2)
-
-        predicted_scores.extend(similarity.cpu().tolist())
-        true_labels.extend(labels.tolist())
+        predicted_scores.extend(similarity[0].tolist())
+        true_labels.append(label)
 
     return predicted_scores, true_labels
+
+
+class LogTrainingCallback(TrainerCallback):
+    def __init__(self, log_function, metric_key="eval_spearman_cosine"):
+        self.log_function = log_function
+        self.metric_key = metric_key
+
+    def on_evaluate(self, args, state, control, metrics=None, **kwargs):
+        if metrics:
+            score = metrics.get(self.metric_key, metrics.get("eval_loss", 0.0))
+            epoch = state.epoch if state.epoch is not None else 0.0
+            steps = state.global_step
+            self.log_function(score, epoch, steps)
 
 
 def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
@@ -417,11 +428,12 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         output_dir=model_dir_path,
         num_train_epochs=MAX_EPOCHS,
         eval_strategy="steps",
-        eval_steps=50,
+        eval_steps=20,
         learning_rate=base_lr,
         warmup_steps=warmup_steps,
-        load_best_model_at_end=True,
+        load_best_model_at_end=False,
         metric_for_best_model="eval_loss",
+        save_strategy="no"
     )
 
     trainer = SentenceTransformerTrainer(
@@ -431,7 +443,8 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         eval_dataset=datasets['valid'],
         loss=train_loss,
         evaluator=valid_evaluator,
-        callbacks=[log_training, EarlyStoppingCallback(early_stopping_patience=EARLY_STOPPING_PATIENCE)]
+        callbacks=[LogTrainingCallback(log_training),
+                   EarlyStoppingCallback(early_stopping_patience=EARLY_STOPPING_PATIENCE)]
     )
     trainer.train()
 
