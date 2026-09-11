@@ -27,7 +27,6 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
-EPOCHS = 7
 
 MAX_EPOCHS = 50
 EARLY_STOPPING_PATIENCE = 10
@@ -306,7 +305,7 @@ def create_samples_and_dataloaders_for_tvt(dataset_df: pd.DataFrame, model: Sent
         ]
         return samples, DataLoader(samples,
                                    shuffle=shuffle,
-                                   batch_size=4,
+                                   batch_size=2,
                                    collate_fn=model.smart_batching_collate)
 
     train_df = dataset_df[:n_train_size]
