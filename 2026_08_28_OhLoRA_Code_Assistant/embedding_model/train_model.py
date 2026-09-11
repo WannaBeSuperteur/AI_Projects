@@ -35,8 +35,11 @@ TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
 
-MAX_EPOCHS = 50
-EARLY_STOPPING_PATIENCE = 10
+MAX_EPOCHS_PROB = 50
+EARLY_STOPPING_PATIENCE_PROB = 10
+
+MAX_EPOCHS_SIMILARITY = 15
+EARLY_STOPPING_PATIENCE_SIMILARITY = 3
 
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
 MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/checkpoints'
@@ -242,7 +245,8 @@ class EmbeddingProbTrainer:
             train_log['torch_memory'].append(torch.cuda.memory_allocated())
             pd.DataFrame(train_log).to_csv(train_log_path)
 
-            if self.current_epoch + 1 >= MAX_EPOCHS or self.current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE:
+            if (self.current_epoch + 1 >= MAX_EPOCHS_PROB or
+                self.current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE_PROB):
                 break
 
             self.current_epoch += 1
@@ -426,7 +430,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     training_args = SentenceTransformerTrainingArguments(
         output_dir=model_dir_path,
-        num_train_epochs=MAX_EPOCHS,
+        num_train_epochs=MAX_EPOCHS_SIMILARITY,
         per_device_train_batch_size=4,
         per_device_eval_batch_size=4,
         eval_strategy="steps",
@@ -446,7 +450,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         loss=train_loss,
         evaluator=valid_evaluator,
         callbacks=[LogTrainingCallback(log_training),
-                   EarlyStoppingCallback(early_stopping_patience=EARLY_STOPPING_PATIENCE)]
+                   EarlyStoppingCallback(early_stopping_patience=EARLY_STOPPING_PATIENCE_SIMILARITY)]
     )
     trainer.train()
 
