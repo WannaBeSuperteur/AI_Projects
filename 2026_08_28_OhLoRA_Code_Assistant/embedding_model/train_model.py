@@ -145,7 +145,7 @@ class EmbeddingProbTrainer:
     def _run_validation_or_test(self, model: nn.Module, data_loader: DataLoader):
         model.eval()
         total = 0
-        val_mse_sum, val_loss_sum = 0.0, 0.0
+        val_mse_sum, val_mae_sum, val_loss_sum = 0.0, 0.0, 0.0
 
         with torch.no_grad():
             for idx, items in enumerate(data_loader):
@@ -164,13 +164,16 @@ class EmbeddingProbTrainer:
 
                 val_mse_batch = sklearn.metrics.mean_squared_error(preds, prob_labels)
                 val_mse_sum += val_mse_batch
+                val_mae_batch = sklearn.metrics.mean_absolute_error(preds, prob_labels)
+                val_mae_sum += val_mae_batch
 
                 total += prob_labels.shape[0]
 
         val_mse = val_mse_sum / total
+        val_mae = val_mae_sum / total
         val_loss = val_loss_sum / total
 
-        return val_mse, val_loss
+        return val_mse, val_mae, val_loss
 
     def _run_all_process(self):
         self.current_epoch = 0
@@ -187,6 +190,7 @@ class EmbeddingProbTrainer:
             'epoch': [],
             'epoch_time': [],
             'valid_mse': [],
+            'valid_mae': [],
             'valid_loss': [],
             'torch_memory': []
         }
@@ -195,10 +199,11 @@ class EmbeddingProbTrainer:
             start_at = time.time()
 
             self._run_train()
-            valid_mse, valid_loss = self._run_validation_or_test(model=self.predictor,
-                                                                 data_loader=self.valid_loader)
+            valid_mse, valid_mae, valid_loss = self._run_validation_or_test(model=self.predictor,
+                                                                            data_loader=self.valid_loader)
 
-            print(f'epoch={self.current_epoch}, val_mse={valid_mse:.6f}, val_loss={valid_loss:.6f}')
+            print(f'epoch={self.current_epoch}, ' +
+                  f'val_mse={valid_mse:.6f}, val_mae={valid_mae:.6f}, val_loss={valid_loss:.6f}')
             val_loss_list.append(valid_loss)
 
             if self.predictor.scheduler is not None:
@@ -226,6 +231,7 @@ class EmbeddingProbTrainer:
             train_log['epoch'].append(self.current_epoch)
             train_log['epoch_time'].append(round(time.time() - start_at, 3))
             train_log['valid_mse'].append(round(valid_mse, 6))
+            train_log['valid_mae'].append(round(valid_mae, 6))
             train_log['valid_loss'].append(round(valid_loss, 6))
             train_log['torch_memory'].append(torch.cuda.memory_allocated())
             pd.DataFrame(train_log).to_csv(train_log_path)
@@ -239,12 +245,13 @@ class EmbeddingProbTrainer:
         print('testing ...')
 
         test_start_at = time.time()
-        test_mse, test_loss = self._run_validation_or_test(model=best_epoch_model,
-                                                           data_loader=self.test_loader)
+        test_mse, test_mae, test_loss = self._run_validation_or_test(model=best_epoch_model,
+                                                                     data_loader=self.test_loader)
 
         train_log['epoch'].append('test')
         train_log['epoch_time'].append(round(time.time() - test_start_at, 3))
         train_log['valid_mse'].append(test_mse)
+        train_log['valid_mae'].append(test_mae)
         train_log['valid_loss'].append(test_loss)
         train_log['torch_memory'].append(torch.cuda.memory_allocated())
         pd.DataFrame(train_log).to_csv(train_log_path)
@@ -329,7 +336,8 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader:
                                                                            val_or_test_dataloader=test_dataloader)
 
     test_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
-    return test_mse
+    test_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
+    return test_mse, test_mae
 
 
 def valid_or_test_similarity_predictor(model, val_or_test_dataloader):
@@ -360,7 +368,8 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         'epochs': [],
         'steps': [],
         'valid_similarity_score': [],
-        'valid_mse': []
+        'valid_mse': [],
+        'valid_mae': []
     }
 
     def log_training(score: float, epoch: float, steps: int):
@@ -369,11 +378,13 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
                                                                                val_or_test_dataloader=valid_dataloader)
 
         valid_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
+        valid_mae = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
 
         train_log['epochs'].append(round(epoch, 2))
         train_log['steps'].append(steps)
         train_log['valid_similarity_score'].append(round(score, 6))
         train_log['valid_mse'].append(round(valid_mse, 6))
+        train_log['valid_mae'].append(round(valid_mae, 6))
         pd.DataFrame(train_log).to_csv(train_log_path)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -416,12 +427,13 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     )
 
     test_dataloader = samples_and_dataloaders['test_loader']
-    test_mse = test_similarity_predictor(model_dir_path, device, test_dataloader)
+    test_mse, test_mae = test_similarity_predictor(model_dir_path, device, test_dataloader)
 
     train_log['epochs'].append('test')
     train_log['steps'].append('test')
     train_log['valid_similarity_score'].append('')
     train_log['valid_mse'].append(round(test_mse, 6))
+    train_log['valid_mae'].append(round(test_mae, 6))
     pd.DataFrame(train_log).to_csv(train_log_path)
 
 
