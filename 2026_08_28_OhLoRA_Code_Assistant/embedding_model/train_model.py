@@ -250,7 +250,7 @@ class EmbeddingProbTrainer:
             shutil.rmtree(ckpt_dir_path)
 
         os.makedirs(model_dir_path, exist_ok=True)
-        model_path = os.path.join(model_dir_path, f"epoch_{self.current_epoch:%04d}.pth")
+        model_path = os.path.join(model_dir_path, f"epoch_{self.current_epoch:04d}.pth")
         torch.save(best_epoch_model.state_dict(), model_path)
 
     def run(self):
