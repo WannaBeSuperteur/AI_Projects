@@ -7,14 +7,18 @@ import numpy as np
 import pandas as pd
 import sklearn
 
+import math
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, random_split, DataLoader
+import torch.utils.data
+from torch.utils.data import random_split, DataLoader
 
-from sentence_transformers import SentenceTransformer, InputExample, util
+import datasets
+from sentence_transformers import SentenceTransformer, util, SentenceTransformerTrainingArguments, \
+                                  SentenceTransformerTrainer
 from sentence_transformers.sentence_transformer import losses
 from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback
 
 np.set_printoptions(linewidth=160)
 torch.manual_seed(2026)
@@ -54,7 +58,7 @@ def mean_pooling(model_output, attention_mask):
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
 
-class SingleTextDataset(Dataset):
+class SingleTextDataset(torch.utils.data.Dataset):
     def __init__(self, df, tokenizer, max_len=256):
         self.texts = list(df['code'])
         self.probs = list(df['probability'])
@@ -293,34 +297,29 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     trainer.run()
 
 
-def create_samples_and_dataloaders_for_tvt(dataset_df: pd.DataFrame, model: SentenceTransformer):
+def create_datasets_for_tvt(dataset_df: pd.DataFrame):
     dataset_size = len(dataset_df)
     n_train_size = int(0.75 * dataset_size)
     n_valid_size = int(0.125 * dataset_size)
 
-    def create_samples_and_dataloader(df: pd.DataFrame, shuffle: bool):
-        samples = [
-            InputExample(texts=[row['code_1'], row['code_2']], label=row['similarity'])
-            for _, row in df.iterrows()
-        ]
-        return samples, DataLoader(samples,
-                                   shuffle=shuffle,
-                                   batch_size=2,
-                                   collate_fn=model.smart_batching_collate)
+    formatted_df = dataset_df.rename(columns={
+        'code_1': 'sentence1',
+        'code_2': 'sentence2',
+        'similarity': 'label'
+    })[['sentence1', 'sentence2', 'label']]
 
-    train_df = dataset_df[:n_train_size]
-    valid_df = dataset_df[n_train_size:n_train_size + n_valid_size]
-    test_df = dataset_df[n_train_size + n_valid_size:]
+    train_df = formatted_df[:n_train_size]
+    valid_df = formatted_df[n_train_size:n_train_size + n_valid_size]
+    test_df = formatted_df[n_train_size + n_valid_size:]
 
-    _, train_dataloader = create_samples_and_dataloader(train_df, shuffle=True)
-    valid_samples, valid_dataloader = create_samples_and_dataloader(valid_df, shuffle=False)
-    _, test_dataloader = create_samples_and_dataloader(test_df, shuffle=False)
+    train_dataset = datasets.Dataset.from_pandas(train_df, preserve_index=False)
+    valid_dataset = datasets.Dataset.from_pandas(valid_df, preserve_index=False)
+    test_dataset = datasets.Dataset.from_pandas(test_df, preserve_index=False)
 
     return {
-        'train_loader': train_dataloader,
-        'valid_dataloader': valid_dataloader,
-        'test_loader': test_dataloader,
-        'valid_samples': valid_samples
+        'train': train_dataset,
+        'valid': valid_dataset,
+        'test': test_dataset
     }
 
 
@@ -392,15 +391,13 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     dataset_df = pd.read_csv(dataset_path)
     dataset_df = dataset_df.sample(frac=1)
-    samples_and_dataloaders = create_samples_and_dataloaders_for_tvt(dataset_df, model)
+    datasets = create_datasets_for_tvt(dataset_df)
 
-    valid_samples = samples_and_dataloaders['valid_samples']
-    valid_dataloader = samples_and_dataloaders['valid_dataloader']
     valid_evaluator = EmbeddingSimilarityEvaluator(
-        sentences1=[s.texts[0] for s in valid_samples],
-        sentences2=[s.texts[1] for s in valid_samples],
-        scores=[s.label for s in valid_samples],
-        name="valid-eval"
+        sentences1=datasets['valid_dataset']['sentence1'],
+        sentences2=datasets['valid_dataset']['sentence2'],
+        scores=datasets['valid_dataset']['label'],
+        name='valid'
     )
 
     train_loss = losses.CoSENTLoss(model=model)
@@ -408,24 +405,36 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
     os.makedirs(model_dir_path, exist_ok=True)
 
-    train_dataloader = samples_and_dataloaders['train_loader']
-    total_train_steps = len(train_dataloader) * 5
+    steps_per_epoch = math.ceil(len(datasets['train_dataset']) / 2)
+    total_train_steps = steps_per_epoch * 5
+
     warmup_fraction = LEARNING_RATE[model_path]['warmup_fraction']
     warmup_steps = int(total_train_steps * warmup_fraction)
     base_lr = LEARNING_RATE[model_path]['lr']
 
-    model.fit(
-        train_objectives=[(train_dataloader, train_loss)],
-        evaluator=valid_evaluator,
-        epochs=5,
-        evaluation_steps=50,
+    training_args = SentenceTransformerTrainingArguments(
+        output_dir=model_dir_path,
+        num_train_epochs=MAX_EPOCHS,
+        eval_strategy="steps",
+        eval_steps=50,
+        learning_rate=base_lr,
         warmup_steps=warmup_steps,
-        optimizer_params={"lr": base_lr},
-        output_path=model_dir_path,
-        callback=log_training
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_loss",
     )
 
-    test_dataloader = samples_and_dataloaders['test_loader']
+    trainer = SentenceTransformerTrainer(
+        model=model,
+        args=training_args,
+        train_dataset=datasets['train'],
+        eval_dataset=datasets['valid'],
+        loss=train_loss,
+        evaluator=valid_evaluator,
+        callbacks=[log_training, EarlyStoppingCallback(early_stopping_patience=EARLY_STOPPING_PATIENCE)]
+    )
+    trainer.train()
+
+    test_dataloader = DataLoader(datasets['test_dataset'], batch_size=2)
     test_mse, test_mae = test_similarity_predictor(model_dir_path, device, test_dataloader)
 
     train_log['epochs'].append('test')
