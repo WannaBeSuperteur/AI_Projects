@@ -44,6 +44,10 @@ HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
                GIGA_EMBEDDINGS_INSTRUCT: 1024,
                F2LLM_V2_330M: 896}
 
+LEARNING_RATE = {GTE_MODERNBERT_BASE: {'lr': 3e-5, 'warmup_fraction': 0.075},
+                 GIGA_EMBEDDINGS_INSTRUCT: {'lr': 3e-5, 'warmup_fraction': 0.01},
+                 F2LLM_V2_330M: {'lr': 2.5e-6, 'warmup_fraction': 0.4}}
+
 
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0]
@@ -367,7 +371,9 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     train_dataloader = samples_and_dataloaders['train_loader']
     total_train_steps = len(train_dataloader) * 5
-    warmup_steps = int(total_train_steps * 0.4)
+    warmup_fraction = LEARNING_RATE[model_path]['warmup_fraction']
+    warmup_steps = int(total_train_steps * warmup_fraction)
+    base_lr = LEARNING_RATE[model_path]['lr']
 
     model.fit(
         train_objectives=[(train_dataloader, train_loss)],
@@ -375,7 +381,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         epochs=5,
         evaluation_steps=50,
         warmup_steps=warmup_steps,
-        optimizer_params={"lr": 2.5e-6},
+        optimizer_params={"lr": base_lr},
         output_path=model_dir_path
     )
 
@@ -394,7 +400,7 @@ if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
 
     task_name_to_info = {
-        '01_unnecessary_prints': {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
+        '01_unnecessary_prints': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
         '01_similar_variables': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
         '01_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
         '01_return_matched_with_func_name': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
