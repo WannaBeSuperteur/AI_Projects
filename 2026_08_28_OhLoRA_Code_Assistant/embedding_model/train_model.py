@@ -208,7 +208,6 @@ class EmbeddingProbTrainer:
             if min_valid_loss is None or valid_loss < min_valid_loss:
                 min_valid_loss = valid_loss
                 min_valid_loss_epoch = self.current_epoch
-                best_epoch_model_valid_mse = valid_mse
 
                 pretrained_model = EmbeddingProbPredictor(base_model=self.predictor.base_model,
                                                           hidden_size=self.predictor.hidden_size)
@@ -305,11 +304,12 @@ def create_samples_and_dataloaders_for_tvt(dataset_df: pd.DataFrame):
     test_df = dataset_df[n_train_size + n_valid_size:]
 
     _, train_dataloader = create_samples_and_dataloader(train_df, shuffle=True)
-    valid_samples, _ = create_samples_and_dataloader(valid_df, shuffle=False)
+    valid_samples, valid_dataloader = create_samples_and_dataloader(valid_df, shuffle=False)
     _, test_dataloader = create_samples_and_dataloader(test_df, shuffle=False)
 
     return {
         'train_loader': train_dataloader,
+        'valid_dataloader': valid_dataloader,
         'test_loader': test_dataloader,
         'valid_samples': valid_samples
     }
@@ -321,42 +321,68 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataloader:
     best_model = SentenceTransformer(model_dir_path, device=device, trust_remote_code=True)
     best_model.eval()
 
-    true_labels = []
-    predicted_scores = []
-
     with torch.no_grad():
-        for batch in test_dataloader:
-            texts1 = [ex.texts[0] for ex in batch]
-            texts2 = [ex.texts[1] for ex in batch]
-            labels = [ex.label for ex in batch]
+        predicted_scores, true_labels = valid_or_test_similarity_predictor(model=best_model,
+                                                                           val_or_test_dataloader=test_dataloader)
 
-            embeddings1 = best_model.encode(texts1, convert_to_tensor=True, show_progress_bar=False)
-            embeddings2 = best_model.encode(texts2, convert_to_tensor=True, show_progress_bar=False)
-            cos_sims = best_model.similarity(embeddings1, embeddings2)
-            preds = torch.diagonal(cos_sims).cpu().numpy()
-
-            predicted_scores.extend(preds)
-            true_labels.extend(labels)
-
-            print(f'preds : {preds}')
-            print(f'labels : {true_labels}')
-
-    test_mse = sklearn.metrics.mean_squared_error(true_labels, predicted_scores)
+    test_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
     return test_mse
+
+
+def valid_or_test_similarity_predictor(model, val_or_test_dataloader):
+    predicted_scores, true_labels = [], []
+
+    print(val_or_test_dataloader)
+
+    for batch in val_or_test_dataloader:
+        texts1 = [ex.texts[0] for ex in batch]
+        texts2 = [ex.texts[1] for ex in batch]
+        labels = [ex.label for ex in batch]
+
+        embeddings1 = model.encode(texts1, convert_to_tensor=True, show_progress_bar=False)
+        embeddings2 = model.encode(texts2, convert_to_tensor=True, show_progress_bar=False)
+        cos_sims = model.similarity(embeddings1, embeddings2)
+        preds = torch.diagonal(cos_sims).cpu().numpy()
+
+        predicted_scores.extend(preds)
+        true_labels.extend(labels)
+
+    return predicted_scores, true_labels
 
 
 def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding similarity predictor."""
 
+    train_log = {
+        'epochs': [],
+        'steps': [],
+        'valid_similarity_score': [],
+        'valid_mse': []
+    }
+
+    def log_training(score: float, epoch: float, steps: int):
+        with torch.no_grad():
+            predicted_scores, true_labels = valid_or_test_similarity_predictor(model=model,
+                                                                               val_or_test_dataloader=valid_dataloader)
+
+        valid_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
+
+        train_log['epochs'].append(round(epoch, 2))
+        train_log['steps'].append(steps)
+        train_log['valid_similarity_score'].append(round(score, 6))
+        train_log['valid_mse'].append(round(valid_mse, 6))
+        pd.DataFrame(train_log).to_csv(train_log_path)
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = SentenceTransformer(model_path, device=device, trust_remote_code=True)
-    test_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
+    train_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
 
     dataset_df = pd.read_csv(dataset_path)
     dataset_df = dataset_df.sample(frac=1)
     samples_and_dataloaders = create_samples_and_dataloaders_for_tvt(dataset_df)
 
     valid_samples = samples_and_dataloaders['valid_samples']
+    valid_dataloader = samples_and_dataloaders['valid_dataloader']
     valid_evaluator = EmbeddingSimilarityEvaluator(
         sentences1=[s.texts[0] for s in valid_samples],
         sentences2=[s.texts[1] for s in valid_samples],
@@ -382,25 +408,27 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         evaluation_steps=50,
         warmup_steps=warmup_steps,
         optimizer_params={"lr": base_lr},
-        output_path=model_dir_path
+        output_path=model_dir_path,
+        callback=log_training
     )
 
     test_dataloader = samples_and_dataloaders['test_loader']
 
     test_start_at = time.time()
     test_mse = test_similarity_predictor(model_dir_path, device, test_dataloader)
-    test_log = {
-        'test_time': [round(time.time() - test_start_at, 3)],
-        'test_mse': [test_mse]
-    }
-    pd.DataFrame(test_log).to_csv(test_log_path)
+
+    train_log['epochs'].append('test')
+    train_log['steps'].append('test')
+    train_log['valid_similarity_score'].append('')
+    train_log['valid_mse'].append(round(test_mse, 6))
+    pd.DataFrame(train_log).to_csv(train_log_path)
 
 
 if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
 
     task_name_to_info = {
-        '01_unnecessary_prints': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
+#        '01_unnecessary_prints': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
         '01_similar_variables': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
         '01_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
         '01_return_matched_with_func_name': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
