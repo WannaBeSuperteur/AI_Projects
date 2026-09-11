@@ -378,7 +378,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
                                                                                val_or_test_dataloader=valid_dataloader)
 
         valid_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
-        valid_mae = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
+        valid_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
 
         train_log['epochs'].append(round(epoch, 2))
         train_log['steps'].append(steps)
