@@ -364,7 +364,7 @@ class LogTrainingCallback(TrainerCallback):
 
     def on_evaluate(self, args, state, control, metrics=None, **kwargs):
         if metrics:
-            score = metrics.get(self.metric_key, metrics.get("eval_loss", 0.0))
+            score = metrics.get(self.metric_key, metrics.get("eval_valid_spearman_cosine", 0.0))
             epoch = state.epoch if state.epoch is not None else 0.0
             steps = state.global_step
             self.log_function(score, epoch, steps)
