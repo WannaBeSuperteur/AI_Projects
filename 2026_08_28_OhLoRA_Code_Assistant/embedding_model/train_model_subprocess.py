@@ -8,6 +8,7 @@ import pandas as pd
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+TRAIN_SCRIPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_model.py'
 TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_log'
 
 
@@ -26,6 +27,9 @@ TASK_NAMES = [
 
 
 if __name__ == '__main__':
+    os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
+    task_log_path = os.path.join(TRAIN_LOG_PATH, "error_log.csv")
+
     task_log = {
         'task_name': [],
         'elapsed_time': [],
@@ -38,16 +42,21 @@ if __name__ == '__main__':
         start_at = time.time()
 
         try:
-            subprocess.run(
-                [sys.executable, "train_model.py", "--task", task_name],
-                check=True
+            process = subprocess.run(
+                [sys.executable, "-u", TRAIN_SCRIPT_PATH, "--task", task_name],
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace"
             )
-        except Exception as e:
-            error_msg = str(e)
+        except subprocess.CalledProcessError as error:
+            lines = (error.stderr or "").strip().splitlines()
+            error_msg = lines[-1] if lines else str(error)
 
         task_log['task_name'].append(task_name)
-        task_log['elapsed_time'].append(round(time.time() - start_at))
+        task_log['elapsed_time'].append(round(time.time() - start_at, 3))
         task_log['error_msg'].append(error_msg)
-        pd.DataFrame(task_log).to_csv(TRAIN_LOG_PATH)
+        pd.DataFrame(task_log).to_csv(task_log_path)
 
         print(f"===== Finished: {task_name} =====")
