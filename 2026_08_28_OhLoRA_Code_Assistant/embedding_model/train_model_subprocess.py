@@ -38,7 +38,7 @@ if __name__ == '__main__':
         'trial_no': [],
         'elapsed_time': [],
         'error_msg': [],
-        'cuda_memory': []
+        'leaked_cuda_memory': []
     }
 
     for task_name in TASK_NAMES:
@@ -69,7 +69,7 @@ if __name__ == '__main__':
             task_log['trial_no'].append(current_trial + 1)
             task_log['elapsed_time'].append(round(time.time() - start_at, 3))
             task_log['error_msg'].append(error_msg)
-            task_log['cuda_memory'].append(torch.cuda.memory_allocated())
+            task_log['leaked_cuda_memory'].append(torch.cuda.memory_allocated())
             pd.DataFrame(task_log).to_csv(task_log_path)
             print(f'logging task result : {task_name}, trial {current_trial} (error: {error_msg})')
 
