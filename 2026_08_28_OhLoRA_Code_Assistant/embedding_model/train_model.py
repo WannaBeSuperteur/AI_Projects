@@ -1,4 +1,4 @@
-
+import argparse
 import os
 import shutil
 import time
@@ -484,16 +484,22 @@ if __name__ == '__main__':
         '06_similar_function_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'}
     }
 
-    for task_name, task_info in task_name_to_info.items():
-        dataset_path = os.path.join(PROJECT_DIR_PATH,
-                                    "code_reviewer",
-                                    "ai_dataset",
-                                    f"dataset_{task_name}.csv")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--task", required=True, help="task name (e.g. 01_unnecessary_prints)")
+    args = parser.parse_args()
 
-        model_path = task_info['model_path']
-        task_type = task_info['task_type']
+    task_name = args.task
+    task_info = task_name_to_info[task_name]
 
-        if task_type == 'prob':
-            train_probability_predictor(model_path, dataset_path, task_name)
-        elif task_type == 'sim':
-            train_similarity_predictor(model_path, dataset_path, task_name)
+    dataset_path = os.path.join(PROJECT_DIR_PATH,
+                                "code_reviewer",
+                                "ai_dataset",
+                                f"dataset_{task_name}.csv")
+
+    model_path = task_info['model_path']
+    task_type = task_info['task_type']
+
+    if task_type == 'prob':
+        train_probability_predictor(model_path, dataset_path, task_name)
+    elif task_type == 'sim':
+        train_similarity_predictor(model_path, dataset_path, task_name)
