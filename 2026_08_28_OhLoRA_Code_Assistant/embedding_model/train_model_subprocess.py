@@ -12,6 +12,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_SCRIPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_model.py'
 TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_log'
 
+MAX_TRIAL_COUNT = 5
+
 
 TASK_NAMES = [
     "01_unnecessary_prints",
@@ -33,6 +35,7 @@ if __name__ == '__main__':
 
     task_log = {
         'task_name': [],
+        'trial_no': [],
         'elapsed_time': [],
         'error_msg': [],
         'cuda_memory': []
@@ -42,21 +45,25 @@ if __name__ == '__main__':
         print(f"===== Start: {task_name} =====")
         error_msg = ''
         start_at = time.time()
+        current_trial = 0
 
-        try:
-            process = subprocess.run(
-                [sys.executable, "-u", TRAIN_SCRIPT_PATH, "--task", task_name],
-                check=True,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace"
-            )
-        except subprocess.CalledProcessError as error:
-            lines = (error.stderr or "").strip().splitlines()
-            error_msg = lines[-1] if lines else str(error)
+        while current_trial < MAX_TRIAL_COUNT:
+            try:
+                process = subprocess.run(
+                    [sys.executable, "-u", TRAIN_SCRIPT_PATH, "--task", task_name],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace"
+                )
+            except subprocess.CalledProcessError as error:
+                lines = (error.stderr or "").strip().splitlines()
+                error_msg = lines[-1] if lines else str(error)
+                current_trial += 1
 
         task_log['task_name'].append(task_name)
+        task_log['trial_no'].append(current_trial + 1)
         task_log['elapsed_time'].append(round(time.time() - start_at, 3))
         task_log['error_msg'].append(error_msg)
         task_log['cuda_memory'].append(torch.cuda.memory_allocated())
