@@ -28,6 +28,7 @@ torch.manual_seed(2026)
 
 # to prevent force system off during S-BERT training
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
