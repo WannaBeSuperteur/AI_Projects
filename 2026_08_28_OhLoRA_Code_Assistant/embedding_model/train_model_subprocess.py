@@ -43,12 +43,11 @@ if __name__ == '__main__':
 
     for task_name in TASK_NAMES:
         print(f"===== Start: {task_name} =====")
-        error_msg = ''
         current_trial = 0
 
         while current_trial < MAX_TRIAL_COUNT:
-            is_successful = False
             start_at = time.time()
+            error_msg = ''
 
             try:
                 process = subprocess.run(
@@ -59,11 +58,12 @@ if __name__ == '__main__':
                     encoding="utf-8",
                     errors="replace"
                 )
-                is_successful = True
 
             except subprocess.CalledProcessError as error:
                 lines = (error.stderr or "").strip().splitlines()
                 error_msg = lines[-1] if lines else str(error)
+                if not error_msg:
+                    error_msg = 'error occurred but not captured'
 
             task_log['task_name'].append(task_name)
             task_log['trial_no'].append(current_trial + 1)
@@ -71,8 +71,9 @@ if __name__ == '__main__':
             task_log['error_msg'].append(error_msg)
             task_log['cuda_memory'].append(torch.cuda.memory_allocated())
             pd.DataFrame(task_log).to_csv(task_log_path)
+            print(f'logging task result : {task_name}, trial {current_trial} (error: {error_msg})')
 
-            if is_successful:
+            if not error_msg:
                 break
 
             current_trial += 1
