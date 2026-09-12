@@ -436,7 +436,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         per_device_train_batch_size=4,
         per_device_eval_batch_size=4,
         eval_strategy="steps",
-        eval_steps=30,
+        eval_steps=125,
         learning_rate=base_lr,
         warmup_steps=warmup_steps,
         load_best_model_at_end=False,
