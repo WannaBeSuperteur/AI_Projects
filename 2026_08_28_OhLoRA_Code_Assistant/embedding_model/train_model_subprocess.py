@@ -5,6 +5,7 @@ import time
 import os
 
 import pandas as pd
+import torch
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -33,7 +34,8 @@ if __name__ == '__main__':
     task_log = {
         'task_name': [],
         'elapsed_time': [],
-        'error_msg': []
+        'error_msg': [],
+        'cuda_memory': []
     }
 
     for task_name in TASK_NAMES:
@@ -57,6 +59,7 @@ if __name__ == '__main__':
         task_log['task_name'].append(task_name)
         task_log['elapsed_time'].append(round(time.time() - start_at, 3))
         task_log['error_msg'].append(error_msg)
+        task_log['cuda_memory'].append(torch.cuda.memory_allocated())
         pd.DataFrame(task_log).to_csv(task_log_path)
 
         print(f"===== Finished: {task_name} =====")
