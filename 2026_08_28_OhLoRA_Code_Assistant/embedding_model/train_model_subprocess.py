@@ -44,10 +44,12 @@ if __name__ == '__main__':
     for task_name in TASK_NAMES:
         print(f"===== Start: {task_name} =====")
         error_msg = ''
-        start_at = time.time()
         current_trial = 0
 
         while current_trial < MAX_TRIAL_COUNT:
+            is_successful = False
+            start_at = time.time()
+
             try:
                 process = subprocess.run(
                     [sys.executable, "-u", TRAIN_SCRIPT_PATH, "--task", task_name],
@@ -57,16 +59,22 @@ if __name__ == '__main__':
                     encoding="utf-8",
                     errors="replace"
                 )
+                is_successful = True
+
             except subprocess.CalledProcessError as error:
                 lines = (error.stderr or "").strip().splitlines()
                 error_msg = lines[-1] if lines else str(error)
-                current_trial += 1
 
-        task_log['task_name'].append(task_name)
-        task_log['trial_no'].append(current_trial + 1)
-        task_log['elapsed_time'].append(round(time.time() - start_at, 3))
-        task_log['error_msg'].append(error_msg)
-        task_log['cuda_memory'].append(torch.cuda.memory_allocated())
-        pd.DataFrame(task_log).to_csv(task_log_path)
+            task_log['task_name'].append(task_name)
+            task_log['trial_no'].append(current_trial + 1)
+            task_log['elapsed_time'].append(round(time.time() - start_at, 3))
+            task_log['error_msg'].append(error_msg)
+            task_log['cuda_memory'].append(torch.cuda.memory_allocated())
+            pd.DataFrame(task_log).to_csv(task_log_path)
+
+            if is_successful:
+                break
+
+            current_trial += 1
 
         print(f"===== Finished: {task_name} =====")
