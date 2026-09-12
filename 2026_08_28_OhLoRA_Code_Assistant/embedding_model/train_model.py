@@ -442,6 +442,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         save_strategy="no"
     )
 
+    early_stopping_patience = steps_per_epoch * EARLY_STOPPING_PATIENCE_SIMILARITY
     trainer = SentenceTransformerTrainer(
         model=model,
         args=training_args,
@@ -450,7 +451,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         loss=train_loss,
         evaluator=valid_evaluator,
         callbacks=[LogTrainingCallback(log_training),
-                   EarlyStoppingCallback(early_stopping_patience=EARLY_STOPPING_PATIENCE_SIMILARITY)]
+                   EarlyStoppingCallback(early_stopping_patience=early_stopping_patience)]
     )
     trainer.train()
 
