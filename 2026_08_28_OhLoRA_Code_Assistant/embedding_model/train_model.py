@@ -39,6 +39,10 @@ TEST_BATCH_SIZE = 4
 MAX_EPOCHS_PROB = 20
 EARLY_STOPPING_PATIENCE_PROB = 5
 
+# for Giga-Embeddings-instruct-480M-0826
+MAX_EPOCHS_PROB_GE = 10
+EARLY_STOPPING_PATIENCE_PROB_GE = 3
+
 MAX_EPOCHS_SIMILARITY = 12
 EARLY_STOPPING_PATIENCE_SIMILARITY = 3
 
@@ -107,9 +111,21 @@ class EmbeddingProbPredictor(nn.Module):
 
 
 class EmbeddingProbTrainer:
-    def __init__(self, predictor: EmbeddingProbPredictor, data_loaders: dict, task_name: str):
+    def __init__(self, predictor: EmbeddingProbPredictor, data_loaders: dict, task_name: str, model_path: str):
         super().__init__()
         self.task_name = task_name
+        self.model_path = model_path
+
+        if self.model_path == GIGA_EMBEDDINGS_INSTRUCT:
+            self.max_epochs = MAX_EPOCHS_PROB_GE
+            self.early_stopping_patience = EARLY_STOPPING_PATIENCE_PROB_GE
+        else:
+            self.max_epochs = MAX_EPOCHS_PROB
+            self.early_stopping_patience = EARLY_STOPPING_PATIENCE_PROB
+
+        print(f'model                   : {self.model_path}')
+        print(f'max epochs              : {self.max_epochs}')
+        print(f'early stopping patience : {self.early_stopping_patience}')
 
         self.predictor = predictor
         self.predictor.optimizer = torch.optim.AdamW(self.predictor.parameters(), lr=5e-5)
@@ -259,8 +275,8 @@ class EmbeddingProbTrainer:
             train_log['torch_memory'].append(torch.cuda.memory_allocated())
             pd.DataFrame(train_log).to_csv(train_log_path)
 
-            if (self.current_epoch + 1 >= MAX_EPOCHS_PROB or
-                self.current_epoch - min_valid_loss_epoch >= EARLY_STOPPING_PATIENCE_PROB):
+            if (self.current_epoch + 1 >= self.max_epochs or
+                    self.current_epoch - min_valid_loss_epoch >= self.early_stopping_patience):
                 break
 
             self.current_epoch += 1
@@ -316,7 +332,7 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
 
     data_loaders = {'train': train_loader, 'valid': valid_loader, 'test': test_loader}
 
-    trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name)
+    trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
     trainer.run()
 
 
