@@ -296,7 +296,7 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     """train text embedding probability predictor."""
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
+    model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
     hidden_size = HIDDEN_SIZE[model_path]
 
     predictor = EmbeddingProbPredictor(model, hidden_size)
