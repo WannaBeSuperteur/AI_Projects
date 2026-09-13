@@ -183,8 +183,8 @@ class EmbeddingProbTrainer:
                 val_mae_sum += val_mae_batch
 
                 if is_test:
-                    test_result['pred'].extend(float(v[0]) for v in preds)
-                    test_result['prob_label'].extend(float(v[0]) for v in prob_labels)
+                    test_result['pred'].extend(round(float(x[0]), 6) for x in preds)
+                    test_result['prob_label'].extend(round(float(x[0]), 6) for x in prob_labels)
 
                 total += prob_labels.shape[0]
 
@@ -358,7 +358,8 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataset):
 
     test_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
     test_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
-    test_pred_and_labels = {'pred_sim': predicted_scores, 'true_sim': true_labels}
+    test_pred_and_labels = {'pred_sim': [round(x, 6) for x in predicted_scores],
+                            'true_sim': [round(x, 6) for x in true_labels]}
 
     return test_mse, test_mae, test_pred_and_labels
 
