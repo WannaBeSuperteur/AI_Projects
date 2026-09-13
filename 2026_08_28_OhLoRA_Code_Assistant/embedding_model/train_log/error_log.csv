@@ -1,0 +1,3 @@
+,task_name,trial_no,elapsed_time,error_msg,leaked_cuda_memory
+0,01_unnecessary_prints,1,2558.253,,0
+1,01_similar_variables,1,13015.494,,0
