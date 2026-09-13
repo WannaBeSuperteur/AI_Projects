@@ -420,7 +420,8 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         'steps': [],
         'valid_similarity_score': [],
         'valid_mse': [],
-        'valid_mae': []
+        'valid_mae': [],
+        'test_time': []
     }
 
     def log_training(score: float, epoch: float, steps: int):
@@ -436,6 +437,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         train_log['valid_similarity_score'].append(round(score, 6))
         train_log['valid_mse'].append(round(valid_mse, 6))
         train_log['valid_mae'].append(round(valid_mae, 6))
+        train_log['test_time'].append('')
         pd.DataFrame(train_log).to_csv(train_log_path)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -493,13 +495,16 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     trainer.train()
     trainer.save_model(model_dir_path)
 
+    test_start_at = time.time()
     test_mse, test_mae, test_pred_and_labels = test_similarity_predictor(model_dir_path, device, test_dataset)
+    test_time = time.time() - test_start_at
 
     train_log['epochs'].append('test')
     train_log['steps'].append('test')
     train_log['valid_similarity_score'].append('')
     train_log['valid_mse'].append(round(test_mse, 6))
     train_log['valid_mae'].append(round(test_mae, 6))
+    train_log['test_time'].append(round(test_time, 3))
 
     pd.DataFrame(train_log).to_csv(train_log_path)
     pd.DataFrame(test_pred_and_labels).to_csv(test_log_path)
