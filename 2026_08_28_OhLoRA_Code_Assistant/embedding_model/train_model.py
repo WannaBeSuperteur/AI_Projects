@@ -152,10 +152,15 @@ class EmbeddingProbTrainer:
         train_loss = train_loss_sum / total
         return train_loss
 
-    def _run_validation_or_test(self, model: nn.Module, data_loader: DataLoader):
+    def _run_validation_or_test(self, model: nn.Module, data_loader: DataLoader, is_test: bool = False):
         model.eval()
         total = 0
         val_mse_sum, val_mae_sum, val_loss_sum = 0.0, 0.0, 0.0
+
+        test_result = {
+            'pred': [],
+            'prob_label': []
+        }
 
         with torch.no_grad():
             for idx, items in enumerate(data_loader):
@@ -177,11 +182,19 @@ class EmbeddingProbTrainer:
                 val_mae_batch = sklearn.metrics.mean_absolute_error(preds, prob_labels)
                 val_mae_sum += val_mae_batch
 
+                if is_test:
+                    test_result['pred'].extend(float(v[0]) for v in preds)
+                    test_result['prob_label'].extend(float(v[0]) for v in prob_labels)
+
                 total += prob_labels.shape[0]
 
         val_mse = val_mse_sum / total
         val_mae = val_mae_sum / total
         val_loss = val_loss_sum / total
+
+        if is_test:
+            test_result_path = os.path.join(TRAIN_LOG_PATH, f'test_{task_name}.csv')
+            pd.DataFrame(test_result).to_csv(test_result_path)
 
         return val_mse, val_mae, val_loss
 
@@ -257,7 +270,8 @@ class EmbeddingProbTrainer:
 
         test_start_at = time.time()
         test_mse, test_mae, test_loss = self._run_validation_or_test(model=best_epoch_model,
-                                                                     data_loader=self.test_loader)
+                                                                     data_loader=self.test_loader,
+                                                                     is_test=True)
 
         train_log['epoch'].append('test')
         train_log['epoch_time'].append(round(time.time() - test_start_at, 3))
@@ -344,7 +358,9 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataset):
 
     test_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
     test_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
-    return test_mse, test_mae
+    test_pred_and_labels = {'pred_sim': predicted_scores, 'true_sim': true_labels}
+
+    return test_mse, test_mae, test_pred_and_labels
 
 
 def valid_or_test_similarity_predictor(model, val_or_test_dataset):
@@ -379,6 +395,9 @@ class LogTrainingCallback(TrainerCallback):
 def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding similarity predictor."""
 
+    train_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
+    test_log_path = os.path.join(TRAIN_LOG_PATH, f'test_{task_name}.csv')
+
     train_log = {
         'epochs': [],
         'steps': [],
@@ -404,7 +423,6 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = SentenceTransformer(model_path, device=device, trust_remote_code=True)
-    train_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
 
     dataset_df = pd.read_csv(dataset_path)
     dataset_df = dataset_df.sample(frac=1)
@@ -458,14 +476,16 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     trainer.train()
     trainer.save_model(model_dir_path)
 
-    test_mse, test_mae = test_similarity_predictor(model_dir_path, device, test_dataset)
+    test_mse, test_mae, test_pred_and_labels = test_similarity_predictor(model_dir_path, device, test_dataset)
 
     train_log['epochs'].append('test')
     train_log['steps'].append('test')
     train_log['valid_similarity_score'].append('')
     train_log['valid_mse'].append(round(test_mse, 6))
     train_log['valid_mae'].append(round(test_mae, 6))
+
     pd.DataFrame(train_log).to_csv(train_log_path)
+    pd.DataFrame(test_pred_and_labels).to_csv(test_log_path)
 
 
 if __name__ == '__main__':
