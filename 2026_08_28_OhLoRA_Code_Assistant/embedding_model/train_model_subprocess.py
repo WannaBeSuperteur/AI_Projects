@@ -11,6 +11,7 @@ import torch
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_SCRIPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_model.py'
 TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_log'
+TRACEBACK_START_MARK = 'Traceback (most recent call last):\n'
 
 MAX_TRIAL_COUNT = 5
 
@@ -60,9 +61,10 @@ if __name__ == '__main__':
                 )
 
             except subprocess.CalledProcessError as error:
-                lines = (error.stderr or "").strip().splitlines()
-                error_msg = lines[-1] if lines else str(error)
-                if not error_msg:
+                error_msg = error.stderr or str(error)
+                error_msg = error_msg.split(TRACEBACK_START_MARK)[-1]
+
+                if not error_msg.strip():
                     error_msg = 'error occurred but not captured'
 
             task_log['task_name'].append(task_name)
