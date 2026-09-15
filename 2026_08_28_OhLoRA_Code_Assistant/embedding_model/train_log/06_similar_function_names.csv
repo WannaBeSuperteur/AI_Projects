@@ -1,0 +1,3 @@
+,epochs,steps,valid_similarity_score,valid_mse,valid_mae,test_time
+0,0.33,125,0.803065,0.073145,0.228839,
+1,0.67,250,0.816965,0.096279,0.2609,
