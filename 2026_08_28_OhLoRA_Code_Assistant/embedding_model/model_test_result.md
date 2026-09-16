@@ -1,0 +1,15 @@
+
+## 1. 개요
+
+| Oh-LoRA v7 규칙                          | 최종 적용 모델                             | MAE    | MSE    | 실험 로그                                                                                                                                                  |
+|----------------------------------------|--------------------------------------|--------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 불필요한 print, logging 등이 없어야 함           | `gte-modernbert-base`                | 0.0018 | 6e-5   | [학습 로그](train_log/01_unnecessary_prints.csv), [테스트 로그](train_log/test_01_unnecessary_prints.csv)                                                       |
+| 유사한 변수명은 하나로 통일 시키는 것이 좋음              | `Giga-Embeddings-instruct-480M-0826` | 0.1102 | 0.0212 | [학습 로그](train_log/01_similar_variables.csv), [테스트 로그](train_log/test_01_similar_variables.csv)                                                         |
+| 변수명, 함수명은 의미가 있어야 함 (+ 알기 쉽게 할것)       | `Giga-Embeddings-instruct-480M-0826` | 0.0124 | 0.0013 | [학습 로그](train_log/01_names.csv), [테스트 로그](train_log/test_01_names.csv)                                                                                 |
+| 함수명과 반환값이 서로 잘 match 되어야 함             | `Giga-Embeddings-instruct-480M-0826` | 0.0993 | 0.0156 | [학습 로그](train_log/01_return_matched_with_func_name.csv), [테스트 로그](train_log/test_01_return_matched_with_func_name.csv)                                 |
+| 함수의 단일 책임 원칙 준수 여부 (docstring 으로 판단)   | `F2LLM-v2-330M`                      | 0.0018 | 5e-5   | [학습 로그](train_log/01_func_docstring_single_responsibility.csv), [테스트 로그](train_log/test_01_func_docstring_single_responsibility.csv)                   |
+| 함수 docstring과 함수명이 서로 일치하는지 판단         | `F2LLM-v2-330M`                      | 0.1536 | 0.0360 | [학습 로그](train_log/01_func_docstring_docstring_and_name.csv), [테스트 로그](train_log/test_01_func_docstring_docstring_and_name.csv)                         |
+| 함수의 인자가 하나로 묶을 수 있는 경우 처리 필요           | `Giga-Embeddings-instruct-480M-0826` | 0.0258 | 0.0051 | [학습 로그](train_log/04_func_args_bindable.csv), [테스트 로그](train_log/test_04_func_args_bindable.csv)                                                       |
+| 함수의 인자가 유동적인 경우 처리 필요                  | `Giga-Embeddings-instruct-480M-0826` | 0.0170 | 0.0032 | [학습 로그](train_log/04_func_args_dynamic.csv), [테스트 로그](train_log/test_04_func_args_dynamic.csv)                                                         |
+| 상태 값으로 판단되는 값을 조건으로 하는지 여부             | `Giga-Embeddings-instruct-480M-0826` | 0.0074 | 0.0011 | [학습 로그](train_log/06_refactor_into_class_case_2_state_vars_if_else.csv), [테스트 로그](train_log/test_06_refactor_into_class_case_2_state_vars_if_else.csv) |
+| 한 모듈 (*.py 파일) 내에서, 유사한 이름의 함수끼리 거리 검사 | `Giga-Embeddings-instruct-480M-0826` | 0.1434 | 0.0350 | [학습 로그](train_log/06_similar_function_names.csv), [테스트 로그](train_log/test_06_similar_function_names.csv)                                               |
