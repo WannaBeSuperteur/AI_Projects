@@ -115,7 +115,7 @@
 | ⚙ 기능 구현    | `ruff` 로 처리 가능한 규칙들을 `ruff`로 대체                                  | 09.05 토 (1d)           | `P010-002-ruff`            | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/58) | ✅  |
 | 🚨 버그 수정   | 정적 분석 알고리즘 버그 수정                                                 | 09.05 토 - 09.06 일 (2d) | `P010-003-bugfix-static`   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/59) | ✅  |                                                             
 | 📝 데이터셋 제작 | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 데이터셋 제작                        | 09.06 일 - 09.08 화 (3d) | `P010-004-dataset`         | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/60) | ✅  |
-| 🧪 모델 학습   | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 Text Embedding 모델 선정, 학습 및 테스트 | 09.08 화 - 09.09 수 (2d) | `P010-005-embedding-model` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/61) | 💨 |
+| 🧪 모델 학습   | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 Text Embedding 모델 선정, 학습 및 테스트 | 09.08 화 - 09.16 수 (9d) | `P010-005-embedding-model` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/61) | ✅  |
 | ⚙ 기능 구현    | 코드 리뷰 결과 요약 프로세스 구현                                              | 09.10 목 (1d)           |                            |                                                                    | ⬜  |
 | 📝 데이터셋 제작 | 코드 리뷰 결과 생성 LLM 데이터셋 제작                                          | 09.10 목 (1d)           |                            |                                                                    | ⬜  |
 | 🧪 모델 학습   | 코드 리뷰 결과 생성 LLM 학습                                               | 09.10 목 - 09.11 금 (2d) |                            |                                                                    | ⬜  |
