@@ -116,7 +116,7 @@
 | 🚨 버그 수정   | 정적 분석 알고리즘 버그 수정                                                   | 09.05 토 - 09.06 일 (2d) | `P010-003-bugfix-static`     | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/59) | ✅  |                                                             
 | 📝 데이터셋 제작 | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 데이터셋 제작                          | 09.06 일 - 09.08 화 (3d) | `P010-004-dataset`           | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/60) | ✅  |
 | 🧪 모델 학습   | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 Text Embedding 모델 선정, 학습 및 테스트   | 09.08 화 - 09.16 수 (9d) | `P010-005-embedding-model`   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/61) | ✅  |
-| 🧪 모델 학습   | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 Text Embedding 모델 재 선정, 학습 및 테스트 | 09.17 목 - 09.18 금 (2d) | `P010-006-embedding-model-2` |                                                                    | ⬜  |
+| 🧪 모델 학습   | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 Text Embedding 모델 재 선정, 학습 및 테스트 | 09.17 목 - 09.18 금 (2d) | `P010-006-embedding-model-2` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/62) | 💨 |
 | ⚙ 기능 구현    | 모델 학습 시까지 도출한 신규 요구사항 구현 (개발)                                      | 09.18 금 (1d)           |                              |                                                                    | ⬜  |
 | 🧪 모델 학습   | 모델 학습 시까지 도출한 신규 요구사항 구현 (모델 선정, 학습, 테스트)                          | 09.19 토 (1d)           |                              |                                                                    | ⬜  |
 | ⚙ 기능 구현    | 코드 리뷰 결과 요약 프로세스 구현                                                | 09.10 목 (1d)           |                              |                                                                    | ⬜  |
