@@ -519,13 +519,13 @@ if __name__ == '__main__':
     task_name_to_info = {
         '01_unnecessary_prints': {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
         '01_similar_variables': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
-        '01_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
+        '01_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
         '01_return_matched_with_func_name': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'},
         '01_func_docstring_single_responsibility': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
         '01_func_docstring_docstring_and_name': {'model_path': F2LLM_V2_330M, 'task_type': 'sim'},
-        '04_func_args_bindable': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
-        '04_func_args_dynamic': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
-        '06_refactor_into_class_case_2_state_vars_if_else': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'prob'},
+        '04_func_args_bindable': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+        '04_func_args_dynamic': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+        '06_refactor_into_class_case_2_state_vars_if_else': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
         '06_similar_function_names': {'model_path': GIGA_EMBEDDINGS_INSTRUCT, 'task_type': 'sim'}
     }
 
