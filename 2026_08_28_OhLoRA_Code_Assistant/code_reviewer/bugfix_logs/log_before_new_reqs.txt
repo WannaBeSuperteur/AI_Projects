@@ -1,0 +1,1120 @@
+
+==== RULE : 01_unused ====
+파일: tc01_01_basics.py
+ - 함수: (최상위 레벨)
+   - line 3 에 있는 (ruff) `math` imported but unused
+   - line 5 에 있는 (ruff) `os` imported but unused
+
+ - 함수: unused_function
+   - line 13 에 있는 (ruff) Local variable `common_value` is assigned to but never used
+
+ - 함수: abc
+   - line 23 에 있는 (ruff) Local variable `common_value` is assigned to but never used
+
+파일: tc01_01_basics_2.py
+ - 함수: (최상위 레벨)
+   - line 4 에 있는 (ruff) `tc01_01_basics.imported_but_unused_value` imported but unused
+
+파일: tc01_01_import.py
+ - 함수: (최상위 레벨)
+   - line 1 에 있는 (ruff) `tc01_01_empty_file` imported but unused
+
+파일: tc01_08.py
+ - 함수: (최상위 레벨)
+   - line 1 에 있는 (ruff) `math` imported but unused
+   - line 2 에 있는 (ruff) `os` imported but unused
+   - line 4 에 있는 (ruff) `numpy` imported but unused
+   - line 5 에 있는 (ruff) `pandas` imported but unused
+   - line 6 에 있는 (ruff) `sys` imported but unused
+   - line 7 에 있는 (ruff) `collections.abc` imported but unused
+   - line 9 에 있는 (ruff) `tc01_02` imported but unused
+   - line 10 에 있는 (ruff) `re` imported but unused
+   - line 11 에 있는 (ruff) `torch.nn` imported but unused
+
+파일: tc05.py
+ - 함수: (최상위 레벨)
+   - line 19 에 있는 (ruff) Local variable `exp` is assigned to but never used
+   - line 37 에 있는 (ruff) Local variable `ioe` is assigned to but never used
+
+
+==== RULE : 01_unnecessary_prints ====
+no text embedding model
+==== RULE : 01_duplicates ====
+파일: test_cases\code_review_items_old.py
+ - 함수: _check_similar_variables
+   - line 574 에 있는 no text embedding model
+
+ - 함수: _check_names
+   - line 638 에 있는 no text embedding model
+
+ - 함수: _check_return_matched_with_func_name
+   - line 670 에 있는 no text embedding model
+
+ - 함수: _check_func_docstring
+   - line 777 에 있는 no text embedding model
+
+ - 함수: _check_commented_codes
+   - line 815 에 있는 no text embedding model
+
+ - 함수: _check_const
+   - line 906 에 있는 no text embedding model
+
+ - 함수: _check_collections_itertools_glob
+   - line 1342 에 있는 \s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:\s*\n
+
+ - 함수: _check_func_args_bindable
+   - line 1361 에 있는 no text embedding model
+
+ - 함수: _check_refactor_into_class_case_2_state_vars_if_else
+   - line 1616 에 있는 no text embedding model
+
+ - 함수: _check_similar_function_names
+   - line 1640 에 있는 no text embedding model
+
+ - 함수: _get_class_name_by_line
+   - line 168 에 있는 _get_class_name_by_line 함수는 _get_function_name_by_line 과 유사 구조 존재
+
+ - 함수: _check_exception_type
+   - line 1473 에 있는 _check_exception_type 함수는 _check_exception_ignored 과 유사 구조 존재
+
+ - 함수: _check_func_arg_error_prevent
+   - line 1481 에 있는 _check_func_arg_error_prevent 함수는 _check_func_lambda 과 유사 구조 존재
+
+파일: test_cases\tc01_01_basics.py
+ - 함수: abc
+   - line 23 에 있는 dddd abbbcccccddddd
+
+ - 함수: similar_func2
+   - line 41 에 있는 Let's start!
+   - line 39 에 있는 similar_func2 함수는 similar_func1 과 유사 구조 존재
+
+파일: test_cases\tc01_01_basics_2.py
+ - 함수: (최상위 레벨)
+   - line 1 에 있는 TEST_DUPLICATED
+   - line 2 에 있는 dddd abbbcccccddddd
+
+ - 함수: similar_func3
+   - line 9 에 있는 Let's start!
+   - line 7 에 있는 similar_func3 함수는 similar_func1 과 유사 구조 존재
+
+파일: test_cases\tc01_08.py
+ - 함수: long_function_wo_docstring
+   - line 54 에 있는 I
+   - line 54 에 있는 J
+   - line 54 에 있는 K
+   - line 54 에 있는 L
+   - line 53 에 있는 long_function_wo_docstring 함수는 long_function_with_docstring 과 유사 구조 존재
+
+ - 함수: (최상위 레벨)
+   - line 26 에 있는 REBEL HEART
+
+파일: test_cases\tc06.py
+ - 함수: check_permission
+   - line 101 에 있는 VIEW_POST
+   - line 103 에 있는 VIEW_POST
+   - line 103 에 있는 WRITE_POST
+
+ - 함수: calculate_discount
+   - line 86 에 있는 calculate_discount 함수는 calculate 과 유사 구조 존재
+
+
+==== RULE : 01_similar_variables ====
+no text embedding model
+==== RULE : 01_same_func_args ====
+파일: test_cases\tc01_01_basics.py
+ - 함수: similar_func2
+   - line 39 에 있는 same
+
+파일: test_cases\tc01_01_basics_2.py
+ - 함수: similar_func3
+   - line 7 에 있는 similar_
+   - line 7 에 있는 same
+
+파일: test_cases\tc01_08.py
+ - 함수: without_type_hint
+   - line 17 에 있는 b
+
+파일: test_cases\tc05.py
+ - 함수: func_test
+   - line 43 에 있는 b
+
+
+==== RULE : 01_names ====
+no text embedding model
+==== RULE : 01_return_matched_with_func_name ====
+no text embedding model
+==== RULE : 01_library_orders ====
+파일: test_cases\code_review_items_old.py
+ - 함수: (최상위 레벨)
+   - line 6 에 있는 import of builtin "re"
+   - line 7 에 있는 import of builtin "tokenize"
+   - line 8 에 있는 import of builtin "keyword"
+   - line 9 에 있는 import of builtin "builtins"
+   - line 11 에 있는 import of builtin "typing"
+   - line 12 에 있는 import of builtin "difflib"
+   - line 13 에 있는 import of builtin "operator"
+   - line 17 에 있는 import of builtin "collections"
+   - line 18 에 있는 import of builtin "itertools"
+
+파일: test_cases\tc01_01_basics.py
+ - 함수: (최상위 레벨)
+   - line 5 에 있는 import of builtin "os"
+
+파일: test_cases\tc01_08.py
+ - 함수: (최상위 레벨)
+   - line 6 에 있는 import of builtin "sys"
+   - line 7 에 있는 import of builtin "collections"
+   - line 10 에 있는 import of builtin "re"
+   - line 11 에 있는 import of 3rd-party "torch"
+
+
+==== RULE : 01_func_docstring ====
+no text embedding model
+==== RULE : 01_commented_codes ====
+no text embedding model
+==== RULE : 01_empty_file ====
+파일: test_cases\tc01_01_empty_file.py
+ - 함수: (최상위 레벨)
+   - line 1 에 있는 파일이 비어 있지만 TODO 코멘트가 없습니다.
+
+파일: test_cases\tc01_01_empty_file_2.py
+ - 함수: (최상위 레벨)
+   - line 1 에 있는 파일이 비어 있지만 TODO 코멘트가 없습니다.
+
+
+==== RULE : 02_const ====
+no text embedding model
+==== RULE : 02_line_length ====
+파일: code_review_items_old.py
+ - 함수: _check_return_matched_with_func_name
+   - line 689 에 있는 (ruff) Line too long (122 > 120)
+
+ - 함수: _check_func_docstring
+   - line 801 에 있는 (ruff) Line too long (122 > 120)
+   - line 806 에 있는 (ruff) Line too long (121 > 120)
+
+ - 함수: _check_files
+   - line 960 에 있는 (ruff) Line too long (122 > 120)
+
+파일: tc01_08.py
+ - 함수: (최상위 레벨)
+   - line 14 에 있는 (ruff) Line too long (126 > 120)
+
+파일: tc_long_line.py
+ - 함수: (최상위 레벨)
+   - line 1 에 있는 (ruff) Line too long (159 > 120)
+
+
+==== RULE : 02_files ====
+파일: (코드 전체 경로)
+ - 함수: (코드 전체 경로)
+   - line 0 에 있는 오류: README.md 파일이 없습니다.
+   - line 0 에 있는 오류: pyproject.toml 파일이 없습니다.
+
+
+==== RULE : 02_functions_length_and_docstring ====
+파일: test_cases\code_review_items_old.py
+ - 함수: simplify_code
+   - line 29 에 있는 simplify_code docstring 없음
+
+ - 함수: check_regex_matched_lines
+   - line 88 에 있는 check_regex_matched_lines docstring 없음
+
+ - 함수: _get_function_name_by_line
+   - line 139 에 있는 _get_function_name_by_line docstring 없음
+
+ - 함수: _get_class_name_by_line
+   - line 168 에 있는 _get_class_name_by_line docstring 없음
+
+ - 함수: _get_definitions_and_usages
+   - line 197 에 있는 _get_definitions_and_usages docstring 없음
+
+ - 함수: _get_constants
+   - line 247 에 있는 _get_constants docstring 없음
+
+ - 함수: _get_function_bodies
+   - line 262 에 있는 _get_function_bodies docstring 없음
+
+ - 함수: _add_regex_matched_lines
+   - line 280 에 있는 _add_regex_matched_lines docstring 없음
+
+ - 함수: _find_if_elif_else_patterns
+   - line 326 에 있는 _find_if_elif_else_patterns docstring 없음
+
+ - 함수: update_final_result_dict
+   - line 334 에 있는 update_final_result_dict docstring 없음
+
+ - 함수: _delete_imported_review_items
+   - line 391 에 있는 _delete_imported_review_items docstring 없음
+
+ - 함수: _is_function_bodies_similar
+   - line 413 에 있는 _is_function_bodies_similar docstring 없음
+
+ - 함수: _check_unused
+   - line 426 에 있는 _check_unused docstring 없음
+
+ - 함수: _check_unnecessary_prints
+   - line 453 에 있는 _check_unnecessary_prints docstring 없음
+
+ - 함수: _check_duplicates
+   - line 488 에 있는 _check_duplicates docstring 없음
+
+ - 함수: _find_all_similar_text_pairs
+   - line 541 에 있는 _find_all_similar_text_pairs docstring 없음
+
+ - 함수: check_text_similar_with_prevs
+   - line 547 에 있는 check_text_similar_with_prevs docstring 없음
+
+ - 함수: _check_similar_variables
+   - line 572 에 있는 _check_similar_variables docstring 없음
+
+ - 함수: _check_same_func_args
+   - line 605 에 있는 _check_same_func_args docstring 없음
+
+ - 함수: _check_names
+   - line 636 에 있는 _check_names docstring 없음
+
+ - 함수: _check_return_matched_with_func_name
+   - line 668 에 있는 _check_return_matched_with_func_name docstring 없음
+
+ - 함수: _check_library_orders
+   - line 724 에 있는 _check_library_orders docstring 없음
+
+ - 함수: _check_func_docstring
+   - line 775 에 있는 _check_func_docstring docstring 없음
+
+ - 함수: _check_commented_codes
+   - line 813 에 있는 _check_commented_codes docstring 없음
+
+ - 함수: _check_empty_file
+   - line 854 에 있는 _check_empty_file docstring 없음
+
+ - 함수: run_code_review
+   - line 876 에 있는 run_code_review docstring 없음
+   - line 1047 에 있는 run_code_review docstring 없음
+   - line 1257 에 있는 run_code_review docstring 없음
+   - line 1439 에 있는 run_code_review docstring 없음
+   - line 1556 에 있는 run_code_review docstring 없음
+   - line 1695 에 있는 run_code_review docstring 없음
+   - line 1738 에 있는 run_code_review docstring 없음
+
+ - 함수: _check_const
+   - line 904 에 있는 _check_const docstring 없음
+
+ - 함수: _check_line_length
+   - line 928 에 있는 _check_line_length docstring 없음
+
+ - 함수: _check_files
+   - line 948 에 있는 _check_files docstring 없음
+
+ - 함수: _check_functions
+   - line 967 에 있는 _check_functions docstring 없음
+
+ - 함수: _check_indent
+   - line 1011 에 있는 _check_indent docstring 없음
+
+ - 함수: _check_suggest_list_comprehension
+   - line 1068 에 있는 _check_suggest_list_comprehension docstring 없음
+
+ - 함수: _check_defaultdict
+   - line 1104 에 있는 _check_defaultdict docstring 없음
+
+ - 함수: _check_any_all
+   - line 1131 에 있는 _check_any_all docstring 없음
+
+ - 함수: _check_zip
+   - line 1142 에 있는 _check_zip docstring 없음
+
+ - 함수: _check_count
+   - line 1204 에 있는 _check_count docstring 없음
+
+ - 함수: _check_index
+   - line 1220 에 있는 _check_index docstring 없음
+
+ - 함수: _check_collections_itertools_glob
+   - line 1324 에 있는 _check_collections_itertools_glob docstring 없음
+
+ - 함수: _check_func_args_bindable
+   - line 1357 에 있는 _check_func_args_bindable docstring 없음
+
+ - 함수: _check_func_lambda
+   - line 1411 에 있는 _check_func_lambda docstring 없음
+
+ - 함수: _check_func_arg_error_prevent
+   - line 1481 에 있는 _check_func_arg_error_prevent docstring 없음
+
+ - 함수: _check_python_keywords_args
+   - line 1514 에 있는 _check_python_keywords_args docstring 없음
+
+ - 함수: _check_refactor_into_class_case_1_same_args
+   - line 1578 에 있는 _check_refactor_into_class_case_1_same_args docstring 없음
+
+ - 함수: _check_refactor_into_class_case_2_state_vars_if_else
+   - line 1614 에 있는 _check_refactor_into_class_case_2_state_vars_if_else docstring 없음
+
+ - 함수: _check_prefix_for_only_in_class_methods
+   - line 1627 에 있는 _check_prefix_for_only_in_class_methods docstring 없음
+
+ - 함수: _check_similar_function_names
+   - line 1638 에 있는 _check_similar_function_names docstring 없음
+
+파일: test_cases\tc01_08.py
+ - 함수: long_function_wo_docstring
+   - line 53 에 있는 long_function_wo_docstring docstring 없음
+
+ - 함수: too_long_function
+   - line 97 에 있는 too_long_function 너무 긺 (120 줄 > 100 줄)
+   - line 97 에 있는 too_long_function docstring 없음
+
+파일: test_cases\tc05.py
+ - 함수: get_active_user_profile
+   - line 121 에 있는 get_active_user_profile docstring 없음
+
+ - 함수: calculate_items
+   - line 135 에 있는 calculate_items docstring 없음
+
+
+==== RULE : 02_functions_type_hint ====
+파일: code_review_items_old.py
+ - 함수: extract_comment
+   - line 77 에 있는 (ruff) Missing return type annotation for public function `extract_comment`
+   - line 77 에 있는 (ruff) Missing type annotation for function argument `line`
+
+ - 함수: _parse_codes
+   - line 135 에 있는 (ruff) Missing return type annotation for private function `_parse_codes`
+
+ - 함수: _get_function_name_by_line
+   - line 139 에 있는 (ruff) Missing return type annotation for private function `_get_function_name_by_line`
+
+ - 함수: _get_class_name_by_line
+   - line 168 에 있는 (ruff) Missing return type annotation for private function `_get_class_name_by_line`
+
+ - 함수: _find_if_elif_else_patterns
+   - line 334 에 있는 (ruff) Missing return type annotation for private function `update_final_result_dict`
+
+ - 함수: _delete_imported_review_items
+   - line 391 에 있는 (ruff) Missing return type annotation for private function `_delete_imported_review_items`
+
+ - 함수: _mark_used_as_imported
+   - line 405 에 있는 (ruff) Missing return type annotation for private function `_mark_used_as_imported`
+
+ - 함수: _find_all_similar_text_pairs
+   - line 541 에 있는 (ruff) Missing type annotation for function argument `text_embedding_model`
+   - line 547 에 있는 (ruff) Missing return type annotation for private function `check_text_similar_with_prevs`
+   - line 547 에 있는 (ruff) Missing type annotation for function argument `info`
+   - line 547 에 있는 (ruff) Missing type annotation for function argument `py_file_path`
+
+ - 함수: _check_func_lambda
+   - line 1414 에 있는 (ruff) Missing return type annotation for private function `flmf`
+   - line 1414 에 있는 (ruff) Missing type annotation for function argument `matched_groups`
+   - line 1414 에 있는 (ruff) Missing type annotation for function argument `py_file_path`
+   - line 1414 에 있는 (ruff) Missing type annotation for function argument `line_no`
+
+ - 함수: _check_func_arg_error_prevent
+   - line 1484 에 있는 (ruff) Missing return type annotation for private function `flmf`
+   - line 1484 에 있는 (ruff) Missing type annotation for function argument `matched_groups`
+   - line 1484 에 있는 (ruff) Missing type annotation for function argument `py_file_path`
+   - line 1484 에 있는 (ruff) Missing type annotation for function argument `line_no`
+
+ - 함수: _check_refactor_into_class_case_2_state_vars_if_else
+   - line 1620 에 있는 (ruff) Missing return type annotation for private function `check_is_state_value`
+   - line 1620 에 있는 (ruff) Missing type annotation for function argument `info`
+
+ - 함수: _check_prefix_for_only_in_class_methods
+   - line 1628 에 있는 (ruff) Missing return type annotation for private function `flmf`
+   - line 1628 에 있는 (ruff) Missing type annotation for function argument `matched_groups`
+   - line 1628 에 있는 (ruff) Missing type annotation for function argument `py_file_path`
+   - line 1628 에 있는 (ruff) Missing type annotation for function argument `line_no`
+
+파일: tc01_01_basics.py
+ - 함수: unused_function
+   - line 12 에 있는 (ruff) Missing return type annotation for public function `unused_function`
+
+ - 함수: abc
+   - line 22 에 있는 (ruff) Missing return type annotation for public function `abc`
+
+ - 함수: similar_func1
+   - line 30 에 있는 (ruff) Missing return type annotation for public function `similar_func1`
+
+ - 함수: similar_func2
+   - line 39 에 있는 (ruff) Missing return type annotation for public function `similar_func2`
+
+ - 함수: get_current_version
+   - line 48 에 있는 (ruff) Missing return type annotation for public function `get_current_version`
+
+ - 함수: get_current_ver
+   - line 58 에 있는 (ruff) Missing return type annotation for public function `get_current_ver`
+   - line 58 에 있는 (ruff) Missing type annotation for function argument `version`
+
+ - 함수: check_single_responsibility
+   - line 68 에 있는 (ruff) Missing return type annotation for public function `check_single_responsibility`
+
+ - 함수: imported_function
+   - line 80 에 있는 (ruff) Missing return type annotation for public function `imported_function`
+
+파일: tc01_01_basics_2.py
+ - 함수: similar_func3
+   - line 7 에 있는 (ruff) Missing return type annotation for public function `similar_func3`
+
+ - 함수: get_current_version
+   - line 16 에 있는 (ruff) Missing return type annotation for public function `get_current_version`
+
+파일: tc01_08.py
+ - 함수: without_type_hint
+   - line 17 에 있는 (ruff) Missing return type annotation for public function `without_type_hint`
+   - line 17 에 있는 (ruff) Missing type annotation for function argument `a`
+
+ - 함수: long_function_with_docstring
+   - line 29 에 있는 (ruff) Missing return type annotation for public function `long_function_with_docstring`
+
+ - 함수: long_function_wo_docstring
+   - line 53 에 있는 (ruff) Missing return type annotation for public function `long_function_wo_docstring`
+
+ - 함수: too_long_function
+   - line 97 에 있는 (ruff) Missing return type annotation for public function `too_long_function`
+
+파일: tc03.py
+ - 함수: collect_user_ids
+   - line 193 에 있는 (ruff) Missing return type annotation for public function `collect_user_ids`
+   - line 193 에 있는 (ruff) Missing type annotation for function argument `active_users`
+   - line 193 에 있는 (ruff) Missing type annotation for function argument `new_users`
+
+파일: tc04.py
+ - 함수: test_function
+   - line 217 에 있는 (ruff) Missing return type annotation for public function `test_function`
+
+파일: tc05.py
+ - 함수: func_test
+   - line 43 에 있는 (ruff) Missing return type annotation for public function `func_test`
+
+ - 함수: create_user
+   - line 49 에 있는 (ruff) Missing return type annotation for public function `create_user`
+
+ - 함수: add_to_list
+   - line 55 에 있는 (ruff) Missing return type annotation for public function `add_to_list`
+
+ - 함수: configure_settings
+   - line 61 에 있는 (ruff) Missing return type annotation for public function `configure_settings`
+
+ - 함수: create_user_1
+   - line 67 에 있는 (ruff) Missing return type annotation for public function `create_user_1`
+
+ - 함수: add_to_list_1
+   - line 76 에 있는 (ruff) Missing return type annotation for public function `add_to_list_1`
+
+ - 함수: configure_settings_1
+   - line 84 에 있는 (ruff) Missing return type annotation for public function `configure_settings_1`
+
+ - 함수: get_user_age
+   - line 93 에 있는 (ruff) Missing return type annotation for public function `get_user_age`
+
+ - 함수: process_payment
+   - line 104 에 있는 (ruff) Missing return type annotation for public function `process_payment`
+   - line 104 에 있는 (ruff) Missing type annotation for function argument `amount`
+   - line 104 에 있는 (ruff) Missing type annotation for function argument `balance`
+
+ - 함수: fetch_from_database
+   - line 114 에 있는 (ruff) Missing return type annotation for public function `fetch_from_database`
+
+ - 함수: get_active_user_profile
+   - line 121 에 있는 (ruff) Missing return type annotation for public function `get_active_user_profile`
+   - line 121 에 있는 (ruff) Missing type annotation for function argument `user_id`
+
+ - 함수: calculate_items
+   - line 135 에 있는 (ruff) Missing return type annotation for public function `calculate_items`
+   - line 135 에 있는 (ruff) Missing type annotation for function argument `id`
+   - line 135 에 있는 (ruff) Missing type annotation for function argument `list`
+   - line 135 에 있는 (ruff) Missing type annotation for function argument `print`
+
+파일: tc06.py
+ - 함수: calculate_total_price
+   - line 5 에 있는 (ruff) Missing return type annotation for public function `calculate_total_price`
+   - line 5 에 있는 (ruff) Missing type annotation for function argument `item_name`
+   - line 5 에 있는 (ruff) Missing type annotation for function argument `price`
+   - line 5 에 있는 (ruff) Missing type annotation for function argument `quantity`
+   - line 5 에 있는 (ruff) Missing type annotation for function argument `address`
+
+ - 함수: calculate_shipping_fee
+   - line 11 에 있는 (ruff) Missing return type annotation for public function `calculate_shipping_fee`
+   - line 11 에 있는 (ruff) Missing type annotation for function argument `item_name`
+   - line 11 에 있는 (ruff) Missing type annotation for function argument `price`
+   - line 11 에 있는 (ruff) Missing type annotation for function argument `quantity`
+   - line 11 에 있는 (ruff) Missing type annotation for function argument `address`
+
+ - 함수: print_order_summary
+   - line 20 에 있는 (ruff) Missing return type annotation for public function `print_order_summary`
+   - line 20 에 있는 (ruff) Missing type annotation for function argument `item_name`
+   - line 20 에 있는 (ruff) Missing type annotation for function argument `price`
+   - line 20 에 있는 (ruff) Missing type annotation for function argument `quantity`
+   - line 20 에 있는 (ruff) Missing type annotation for function argument `address`
+
+ - 함수: process
+   - line 42 에 있는 (ruff) Missing return type annotation for public function `process`
+
+ - 함수: calculate
+   - line 54 에 있는 (ruff) Missing return type annotation for public function `calculate`
+   - line 54 에 있는 (ruff) Missing type annotation for function argument `grade`
+   - line 54 에 있는 (ruff) Missing type annotation for function argument `price`
+
+ - 함수: send_notification
+   - line 66 에 있는 (ruff) Missing return type annotation for public function `send_notification`
+   - line 66 에 있는 (ruff) Missing type annotation for function argument `type`
+   - line 66 에 있는 (ruff) Missing type annotation for function argument `message`
+   - line 75 에 있는 (ruff) Missing return type annotation for public function `send_notification`
+   - line 75 에 있는 (ruff) Missing type annotation for function argument `order_status`
+
+ - 함수: calculate_discount
+   - line 86 에 있는 (ruff) Missing return type annotation for public function `calculate_discount`
+   - line 86 에 있는 (ruff) Missing type annotation for function argument `payment_method`
+   - line 86 에 있는 (ruff) Missing type annotation for function argument `price`
+
+ - 함수: check_permission
+   - line 97 에 있는 (ruff) Missing return type annotation for public function `check_permission`
+   - line 97 에 있는 (ruff) Missing type annotation for function argument `user_grade`
+
+ - 함수: _display_system
+   - line 115 에 있는 (ruff) Missing return type annotation for private function `_display_system`
+
+ - 함수: __boot_kernel
+   - line 131 에 있는 (ruff) Missing return type annotation for private function `__boot_kernel`
+
+ - 함수: __init__
+   - line 143 에 있는 (ruff) Missing type annotation for function argument `items`
+
+파일: tc06_func_order.py
+ - 함수: process_user_data
+   - line 3 에 있는 (ruff) Missing return type annotation for public function `process_user_data`
+   - line 3 에 있는 (ruff) Missing type annotation for function argument `user_id`
+
+ - 함수: order_consumer_ranking
+   - line 8 에 있는 (ruff) Missing return type annotation for public function `order_consumer_ranking`
+
+ - 함수: send_welcome_email
+   - line 12 에 있는 (ruff) Missing return type annotation for public function `send_welcome_email`
+   - line 12 에 있는 (ruff) Missing type annotation for function argument `user_id`
+
+ - 함수: process_user_data_v2
+   - line 17 에 있는 (ruff) Missing return type annotation for public function `process_user_data_v2`
+   - line 17 에 있는 (ruff) Missing type annotation for function argument `user_id`
+   - line 17 에 있는 (ruff) Missing type annotation for function argument `options`
+
+ - 함수: process_user_data_batch
+   - line 23 에 있는 (ruff) Missing return type annotation for public function `process_user_data_batch`
+   - line 23 에 있는 (ruff) Missing type annotation for function argument `user_ids`
+
+ - 함수: rank_customer
+   - line 28 에 있는 (ruff) Missing return type annotation for public function `rank_customer`
+
+
+==== RULE : 02_indent ====
+파일: test_cases\code_review_items_old.py
+ - 함수: _get_function_name_by_line
+   - line 155 에 있는 function_name_by_line[i] = item['info']['name']
+
+ - 함수: _get_class_name_by_line
+   - line 184 에 있는 class_name_by_line[i] = item['info']['name']
+
+ - 함수: _add_regex_matched_lines
+   - line 304 에 있는 lines_to_show = lines_to_show[:36] + ' ...'
+   - line 312 에 있는 self.final_result_di  ...  ame': lines_to_show,
+   - line 313 에 있는 'type': type_name,
+   - line 314 에 있는 'line': line_no})
+   - line 315 에 있는 line_idx += matched_text.count('\n') + 1
+   - line 317 에 있는 line_idx += 1
+
+ - 함수: _check_unnecessary_prints
+   - line 480 에 있는 func_name = self.fun  ...  _file_path][line_no]
+   - line 481 에 있는 final_result_dict[py  ...  : ellipse_str(line),
+   - line 482 에 있는 'type': print_type,
+   - line 483 에 있는 'line': line_no})
+
+ - 함수: _check_duplicates
+   - line 509 에 있는 final_result_dict[py  ...  c_name].append(info)
+   - line 515 에 있는 final_result_dict[py  ...  c_name].append(info)
+   - line 529 에 있는 final_result_dict[py  ...  ame': function_name,
+   - line 530 에 있는 'type': 'func',
+   - line 531 에 있는 'line': start_line})
+   - line 532 에 있는 break
+
+ - 함수: _check_same_func_args
+   - line 624 에 있는 existing_annot = func_annot_dict.get(arg_name)
+   - line 626 에 있는 if existing_annot and existing_annot != annot:
+   - line 627 에 있는 func_name = self.fun  ...  _file_path][line_no]
+   - line 628 에 있는 final_result_dict[py  ...  d({'name': arg_name,
+   - line 629 에 있는 'type': 'arg',
+   - line 630 에 있는 'line': line_no})
+   - line 631 에 있는 func_annot_dict[arg_name] = annot
+
+ - 함수: _check_return_matched_with_func_name
+   - line 716 에 있는 func_name = self.fun  ...  _file_path][line_no]
+   - line 717 에 있는 final_result_dict[py  ...  = {func_name}(...)',
+   - line 718 에 있는 'type': 'func_return',
+   - line 719 에 있는 'line': line_no})
+
+ - 함수: _check_library_orders
+   - line 756 에 있는 final_result_dict[py  ...  f builtin "{name}"',
+   - line 757 에 있는 'type': 'wrong_builtin_import',
+   - line 758 에 있는 'line': line_no})
+   - line 761 에 있는 final_result_dict[py  ...  3rd-party "{name}"',
+   - line 762 에 있는 'type': 'wrong_third_party_import',
+   - line 763 에 있는 'line': line_no})
+   - line 766 에 있는 third_party_imported = True
+   - line 768 에 있는 pass
+   - line 770 에 있는 local_imported = True
+
+ - 함수: _check_commented_codes
+   - line 834 에 있는 comments.append({'li  ...  ': current_comment})
+   - line 837 에 있는 comments.append({'li  ...  ment': comment[1:]})
+
+ - 함수: _check_line_length
+   - line 941 에 있는 {'name': f'{ellipse_  ...  length {len(line)}',
+   - line 942 에 있는 'type': 'const value',
+   - line 943 에 있는 'line': line_no})
+
+ - 함수: _check_functions
+   - line 984 에 있는 {'name': f'{func_nam  ...  max_func_lines} 줄)',
+   - line 985 에 있는 'type': 'too_long_function',
+   - line 986 에 있는 'line': line_no})
+   - line 990 에 있는 {'name': f'{func_name} docstring 없음',
+   - line 991 에 있는 'type': 'no_docstring',
+   - line 992 에 있는 'line': line_no})
+   - line 997 에 있는 {'name': f'{func_nam  ...  체 인수에 type hint 없음',
+   - line 998 에 있는 'type': 'no_type_hint_args',
+   - line 999 에 있는 'line': line_no})
+   - line 1004 에 있는 {'name': f'{func_nam  ...  rn 값에 type hint 없음',
+   - line 1005 에 있는 'type': 'no_type_hint_return',
+   - line 1006 에 있는 'line': line_no})
+
+ - 함수: _check_defaultdict
+   - line 1123 에 있는 func_name = self.fun  ...  e_path][def_line_no]
+   - line 1124 에 있는 final_result_dict[py  ...  (val_line_.strip()),
+   - line 1125 에 있는 'type': 'should use defaultdict',
+   - line 1126 에 있는 'line': def_line_no})
+
+ - 함수: _check_func_args_bindable
+   - line 1379 에 있는 final_result_dict[py  ...  ][func_name].append(
+   - line 1380 에 있는 {'name': f'{func_nam  ...  r(arg_name_list)})',
+   - line 1381 에 있는 'type': 'bindable_args',
+   - line 1382 에 있는 'line': line_no})
+   - line 1385 에 있는 final_result_dict[py  ...  ][func_name].append(
+   - line 1386 에 있는 {'name': f'{func_nam  ...  r(arg_name_list)})',
+   - line 1387 에 있는 'type': 'dynamic_args',
+   - line 1388 에 있는 'line': line_no})
+
+ - 함수: _check_refactor_into_class_case_1_same_args
+   - line 1598 에 있는 continue
+
+ - 함수: _check_similar_function_names
+   - line 1668 에 있는 func_sim_matrix[idx_0][idx_1] = 'high'
+   - line 1670 에 있는 func_sim_matrix[idx_0][idx_1] = 'low'
+   - line 1678 에 있는 if first_similar_idx is None:
+   - line 1679 에 있는 first_similar_idx = idx_1
+   - line 1680 에 있는 elif idx_1 - first_similar_idx >= 2:
+   - line 1681 에 있는 func_reorder_needed = True
+   - line 1682 에 있는 break
+
+파일: test_cases\tc01_08.py
+ - 함수: long_function_with_docstring
+   - line 38 에 있는 print(i)
+   - line 39 에 있는 print(j)
+   - line 40 에 있는 print(k)
+   - line 41 에 있는 print(l)
+
+ - 함수: long_function_wo_docstring
+   - line 85 에 있는 print(i)
+   - line 86 에 있는 print(j)
+   - line 88 에 있는 print(k)
+   - line 89 에 있는 print(l)
+
+
+==== RULE : 03_suggest_list_comprehension ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 5 에 있는 for item in arr: new_arr.append(item ...
+   - line 189 에 있는 for fruit in new_fruits: fruits.appe ...
+   - line 8 에 있는 for item in arr: if item % 4 == 1: n ...
+   - line 12 에 있는 result = '' for item in arr: result  ...
+   - line 264 에 있는 result = '' for i in range(1000): re ...
+   - line 268 에 있는 result = "" for word in words: resul ...
+
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 93 에 있는 for item in row: flattened.append(it ...
+
+
+==== RULE : 03_generator_expression ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 28 에 있는 print(sum([p for p in primes if p >= ...
+   - line 29 에 있는 print(max([p for p in primes if p %  ...
+   - line 30 에 있는 print(min([p for p in primes if p %  ...
+   - line 31 에 있는 print(all([p % 2 == 1 for p in prime ...
+   - line 32 에 있는 print(any([p % 2 == 1 for p in prime ...
+
+
+==== RULE : 03_if_to_dict ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 47 에 있는 if-elif-elif-else 패턴
+
+파일: test_cases\tc06.py
+ - 함수: (최상위 레벨)
+   - line 51 에 있는 if-elif-elif-else 패턴
+   - line 73 에 있는 if-elif-elif-else 패턴
+
+ - 함수: calculate
+   - line 61 에 있는 if-elif-elif-else 패턴
+
+ - 함수: send_notification
+   - line 82 에 있는 if-elif-elif-else 패턴
+
+ - 함수: calculate_discount
+   - line 93 에 있는 if-elif-elif-else 패턴
+
+
+==== RULE : 03_path_format ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 77 에 있는 path = 'ab/cd/efg/hij.csv'
+
+
+==== RULE : 03_defaultdict ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 82 에 있는 groups[category] = []  # 빈 리스트 변수/값 생성 필요
+   - line 90 에 있는 counts[word] = 0  # 초기값 0 설정 필요
+   - line 97 에 있는 test_dict['abc'] = ''
+   - line 97 에 있는 test_dict['def'] = ""
+
+
+==== RULE : 03_any_all ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 104 에 있는 has_negative = False for num in numb ...
+
+
+==== RULE : 03_zip ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 116 에 있는 for i in range(len(names)): print(f" ...
+   - line 123 에 있는 for i in range(len(keys)): user_info ...
+   - line 127 에 있는 for i in range(len(values)): user_in ...
+   - line 134 에 있는 for idx in range(len(k_list)): k = k ...
+
+
+==== RULE : 03_enumerate ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 116 에 있는 for i in range(len(names)): print(f" ...
+   - line 123 에 있는 for i in range(len(keys)): user_info ...
+   - line 127 에 있는 for i in range(len(values)): user_in ...
+   - line 134 에 있는 for idx in range(len(k_list)): k = k ...
+   - line 140 에 있는 for itertool2 in range(len(target)): ...
+   - line 221 에 있는 for i in range(len(items)): if items ...
+   - line 228 에 있는 for i in range(len(items)): if items ...
+   - line 235 에 있는 for i in range(len(items)): if items ...
+
+
+==== RULE : 03_itertools_product ====
+파일: test_cases\tc01_08.py
+ - 함수: long_function_with_docstring
+   - line 34 에 있는 for i in range(2): for j in range(3) ...
+   - line 36 에 있는 for k in range(4): for l in range(5) ...
+
+ - 함수: long_function_wo_docstring
+   - line 56 에 있는 for i in range(2): for j in range(3) ...
+   - line 67 에 있는 for i in range(2): for j in range(3) ...
+   - line 81 에 있는 for i in range(2): for j in range(3) ...
+   - line 83 에 있는 for k in range(4): for l in range(5) ...
+
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 139 에 있는 for itertool1 in range(100): for ite ...
+
+
+==== RULE : 03_just_read_write_to_read_write_text ====
+파일: tc03.py
+ - 함수: (최상위 레벨)
+   - line 143 에 있는 (ruff) `open` and `read` should be replaced by `Path('example1.txt').read_text(encoding='utf-8')`
+   - line 146 에 있는 (ruff) `open` and `write` should be replaced by `Path('example2.txt').write_text(content1, encoding='utf-8')`
+   - line 149 에 있는 (ruff) `open` and `read` should be replaced by `Path('example3.txt').read_text()`
+   - line 152 에 있는 (ruff) `open` and `write` should be replaced by `Path('example4.txt').write_text(content2)`
+
+
+==== RULE : 03_sentence_empty ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 156 에 있는 if len(sentence): print(1) if not le ...
+   - line 158 에 있는 if not len(sentence): print(2) if le ...
+   - line 160 에 있는 if len(sentence) == 0: print(3) if n ...
+   - line 162 에 있는 if not len(sentence) == 0: print(4)  ...
+   - line 164 에 있는 if sentence == '': print(5) if not s ...
+   - line 166 에 있는 if not sentence == '': print(6) if s ...
+
+
+==== RULE : 03_handle_none ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 174 에 있는 dddd = 'b' in a and a['b'] is not No ...
+   - line 175 에 있는 eeee = dddd in a and a[dddd] is not  ...
+   - line 176 에 있는 if 'b' in a and a['b'] is not None:  ...
+   - line 179 에 있는 if 'b' in a and a['b']: print(a)  'b ...
+   - line 182 에 있는 'b' in a and a['b'] is not None 'b'  ...
+   - line 183 에 있는 'b' in a and a['b']   fruits = ["app ...
+
+
+==== RULE : 03_extend ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 189 에 있는 for fruit in new_fruits: fruits.appe ...
+
+ - 함수: collect_user_ids
+   - line 195 에 있는 active_users += [user.id for user in ...
+
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 93 에 있는 for item in row: flattened.append(it ...
+
+
+==== RULE : 03_count ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 199 에 있는 apple_count = 0 for fruit in fruits: ...
+   - line 208 에 있는 perfect_scores = len([score for scor ...
+   - line 214 에 있는 admin_count = len(list(filter(lambda ...
+
+
+==== RULE : 03_index ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 220 에 있는 found_index = -1 for i in range(len( ...
+   - line 227 에 있는 found_index = -1 for i in range(len( ...
+   - line 234 에 있는 found_index = 0 for i in range(len(i ...
+   - line 242 에 있는 idx = next(i for i, v in enumerate(n ...
+   - line 245 에 있는 idx = next(i for i, v in enumerate(s ...
+   - line 249 에 있는 i = 0 while i < len(data): if data[i ...
+   - line 256 에 있는 i = 0 while i < len(data): if data[i ...
+
+
+==== RULE : 03_str_join ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 12 에 있는 result = '' for item in arr: result  ...
+   - line 23 에 있는 result = '' for item in arr: result  ...
+   - line 264 에 있는 result = '' for i in range(1000): re ...
+   - line 268 에 있는 result = "" for word in words: resul ...
+
+
+==== RULE : 03_use_map ====
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 280 에 있는 a = sum(len(line) for line in result ...
+   - line 281 에 있는 b = max(len(line) for line in result)
+   - line 282 에 있는 c = min(len(x) for x in ['ive', 'les ...
+   - line 283 에 있는 d = sum(len(line) for line in result ...
+   - line 284 에 있는 e = max(len(line) for line in result ...
+
+
+==== RULE : 04_unpacking_case_1 ====
+파일: test_cases\code_review_items_old.py
+ - 함수: _find_if_elif_else_patterns
+   - line 361 에 있는 keyword = matched_groups[0] var_name ...
+
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 6 에 있는 a = my_list[0] b = my_list[1] c = my ...
+   - line 12 에 있는 first = my_list[0] rest = my_list[1: ...
+   - line 16 에 있는 d = my_list[0] e = my_list[1]  print ...
+   - line 20 에 있는 f = my_list[0] g = my_list[1:]   
+
+
+==== RULE : 04_unpacking_case_2 ====
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 26 에 있는 values[0], values[1], values[2] = li ...
+   - line 33 에 있는 position[0], position[1] = list([150 ...
+   - line 37 에 있는 rgb_color[0], rgb_color[1], rgb_colo ...
+   - line 38 에 있는 rgb_color[0], rgb_color[1], rgb_colo ...
+
+
+==== RULE : 04_open_file ====
+파일: tc04.py
+ - 함수: (최상위 레벨)
+   - line 43 에 있는 (ruff) Use a context manager for opening files
+   - line 44 에 있는 (ruff) Use a context manager for opening files
+   - line 45 에 있는 (ruff) Use a context manager for opening files
+
+
+==== RULE : 04_key_itemgetter ====
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 51 에 있는 my_list.sort(key=lambda x: x['key']) ...
+   - line 52 에 있는 my_list.sort(key=lambda x: x["key"]) ...
+   - line 53 에 있는 test_array.sort(key=lambda x: x["chi ...
+   - line 56 에 있는 test_array.sort(key=lambda x: x[key_ ...
+
+
+==== RULE : 04_f_string ====
+파일: test_cases\code_review_items_old.py
+ - 함수: _check_commented_codes
+   - line 831 에 있는 current_comment += comment[1:].strip ...
+
+파일: test_cases\tc03.py
+ - 함수: (최상위 레벨)
+   - line 270 에 있는 result += word + ", " result = resul ...
+   - line 14 에 있는 result += str(item) + ','  for item  ...
+   - line 25 에 있는 result += str(3) + ','  primes = arr ...
+
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 62 에 있는 a = 'dddd' + key_name b = "dddddd" + ...
+   - line 63 에 있는 b = "dddddd" + key_name c = key_name ...
+   - line 64 에 있는 c = key_name + '21345' d = key_name  ...
+   - line 65 에 있는 d = key_name + "13456" e = "a" + "bb ...
+   - line 66 에 있는 e = "a" + "bb" + "ccc" + str(1234) f ...
+
+
+==== RULE : 04_collections_itertools_glob ====
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 77 에 있는 for word in words: if word in word_c ...
+   - line 84 에 있는 for word in words: word_counts[word] ...
+   - line 92 에 있는 for row in matrix: for item in row:  ...
+   - line 101 에 있는 combined = my_list + list(my_tuple)  ...
+   - line 109 에 있는 all_values = list(dict_a.values()) + ...
+   - line 110 에 있는 all_values_ = list(dict_a.values())  ...
+   - line 119 에 있는 for filename in os.listdir(target_di ...
+
+
+==== RULE : 04_func_args_bindable ====
+no text embedding model
+==== RULE : 04_attribute_getattr ====
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 148 에 있는 if hasattr(user, setting_key): value ...
+
+
+==== RULE : 04_regex_r ====
+파일: tc04.py
+ - 함수: (최상위 레벨)
+   - line 171 에 있는 (ruff) First argument to `re.compile()` is not raw string
+   - line 176 에 있는 (ruff) First argument to `re.match()` is not raw string
+   - line 181 에 있는 (ruff) First argument to `re.search()` is not raw string
+   - line 186 에 있는 (ruff) First argument to `re.fullmatch()` is not raw string
+   - line 191 에 있는 (ruff) First argument to `re.findall()` is not raw string
+   - line 196 에 있는 (ruff) First argument to `re.finditer()` is not raw string
+   - line 201 에 있는 (ruff) First argument to `re.split()` is not raw string
+   - line 206 에 있는 (ruff) First argument to `re.sub()` is not raw string
+
+
+==== RULE : 04_func_lambda ====
+파일: tc04.py
+ - 함수: (최상위 레벨)
+   - line 212 에 있는 (ruff) Do not assign a `lambda` expression, use a `def`
+   - line 213 에 있는 (ruff) Do not assign a `lambda` expression, use a `def`
+   - line 214 에 있는 (ruff) Do not assign a `lambda` expression, use a `def`
+
+
+==== RULE : 04_prefix_suffix ====
+파일: test_cases\tc04.py
+ - 함수: (최상위 레벨)
+   - line 232 에 있는 if test_str[:2] == 'ab': print(1) if ...
+   - line 234 에 있는 if test_str[:4] == 'abcd': print(2)  ...
+   - line 236 에 있는 if test_str[-2:] == 'gh': print(3) i ...
+   - line 238 에 있는 if test_str[-3:] == 'fgh': print(4)  ...
+   - line 240 에 있는 if test_str[len(test_str)-1:] == 'h' ...
+   - line 242 에 있는 if test_str[len(test_str) - 2:] == ' ...
+
+
+==== RULE : 05_exception_ignored ====
+파일: tc05.py
+ - 함수: (최상위 레벨)
+   - line 7 에 있는 (ruff) `try`-`except`-`pass` detected, consider logging the exception
+   - line 13 에 있는 (ruff) `try`-`except`-`pass` detected, consider logging the exception
+   - line 19 에 있는 (ruff) `try`-`except`-`pass` detected, consider logging the exception
+
+
+==== RULE : 05_exception_type ====
+파일: tc05.py
+ - 함수: (최상위 레벨)
+   - line 7 에 있는 (ruff) Do not use bare `except`
+   - line 13 에 있는 (ruff) Do not catch blind exception: `Exception`
+   - line 19 에 있는 (ruff) Do not catch blind exception: `BaseException`
+   - line 26 에 있는 (ruff) Do not use bare `except`
+
+ - 함수: fetch_from_database
+   - line 117 에 있는 (ruff) Do not catch blind exception: `Exception`
+
+
+==== RULE : 05_func_arg_error_prevent ====
+파일: tc05.py
+ - 함수: create_user
+   - line 49 에 있는 (ruff) Do not use mutable data structures for argument defaults
+
+ - 함수: add_to_list
+   - line 55 에 있는 (ruff) Do not use mutable data structures for argument defaults
+
+ - 함수: configure_settings
+   - line 61 에 있는 (ruff) Do not use mutable data structures for argument defaults
+
+ - 함수: create_user_1
+   - line 69 에 있는 (ruff) Do not use mutable data structures for argument defaults
+
+ - 함수: add_to_list_1
+   - line 77 에 있는 (ruff) Do not use mutable data structures for argument defaults
+
+ - 함수: configure_settings_1
+   - line 85 에 있는 (ruff) Do not use mutable data structures for argument defaults
+
+
+==== RULE : 05_assertion_try_except ====
+파일: test_cases\tc05.py
+ - 함수: get_user_age
+   - line 99 에 있는 except AssertionError as e: print(f" ...
+
+ - 함수: process_payment
+   - line 110 에 있는 except AssertionError: return balanc ...
+
+ - 함수: get_active_user_profile
+   - line 128 에 있는 except AssertionError:  return {"nam ...
+
+
+==== RULE : 05_python_keywords_args ====
+파일: tc05.py
+ - 함수: calculate_items
+   - line 135 에 있는 (ruff) Function argument `id` is shadowing a Python builtin
+   - line 135 에 있는 (ruff) Function argument `list` is shadowing a Python builtin
+   - line 135 에 있는 (ruff) Function argument `print` is shadowing a Python builtin
+   - line 137 에 있는 (ruff) Variable `str` is shadowing a Python builtin
+   - line 138 에 있는 (ruff) Variable `int` is shadowing a Python builtin
+   - line 139 에 있는 (ruff) Variable `sum` is shadowing a Python builtin
+   - line 146 에 있는 (ruff) Variable `sum` is shadowing a Python builtin
+
+ - 함수: (최상위 레벨)
+   - line 159 에 있는 (ruff) Variable `dict` is shadowing a Python builtin
+   - line 160 에 있는 (ruff) Variable `abs` is shadowing a Python builtin
+
+파일: tc06.py
+ - 함수: send_notification
+   - line 66 에 있는 (ruff) Function argument `type` is shadowing a Python builtin
+
+
+==== RULE : 06_refactor_into_class_case_1_same_args ====
+파일: test_cases\tc06.py
+ - 함수: (최상위 레벨)
+   - line 5 에 있는 중복된 함수 인수 너무 많음 (calculate_total_price 등)
+
+
+==== RULE : 06_refactor_into_class_case_2_state_vars_if_else ====
+no text embedding model
+==== RULE : 06_prefix_for_only_in_class_methods ====
+파일: tc06.py
+ - 함수: (최상위 레벨)
+   - line 122 에 있는 (ruff) Private member accessed: `_os`
+   - line 123 에 있는 (ruff) Private member accessed: `_display_system`
+   - line 138 에 있는 (ruff) Private member accessed: `_Smartphone__pin_code`
+   - line 139 에 있는 (ruff) Private member accessed: `_Smartphone__boot_kernel`
+
+
+==== RULE : 06_similar_function_names ====
+no text embedding model
