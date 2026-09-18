@@ -11,7 +11,7 @@ import tokenize
 import keyword
 import builtins
 
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 from difflib import SequenceMatcher
 from operator import itemgetter
 
@@ -49,7 +49,7 @@ def simplify_code(original_code: str) -> str:
     return result
 
 
-def convert_to_human_friendly_review(final_result_dict: dict[dict[list]]) -> str:
+def convert_to_human_friendly_review(final_result_dict: defaultdict[Any, dict]) -> str:
     """Convert json-like format review result into human-friendly review style."""
 
     final_review = ''
@@ -90,7 +90,7 @@ def extract_comment(line):
 
 
 def check_regex_matched_lines(py_code: str, regex: str, except_comment: bool = True,
-                              except_docstring: bool = True) -> list[dict[str]]:
+                              except_docstring: bool = True) -> list[dict[str, str | int]]:
 
     lines = py_code.split('\n')
     lines = [{'line_no': i + 1, 'line': line} for i, line in enumerate(lines)]
@@ -200,7 +200,8 @@ class DefaultCodeChecker:
                 self.class_name_by_line_for_codebase[py_file_path_] = class_name_by_line
 
     def _get_definitions_and_usages(self, py_file_path: str, parsed_py_code: list[dict],
-                                    imported_dict: dict[list] | None = None) -> tuple[dict[list], dict[list]]:
+                                    imported_dict: dict[str] | None = None)\
+            -> tuple[defaultdict[Any, list], defaultdict[Any, list]]:
 
         defined_info = defaultdict(list)
         used_info = defaultdict(list)
@@ -249,7 +250,7 @@ class DefaultCodeChecker:
 
         return defined_info, used_info
 
-    def _get_constants(self, py_file_path: str, parsed_py_code: list[dict]) -> dict[list]:
+    def _get_constants(self, py_file_path: str, parsed_py_code: list[dict]) -> defaultdict[Any, list]:
         constant_info = defaultdict(list)
 
         for item in parsed_py_code:
@@ -264,7 +265,7 @@ class DefaultCodeChecker:
 
         return constant_info
 
-    def _get_function_bodies(self) -> dict[list]:
+    def _get_function_bodies(self) -> dict:
         function_bodies_info = defaultdict(list)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -572,7 +573,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: dict[dict[list]],
+    def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: defaultdict[Any, dict],
                                      only_same: bool = False,
                                      include_same: bool = False) -> list[dict]:
         text_embedding_logs = []
