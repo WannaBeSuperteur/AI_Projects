@@ -845,46 +845,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
-    def _check_commented_codes(self) -> str:  # TODO: replace into ast-based or ruff-based check
-        if self.text_embedding_models.get('default') is None:
-            return "no text embedding model"
-
-        text_embedding_model = self.text_embedding_models.get('default')
-
-        final_result_dict = defaultdict(dict)
-
-        for py_file_path, py_code in self.py_codes.items():
-            final_result_dict[py_file_path] = defaultdict(list)
-            py_code_lines = py_code.split('\n')
-            comments = []
-            current_comment = ''
-
-            for line_idx, line in enumerate(py_code_lines):
-                comment = extract_comment(line)
-
-                if comment == line and comment:
-                    current_comment += comment[1:].strip() + ' '
-                else:
-                    if current_comment:
-                        comments.append({'line': line_idx, 'comment': current_comment})
-                    current_comment = ''
-                    if comment:
-                        comments.append({'line': line_idx + 1, 'comment': comment[1:]})
-
-                if line_idx == len(py_code_lines) - 1 and current_comment:
-                    comments.append({'line': line_idx, 'comment': current_comment})
-
-            for comment in comments:
-                if text_embedding_model.get_prob(comment) >= 0.5:
-                    line_no = comment['line']
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-
-                    final_result_dict[py_file_path][func_name].append({'name': comment['comment'],
-                                                                       'type': 'comment',
-                                                                       'line': line_no})
-
-        self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+    def _check_commented_codes(self) -> str:
+        self.run_ruff_check(['ERA'])
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_empty_file(self) -> str:
         final_result_dict = defaultdict(dict)
