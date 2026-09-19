@@ -970,8 +970,6 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                     print('extracted_numbers :', extracted_numbers)
                 numeric_values.extend(extracted_numbers)
 
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-
             numeric_values = [item for item in numeric_values if item['number'] not in ALLOWED_NUM_CONSTS]
             number_counts = Counter(item['number'] for item in numeric_values)
             multiple_used_numbers = [num for num, count in number_counts.items() if count >= 2]
@@ -985,9 +983,9 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                         line1_line_no, line2_line_no = info1['line_no'], info2['line_no']
 
                         line1_embedding = (line_embeddings[line1_line_no]
-                                           or text_embedding_model_maybe_const.get_embedding(line1))
+                                           or text_embedding_model_twice.get_embedding(line1))
                         line2_embedding = (line_embeddings[line2_line_no]
-                                           or text_embedding_model_maybe_const.get_embedding(line2))
+                                           or text_embedding_model_twice.get_embedding(line2))
 
                         if line_embeddings[line1_line_no] is None:
                             line_embeddings[line1_line_no] = line1_embedding
@@ -1001,14 +999,17 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
             for line_info in lines_to_compare:
                 line1, line2 = line_info['line1'], line_info['line2']
+                line1_line_no, line2_line_no = line_info['line1_line_no'], line_info['line2_line_no']
+
                 line1_embedding = line_embeddings[line1_line_no]
                 line2_embedding = line_embeddings[line2_line_no]
+                cos_sim = cosine_similarity(line1_embedding, line2_embedding)
 
-                final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line.strip()),
-                                                                   'type': 'too much indent',
-                                                                   'line': line_no})
-
-            print(1 / 0)
+                if cos_sim >= 0.5:
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
+                    final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line1.strip()),
+                                                                       'type': 'numeric values should be const',
+                                                                       'line': line1_line_no})
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
