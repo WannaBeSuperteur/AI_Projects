@@ -949,8 +949,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
     def _check_numeric_values(self) -> str:
         final_result_dict = defaultdict(dict)
 
-#        if self.text_embedding_models.get('default') is None:
-#            return "no text embedding model"
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
 
         text_embedding_model_maybe_const = self.text_embedding_models.get('default')
         text_embedding_model_twice = self.text_embedding_models.get('default')
@@ -960,27 +960,32 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
             lines = py_code.split('\n')
             numeric_values = []
             line_embeddings = {}
+            lines_with_numbers = []
 
             for line_idx, line in enumerate(lines):
                 line_no = line_idx + 1
                 extracted_numbers = [{'line_no': line_no,
                                       'line_content': line,
                                       'number': num} for num in extract_numbers(line)]
+                extracted_numbers = [info for info in extracted_numbers if info['number'] not in ALLOWED_NUM_CONSTS]
                 numeric_values.extend(extracted_numbers)
 
-            numeric_values = [item for item in numeric_values if item['number'] not in ALLOWED_NUM_CONSTS]
+                if extracted_numbers:
+                    lines_with_numbers.append({'line_no': line_no,
+                                               'line_content': line})
+
             number_counts = Counter(item['number'] for item in numeric_values)
             multiple_used_numbers = [num for num, count in number_counts.items() if count >= 2]
-            numeric_values = [item for item in numeric_values if item['number'] in multiple_used_numbers]
+            multiple_used_numeric_values = [item for item in numeric_values if item['number'] in multiple_used_numbers]
 
-            lines_to_compare = []
-            lines_compared = set()
+            lines_to_compare_for_multiple_used_numeric_values = []
+            lines_compared_for_multiple_used_numeric_values = set()
 
-            for info1 in numeric_values:
-                if info1['line_no'] in lines_compared:
+            for info1 in multiple_used_numeric_values:
+                if info1['line_no'] in lines_compared_for_multiple_used_numeric_values:
                     continue
 
-                for info2 in numeric_values:
+                for info2 in multiple_used_numeric_values:
                     if info1['number'] == info2['number']:
                         line1, line2 = info1['line_content'], info2['line_content']
                         line1_line_no, line2_line_no = info1['line_no'], info2['line_no']
@@ -998,15 +1003,16 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                         if line_embeddings.get(line2_line_no) is None:
                             line_embeddings[line2_line_no] = line2_embedding
 
-                        lines_to_compare.append({'line1_line_no': line1_line_no,
-                                                 'line2_line_no': line2_line_no,
-                                                 'line1': line1,
-                                                 'line2': line2})
+                        lines_to_compare_for_multiple_used_numeric_values.append({'line1_line_no': line1_line_no,
+                                                                                  'line2_line_no': line2_line_no,
+                                                                                  'line1': line1,
+                                                                                  'line2': line2})
 
-                        lines_compared.add(line1_line_no)
+                        lines_compared_for_multiple_used_numeric_values.add(line1_line_no)
                         break
 
-            for line_info in lines_to_compare:
+            # 2회 이상 등장한 숫자 값 유사도 검사
+            for line_info in lines_to_compare_for_multiple_used_numeric_values:
                 line1, line2 = line_info['line1'], line_info['line2']
                 line1_line_no, line2_line_no = line_info['line1_line_no'], line_info['line2_line_no']
 
@@ -1020,6 +1026,18 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                         {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
                          'type': 'numeric values should be const',
                          'line': line1_line_no})
+
+            # 모든 숫자 값에 대해 const 고정 권장 확률 검사
+            for line_info in lines_with_numbers:
+                line_no, line_content = line_info['line_no'], line_info['line_content']
+                maybe_const_prob = text_embedding_model_maybe_const.get_prob(line_content)
+
+                if maybe_const_prob >= 0.5:
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'상단 const var 고정 권장: {ellipse_str(line_content.strip())}',
+                         'type': 'numeric values should be const',
+                         'line': line_no})
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
