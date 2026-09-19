@@ -23,6 +23,7 @@ from itertools import chain, product, groupby, tee
 from ast_utils import parse_py_code, get_function_name_at_line
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
+ALLOWED_NUM_CONSTS = ['-1.0', '-1', '0.0', '0', '1.0', '1']
 
 QUOTES = "'" + '"'
 TWO_DOUBLE_QUOTES = '""'
@@ -231,9 +232,12 @@ class DefaultCodeChecker:
                 name = item['info']['name']
 
                 if item['info']['ctx'] == 'Store':
+                    assigned_value = item['info']['assigned_value']
+
                     defined_info[info_key].append({'name': name,
                                                    'type': 'name',
-                                                   'line': line_no})
+                                                   'line': line_no,
+                                                   'assigned_value': assigned_value})
                 elif item['info']['ctx'] == 'Load':
                     used_info[info_key_for_func_def].append(item['info']['name'])
 
@@ -913,9 +917,19 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                     freq = (defined_names_dict[item['name']]['freq'] + 1
                             if item['name'] in dict(defined_names_dict)
                             else 1)
-                    defined_names_dict[item['name']] = {'freq': freq, 'line': item['line']}
+                    defined_names_dict[item['name']] = {'freq': freq,
+                                                        'line': item['line'],
+                                                        'assigned_value': item['assigned_value']}
 
-                defined_names_dict_not_duplicated = {name: info for name, info in defined_names_dict.items()
+                num_or_str_pattern = rf"(\d+|\d+.\d+|-\d+|-\d+.\d+)"
+                defined_names_dict_matched = {name: info for name, info in defined_names_dict.items()
+                                              if info['assigned_value'] not in ALLOWED_NUM_CONSTS}
+
+                defined_names_dict_matched = {name: info for name, info in defined_names_dict_matched.items()
+                                              if info['assigned_value'] and re.match(num_or_str_pattern,
+                                                                                     info['assigned_value'])}
+
+                defined_names_dict_not_duplicated = {name: info for name, info in defined_names_dict_matched.items()
                                                      if name != '_' and not name.isupper() and info['freq'] == 1}
 
                 for name, info in defined_names_dict_not_duplicated.items():
