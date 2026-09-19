@@ -949,8 +949,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
     def _check_numeric_values(self) -> str:
         final_result_dict = defaultdict(dict)
 
-        if self.text_embedding_models.get('default') is None:
-            return "no text embedding model"
+#        if self.text_embedding_models.get('default') is None:
+#            return "no text embedding model"
 
         text_embedding_model_maybe_const = self.text_embedding_models.get('default')
         text_embedding_model_twice = self.text_embedding_models.get('default')
@@ -966,8 +966,6 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                 extracted_numbers = [{'line_no': line_no,
                                       'line_content': line,
                                       'number': num} for num in extract_numbers(line)]
-                if extracted_numbers:
-                    print('extracted_numbers :', extracted_numbers)
                 numeric_values.extend(extracted_numbers)
 
             numeric_values = [item for item in numeric_values if item['number'] not in ALLOWED_NUM_CONSTS]
@@ -976,26 +974,37 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
             numeric_values = [item for item in numeric_values if item['number'] in multiple_used_numbers]
 
             lines_to_compare = []
+            lines_compared = set()
+
             for info1 in numeric_values:
+                if info1['line_no'] in lines_compared:
+                    continue
+
                 for info2 in numeric_values:
                     if info1['number'] == info2['number']:
                         line1, line2 = info1['line_content'], info2['line_content']
                         line1_line_no, line2_line_no = info1['line_no'], info2['line_no']
 
-                        line1_embedding = (line_embeddings[line1_line_no]
-                                           or text_embedding_model_twice.get_embedding(line1))
-                        line2_embedding = (line_embeddings[line2_line_no]
-                                           or text_embedding_model_twice.get_embedding(line2))
+                        line1_embedding = line_embeddings.get(line1_line_no)
+                        if line1_embedding is None:
+                            line1_embedding = text_embedding_model_twice.get_embedding(line1)
 
-                        if line_embeddings[line1_line_no] is None:
+                        line2_embedding = line_embeddings.get(line2_line_no)
+                        if line2_embedding is None:
+                            line2_embedding = text_embedding_model_twice.get_embedding(line2)
+
+                        if line_embeddings.get(line1_line_no) is None:
                             line_embeddings[line1_line_no] = line1_embedding
-                        if line_embeddings[line2_line_no] is None:
+                        if line_embeddings.get(line2_line_no) is None:
                             line_embeddings[line2_line_no] = line2_embedding
 
-                        lines_to_compare.append({'line1_no': line1_line_no,
-                                                 'line2_no': line2_line_no,
+                        lines_to_compare.append({'line1_line_no': line1_line_no,
+                                                 'line2_line_no': line2_line_no,
                                                  'line1': line1,
                                                  'line2': line2})
+
+                        lines_compared.add(line1_line_no)
+                        break
 
             for line_info in lines_to_compare:
                 line1, line2 = line_info['line1'], line_info['line2']
@@ -1007,9 +1016,10 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if cos_sim >= 0.5:
                     func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
-                    final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line1.strip()),
-                                                                       'type': 'numeric values should be const',
-                                                                       'line': line1_line_no})
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
+                         'type': 'numeric values should be const',
+                         'line': line1_line_no})
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
