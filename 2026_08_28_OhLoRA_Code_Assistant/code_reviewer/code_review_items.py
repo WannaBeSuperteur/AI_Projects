@@ -18,7 +18,7 @@ from operator import itemgetter
 from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 from itertools import chain, product, groupby, tee
 from ast_utils import parse_py_code, get_function_name_at_line
 
@@ -121,6 +121,12 @@ def is_valid_code(line: str) -> bool:
 def check_a_in_b(a: str, b: str) -> bool:
     tokens = re.sub(r'[^a-zA-Z0-9_]', ' ', b).split()
     return a in tokens
+
+
+def extract_numbers(line):
+    bound_check = r'![\'\"_a-zA-Z]'
+    pattern = rf'(?<{bound_check})-?\d+\.\d+(?{bound_check})|(?<{bound_check})-?\d+(?{bound_check})'
+    return re.findall(pattern, line)
 
 
 class DefaultCodeChecker:
@@ -940,6 +946,73 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
+    def _check_numeric_values(self) -> str:
+        final_result_dict = defaultdict(dict)
+
+        if self.text_embedding_models.get('default') is None:
+            return "no text embedding model"
+
+        text_embedding_model_maybe_const = self.text_embedding_models.get('default')
+        text_embedding_model_twice = self.text_embedding_models.get('default')
+
+        for py_file_path, py_code in self.py_codes.items():
+            final_result_dict[py_file_path] = defaultdict(list)
+            lines = py_code.split('\n')
+            numeric_values = []
+            line_embeddings = {}
+
+            for line_idx, line in enumerate(lines):
+                line_no = line_idx + 1
+                extracted_numbers = [{'line_no': line_no,
+                                      'line_content': line,
+                                      'number': num} for num in extract_numbers(line)]
+                if extracted_numbers:
+                    print('extracted_numbers :', extracted_numbers)
+                numeric_values.extend(extracted_numbers)
+
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+            numeric_values = [item for item in numeric_values if item['number'] not in ALLOWED_NUM_CONSTS]
+            number_counts = Counter(item['number'] for item in numeric_values)
+            multiple_used_numbers = [num for num, count in number_counts.items() if count >= 2]
+            numeric_values = [item for item in numeric_values if item['number'] in multiple_used_numbers]
+
+            lines_to_compare = []
+            for info1 in numeric_values:
+                for info2 in numeric_values:
+                    if info1['number'] == info2['number']:
+                        line1, line2 = info1['line_content'], info2['line_content']
+                        line1_line_no, line2_line_no = info1['line_no'], info2['line_no']
+
+                        line1_embedding = (line_embeddings[line1_line_no]
+                                           or text_embedding_model_maybe_const.get_embedding(line1))
+                        line2_embedding = (line_embeddings[line2_line_no]
+                                           or text_embedding_model_maybe_const.get_embedding(line2))
+
+                        if line_embeddings[line1_line_no] is None:
+                            line_embeddings[line1_line_no] = line1_embedding
+                        if line_embeddings[line2_line_no] is None:
+                            line_embeddings[line2_line_no] = line2_embedding
+
+                        lines_to_compare.append({'line1_no': line1_line_no,
+                                                 'line2_no': line2_line_no,
+                                                 'line1': line1,
+                                                 'line2': line2})
+
+            for line_info in lines_to_compare:
+                line1, line2 = line_info['line1'], line_info['line2']
+                line1_embedding = line_embeddings[line1_line_no]
+                line2_embedding = line_embeddings[line2_line_no]
+
+                final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line.strip()),
+                                                                   'type': 'too much indent',
+                                                                   'line': line_no})
+
+            print(1 / 0)
+
+        self.final_result_dict = final_result_dict
+        return convert_to_human_friendly_review(final_result_dict)
+
     def _check_line_length(self) -> str:
         self.run_ruff_check(['E501'], extra_args=["--line-length", str(self.max_line_length)])
         return convert_to_human_friendly_review(self.final_result_dict)
@@ -1036,6 +1109,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
     def run_code_review(self) -> dict[str, str]:
         checks = [
             'const',
+            'numeric_values',
             'line_length',
             'files',
             'functions_length_and_docstring',
