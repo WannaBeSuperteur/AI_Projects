@@ -898,26 +898,30 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_name_by_line()
 
-    def _check_const(self) -> str:  # TODO: 소문자 변수명에 한해, 재 할당 여부 기반 판단 (ast or ruff check) 으로 대체
-        if self.text_embedding_models.get('default') is None:
-            return "no text embedding model"
-
-        text_embedding_model = self.text_embedding_models.get('default')
-
+    def _check_const(self) -> str:
         final_result_dict = defaultdict(dict)
 
-        for py_file_path, py_code in self.py_codes.items():
+        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
+            defined_info, _ = self._get_definitions_and_usages(py_file_path, parsed_py_code)
 
-            matched_lines = check_regex_matched_lines(py_code, r'(".*?"|\'.*?\'|\b\d+(?:\.\d+)?\b)')
-            for line in matched_lines:
-                if text_embedding_model.get_prob(line) >= 0.5:
-                    line_no = line['line_no']
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+            for func_name, defined_items in defined_info.items():
+                defined_names = [item for item in defined_items if item['type'] == 'name']
+                defined_names_dict = defaultdict(dict)
 
-                    final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line['line'].strip()),
-                                                                       'type': 'const value',
-                                                                       'line': line_no})
+                for item in defined_names:
+                    freq = (defined_names_dict[item['name']]['freq'] + 1
+                            if item['name'] in dict(defined_names_dict)
+                            else 1)
+                    defined_names_dict[item['name']] = {'freq': freq, 'line': item['line']}
+
+                defined_names_dict_not_duplicated = {name: info for name, info in defined_names_dict.items()
+                                                     if name != '_' and not name.isupper() and info['freq'] == 1}
+
+                for name, info in defined_names_dict_not_duplicated.items():
+                    final_result_dict[py_file_path][func_name].append({'name': f'재정의 없는 변수: {name}',
+                                                                       'type': 'not redefined variable',
+                                                                       'line': info['line']})
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
