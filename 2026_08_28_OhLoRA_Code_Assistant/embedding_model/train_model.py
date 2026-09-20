@@ -517,7 +517,7 @@ if __name__ == '__main__':
         '06_refactor_into_class_case_2_state_vars_if_else': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
         '06_similar_function_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
         '02_numeric_values_maybe_const': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '02_numeric_values_twice': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+        '02_numeric_values_twice': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
     }
 
     parser = argparse.ArgumentParser()
