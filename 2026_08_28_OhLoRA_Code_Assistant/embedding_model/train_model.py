@@ -186,9 +186,9 @@ class EmbeddingProbTrainer:
                 prob_labels = prob_labels.detach().cpu()
 
                 val_mse_batch = sklearn.metrics.mean_squared_error(preds, prob_labels)
-                val_mse_sum += val_mse_batch
+                val_mse_sum += val_mse_batch * prob_labels.shape[0]
                 val_mae_batch = sklearn.metrics.mean_absolute_error(preds, prob_labels)
-                val_mae_sum += val_mae_batch
+                val_mae_sum += val_mae_batch * prob_labels.shape[0]
 
                 if is_test:
                     test_result['pred'].extend(round(float(x[0]), 6) for x in preds)
