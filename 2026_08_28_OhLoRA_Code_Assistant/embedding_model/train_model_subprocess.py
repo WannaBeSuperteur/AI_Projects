@@ -17,13 +17,18 @@ MAX_TRIAL_COUNT = 5
 
 
 TASK_NAMES = [
+    "01_unnecessary_prints",
     "01_similar_variables",
     "01_names",
     "01_return_matched_with_func_name",
+    "01_func_docstring_single_responsibility",
+    "01_func_docstring_docstring_and_name",
     "04_func_args_bindable",
     "04_func_args_dynamic",
     "06_refactor_into_class_case_2_state_vars_if_else",
-    "06_similar_function_names"
+    "06_similar_function_names",
+    "02_numeric_values_maybe_const",
+    "02_numeric_values_twice"
 ]
 
 

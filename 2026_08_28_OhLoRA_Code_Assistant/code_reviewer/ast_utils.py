@@ -46,6 +46,11 @@ def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
     tree = ast.parse(source_code)
     parse_results = []
 
+    parent_map = {}
+    for parent in ast.walk(tree):
+        for child in ast.iter_child_nodes(parent):
+            parent_map[child] = parent
+
     for node in ast.walk(tree):
         line_no = getattr(node, 'lineno', None)
         col_offset = getattr(node, 'col_offset', None)
@@ -88,7 +93,14 @@ def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
 
         elif isinstance(node, ast.Name):
             ctx_type = type(node.ctx).__name__
-            parse_result['info'] = {'name': node.id, 'ctx': ctx_type}
+
+            parent = parent_map.get(node)
+            if ctx_type == 'Store' and isinstance(parent, ast.Assign):
+                assigned_value = ast.unparse(parent.value)
+            else:
+                assigned_value = None
+
+            parse_result['info'] = {'name': node.id, 'ctx': ctx_type, 'assigned_value': assigned_value}
 
         elif isinstance(node, ast.Constant):
             parse_result['info'] = {'value': node.value, 'type': type(node.value)}

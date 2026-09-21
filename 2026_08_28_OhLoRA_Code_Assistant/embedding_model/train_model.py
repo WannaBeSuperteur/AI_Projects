@@ -186,9 +186,9 @@ class EmbeddingProbTrainer:
                 prob_labels = prob_labels.detach().cpu()
 
                 val_mse_batch = sklearn.metrics.mean_squared_error(preds, prob_labels)
-                val_mse_sum += val_mse_batch
+                val_mse_sum += val_mse_batch * prob_labels.shape[0]
                 val_mae_batch = sklearn.metrics.mean_absolute_error(preds, prob_labels)
-                val_mae_sum += val_mae_batch
+                val_mae_sum += val_mae_batch * prob_labels.shape[0]
 
                 if is_test:
                     test_result['pred'].extend(round(float(x[0]), 6) for x in preds)
@@ -515,7 +515,9 @@ if __name__ == '__main__':
         '04_func_args_bindable': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
         '04_func_args_dynamic': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
         '06_refactor_into_class_case_2_state_vars_if_else': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '06_similar_function_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'}
+        '06_similar_function_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+        '02_numeric_values_maybe_const': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+        '02_numeric_values_twice': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
     }
 
     parser = argparse.ArgumentParser()

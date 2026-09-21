@@ -14,7 +14,7 @@
 
 * 최종 선정 벤치마크
   * `CodeSearchNetCCRetrieval` (1개 규칙)
-  * `CodeTransOceanContest` (7개 규칙)
+  * `CodeTransOceanContest` (9개 규칙)
   * `COIRCodeSearchNetRetrieval` (2개 규칙)
 * 최종 선정 모델
   * `gte-modernbert-base`
@@ -40,7 +40,8 @@
 
 * 최종 선정 벤치마크 (Task)
   * 위 표 기준으로, **500M 이하 모델 수** 가 많은 `CoIR`, `Code` 중심으로 선정
-  * 비교적 무거운 `Giga-Embeddings-instruct-480M-0826` 모델 대신 경량 모델로 재 선정 (선정 결과: `LateOn-Code-pretrain`) [(참고)](#3-1-codetransoceancontest-벤치마크에-대해-경량-모델-재-선정)
+  * 🔄 : 비교적 무거운 `Giga-Embeddings-instruct-480M-0826` 모델 대신 **경량 모델로 재 선정** (선정 결과: `LateOn-Code-pretrain`) [(참고)](#3-1-codetransoceancontest-벤치마크에-대해-경량-모델-재-선정)
+  * ➕ : **추가 요구사항** 에 의해 추가된 Oh-LoRA v7 규칙
 
 | Oh-LoRA v7 규칙                             | 최종 선정 벤치마크                   | 선정 이유                                                                                                                                       |
 |-------------------------------------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
@@ -54,6 +55,8 @@
 | 🔄 함수의 인자가 유동적인 경우 처리 필요                  | `CodeTransOceanContest`      | 상동                                                                                                                                          |
 | 🔄 상태 값으로 판단되는 값을 조건으로 하는지 여부             | `CodeTransOceanContest`      | 상동                                                                                                                                          |
 | 🔄 한 모듈 (*.py 파일) 내에서, 유사한 이름의 함수끼리 거리 검사 | `CodeTransOceanContest`      | 상동                                                                                                                                          |
+| ➕ 숫자 값을 constant 처럼 사용 시, 해당 값 상수화 적절성 판단 | `CodeTransOceanContest`      | 상동                                                                                                                                          |
+| ➕ 동일한 숫자 값 2회 이상 사용 시, 상수로 통합 적절성 판단      | `CodeTransOceanContest`      | 상동                                                                                                                                          |
 
 ## 3. 최종 모델 선정
 
@@ -70,7 +73,7 @@
 | `CodeSearchNetCCRetrieval`          | [gte-modernbert-base](https://huggingface.co/Alibaba-NLP/gte-modernbert-base)                           | - 불필요한 print, logging 등이 없어야 함                                             |
 | `COIRCodeSearchNetRetrieval`        | [F2LLM-v2-330M](https://huggingface.co/codefuse-ai/F2LLM-v2-330M)                                       | - 함수의 단일 책임 원칙 준수 여부 (docstring 으로 판단)<br>- 함수 docstring과 함수명이 서로 일치하는지 판단 |
 | `CodeTransOceanContest`             | [Giga-Embeddings-instruct-480M-0826](https://huggingface.co/ai-sage/Giga-Embeddings-instruct-480M-0826) | 없음 (모두 경량 모델로 교체)                                                          |
-| `CodeTransOceanContest` (경량 모델 재선정) | [LateOn-Code-pretrain](https://huggingface.co/lightonai/LateOn-Code-pretrain)                           | 그 외 7개                                                                     |
+| `CodeTransOceanContest` (경량 모델 재선정) | [LateOn-Code-pretrain](https://huggingface.co/lightonai/LateOn-Code-pretrain)                           | 그 외 9개 (추가 요구사항 2개 포함)                                                     |
 
 ### 3-1. `CodeTransOceanContest` 벤치마크에 대해 경량 모델 재 선정
 
@@ -78,16 +81,8 @@
   * 기존 모델 `Giga-Embeddings-instruct-480M-0826` 는 **inference time 이 매우 긺**
 
 * 발견 및 해결 방법
-  * MAE, MSE가 낮은 4개 규칙 (아래 표 참고) 에 대해 경량 모델 `LateOn-Code-pretrain` 로 대체 실험 결과, MAE, MSE가 큰 차이 없음
+  * MAE, MSE가 비교적 낮다고 판단되는 4개 규칙에 대해 경량 모델 `LateOn-Code-pretrain` 로 대체 실험 결과, MAE, MSE가 큰 차이 없음
   * 따라서, 경량 모델 `LateOn-Code-pretrain` 를 **해당 벤치마크를 적용한 7개 규칙 모두에 적용**
 
 * 세부 사항
   * inference time : **250개** 테스트 데이터, **batch size = 4** 로 묶어서 테스트 기준
-
-| Oh-LoRA v7 규칙                    | MAE<br>(모델 교체 전 / 교체 후)  | MSE<br>(모델 교체 전 / 교체 후)  | inference time (초)<br>(모델 교체 전 / 교체 후) |
-|----------------------------------|--------------------------|--------------------------|----------------------------------------|
-| 변수명, 함수명은 의미가 있어야 함 (+ 알기 쉽게 할것) | 0.0124 / 0.0117 (🔻)     | 0.0013 / 0.0014 (🔺)     | 26.222 / 8.843 (🔻)                    |
-| 함수의 인자가 하나로 묶을 수 있는 경우 처리 필요     | 0.0258 / 0.0248 (🔻)     | 0.0051 / 0.0059 (🔺)     | 109.088 / 8.843 (🔻)                   |
-| 함수의 인자가 유동적인 경우 처리 필요            | 0.0170 / 0.0173 (🔺)     | 0.0032 / 0.0034 (🔺)     | 109.784 / 8.906 (🔻)                   |
-| 상태 값으로 판단되는 값을 조건으로 하는지 여부       | 0.0074 / 0.0095 (🔺)     | 0.0011 / 0.0015 (🔺)     | 109.184 / 8.796 (🔻)                   |
-| **전체 평균**                        | **0.0157 / 0.0158 (🔺)** | **0.0027 / 0.0031 (🔺)** | **26 ~ 109 s / 8.8 s (🔻)**            |
