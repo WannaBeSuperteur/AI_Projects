@@ -484,10 +484,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_unnecessary_prints(self) -> str:
-        if self.text_embedding_models.get('default') is None:
+        if self.text_embedding_models.get('01_unnecessary_prints') is None:
             return "no text embedding model"
 
-        text_embedding_model = self.text_embedding_models.get('default')
+        text_embedding_model = self.text_embedding_models.get('01_unnecessary_prints')
+        text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
         re_logger = r'^logger\.(debug|info|warning|error|critical)\(.*\)$'
@@ -514,6 +515,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line),
                                                                            'type': print_type,
                                                                            'line': line_no})
+
+        text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
@@ -615,10 +618,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return all_similar_text_pairs
 
     def _check_similar_variables(self) -> str:
-        if self.text_embedding_models.get('default') is None:
+        if self.text_embedding_models.get('01_similar_variables') is None:
             return "no text embedding model"
 
-        text_embedding_model = self.text_embedding_models.get('default')
+        text_embedding_model = self.text_embedding_models.get('01_similar_variables')
+        text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
         all_variables_dict = defaultdict(dict)
@@ -643,6 +647,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
             final_result_dict[py_file_path][func_name].append({'name': info['name'],
                                                                'type': 'name',
                                                                'line': info['line']})
+
+        text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
@@ -679,10 +685,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_names(self) -> str:
-        if self.text_embedding_models.get('default') is None:
+        if self.text_embedding_models.get('01_names') is None:
             return "no text embedding model"
 
-        text_embedding_model = self.text_embedding_models.get('default')
+        text_embedding_model = self.text_embedding_models.get('01_names')
+        text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
 
@@ -707,14 +714,17 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                                                        'type': 'var_or_func',
                                                                        'line': line_no})
 
+        text_embedding_model.unload_model()
+
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_return_matched_with_func_name(self) -> str:
-        if self.text_embedding_models.get('default') is None:
+        if self.text_embedding_models.get('01_return_matched_with_func_name') is None:
             return "no text embedding model"
 
-        text_embedding_model = self.text_embedding_models.get('default')
+        text_embedding_model = self.text_embedding_models.get('01_return_matched_with_func_name')
+        text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
         py_file_paths = self.parsed_py_codes.keys()
@@ -762,6 +772,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         final_result_dict[py_file_path][func_name].append({'name': f'{var_name} = {func_name}(...)',
                                                                            'type': 'func_return',
                                                                            'line': line_no})
+
+        text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
@@ -818,11 +830,19 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_func_docstring(self) -> str:
-        if self.text_embedding_models.get('default') is None:
-            return "no text embedding model"
+        if self.text_embedding_models.get('01_func_docstring_single_responsibility') is None:
+            return "no text embedding model (func_docstring_single_responsibility)"
 
-        text_embedding_model_single_responsibility = self.text_embedding_models.get('default')
-        text_embedding_model_docstring_and_name = self.text_embedding_models.get('default')
+        if self.text_embedding_models.get('01_func_docstring_docstring_and_name') is None:
+            return "no text embedding model (func_docstring_docstring_and_name)"
+
+        text_embedding_model_single_responsibility \
+            = self.text_embedding_models.get('func_docstring_single_responsibility')
+        text_embedding_model_docstring_and_name \
+            = self.text_embedding_models.get('func_docstring_docstring_and_name')
+
+        text_embedding_model_single_responsibility.load_model()
+        text_embedding_model_docstring_and_name.load_model()
 
         final_result_dict = defaultdict(dict)
 
@@ -851,6 +871,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} - docstring 불일치",
                                                                        'type': 'docstring',
                                                                        'line': line_no})
+
+        text_embedding_model_single_responsibility.unload_model()
+        text_embedding_model_docstring_and_name.unload_model()
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
@@ -949,11 +972,17 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
     def _check_numeric_values(self) -> str:
         final_result_dict = defaultdict(dict)
 
-        if self.text_embedding_models.get('default') is None:
-            return "no text embedding model"
+        if self.text_embedding_models.get('02_numeric_values_maybe_const') is None:
+            return "no text embedding model (numeric_values_maybe_const)"
 
-        text_embedding_model_maybe_const = self.text_embedding_models.get('default')
-        text_embedding_model_twice = self.text_embedding_models.get('default')
+        if self.text_embedding_models.get('02_numeric_values_twice') is None:
+            return "no text embedding model (numeric_values_twice)"
+
+        text_embedding_model_maybe_const = self.text_embedding_models.get('02_numeric_values_maybe_const')
+        text_embedding_model_twice = self.text_embedding_models.get('02_numeric_values_twice')
+
+        text_embedding_model_maybe_const.load_model()
+        text_embedding_model_twice.load_model()
 
         for py_file_path, py_code in self.py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
@@ -1038,6 +1067,9 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                         {'name': f'상단 const var 고정 권장: {ellipse_str(line_content.strip())}',
                          'type': 'numeric values should be const',
                          'line': line_no})
+
+        text_embedding_model_maybe_const.unload_model()
+        text_embedding_model_twice.unload_model()
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
@@ -1451,11 +1483,17 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_func_args_bindable(self) -> str:
         final_result_dict = defaultdict(dict)
 
-        if self.text_embedding_models.get('default') is None:
-            return "no text embedding model"
+        if self.text_embedding_models.get('04_func_args_bindable') is None:
+            return "no text embedding model (func_args_bindable)"
 
-        text_embedding_model_bindable = self.text_embedding_models.get('default')
-        text_embedding_model_dynamic = self.text_embedding_models.get('default')
+        if self.text_embedding_models.get('04_func_args_dynamic') is None:
+            return "no text embedding model (func_args_dynamic)"
+
+        text_embedding_model_bindable = self.text_embedding_models.get('04_func_args_bindable')
+        text_embedding_model_dynamic = self.text_embedding_models.get('04_func_args_dynamic')
+
+        text_embedding_model_bindable.load_model()
+        text_embedding_model_dynamic.load_model()
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
@@ -1480,6 +1518,9 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'dynamic_args',
                              'line': line_no})
+
+        text_embedding_model_bindable.unload_model()
+        text_embedding_model_dynamic.unload_model()
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
@@ -1620,16 +1661,19 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_refactor_into_class_case_2_state_vars_if_else(self) -> str:
-        if self.text_embedding_models.get('default') is None:
+        if self.text_embedding_models.get('06_refactor_into_class_case_2_state_vars_if_else') is None:
             return "no text embedding model"
 
-        text_embedding_model = self.text_embedding_models.get('default')
+        text_embedding_model = self.text_embedding_models.get('06_refactor_into_class_case_2_state_vars_if_else')
+        text_embedding_model.load_model()
 
         def check_is_state_value(info):
             text = f"if {info[0]['var_name']}: {info[0]['simplified_body']}"
             return text_embedding_model.get_prob(text) >= 0.5
 
         self.final_result_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
+
+        text_embedding_model.unload_model()
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_prefix_for_only_in_class_methods(self) -> str:
@@ -1637,10 +1681,11 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_similar_function_names(self) -> str:
-        if self.text_embedding_models.get('default') is None:
+        if self.text_embedding_models.get('06_similar_function_names') is None:
             return "no text embedding model"
 
-        text_embedding_model = self.text_embedding_models.get('default')
+        text_embedding_model = self.text_embedding_models.get('06_similar_function_names')
+        text_embedding_model.load_model()
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1689,6 +1734,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                     final_result_dict[py_file_path][func_name].append({'name': f'유사 함수 재정렬 필요: {func_name}',
                                                                        'type': 'reorder_needed',
                                                                        'line': line_no})
+
+        text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
