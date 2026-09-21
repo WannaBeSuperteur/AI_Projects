@@ -34,7 +34,7 @@
   * **`ruff` 를 직접 구현 도중에 발견** 하게 됨
     * 교훈: 향후 프로젝트에서는, **바퀴의 재발명 대신, 기존 구현된 오픈소스를 탐색하여 개발 시간 절약** 해야 함
   * 그럼에도 불구하고 직접 구현을 한 이유
-    * [ruff 가 실제로는 대체 가능한 부분이 생각보다 적고 (전체 43개 정적 분석 규칙 중 12개), 그 외에도 한계점이 많음](code_reviewer/ruff_limits.md)
+    * [ruff 가 실제로는 대체 가능한 부분이 생각보다 적고 (전체 45개 정적 분석 규칙 중 13개), 그 외에도 한계점이 많음](code_reviewer/ruff_limits.md)
     * [Python Study](https://github.com/WannaBeSuperteur/Python-study-2026/tree/main) 내용의 실전 구현 연습
     * regex 기본 사용법 익히기
     * 최종 구현물의 테스트 케이스로 활용 (2026.07 Python Study 이후 이를 반영하여 개발한 코드이므로)
