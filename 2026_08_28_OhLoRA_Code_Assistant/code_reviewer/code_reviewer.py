@@ -1,8 +1,8 @@
 
 import glob
+import gc
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
@@ -96,15 +96,48 @@ def mean_pooling(model_output, attention_mask):
 
 
 class TextEmbeddingModelForInference:
-    def __init__(self, model_path: str, hidden_size: int, max_len: int = 256):
-        self.predictor = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    def __init__(self, model_path: str, hidden_size: int, max_len: int = 256, device: str = 'cuda'):
+        self.model_path = model_path
+        self.predictor = None
+        self.tokenizer = None
+        self.device = device
 
         self.max_len = max_len
         self.hidden_size = hidden_size
         self.final_linear = nn.Linear(hidden_size, 1)
 
+    def load_model(self):
+        if self.predictor is not None:
+            print("model already loaded")
+            return
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, trust_remote_code=True)
+        self.predictor = AutoModel.from_pretrained(self.model_path,
+                                                   trust_remote_code=True,
+                                                   torch_dtype=torch.float32).to(self.device)
+        self.final_linear = nn.Linear(self.hidden_size, 1).to(self.device)
+
+        self.predictor.eval()
+        self.final_linear.eval()
+
+    def unload_model(self):
+        if self.predictor is None:
+            print("model not loaded")
+            return
+
+        self.predictor = None
+        self.tokenizer = None
+        self.final_linear = None
+
+        gc.collect()
+        if "cuda" in str(self.device):
+            torch.cuda.empty_cache()
+
     def _tokenize_text(self, text: str):
+        if self.tokenizer is None:
+            print("tokenizer not loaded")
+            return
+
         inputs = self.tokenizer(
             text,
             max_length=self.max_len,
