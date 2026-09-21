@@ -1,4 +1,5 @@
 
+import os
 import glob
 import gc
 from pathlib import Path
@@ -12,6 +13,15 @@ from code_review_items import default_code_review_func
 
 
 TEST_CASES_DIR = 'test_cases'
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+
+GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
+F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
+LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
+
+HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
+               F2LLM_V2_330M: 896,
+               LATEON_CODE_PRETRAIN: 768}
 
 
 class CodeReviewer:
@@ -181,8 +191,37 @@ class TextEmbeddingModelForInference:
         return emb
 
 
+def get_embedding_model(task_id: str):
+    if task_id == "01_unnecessary_prints":
+        model_name = GTE_MODERNBERT_BASE
+    elif task_id.startswith("01_func_docstring"):
+        model_name = F2LLM_V2_330M
+    else:
+        model_name = LATEON_CODE_PRETRAIN
+
+    return TextEmbeddingModelForInference(
+        model_path=os.path.join(PROJECT_DIR_PATH, "embedding_model", "models", task_id),
+        hidden_size=HIDDEN_SIZE[model_name]
+    )
+
+
 if __name__ == '__main__':
-    text_embeddimg_models = {''}
+    task_list = [
+        "01_unnecessary_prints",
+        "01_similar_variables",
+        "01_names",
+        "01_return_matched_with_func_name",
+        "01_func_docstring_single_responsibility",
+        "01_func_docstring_docstring_and_name",
+        "04_func_args_bindable",
+        "04_func_args_dynamic",
+        "06_refactor_into_class_case_2_state_vars_if_else",
+        "06_similar_function_names",
+        "02_numeric_values_maybe_const",
+        "02_numeric_values_twice"
+    ]
+    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list}
+
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
-                                 text_embedding_models={})
+                                 text_embedding_models=text_embedding_models)
     code_reviewer.review_codes(code_path=TEST_CASES_DIR)
