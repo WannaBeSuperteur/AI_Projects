@@ -119,7 +119,7 @@
 | 🧪 모델 학습   | 함수명, 코드 유사도 판단 (응집성 파악 등 목적) 을 위한 Text Embedding 모델 재 선정, 학습 및 테스트 | 09.17 목 - 09.18 금 (2d) | `P010-006-embedding-model-2` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/62) | ✅  |
 | ⚙ 기능 구현    | 모델 학습 시까지 도출한 신규 요구사항 구현 (개발)                                      | 09.18 금 (1d)           | `P010-007-additional`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/63) | ✅  |
 | 🧪 모델 학습   | 모델 학습 시까지 도출한 신규 요구사항 구현 (모델 선정, 학습, 테스트)                          | 09.19 토 - 09.21 월 (3d) | `P010-007-additional`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/63) | ✅  |
-| ⚙ 기능 구현    | Text Embedding 기반 처리 규칙에 따른 처리 구현                                  | 09.19 토 (1d)           |                              |                                                                    | ⬜  |
+| ⚙ 기능 구현    | Text Embedding 기반 처리 규칙에 따른 처리 구현                                  | 09.21 월 - 09.22 화 (2d) | `P010-008-apply-embedding`   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/64) | 💨 |
 | ⚙ 기능 구현    | 코드 리뷰 결과 요약 및 평가 프로세스 구현                                           | 09.10 목 (1d)           |                              |                                                                    | ⬜  |
 | 📝 데이터셋 제작 | 코드 리뷰 결과 생성 LLM 데이터셋 제작                                            | 09.10 목 (1d)           |                              |                                                                    | ⬜  |
 | 🧪 모델 학습   | 코드 리뷰 결과 생성 LLM 학습                                                 | 09.10 목 - 09.11 금 (2d) |                              |                                                                    | ⬜  |
