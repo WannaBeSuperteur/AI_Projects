@@ -5,7 +5,8 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-from transformers import AutoModel
+from transformers import AutoModel, AutoTokenizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from code_review_items import default_code_review_func
 
@@ -95,10 +96,26 @@ def mean_pooling(model_output, attention_mask):
 
 
 class TextEmbeddingModelForInference:
-    def __init__(self, model_path: str, hidden_size: int):
+    def __init__(self, model_path: str, hidden_size: int, max_len: int = 256):
         self.predictor = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+        self.max_len = max_len
         self.hidden_size = hidden_size
         self.final_linear = nn.Linear(hidden_size, 1)
+
+    def _tokenize_text(self, text: str):
+        inputs = self.tokenizer(
+            text,
+            max_length=self.max_len,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt"
+        )
+        return {
+            "input_ids": inputs["input_ids"].squeeze(0),
+            "attention_mask": inputs["attention_mask"].squeeze(0)
+        }
 
     def forward(self, input_ids, attention_mask):
         outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
@@ -107,13 +124,28 @@ class TextEmbeddingModelForInference:
         return prob
 
     def get_similarity(self, text1: str, text2: str) -> float:
-        return 0.7
+        tokenize_result_text1 = self._tokenize_text(text1)
+        tokenize_result_text2 = self._tokenize_text(text2)
+        emb1 = self.get_embedding(tokenize_result_text1)
+        emb2 = self.get_embedding(tokenize_result_text2)
+
+        return cosine_similarity(emb1, emb2)
 
     def get_prob(self, text) -> float:
-        return 0.7
+        tokenize_result = self._tokenize_text(text)
+        input_ids = tokenize_result['input_ids']
+        attention_mask = tokenize_result['attention_mask']
+        prob = self.forward(input_ids, attention_mask)
 
-    def get_embedding(self, text):
-        return np.array([[1.0, 0.0, -0.5, 1.4, 0.6, 0.7]])
+        return prob
+
+    def get_embedding(self, tokenize_result: dict):
+        input_ids = tokenize_result['input_ids']
+        attention_mask = tokenize_result['attention_mask']
+        outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
+
+        emb = mean_pooling(outputs, attention_mask)
+        return emb
 
 
 if __name__ == '__main__':
