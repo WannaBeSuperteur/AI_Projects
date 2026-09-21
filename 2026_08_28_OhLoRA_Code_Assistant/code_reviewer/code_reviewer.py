@@ -3,6 +3,9 @@ import glob
 from pathlib import Path
 
 import numpy as np
+import torch
+import torch.nn as nn
+from transformers import AutoModel
 
 from code_review_items import default_code_review_func
 
@@ -85,9 +88,23 @@ for name in checks:
 """
 
 
-class TempTextEmbeddingModel:
-    def __init__(self):
-        pass
+def mean_pooling(model_output, attention_mask):
+    token_embeddings = model_output[0]
+    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
+
+class TextEmbeddingModelForInference:
+    def __init__(self, model_path: str, hidden_size: int):
+        self.predictor = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
+        self.hidden_size = hidden_size
+        self.final_linear = nn.Linear(hidden_size, 1)
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
+        emb = mean_pooling(outputs, attention_mask)
+        prob = self.final_linear(emb)
+        return prob
 
     def get_similarity(self, text1: str, text2: str) -> float:
         return 0.7
