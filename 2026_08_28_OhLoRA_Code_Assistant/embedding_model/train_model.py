@@ -19,6 +19,7 @@ from sentence_transformers import SentenceTransformer, util, SentenceTransformer
 from sentence_transformers.sentence_transformer import losses
 from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
 from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback, TrainerCallback, AutoConfig
+from safetensors.torch import save_file
 
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -300,6 +301,24 @@ class EmbeddingProbTrainer:
         self._run_all_process()
 
 
+def save_base_model(model_dir_path):
+    model_file_names = [name for name in os.listdir(model_dir_path) if name.endswith('.pt') or name.endswith('.pth')]
+    model_file_name = model_file_names[0]
+    model_file_path = os.path.join(model_dir_path, model_file_name)
+
+    checkpoint = torch.load(model_file_path, map_location="cpu", weights_only=False)
+    state_dict = (
+        checkpoint["state_dict"] if "state_dict" in checkpoint else checkpoint
+    )
+
+    model = EmbeddingProbPredictor(model_file_path, hidden_size=HIDDEN_SIZE[model_path])
+    model.load_state_dict(state_dict)
+    base_model_state_dict = model.base_model.state_dict()
+
+    save_path = os.path.join(model_dir_path, "model.safetensors")
+    save_file(base_model_state_dict, save_path)
+
+
 def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding probability predictor."""
 
@@ -313,7 +332,7 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
 
     if os.path.exists(model_dir_path):
         print(f'model already exists: {model_dir_path}')
-        return
+        save_base_model(model_dir_path)
 
     print(f'model not exist {model_dir_path}, training start ...')
 
@@ -340,6 +359,9 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     # train model
     trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
     trainer.run()
+
+    # save model.safetensors
+    save_base_model(model_dir_path)
 
 
 def create_datasets_for_tvt(dataset_df: pd.DataFrame):
