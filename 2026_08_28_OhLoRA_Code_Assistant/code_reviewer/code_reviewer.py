@@ -161,6 +161,9 @@ class TextEmbeddingModelForInference:
         }
 
     def forward(self, input_ids, attention_mask):
+        input_ids = input_ids.unsqueeze(0)
+        attention_mask = attention_mask.unsqueeze(0)
+
         outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
         emb = mean_pooling(outputs, attention_mask)
         prob = self.final_linear(emb)
