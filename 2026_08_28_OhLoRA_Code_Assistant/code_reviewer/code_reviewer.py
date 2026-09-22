@@ -161,8 +161,8 @@ class TextEmbeddingModelForInference:
         }
 
     def forward(self, input_ids, attention_mask):
-        input_ids = input_ids.unsqueeze(0)
-        attention_mask = attention_mask.unsqueeze(0)
+        input_ids = input_ids.unsqueeze(0).to(self.device)
+        attention_mask = attention_mask.unsqueeze(0).to(self.device)
 
         outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
         emb = mean_pooling(outputs, attention_mask)
@@ -170,10 +170,8 @@ class TextEmbeddingModelForInference:
         return prob
 
     def get_similarity(self, text1: str, text2: str) -> float:
-        tokenize_result_text1 = self._tokenize_text(text1)
-        tokenize_result_text2 = self._tokenize_text(text2)
-        emb1 = self.get_embedding(tokenize_result_text1)
-        emb2 = self.get_embedding(tokenize_result_text2)
+        emb1 = self.get_embedding(text1)
+        emb2 = self.get_embedding(text2)
 
         return cosine_similarity(emb1, emb2)
 
@@ -185,7 +183,9 @@ class TextEmbeddingModelForInference:
 
         return prob
 
-    def get_embedding(self, tokenize_result: dict):
+    def get_embedding(self, text: str):
+        tokenize_result = self._tokenize_text(text)
+
         input_ids = tokenize_result['input_ids']
         attention_mask = tokenize_result['attention_mask']
         outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
