@@ -186,15 +186,19 @@ class TextEmbeddingModelForInference:
         input_ids = input_ids.unsqueeze(0).to(self.device)
         attention_mask = attention_mask.unsqueeze(0).to(self.device)
 
-        outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
-        emb = mean_pooling(outputs, attention_mask)
-        prob = self.final_linear(emb)
+        with torch.no_grad():
+            outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
+            emb = mean_pooling(outputs, attention_mask)
+            prob = self.final_linear(emb)
+
         return prob
 
     def get_similarity(self, text1: str, text2: str) -> float:
         start_at = time.time()
-        emb1 = self.get_embedding(text1)
-        emb2 = self.get_embedding(text2)
+
+        with torch.no_grad():
+            emb1 = self.get_embedding(text1)
+            emb2 = self.get_embedding(text2)
 
         cos_sim = cosine_similarity(emb1, emb2)
         elapsed_time = time.time() - start_at
@@ -208,8 +212,10 @@ class TextEmbeddingModelForInference:
         input_ids = tokenize_result['input_ids']
         attention_mask = tokenize_result['attention_mask']
 
-        prob = self.forward(input_ids, attention_mask)
-        prob = prob.cpu().numpy()
+        with torch.no_grad():
+            prob = self.forward(input_ids, attention_mask)
+            prob = prob.cpu().numpy()
+
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_prob', text, '', prob, elapsed_time)
 
@@ -221,9 +227,11 @@ class TextEmbeddingModelForInference:
 
         input_ids = tokenize_result['input_ids'].unsqueeze(0).to(self.device)
         attention_mask = tokenize_result['attention_mask'].unsqueeze(0).to(self.device)
-        outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
 
-        emb = mean_pooling(outputs, attention_mask)
+        with torch.no_grad():
+            outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
+            emb = mean_pooling(outputs, attention_mask)
+
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
 
