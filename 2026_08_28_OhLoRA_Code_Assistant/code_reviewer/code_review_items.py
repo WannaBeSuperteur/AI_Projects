@@ -612,7 +612,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         def check_text_similar_with_prevs(info, py_file_path):
             embedding_vector = text_embedding_model.get_embedding(info['name'])
-            embedding_vector = embedding_vector.detach().cpu()
+            embedding_vector = embedding_vector.reshape(1, -1)
             info['embedding'] = embedding_vector
             info['py_file_path'] = py_file_path
 
