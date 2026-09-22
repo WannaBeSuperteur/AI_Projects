@@ -18,7 +18,7 @@ from sentence_transformers import SentenceTransformer, util, SentenceTransformer
                                   SentenceTransformerTrainer
 from sentence_transformers.sentence_transformer import losses
 from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
-from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback, TrainerCallback
+from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback, TrainerCallback, AutoConfig
 
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -303,12 +303,16 @@ class EmbeddingProbTrainer:
 def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding probability predictor."""
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
+
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    config = AutoConfig.from_pretrained(model_path)
+
+    tokenizer.save_pretrained(model_dir_path)
+    config.save_pretrained(model_dir_path)
+
     if os.path.exists(model_dir_path):
         print(f'model already exists: {model_dir_path}')
-        tokenizer.save_pretrained(model_dir_path)
         return
 
     print(f'model not exist {model_dir_path}, training start ...')
