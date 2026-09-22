@@ -311,6 +311,8 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
         tokenizer.save_pretrained(model_dir_path)
         return
 
+    print(f'model not exist {model_dir_path}, training start ...')
+
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
     hidden_size = HIDDEN_SIZE[model_path]
 
@@ -416,6 +418,8 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     if not os.path.exists(model_dir_path):
         print(f'model already exists: {model_dir_path}')
         return
+
+    print(f'model not exist {model_dir_path}, training start ...')
 
     train_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
     test_log_path = os.path.join(TRAIN_LOG_PATH, f'test_{task_name}.csv')
