@@ -186,8 +186,8 @@ class TextEmbeddingModelForInference:
     def get_embedding(self, text: str):
         tokenize_result = self._tokenize_text(text)
 
-        input_ids = tokenize_result['input_ids']
-        attention_mask = tokenize_result['attention_mask']
+        input_ids = tokenize_result['input_ids'].unsqueeze(0).to(self.device)
+        attention_mask = tokenize_result['attention_mask'].unsqueeze(0).to(self.device)
         outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
 
         emb = mean_pooling(outputs, attention_mask)
