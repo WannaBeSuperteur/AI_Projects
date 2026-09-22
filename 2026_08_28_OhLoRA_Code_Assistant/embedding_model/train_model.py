@@ -324,8 +324,16 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
 
     data_loaders = {'train': train_loader, 'valid': valid_loader, 'test': test_loader}
 
-    trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
-    trainer.run()
+    # train model
+    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
+    if os.path.exists(model_dir_path):
+        print(f'model already exists: {model_dir_path}')
+    else:
+        trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
+        trainer.run()
+
+    # save tokenizer
+    tokenizer.save_pretrained(model_dir_path)
 
 
 def create_datasets_for_tvt(dataset_df: pd.DataFrame):
@@ -450,6 +458,10 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     train_loss = losses.CoSENTLoss(model=model)
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
+    if not os.path.exists(model_dir_path):
+        print(f'model already exists: {model_dir_path}')
+        return
+
     os.makedirs(model_dir_path, exist_ok=True)
 
     steps_per_epoch = math.ceil(len(train_dataset) / 2)
