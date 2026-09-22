@@ -1,11 +1,14 @@
 
 import os
+import time
 import glob
 import gc
 from pathlib import Path
 
 import torch
 import torch.nn as nn
+import pandas as pd
+
 from transformers import AutoModel, AutoTokenizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -18,10 +21,19 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
 F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
 LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
+EMBEDDING_INFERENCE_LOG_PATH = os.path.join(PROJECT_DIR_PATH, "code_reviewer", "embedding_log.csv")
 
 HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
                F2LLM_V2_330M: 896,
                LATEON_CODE_PRETRAIN: 768}
+
+embedding_log = {
+    'func_name': [],
+    'text1': [],
+    'text2': [],
+    'result': [],
+    'inference_time': []
+}
 
 
 class CodeReviewer:
@@ -116,6 +128,16 @@ class TextEmbeddingModelForInference:
         self.hidden_size = hidden_size
         self.final_linear = nn.Linear(hidden_size, 1)
 
+    def _append_to_embedding_log(self, func_name: str, text1: str, text2: str, result, inference_time: float):
+        embedding_log['func_name'].append(func_name)
+        embedding_log['text1'].append(text1)
+        embedding_log['text2'].append(text2)
+        embedding_log['result'].append(result)
+        embedding_log['inference_time'].append(round(inference_time, 3))
+
+        embedding_log_df = pd.DataFrame(embedding_log)
+        embedding_log_df.to_csv(EMBEDDING_INFERENCE_LOG_PATH)
+
     def load_model(self):
         if self.predictor is not None:
             print("model already loaded")
@@ -170,20 +192,31 @@ class TextEmbeddingModelForInference:
         return prob
 
     def get_similarity(self, text1: str, text2: str) -> float:
+        start_at = time.time()
         emb1 = self.get_embedding(text1)
         emb2 = self.get_embedding(text2)
 
-        return cosine_similarity(emb1, emb2)
+        cos_sim = cosine_similarity(emb1, emb2)
+        elapsed_time = time.time() - start_at
+        self._append_to_embedding_log('get_similarity', text1, text2, cos_sim, elapsed_time)
+
+        return cos_sim
 
     def get_prob(self, text) -> float:
+        start_at = time.time()
         tokenize_result = self._tokenize_text(text)
         input_ids = tokenize_result['input_ids']
         attention_mask = tokenize_result['attention_mask']
+
         prob = self.forward(input_ids, attention_mask)
+        prob = prob.cpu().numpy()
+        elapsed_time = time.time() - start_at
+        self._append_to_embedding_log('get_prob', text, '', prob, elapsed_time)
 
         return prob
 
     def get_embedding(self, text: str):
+        start_at = time.time()
         tokenize_result = self._tokenize_text(text)
 
         input_ids = tokenize_result['input_ids'].unsqueeze(0).to(self.device)
@@ -191,6 +224,9 @@ class TextEmbeddingModelForInference:
         outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
 
         emb = mean_pooling(outputs, attention_mask)
+        elapsed_time = time.time() - start_at
+        self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
+
         return emb
 
 
