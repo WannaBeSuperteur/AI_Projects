@@ -334,6 +334,7 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     if os.path.exists(model_dir_path):
         print(f'model already exists: {model_dir_path}')
         save_base_model(model_dir_path)
+        return
 
     print(f'model not exist {model_dir_path}, training start ...')
 
