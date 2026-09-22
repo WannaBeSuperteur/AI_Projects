@@ -130,7 +130,9 @@ def extract_numbers(line):
 
 
 class DefaultCodeChecker:
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
+
         self.py_codes = py_codes
         self.max_line_length = config.get('max_line_length')
         self.max_func_lines = config.get('max_func_lines')
@@ -143,6 +145,8 @@ class DefaultCodeChecker:
         self.python_libraries = set(list(sys.stdlib_module_names))
         self.third_party_libraries = set(dist.metadata['Name'] for dist in importlib.metadata.distributions())
         self.final_result_dict = defaultdict(dict)
+
+        self.is_test = is_test
 
     def _parse_codes(self):
         self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
@@ -354,6 +358,7 @@ class DefaultCodeChecker:
                     and len(set(info['var_name'] for info in current_if_elifs)) == 1
                     and len(set(info['simplified_body'] for info in current_if_elifs)) == 1
                     and (additional_check_func is None or additional_check_func(current_if_elifs))):
+
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
                 final_result_dict[py_file_path][func_name].append({'name': 'if-elif-elif-else 패턴',
                                                                    'type': 'if-elif-elif-else',
@@ -380,7 +385,10 @@ class DefaultCodeChecker:
                     if keyword in ['if', 'elif']:
                         last_if_elif_line_idx = line_idx
 
-                    current_if_elifs.append({'keyword': keyword, 'var_name': var_name})
+                    current_if_elifs.append({'keyword': keyword,
+                                             'var_name': var_name,
+                                             'code_path': py_file_path,
+                                             'line_no': line_no})
 
                 elif line_idx - last_if_elif_line_idx >= 2:
                     update_final_result_dict(py_file_path, line_no, current_if_elifs, additional_check_func)
@@ -439,7 +447,9 @@ class DefaultCodeChecker:
 
 
 class PythonBasicsChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
+
         super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
@@ -510,8 +520,16 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             for print_collection, print_type in print_types:
                 for line_no, line in print_collection:
-                    if text_embedding_model.get_prob(line) >= 0.5:
-                        func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    prob = text_embedding_model.get_prob(line)
+
+                    if self.is_test:
+                        final_result_dict[py_file_path][func_name].append(
+                            {'name': f'{ellipse_str(line)}, [AI] prob={prob}',
+                             'type': '',
+                             'line': line_no})
+
+                    if prob >= 0.5:
                         final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line),
                                                                            'type': print_type,
                                                                            'line': line_no})
@@ -604,6 +622,16 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         break
                 else:
                     cos_sim = cosine_similarity(log['embedding'], embedding_vector)
+
+                    if self.is_test:
+                        line_no = info['line']
+                        func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                        self.final_result_dict[py_file_path][func_name].append({
+                            'name': f"{log['embedding']},{info['name']}, [AI] cos_sim={cos_sim}",
+                            'type': '',
+                            'line': line_no})
+
                     if (include_same or log['name'] != info['name']) and cos_sim >= 0.95:
                         all_similar_text_pairs.append(info)
                         break
@@ -621,6 +649,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         if self.text_embedding_models.get('01_similar_variables') is None:
             return "no text embedding model"
 
+        self.final_result_dict = defaultdict(dict)
         text_embedding_model = self.text_embedding_models.get('01_similar_variables')
         text_embedding_model.load_model()
 
@@ -644,13 +673,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
             py_file_path = info['py_file_path']
 
             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-            final_result_dict[py_file_path][func_name].append({'name': info['name'],
-                                                               'type': 'name',
-                                                               'line': info['line']})
+            self.final_result_dict[py_file_path][func_name].append({'name': info['name'],
+                                                                    'type': 'name',
+                                                                    'line': info['line']})
 
         text_embedding_model.unload_model()
-
-        self.final_result_dict = final_result_dict
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_same_func_args(self) -> str:
@@ -708,8 +735,15 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 line_no = name_info['line']
                 name = name_info['name']
 
+                prob = text_embedding_model.get_prob(name)
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name].append({'name': f'{name}, [AI] prob={prob}',
+                                                                       'type': '',
+                                                                       'line': line_no})
+
                 if text_embedding_model.get_prob(name) >= 0.5:
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
                     final_result_dict[py_file_path][func_name].append({'name': name,
                                                                        'type': 'var_or_func',
                                                                        'line': line_no})
@@ -767,8 +801,16 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     var_name = match.group(1)
                     func_name = match.group(2)
 
-                    if text_embedding_model.get_similarity(var_name, func_name) < 0.5:
-                        func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                    cos_sim = text_embedding_model.get_similarity(var_name, func_name)
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                    if self.is_test:
+                        final_result_dict[py_file_path][func_name].append(
+                            {'name': f'{var_name},{func_name}, [AI] cos_sim={cos_sim}',
+                             'type': '',
+                             'line': line_no})
+
+                    if cos_sim < 0.5:
                         final_result_dict[py_file_path][func_name].append({'name': f'{var_name} = {func_name}(...)',
                                                                            'type': 'func_return',
                                                                            'line': line_no})
@@ -862,12 +904,27 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 line_no = item['line']
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
-                if text_embedding_model_single_responsibility.get_prob(item['docstring']) >= 0.5:
+                docstring_prob = text_embedding_model_single_responsibility.get_prob(item['docstring'])
+                docstring_and_name_cos_sim = text_embedding_model_docstring_and_name.get_similarity(
+                    item['name'], item['docstring'])
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f"{item['name']}, [AI] prob={docstring_prob}",
+                         'type': '',
+                         'line': line_no})
+
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f"{item['name']}, [AI] cos_sim={docstring_and_name_cos_sim}",
+                         'type': '',
+                         'line': line_no})
+
+                if docstring_prob >= 0.5:
                     final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} 단일 책임 원칙 위반",
                                                                        'type': 'docstring',
                                                                        'line': line_no})
 
-                if text_embedding_model_docstring_and_name.get_similarity(item['name'], item['docstring']) >= 0.5:
+                if docstring_and_name_cos_sim >= 0.5:
                     final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} - docstring 불일치",
                                                                        'type': 'docstring',
                                                                        'line': line_no})
@@ -926,7 +983,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
 class PythonBasicConventionChecker(DefaultCodeChecker):
 
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
+
         super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
@@ -1048,9 +1107,15 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                 line1_embedding = line_embeddings[line1_line_no]
                 line2_embedding = line_embeddings[line2_line_no]
                 cos_sim = cosine_similarity(line1_embedding, line2_embedding)
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f"{ellipse_str(line1.strip())},{ellipse_str(line2.strip())}, [AI] cos_sim={cos_sim}",
+                         'type': '',
+                         'line': line1_line_no})
 
                 if cos_sim >= 0.5:
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
                          'type': 'numeric values should be const',
@@ -1059,10 +1124,17 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
             # 모든 숫자 값에 대해 const 고정 권장 확률 검사
             for line_info in lines_with_numbers:
                 line_no, line_content = line_info['line_no'], line_info['line_content']
+
                 maybe_const_prob = text_embedding_model_maybe_const.get_prob(line_content)
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f"{line_content}, [AI] prob={maybe_const_prob}",
+                         'type': '',
+                         'line': line_no})
 
                 if maybe_const_prob >= 0.5:
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f'상단 const var 고정 권장: {ellipse_str(line_content.strip())}',
                          'type': 'numeric values should be const',
@@ -1185,7 +1257,9 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
 
 class PythonSimplificationChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
+
         super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
@@ -1404,7 +1478,9 @@ class PythonSimplificationChecker(DefaultCodeChecker):
 
 
 class PythonOtherPythonicChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
+
         super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
@@ -1507,13 +1583,27 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                 if arg_names is not None:
                     arg_name_list = ','.join(arg_names)
 
-                    if text_embedding_model_bindable.get_prob(arg_name_list) >= 0.5:
+                    bindable_prob = text_embedding_model_bindable.get_prob(arg_name_list)
+                    dynamic_prob = text_embedding_model_dynamic.get_prob(arg_name_list)
+
+                    if self.is_test:
+                        final_result_dict[py_file_path][func_name].append(
+                            {'name': f"{ellipse_str(arg_name_list)}, [AI] bindable_prob={bindable_prob}",
+                             'type': '',
+                             'line': line_no})
+
+                        final_result_dict[py_file_path][func_name].append(
+                            {'name': f"{ellipse_str(arg_name_list)}, [AI] dynamic_prob={bindable_prob}",
+                             'type': '',
+                             'line': line_no})
+
+                    if bindable_prob >= 0.5:
                         final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'bindable_args',
                              'line': line_no})
 
-                    if text_embedding_model_dynamic.get_prob(arg_name_list) >= 0.5:
+                    if dynamic_prob >= 0.5:
                         final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'dynamic_args',
@@ -1572,7 +1662,9 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
 
 class PythonExceptionsChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
+
         super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
@@ -1615,7 +1707,9 @@ class PythonExceptionsChecker(DefaultCodeChecker):
 
 
 class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
+
         super().__init__(py_codes, config, code_path, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
@@ -1669,7 +1763,18 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
         def check_is_state_value(info):
             text = f"if {info[0]['var_name']}: {info[0]['simplified_body']}"
-            return text_embedding_model.get_prob(text) >= 0.5
+            prob = text_embedding_model.get_prob(text)
+
+            py_file_path, line_no = info['py_file_path'], info['line_no']
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+            if self.is_test:
+                self.final_result_dict[py_file_path][func_name].append(
+                    {'name': f"{ellipse_str(text)}, [AI] prob={prob}",
+                     'type': '',
+                     'line': line_no})
+
+            return prob >= 0.5
 
         self.final_result_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
 
@@ -1703,12 +1808,19 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
             func_count = len(func_names)
             func_sim_matrix = [['mid' for _ in range(func_count)] for _ in range(func_count)]
 
-            embeddings_0, embeddings_1 = tee([info['embedding'] for info in func_names], 2)
-            embeddings_0, embeddings_1 = list(embeddings_0), list(embeddings_1)
+            for idx_0, func_name_info_0 in enumerate(func_names):
+                for idx_1, func_name_info_1 in enumerate(func_names):
+                    emb_0, emb_1 = func_name_info_0['embedding'], func_name_info_1['embedding']
+                    func_name_0, func_name_1 = func_name_info_0['name'], func_name_info_1['name']
+                    line_no = func_name_info_0['line']
 
-            for idx_0, emb_0 in enumerate(embeddings_0):
-                for idx_1, emb_1 in enumerate(embeddings_1):
                     cos_sim = cosine_similarity(emb_0, emb_1)
+
+                    if self.is_test:
+                        final_result_dict[py_file_path][func_name_0].append(
+                            {'name': f'{func_name_0},{func_name_1}, [AI] cos_sim={cos_sim}',
+                             'type': '',
+                             'line': line_no})
 
                     if cos_sim >= 0.95:
                         func_sim_matrix[idx_0][idx_1] = 'high'
@@ -1755,15 +1867,24 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
 
 class EntireCodeChecker(DefaultCodeChecker):
-    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str, except_path: str | None = None):
-        super().__init__(py_codes, config, code_path, except_path)
+    def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
+                 is_test: bool = False, except_path: str | None = None):
 
-        self.python_basics_checker = PythonBasicsChecker(py_codes, config, code_path, except_path)
-        self.python_basic_convention_checker = PythonBasicConventionChecker(py_codes, config, code_path, except_path)
-        self.python_simplification_checker = PythonSimplificationChecker(py_codes, config, code_path, except_path)
-        self.python_other_pythonic_checker = PythonOtherPythonicChecker(py_codes, config, code_path, except_path)
-        self.python_exceptions_checker = PythonExceptionsChecker(py_codes, config, code_path, except_path)
-        self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(py_codes, config, code_path, except_path)
+        checker_kwargs = {
+            "py_codes": py_codes,
+            "config": config,
+            "code_path": code_path,
+            "is_test": is_test,
+            "except_path": except_path
+        }
+        super().__init__(**checker_kwargs)
+
+        self.python_basics_checker = PythonBasicsChecker(**checker_kwargs)
+        self.python_basic_convention_checker = PythonBasicConventionChecker(**checker_kwargs)
+        self.python_simplification_checker = PythonSimplificationChecker(**checker_kwargs)
+        self.python_other_pythonic_checker = PythonOtherPythonicChecker(**checker_kwargs)
+        self.python_exceptions_checker = PythonExceptionsChecker(**checker_kwargs)
+        self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(**checker_kwargs)
 
     def _check_python_basics(self) -> dict[str, str]:
         return self.python_basics_checker.run_code_review()
@@ -1811,5 +1932,6 @@ def default_code_review_func(py_codes: dict[str, str],
     default_code_checker = EntireCodeChecker(py_codes=py_codes,
                                              config=config,
                                              code_path=code_path,
-                                             except_path=except_path)
+                                             except_path=except_path,
+                                             is_test=True)
     return default_code_checker.run_code_review()
