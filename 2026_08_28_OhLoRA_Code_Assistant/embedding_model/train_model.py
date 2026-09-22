@@ -310,10 +310,11 @@ def save_base_model(model_dir_path):
     state_dict = (
         checkpoint["state_dict"] if "state_dict" in checkpoint else checkpoint
     )
-
-    model = EmbeddingProbPredictor(model_file_path, hidden_size=HIDDEN_SIZE[model_path])
-    model.load_state_dict(state_dict)
-    base_model_state_dict = model.base_model.state_dict()
+    base_model_state_dict = {
+        key.removeprefix("base_model."): value.contiguous()
+        for key, value in state_dict.items()
+        if key.startswith("base_model.")
+    }
 
     save_path = os.path.join(model_dir_path, "model.safetensors")
     save_file(base_model_state_dict, save_path)
