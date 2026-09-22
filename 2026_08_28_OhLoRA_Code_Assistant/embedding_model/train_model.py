@@ -304,6 +304,13 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     """train text embedding probability predictor."""
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
+    if os.path.exists(model_dir_path):
+        print(f'model already exists: {model_dir_path}')
+        tokenizer.save_pretrained(model_dir_path)
+        return
+
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
     hidden_size = HIDDEN_SIZE[model_path]
 
@@ -325,15 +332,8 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     data_loaders = {'train': train_loader, 'valid': valid_loader, 'test': test_loader}
 
     # train model
-    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
-    if os.path.exists(model_dir_path):
-        print(f'model already exists: {model_dir_path}')
-    else:
-        trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
-        trainer.run()
-
-    # save tokenizer
-    tokenizer.save_pretrained(model_dir_path)
+    trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
+    trainer.run()
 
 
 def create_datasets_for_tvt(dataset_df: pd.DataFrame):
@@ -412,6 +412,11 @@ class LogTrainingCallback(TrainerCallback):
 def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding similarity predictor."""
 
+    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
+    if not os.path.exists(model_dir_path):
+        print(f'model already exists: {model_dir_path}')
+        return
+
     train_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
     test_log_path = os.path.join(TRAIN_LOG_PATH, f'test_{task_name}.csv')
 
@@ -454,13 +459,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         scores=valid_dataset['label'],
         name='valid'
     )
-
     train_loss = losses.CoSENTLoss(model=model)
-
-    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
-    if not os.path.exists(model_dir_path):
-        print(f'model already exists: {model_dir_path}')
-        return
 
     os.makedirs(model_dir_path, exist_ok=True)
 
