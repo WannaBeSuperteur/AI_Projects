@@ -218,6 +218,7 @@ class TextEmbeddingModelForInference:
         with torch.no_grad():
             prob = self.forward(input_ids, attention_mask)
             prob = prob.cpu().numpy()
+            prob = prob[0][0]
 
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_prob', text, '', prob, elapsed_time)
@@ -234,6 +235,8 @@ class TextEmbeddingModelForInference:
         with torch.no_grad():
             outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
             emb = mean_pooling(outputs, attention_mask)
+            emb = emb.cpu().numpy()
+            emb = emb[0]
 
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
