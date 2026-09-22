@@ -415,7 +415,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     """train text embedding similarity predictor."""
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
-    if not os.path.exists(model_dir_path):
+    if os.path.exists(model_dir_path):
         print(f'model already exists: {model_dir_path}')
         return
 
