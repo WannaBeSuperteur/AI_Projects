@@ -28,6 +28,7 @@ HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
                LATEON_CODE_PRETRAIN: 768}
 
 embedding_log = {
+    'task_id': [],
     'func_name': [],
     'text1': [],
     'text2': [],
@@ -118,17 +119,19 @@ def mean_pooling(model_output, attention_mask):
 
 
 class TextEmbeddingModelForInference:
-    def __init__(self, model_path: str, hidden_size: int, max_len: int = 256, device: str = 'cuda'):
+    def __init__(self, model_path: str, hidden_size: int, task_id: str, max_len: int = 256, device: str = 'cuda'):
         self.model_path = model_path
         self.predictor = None
         self.tokenizer = None
         self.device = device
+        self.task_id = task_id
 
         self.max_len = max_len
         self.hidden_size = hidden_size
         self.final_linear = nn.Linear(hidden_size, 1)
 
     def _append_to_embedding_log(self, func_name: str, text1: str, text2: str, result, inference_time: float):
+        embedding_log['task_id'].append(self.task_id)
         embedding_log['func_name'].append(func_name)
         embedding_log['text1'].append(text1)
         embedding_log['text2'].append(text2)
@@ -248,7 +251,8 @@ def get_embedding_model(task_id: str):
 
     return TextEmbeddingModelForInference(
         model_path=os.path.join(PROJECT_DIR_PATH, "embedding_model", "models", task_id),
-        hidden_size=HIDDEN_SIZE[model_name]
+        hidden_size=HIDDEN_SIZE[model_name],
+        task_id=task_id
     )
 
 
