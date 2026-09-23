@@ -683,7 +683,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                                                     'line': info['line']})
 
         text_embedding_model.unload_model()
-        return convert_to_human_friendly_review(final_result_dict)
+        return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_same_func_args(self) -> str:
         func_annot_dict = {}
