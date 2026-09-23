@@ -609,10 +609,16 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                      include_same: bool = False) -> list[dict]:
         text_embedding_logs = []
         all_similar_text_pairs = []
+        embedding_vector_dict = {}
 
         def check_text_similar_with_prevs(info, py_file_path):
-            embedding_vector = text_embedding_model.get_embedding(info['name'])
+            embedding_vector = embedding_vector_dict.get(info['name'])
+            if embedding_vector is None:
+                embedding_vector = text_embedding_model.get_embedding(info['name'])
+
             embedding_vector = embedding_vector.reshape(1, -1)
+            embedding_vector_dict[info['name']] = embedding_vector
+
             info['embedding'] = embedding_vector
             info['py_file_path'] = py_file_path
 
