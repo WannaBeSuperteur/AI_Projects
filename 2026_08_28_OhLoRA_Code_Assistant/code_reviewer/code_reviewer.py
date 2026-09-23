@@ -33,7 +33,8 @@ embedding_log = {
     'text1': [],
     'text2': [],
     'result': [],
-    'inference_time': []
+    'inference_time': [],
+    'timestamp': []
 }
 
 
@@ -137,6 +138,7 @@ class TextEmbeddingModelForInference:
         embedding_log['text2'].append(text2)
         embedding_log['result'].append(result)
         embedding_log['inference_time'].append(round(inference_time, 3))
+        embedding_log['timestamp'].append(round(time.time(), 3))
 
         embedding_log_df = pd.DataFrame(embedding_log)
         embedding_log_df.to_csv(EMBEDDING_INFERENCE_LOG_PATH)
