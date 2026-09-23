@@ -884,9 +884,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
             return "no text embedding model (func_docstring_docstring_and_name)"
 
         text_embedding_model_single_responsibility \
-            = self.text_embedding_models.get('func_docstring_single_responsibility')
+            = self.text_embedding_models.get('01_func_docstring_single_responsibility')
         text_embedding_model_docstring_and_name \
-            = self.text_embedding_models.get('func_docstring_docstring_and_name')
+            = self.text_embedding_models.get('01_func_docstring_docstring_and_name')
 
         text_embedding_model_single_responsibility.load_model()
         text_embedding_model_docstring_and_name.load_model()
