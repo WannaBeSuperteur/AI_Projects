@@ -1109,8 +1109,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                 line1, line2 = line_info['line1'], line_info['line2']
                 line1_line_no, line2_line_no = line_info['line1_line_no'], line_info['line2_line_no']
 
-                line1_embedding = line_embeddings[line1_line_no]
-                line2_embedding = line_embeddings[line2_line_no]
+                line1_embedding = line_embeddings[line1_line_no].reshape(1, -1)
+                line2_embedding = line_embeddings[line2_line_no].reshape(1, -1)
                 cos_sim = cosine_similarity(line1_embedding, line2_embedding)
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
 
