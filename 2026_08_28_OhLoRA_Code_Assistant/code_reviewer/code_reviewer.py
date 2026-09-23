@@ -207,7 +207,7 @@ class TextEmbeddingModelForInference:
             emb1 = emb1.reshape(1, -1)
             emb2 = emb2.reshape(1, -1)
 
-        cos_sim = cosine_similarity(emb1, emb2)
+        cos_sim = cosine_similarity(emb1, emb2)[0][0]
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_similarity', text1, text2, cos_sim, elapsed_time)
 
