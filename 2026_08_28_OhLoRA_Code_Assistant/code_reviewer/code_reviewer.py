@@ -204,6 +204,8 @@ class TextEmbeddingModelForInference:
         with torch.no_grad():
             emb1 = self.get_embedding(text1)
             emb2 = self.get_embedding(text2)
+            emb1 = emb1.reshape(1, -1)
+            emb2 = emb2.reshape(1, -1)
 
         cos_sim = cosine_similarity(emb1, emb2)
         elapsed_time = time.time() - start_at
