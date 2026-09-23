@@ -659,12 +659,10 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = defaultdict(dict)
         text_embedding_model = self.text_embedding_models.get('01_similar_variables')
         text_embedding_model.load_model()
-
-        final_result_dict = defaultdict(dict)
         all_variables_dict = defaultdict(dict)
 
         for py_file_path in self.parsed_py_codes.keys():
-            final_result_dict[py_file_path] = defaultdict(list)
+            self.final_result_dict[py_file_path] = defaultdict(list)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             defined_info, _ = self._get_definitions_and_usages(py_file_path, parsed_py_code)
