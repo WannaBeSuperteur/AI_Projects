@@ -450,7 +450,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
 
-        super().__init__(py_codes, config, code_path, except_path)
+        super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -991,7 +991,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
 
-        super().__init__(py_codes, config, code_path, except_path)
+        super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1265,7 +1265,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
 
-        super().__init__(py_codes, config, code_path, except_path)
+        super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1486,7 +1486,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
 
-        super().__init__(py_codes, config, code_path, except_path)
+        super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1670,7 +1670,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
 
-        super().__init__(py_codes, config, code_path, except_path)
+        super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
 
@@ -1715,7 +1715,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
 
-        super().__init__(py_codes, config, code_path, except_path)
+        super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
         self._get_function_name_by_line()
         self._get_class_name_by_line()
