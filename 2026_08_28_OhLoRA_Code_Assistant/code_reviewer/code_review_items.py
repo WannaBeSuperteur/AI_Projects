@@ -810,9 +810,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 if match:
                     var_name = match.group(1)
                     func_name = match.group(2)
-
                     cos_sim = text_embedding_model.get_similarity(var_name, func_name)
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
@@ -1603,7 +1601,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                              'line': line_no})
 
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{arg_name_list}, [AI] dynamic_prob={bindable_prob}",
+                            {'name': f"{arg_name_list}, [AI] dynamic_prob={dynamic_prob}",
                              'type': '',
                              'line': line_no})
 
