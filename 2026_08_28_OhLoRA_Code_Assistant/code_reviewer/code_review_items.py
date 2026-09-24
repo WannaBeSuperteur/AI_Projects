@@ -635,11 +635,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
                         self.final_result_dict[py_file_path][func_name].append({
-                            'name': f"{log['embedding']},{info['name']}, [AI] cos_sim={cos_sim}",
+                            'name': f"{log['embedding'][:2]}...,{info['name']}, [AI] cos_sim={cos_sim}",
                             'type': '',
                             'line': line_no})
 
-                    if (include_same or log['name'] != info['name']) and cos_sim >= 0.95:
+                    if cos_sim >= 0.95 and (include_same or log['name'] != info['name']):
                         all_similar_text_pairs.append(info)
                         break
 
@@ -648,7 +648,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         for py_file_path in value_dict.keys():
             for func_name, info_list in value_dict[py_file_path].items():
                 for info in info_list:
+                    print(time.time(), 'start', len(text_embedding_logs))
                     check_text_similar_with_prevs(info, py_file_path)
+                    print(time.time(), 'end', len(text_embedding_logs))
 
         return all_similar_text_pairs
 
