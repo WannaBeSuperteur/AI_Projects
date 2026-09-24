@@ -641,7 +641,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     cos_sim = cosine_similarity(log['embedding'], embedding_vector)[0][0]
 
                     self.final_result_dict[py_file_path][func_name].append({
-                        'name': f"{log['name']}...,{info['name']}, [AI] cos_sim={cos_sim}",
+                        'name': f"{log['name']} | {info['name']}, [AI] cos_sim={cos_sim}",
                         'type': '',
                         'line': line_no})
 
@@ -816,7 +816,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{var_name},{func_name}, [AI] cos_sim={cos_sim}',
+                            {'name': f'{var_name} | {func_name}, [AI] cos_sim={cos_sim}',
                              'type': '',
                              'line': line_no})
 
@@ -925,7 +925,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                          'line': line_no})
 
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{item['name']}, [AI] cos_sim={docstring_and_name_cos_sim}",
+                        {'name': f"{item['name']} | {item['docstring']}, [AI] cos_sim={docstring_and_name_cos_sim}",
                          'type': '',
                          'line': line_no})
 
@@ -1121,7 +1121,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{line1.strip()},{line2.strip()}, [AI] cos_sim={cos_sim}",
+                        {'name': f"{line1.strip()} | {line2.strip()}, [AI] cos_sim={cos_sim}",
                          'type': '',
                          'line': line1_line_no})
 
@@ -1833,7 +1833,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name_0].append(
-                            {'name': f'{func_name_0},{func_name_1}, [AI] cos_sim={cos_sim}',
+                            {'name': f'{func_name_0} | {func_name_1}, [AI] cos_sim={cos_sim}',
                              'type': '',
                              'line': line_no})
 
