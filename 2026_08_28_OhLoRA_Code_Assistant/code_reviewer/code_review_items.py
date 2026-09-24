@@ -625,26 +625,25 @@ class PythonBasicsChecker(DefaultCodeChecker):
             text_embedding_logs_filtered = [log for log in text_embedding_logs
                                             if cosine_similarity(log['embedding'], embedding_vector) >= 0.95]
 
+            if only_same:
+                text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
+                                                if log['name'] == info['name']]
+
+            if not include_same:
+                text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
+                                                if log['name'] != info['name']]
+
             for log in text_embedding_logs_filtered:
-                if only_same:
-                    if log['name'] == info['name']:
-                        all_similar_text_pairs.append(info)
-                        break
-                else:
-                    cos_sim = cosine_similarity(log['embedding'], embedding_vector)
+                cos_sim = cosine_similarity(log['embedding'], embedding_vector)
 
-                    if self.is_test:
-                        line_no = info['line']
-                        func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                if self.is_test:
+                    line_no = info['line']
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
-                        self.final_result_dict[py_file_path][func_name].append({
-                            'name': f"{log['embedding'][:2]}...,{info['name']}, [AI] cos_sim={cos_sim}",
-                            'type': '',
-                            'line': line_no})
-
-                    if include_same or log['name'] != info['name']:
-                        all_similar_text_pairs.append(info)
-                        break
+                    self.final_result_dict[py_file_path][func_name].append({
+                        'name': f"{log['embedding'][:2]}...,{info['name']}, [AI] cos_sim={cos_sim}",
+                        'type': '',
+                        'line': line_no})
 
             text_embedding_logs.append(info)
 
