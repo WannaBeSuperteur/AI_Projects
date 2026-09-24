@@ -525,7 +525,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{ellipse_str(line)}, [AI] prob={prob}',
+                            {'name': f'{line}, [AI] prob={prob}',
                              'type': '',
                              'line': line_no})
 
@@ -1598,12 +1598,12 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{ellipse_str(arg_name_list)}, [AI] bindable_prob={bindable_prob}",
+                            {'name': f"{arg_name_list}, [AI] bindable_prob={bindable_prob}",
                              'type': '',
                              'line': line_no})
 
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{ellipse_str(arg_name_list)}, [AI] dynamic_prob={bindable_prob}",
+                            {'name': f"{arg_name_list}, [AI] dynamic_prob={bindable_prob}",
                              'type': '',
                              'line': line_no})
 
@@ -1781,7 +1781,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
             if self.is_test:
                 self.final_result_dict[py_file_path][func_name].append(
-                    {'name': f"{ellipse_str(text)}, [AI] prob={prob}",
+                    {'name': f"{text}, [AI] prob={prob}",
                      'type': '',
                      'line': line_no})
 
