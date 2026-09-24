@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import time
+import random
 
 import numpy as np
 import pandas as pd
@@ -25,7 +26,26 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 np.set_printoptions(linewidth=160)
-torch.manual_seed(2026)
+
+
+SEED = 2026
+split_generator = torch.Generator().manual_seed(SEED)
+
+
+def seed_everything(seed=SEED):
+    random.seed(seed)
+    np.random.seed(seed)
+
+    # PyTorch and cuDNN
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.use_deterministic_algorithms(True)
+
+seed_everything(SEED)
+
 
 # to prevent force system off during S-BERT training
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -343,7 +363,7 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
 
     predictor = EmbeddingProbPredictor(model, hidden_size)
     dataset_df = pd.read_csv(dataset_path)
-    dataset_df = dataset_df.sample(frac=1)
+    dataset_df = dataset_df.sample(frac=1, random_state=SEED)
     dataset_size = len(dataset_df)
     dataset = SingleTextDataset(dataset_df, tokenizer)
 
@@ -351,8 +371,10 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     n_valid_size = int(0.125 * dataset_size)
     n_test_size = dataset_size - (n_train_size + n_valid_size)
 
-    train_dataset, valid_dataset, test_dataset = random_split(dataset, [n_train_size, n_valid_size, n_test_size])
-    train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    train_dataset, valid_dataset, test_dataset = random_split(dataset,
+                                                              [n_train_size, n_valid_size, n_test_size],
+                                                              generator=split_generator)
+    train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, generator=split_generator)
     valid_loader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
 
@@ -481,7 +503,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     model = SentenceTransformer(model_path, device=device, trust_remote_code=True)
 
     dataset_df = pd.read_csv(dataset_path)
-    dataset_df = dataset_df.sample(frac=1)
+    dataset_df = dataset_df.sample(frac=1, random_state=SEED)
     datasets = create_datasets_for_tvt(dataset_df)
     train_dataset, valid_dataset, test_dataset = datasets['train'], datasets['valid'], datasets['test']
 
@@ -513,7 +535,9 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         warmup_steps=warmup_steps,
         load_best_model_at_end=False,
         metric_for_best_model="eval_loss",
-        save_strategy="no"
+        save_strategy="no",
+        seed=SEED,
+        data_seed=SEED
     )
 
     early_stopping_patience = steps_per_epoch * EARLY_STOPPING_PATIENCE_SIMILARITY
