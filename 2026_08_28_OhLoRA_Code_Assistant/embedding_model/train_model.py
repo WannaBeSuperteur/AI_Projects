@@ -107,6 +107,7 @@ class SingleTextDataset(torch.utils.data.Dataset):
             return_tensors="pt"
         )
         return {
+            "text": text,
             "input_ids": inputs["input_ids"].squeeze(0),
             "attention_mask": inputs["attention_mask"].squeeze(0),
             "prob": torch.tensor(self.probs[idx], dtype=torch.float16)
@@ -187,6 +188,7 @@ class EmbeddingProbTrainer:
         val_mse_sum, val_mae_sum, val_loss_sum = 0.0, 0.0, 0.0
 
         test_result = {
+            'text': [],
             'pred': [],
             'prob_label': []
         }
@@ -195,7 +197,9 @@ class EmbeddingProbTrainer:
             for idx, items in enumerate(data_loader):
                 items = {k: v.to(self.device) for k, v in items.items()}
 
+                texts = items['text']
                 inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
+
                 outputs = self.predictor(inputs, attention_mask).to(torch.float32)
                 preds = torch.sigmoid(outputs)
                 prob_labels = prob_labels.reshape(-1, 1)
@@ -212,6 +216,7 @@ class EmbeddingProbTrainer:
                 val_mae_sum += val_mae_batch * prob_labels.shape[0]
 
                 if is_test:
+                    test_result['text'].extend(list(texts))
                     test_result['pred'].extend(round(float(x[0]), 6) for x in preds)
                     test_result['prob_label'].extend(round(float(x[0]), 6) for x in prob_labels)
 
@@ -421,19 +426,22 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataset):
     best_model.eval()
 
     with torch.no_grad():
-        predicted_scores, true_labels = valid_or_test_similarity_predictor(model=best_model,
-                                                                           val_or_test_dataset=test_dataset)
+        predicted_scores, true_labels, sentence1s, sentence2s = \
+            valid_or_test_similarity_predictor(model=best_model,
+                                               val_or_test_dataset=test_dataset)
 
     test_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
     test_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
     test_pred_and_labels = {'pred_sim': [round(x, 6) for x in predicted_scores],
-                            'true_sim': [round(x, 6) for x in true_labels]}
+                            'true_sim': [round(x, 6) for x in true_labels],
+                            'sentence1': sentence1s,
+                            'sentence2': sentence2s}
 
     return test_mse, test_mae, test_pred_and_labels
 
 
 def valid_or_test_similarity_predictor(model, val_or_test_dataset):
-    predicted_scores, true_labels = [], []
+    predicted_scores, true_labels, sentence1s, sentence2s = [], [], [], []
 
     for batch in val_or_test_dataset:
         sentence1, sentence2, label = batch['sentence1'], batch['sentence2'], batch['label']
@@ -443,9 +451,11 @@ def valid_or_test_similarity_predictor(model, val_or_test_dataset):
         similarity = cosine_similarity(emb1, emb2)
 
         predicted_scores.extend(similarity[0].tolist())
+        sentence1s.append(sentence1)
+        sentence2s.append(sentence2)
         true_labels.append(label)
 
-    return predicted_scores, true_labels
+    return predicted_scores, true_labels, sentence1s, sentence2s
 
 
 class LogTrainingCallback(TrainerCallback):
