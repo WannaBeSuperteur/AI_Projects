@@ -633,17 +633,20 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
                                                 if log['name'] != info['name']]
 
-            for log in text_embedding_logs_filtered:
-                cos_sim = cosine_similarity(log['embedding'], embedding_vector)
+            line_no = info['line']
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
-                if self.is_test:
-                    line_no = info['line']
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+            if self.is_test:
+                for log in text_embedding_logs_filtered:
+                    cos_sim = cosine_similarity(log['embedding'], embedding_vector)
 
                     self.final_result_dict[py_file_path][func_name].append({
-                        'name': f"{log['embedding'][:2]}...,{info['name']}, [AI] cos_sim={cos_sim}",
+                        'name': f"{log['name']}...,{info['name']}, [AI] cos_sim={cos_sim}",
                         'type': '',
                         'line': line_no})
+
+            if text_embedding_logs_filtered:
+                all_similar_text_pairs.append(info)
 
             text_embedding_logs.append(info)
 
