@@ -72,6 +72,8 @@ def j():
     print(2)
 
 
+blah()
+j()
 baz2 = 3
 vector_store = 4
 email_preview_text_v3 = 5
