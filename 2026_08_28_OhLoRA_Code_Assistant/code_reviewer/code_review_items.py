@@ -672,7 +672,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             defined_info, _ = self._get_definitions_and_usages(py_file_path, parsed_py_code)
 
-            variable_info = {func: [info for info in info_list if info['type'] == 'name']
+            variable_info = {func: [info for info in info_list if info['type'] == 'name' and len(info['name']) >= 4]
                              for func, info_list in defined_info.items()}
             all_variables_dict[py_file_path] = variable_info
 
