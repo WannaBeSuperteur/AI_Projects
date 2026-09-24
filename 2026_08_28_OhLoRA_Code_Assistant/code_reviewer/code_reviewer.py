@@ -195,6 +195,7 @@ class TextEmbeddingModelForInference:
             outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
             emb = mean_pooling(outputs, attention_mask)
             prob = self.final_linear(emb)
+            prob = torch.sigmoid(prob)
 
         return prob
 
