@@ -638,7 +638,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             if self.is_test:
                 for log in text_embedding_logs_filtered:
-                    cos_sim = cosine_similarity(log['embedding'], embedding_vector)
+                    cos_sim = cosine_similarity(log['embedding'], embedding_vector)[0][0]
 
                     self.final_result_dict[py_file_path][func_name].append({
                         'name': f"{log['name']}...,{info['name']}, [AI] cos_sim={cos_sim}",
@@ -1116,12 +1116,12 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 line1_embedding = line_embeddings[line1_line_no].reshape(1, -1)
                 line2_embedding = line_embeddings[line2_line_no].reshape(1, -1)
-                cos_sim = cosine_similarity(line1_embedding, line2_embedding)
+                cos_sim = cosine_similarity(line1_embedding, line2_embedding)[0][0]
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{ellipse_str(line1.strip())},{ellipse_str(line2.strip())}, [AI] cos_sim={cos_sim}",
+                        {'name': f"{line1.strip()},{line2.strip()}, [AI] cos_sim={cos_sim}",
                          'type': '',
                          'line': line1_line_no})
 
@@ -1825,7 +1825,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                     func_name_0, func_name_1 = func_name_info_0['name'], func_name_info_1['name']
                     line_no = func_name_info_0['line']
 
-                    cos_sim = cosine_similarity(emb_0, emb_1)
+                    cos_sim = cosine_similarity(emb_0, emb_1)[0][0]
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name_0].append(
@@ -1929,6 +1929,16 @@ class EntireCodeChecker(DefaultCodeChecker):
                         **other_pythonic_result,
                         **exceptions_result,
                         **cohesiveness_and_class_result}
+
+        # temp logging code (TODO: remove for production)
+        result_str = ''
+        for result_key, result_value in final_result.items():
+            result_str += f'\n==== RULE : {result_key} ====\n'
+            result_str += str(result_value)
+
+        from datetime import datetime
+        now = datetime.now().strftime('%Y%m%d%H%M%S')
+        Path(f'log_{now}.txt').write_text(result_str, encoding='utf-8')
 
         return final_result
 
