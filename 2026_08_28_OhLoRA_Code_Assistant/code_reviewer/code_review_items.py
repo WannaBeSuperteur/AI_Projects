@@ -1820,7 +1820,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
             for idx_0, func_name_info_0 in enumerate(func_names):
                 for idx_1, func_name_info_1 in enumerate(func_names):
-                    emb_0, emb_1 = func_name_info_0['embedding'], func_name_info_1['embedding']
+                    emb_0 = func_name_info_0['embedding'].reshape(1, -1)
+                    emb_1 = func_name_info_1['embedding'].reshape(1, -1)
                     func_name_0, func_name_1 = func_name_info_0['name'], func_name_info_1['name']
                     line_no = func_name_info_0['line']
 
