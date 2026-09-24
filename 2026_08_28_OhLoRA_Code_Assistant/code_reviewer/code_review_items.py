@@ -1775,7 +1775,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
             text = f"if {info[0]['var_name']}: {info[0]['simplified_body']}"
             prob = text_embedding_model.get_prob(text)
 
-            py_file_path, line_no = info['py_file_path'], info['line_no']
+            py_file_path, line_no = info['code_path'], info['line_no']
             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
             if self.is_test:
