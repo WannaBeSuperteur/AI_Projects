@@ -1770,6 +1770,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
         text_embedding_model = self.text_embedding_models.get('06_refactor_into_class_case_2_state_vars_if_else')
         text_embedding_model.load_model()
+        self.final_result_dict = defaultdict(lambda: defaultdict(list))
 
         def check_is_state_value(info):
             text = f"if {info[0]['var_name']}: {info[0]['simplified_body']}"
@@ -1786,7 +1787,10 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
             return prob >= 0.5
 
-        self.final_result_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
+        pattern_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
+        for file_path, funcs in pattern_dict.items():
+            for func_name, items in funcs.items():
+                self.final_result_dict[file_path][func_name].extend(items)
 
         text_embedding_model.unload_model()
         return convert_to_human_friendly_review(self.final_result_dict)
