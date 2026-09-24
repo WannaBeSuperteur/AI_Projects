@@ -622,7 +622,10 @@ class PythonBasicsChecker(DefaultCodeChecker):
             info['embedding'] = embedding_vector
             info['py_file_path'] = py_file_path
 
-            for log in text_embedding_logs:
+            text_embedding_logs_filtered = [log for log in text_embedding_logs
+                                            if cosine_similarity(log['embedding'], embedding_vector) >= 0.95]
+
+            for log in text_embedding_logs_filtered:
                 if only_same:
                     if log['name'] == info['name']:
                         all_similar_text_pairs.append(info)
@@ -639,7 +642,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                             'type': '',
                             'line': line_no})
 
-                    if cos_sim >= 0.95 and (include_same or log['name'] != info['name']):
+                    if include_same or log['name'] != info['name']:
                         all_similar_text_pairs.append(info)
                         break
 
@@ -648,9 +651,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         for py_file_path in value_dict.keys():
             for func_name, info_list in value_dict[py_file_path].items():
                 for info in info_list:
-                    print(time.time(), 'start', len(text_embedding_logs))
                     check_text_similar_with_prevs(info, py_file_path)
-                    print(time.time(), 'end', len(text_embedding_logs))
 
         return all_similar_text_pairs
 
