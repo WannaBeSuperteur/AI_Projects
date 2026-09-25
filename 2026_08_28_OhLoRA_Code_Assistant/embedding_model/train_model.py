@@ -40,9 +40,7 @@ def seed_everything(seed=SEED):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(True)
+
 
 seed_everything(SEED)
 
@@ -57,10 +55,10 @@ TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
 
-MAX_EPOCHS_PROB = 20
+MAX_EPOCHS_PROB = 1
 EARLY_STOPPING_PATIENCE_PROB = 5
 
-MAX_EPOCHS_SIMILARITY = 12
+MAX_EPOCHS_SIMILARITY = 1
 EARLY_STOPPING_PATIENCE_SIMILARITY = 3
 
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
@@ -78,6 +76,12 @@ HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
 LEARNING_RATE = {GTE_MODERNBERT_BASE: {'lr': 3e-5, 'warmup_fraction': 0.075},
                  F2LLM_V2_330M: {'lr': 2.5e-6, 'warmup_fraction': 0.4},
                  LATEON_CODE_PRETRAIN: {'lr': 8e-6, 'warmup_fraction': 0.0}}
+
+
+def is_model_exists(file_names: list[str]) -> bool:
+    model_files = [name for name in file_names
+                   if name.endswith('.pt') or name.endswith('.pth') or name.endswith('.safetensors')]
+    return len(model_files) >= 1
 
 
 def mean_pooling(model_output, attention_mask):
@@ -162,7 +166,7 @@ class EmbeddingProbTrainer:
         train_loss_sum = 0.0
 
         for idx, items in enumerate(self.train_loader):
-            items = {k: v.to(self.device) for k, v in items.items()}
+            items = {k: v.to(self.device) for k, v in items.items() if not isinstance(v, list)}
             inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
             prob_labels = prob_labels.reshape(-1, 1)
 
@@ -195,7 +199,8 @@ class EmbeddingProbTrainer:
 
         with torch.no_grad():
             for idx, items in enumerate(data_loader):
-                items = {k: v.to(self.device) for k, v in items.items()}
+                items = {k: v.to(self.device) if not isinstance(v, list) else v
+                         for k, v in items.items()}
 
                 texts = items['text']
                 inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
@@ -356,7 +361,7 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     tokenizer.save_pretrained(model_dir_path)
     config.save_pretrained(model_dir_path)
 
-    if os.path.exists(model_dir_path) and os.listdir(model_dir_path):
+    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
         print(f'model already exists: {model_dir_path}')
         save_base_model(model_dir_path)
         return
@@ -475,7 +480,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     """train text embedding similarity predictor."""
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
-    if os.path.exists(model_dir_path) and os.listdir(model_dir_path):
+    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
         print(f'model already exists: {model_dir_path}')
         return
 
@@ -495,8 +500,8 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     def log_training(score: float, epoch: float, steps: int):
         with torch.no_grad():
-            predicted_scores, true_labels = valid_or_test_similarity_predictor(model=model,
-                                                                               val_or_test_dataset=valid_dataset)
+            predicted_scores, true_labels, _, _ = valid_or_test_similarity_predictor(model=model,
+                                                                                     val_or_test_dataset=valid_dataset)
 
         valid_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
         valid_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
