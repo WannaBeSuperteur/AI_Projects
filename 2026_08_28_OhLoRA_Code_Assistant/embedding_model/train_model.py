@@ -205,7 +205,7 @@ class EmbeddingProbTrainer:
                 texts = items['text']
                 inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
 
-                outputs = self.predictor(inputs, attention_mask).to(torch.float32)
+                outputs = model(inputs, attention_mask).to(torch.float32)
                 preds = torch.sigmoid(outputs)
                 prob_labels = prob_labels.reshape(-1, 1)
 
@@ -276,19 +276,17 @@ class EmbeddingProbTrainer:
                 min_valid_loss = valid_loss
                 min_valid_loss_epoch = self.current_epoch
 
-                pretrained_model = EmbeddingProbPredictor(base_model=self.predictor.base_model,
-                                                          hidden_size=self.predictor.hidden_size)
-
-                best_epoch_model = pretrained_model.to(self.device)
-                best_epoch_model.device = self.device
-                best_epoch_model.load_state_dict(self.predictor.state_dict())
+                best_model_state_dict = {
+                    key: value.detach().cpu().clone()
+                    for key, value in self.predictor.state_dict().items()
+                }
 
                 if os.path.exists(ckpt_dir_path):
                     shutil.rmtree(ckpt_dir_path)
 
                 os.makedirs(ckpt_dir_path, exist_ok=True)
                 ckpt_path = os.path.join(ckpt_dir_path, f"epoch_{self.current_epoch:04d}.pth")
-                torch.save(best_epoch_model.state_dict(), ckpt_path)
+                torch.save(best_model_state_dict, ckpt_path)
 
             train_log['epoch'].append(self.current_epoch)
             train_log['epoch_time'].append(round(time.time() - start_at, 3))
@@ -303,6 +301,32 @@ class EmbeddingProbTrainer:
                 break
 
             self.current_epoch += 1
+
+        # assert best epoch model accuracy & loss
+        best_base_model = AutoModel.from_pretrained(self.model_path, trust_remote_code=True, torch_dtype=torch.float32)
+        best_epoch_model = EmbeddingProbPredictor(base_model=best_base_model, hidden_size=self.predictor.hidden_size)
+
+        best_model_ckpt_path = os.path.join(ckpt_dir_path, f"epoch_{min_valid_loss_epoch:04d}.pth")
+        best_model_state_dict = torch.load(best_model_ckpt_path, map_location='cpu', weights_only=True)
+        best_epoch_model.load_state_dict(best_model_state_dict, strict=True)
+
+        best_epoch_model = best_epoch_model.to(self.device)
+        best_epoch_model.device = self.device
+        best_epoch_model.eval()
+
+        assert_start_at = time.time()
+        _, _, checked_valid_loss = self._run_validation_or_test(model=best_epoch_model,
+                                                                data_loader=self.valid_loader)
+
+        train_log['epoch'].extend(['assert_min_valid_loss', 'assert_checked_valid_loss'])
+        train_log['epoch_time'].extend([round(time.time() - assert_start_at, 3)] * 2)
+        train_log['valid_mse'].extend([''] * 2)
+        train_log['valid_mae'].extend([''] * 2)
+        train_log['valid_loss'].extend([min_valid_loss, checked_valid_loss])
+        train_log['torch_memory'].extend([torch.cuda.memory_allocated(), ''])
+        pd.DataFrame(train_log).to_csv(train_log_path)
+
+        assert abs(min_valid_loss - checked_valid_loss) <= 1e-6
 
         # run test
         print('testing ...')
