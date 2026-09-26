@@ -50,10 +50,10 @@
 
 ### 2-1. 불필요한 print, logging 등이 없어야 함
 
-| 모델                                  | 실험 결과                               |
-|-------------------------------------|-------------------------------------|
-| `gte-modernbert-base`               | ![image](../../images/260828_6.PNG) |
-| `gte-modernbert-base` (more epochs) |                                     |
+| 모델                                  | 실험 결과                                |
+|-------------------------------------|--------------------------------------|
+| `gte-modernbert-base`               | ![image](../../images/260828_6.PNG)  |
+| `gte-modernbert-base` (more epochs) | ![image](../../images/260828_20.PNG) |
 
 ### 2-2. 유사한 변수명은 하나로 통일 시키는 것이 좋음
 
@@ -61,7 +61,7 @@
 |--------------------------------------|--------------------------------------|
 | `Giga-Embeddings-instruct-480M-0826` | ![image](../../images/260828_5.PNG)  |
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_11.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_21.PNG) |
 
 ### 2-3. 변수명, 함수명은 의미가 있어야 함 (+ 알기 쉽게 할것)
 
@@ -69,7 +69,7 @@
 |--------------------------------------|--------------------------------------|
 | `Giga-Embeddings-instruct-480M-0826` | ![image](../../images/260828_3.PNG)  |
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_12.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_22.PNG) |
 
 ### 2-4. 함수명과 반환값이 서로 잘 match 되어야 함
 
@@ -77,21 +77,21 @@
 |--------------------------------------|--------------------------------------|
 | `Giga-Embeddings-instruct-480M-0826` | ![image](../../images/260828_4.PNG)  |
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_13.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_23.PNG) |
 
 ### 2-5. 함수의 단일 책임 원칙 준수 여부 (docstring 으로 판단)
 
-| 모델                            | 실험 결과                               |
-|-------------------------------|-------------------------------------|
-| `F2LLM-v2-330M`               | ![image](../../images/260828_2.PNG) |
-| `F2LLM-v2-330M` (more epochs) |                                     |
+| 모델                            | 실험 결과                                |
+|-------------------------------|--------------------------------------|
+| `F2LLM-v2-330M`               | ![image](../../images/260828_2.PNG)  |
+| `F2LLM-v2-330M` (more epochs) | ![image](../../images/260828_24.PNG) |
 
 ### 2-6. 함수 docstring과 함수명이 서로 일치하는지 판단
 
-| 모델                            | 실험 결과                               |
-|-------------------------------|-------------------------------------|
-| `F2LLM-v2-330M`               | ![image](../../images/260828_1.PNG) |
-| `F2LLM-v2-330M` (more epochs) |                                     |
+| 모델                            | 실험 결과                                |
+|-------------------------------|--------------------------------------|
+| `F2LLM-v2-330M`               | ![image](../../images/260828_1.PNG)  |
+| `F2LLM-v2-330M` (more epochs) | ![image](../../images/260828_25.PNG) |
 
 ### 2-7. 함수의 인자가 하나로 묶을 수 있는 경우 처리 필요
 
@@ -99,7 +99,7 @@
 |--------------------------------------|--------------------------------------|
 | `Giga-Embeddings-instruct-480M-0826` | ![image](../../images/260828_7.PNG)  |
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_14.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_26.PNG) |
 
 ### 2-8. 함수의 인자가 유동적인 경우 처리 필요
 
@@ -107,7 +107,7 @@
 |--------------------------------------|--------------------------------------|
 | `Giga-Embeddings-instruct-480M-0826` | ![image](../../images/260828_8.PNG)  |
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_15.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_27.PNG) |
 
 ### 2-9. 상태 값으로 판단되는 값을 조건으로 하는지 여부
 
@@ -115,7 +115,7 @@
 |--------------------------------------|--------------------------------------|
 | `Giga-Embeddings-instruct-480M-0826` | ![image](../../images/260828_9.PNG)  |
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_16.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_28.PNG) |
 
 ### 2-10. 한 모듈 (*.py 파일) 내에서, 유사한 이름의 함수끼리 거리 검사
 
@@ -123,18 +123,18 @@
 |--------------------------------------|--------------------------------------|
 | `Giga-Embeddings-instruct-480M-0826` | ![image](../../images/260828_10.PNG) |
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_17.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_29.PNG) |
 
 ### 2-11. 숫자 값을 constant 처럼 사용 시, 해당 값 상수화 적절성 판단
 
 | 모델                                   | 실험 결과                                |
 |--------------------------------------|--------------------------------------|
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_18.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_30.PNG) |
 
 ### 2-12. 동일한 숫자 값 2회 이상 사용 시, 상수로 통합 적절성 판단
 
 | 모델                                   | 실험 결과                                |
 |--------------------------------------|--------------------------------------|
 | `LateOn-Code-pretrain`               | ![image](../../images/260828_19.PNG) |
-| `LateOn-Code-pretrain` (more epochs) |                                      |
+| `LateOn-Code-pretrain` (more epochs) | ![image](../../images/260828_31.PNG) |
