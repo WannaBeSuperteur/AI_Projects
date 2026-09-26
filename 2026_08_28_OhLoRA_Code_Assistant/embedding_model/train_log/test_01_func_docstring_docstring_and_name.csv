@@ -1,251 +1,536 @@
-,pred_sim,true_sim
-0,0.014885,0.0
-1,0.094795,0.0
-2,0.66103,1.0
-3,0.153029,0.308613
-4,0.062887,0.274518
-5,0.629763,0.340779
-6,0.258459,0.412831
-7,0.095153,0.386455
-8,0.16448,0.130415
-9,0.056838,0.128485
-10,0.020027,0.066726
-11,0.079019,0.0
-12,0.096577,0.0
-13,0.571948,0.333703
-14,0.626374,0.736419
-15,0.54691,0.175447
-16,0.01902,0.0
-17,0.42765,0.19346
-18,-0.002278,0.0
-19,0.363954,0.188956
-20,0.024119,0.074446
-21,0.784026,0.897891
-22,0.17213,0.0
-23,0.786992,1.0
-24,0.650586,0.636705
-25,0.522014,0.67659
-26,0.538697,0.583953
-27,0.593175,1.0
-28,0.067532,0.0
-29,0.47444,0.729986
-30,0.413495,0.377448
-31,0.428308,0.163224
-32,0.583836,0.353645
-33,0.376393,0.179307
-34,0.703074,0.738992
-35,0.7494,1.0
-36,0.393767,0.415404
-37,0.180224,0.0
-38,0.673195,0.929414
-39,0.811768,1.0
-40,0.518977,0.399964
-41,0.048631,0.0
-42,-0.064002,0.0
-43,0.722123,1.0
-44,0.36143,0.414117
-45,0.55955,1.0
-46,0.455158,0.215976
-47,0.554582,0.516405
-48,0.310162,0.374875
-49,0.4061,0.109185
-50,0.136998,0.0
-51,0.126099,0.064796
-52,0.595667,0.146497
-53,0.610144,0.731272
-54,0.489236,0.640565
-55,0.066446,0.0
-56,0.217678,0.457863
-57,0.742302,0.789814
-58,0.329569,0.54664
-59,0.461755,0.646355
-60,0.669044,0.722909
-61,0.02626,0.0
-62,0.419756,0.406397
-63,0.10728,0.267441
-64,0.071269,0.0
-65,0.239313,0.757005
-66,0.677965,0.478449
-67,0.01906,0.0
-68,0.838363,0.895318
-69,-0.033183,0.0
-70,0.47971,0.621909
-71,0.191252,0.101465
-72,0.669135,0.362652
-73,0.161778,0.299607
-74,0.149089,0.0
-75,0.174067,0.31955
-76,0.561161,1.0
-77,0.019127,0.0
-78,0.369846,0.44757
-79,0.111605,0.0
-80,0.442661,0.407041
-81,0.413438,0.366512
-82,0.238753,0.0
-83,0.180003,0.0
-84,0.470489,0.303467
-85,0.428532,0.252001
-86,0.193068,0.0
-87,0.432075,0.338206
-88,0.613589,0.94228
-89,0.049345,0.0
-90,0.037937,0.0
-91,0.5563,0.5505
-92,0.099388,0.0
-93,0.76285,1.0
-94,0.451223,0.370372
-95,0.714913,0.589743
-96,0.766564,0.56208
-97,0.792402,0.876019
-98,0.047345,0.0
-99,0.486438,0.841279
-100,0.806033,0.930701
-101,0.672987,0.491959
-102,0.115426,0.0
-103,0.609654,0.170944
-104,0.134937,0.0
-105,0.635265,1.0
-106,0.754755,0.881808
-107,0.100995,0.0
-108,0.717789,0.349786
-109,0.610849,1.0
-110,0.485092,0.483595
-111,0.667762,0.585239
-112,0.692087,0.161294
-113,0.694115,0.456576
-114,0.468806,0.152287
-115,0.17214,0.0
-116,-0.008954,0.270658
-117,0.053479,0.273874
-118,0.548536,0.585883
-119,0.302212,0.724839
-120,0.474914,0.658578
-121,0.501027,0.758935
-122,0.466679,0.183167
-123,0.200886,0.219192
-124,-0.012882,0.0
-125,0.643401,1.0
-126,0.773632,1.0
-127,0.517096,0.551787
-128,0.634162,0.70361
-129,0.044182,0.0
-130,0.039839,0.0
-131,0.023033,0.0
-132,0.517778,0.521551
-133,0.123969,0.0
-134,0.660208,1.0
-135,0.789065,0.935847
-136,0.439328,0.324053
-137,0.329257,0.43792
-138,0.831149,0.759578
-139,0.762797,0.771158
-140,0.811722,0.878592
-141,0.346419,0.440493
-142,0.476793,0.227555
-143,0.690514,0.466869
-144,0.04679,0.0
-145,0.630955,0.876662
-146,0.580873,0.668871
-147,0.727479,0.520908
-148,0.2248,0.257148
-149,0.642028,0.226269
-150,0.493524,0.591673
-151,0.410539,0.190243
-152,-0.029802,0.0
-153,0.788706,0.728056
-154,0.31831,0.279664
-155,0.106447,0.084096
-156,0.589465,0.468799
-157,0.571659,0.801394
-158,0.617069,0.228842
-159,0.121618,0.244925
-160,0.341956,0.192816
-161,0.461852,0.365868
-162,0.555151,0.486812
-163,0.328968,0.590386
-164,0.59511,0.766655
-165,0.420136,0.475876
-166,0.074647,0.0
-167,0.532367,0.347212
-168,0.113537,0.098892
-169,0.112161,0.0
-170,0.025649,0.0
-171,0.251389,0.784024
-172,0.603011,1.0
-173,0.041237,0.0
-174,0.411362,0.209543
-175,0.482343,0.604539
-176,0.05793,0.0
-177,-0.011768,0.0
-178,0.384455,0.199249
-179,0.098526,0.059006
-180,0.6975,0.535061
-181,0.675928,0.825197
-182,0.118637,0.0
-183,0.043588,0.115618
-184,0.387178,0.310543
-185,0.579586,1.0
-186,0.515467,0.408971
-187,0.791005,1.0
-188,0.109351,0.136848
-189,0.325707,0.318906
-190,0.38904,0.367155
-191,0.646337,0.5698
-192,0.003358,0.0
-193,0.64916,0.926197
-194,0.213153,0.277091
-195,0.012908,0.0
-196,0.557095,0.567227
-197,0.543426,0.509971
-198,0.354816,0.655361
-199,0.43855,0.293817
-200,0.038859,0.0
-201,0.584029,1.0
-202,0.130999,0.107898
-203,0.55043,0.30604
-204,0.406761,0.29253
-205,0.252935,0.291244
-206,0.015705,0.0
-207,0.085325,0.201823
-208,-0.013105,0.0
-209,0.052207,0.0
-210,0.063474,0.0
-211,0.02517,0.0
-212,0.768021,1.0
-213,0.66784,0.738349
-214,0.099094,0.070586
-215,0.067251,0.0
-216,0.306341,0.737706
-217,0.586516,0.648928
-218,0.27029,0.241065
-219,0.391001,0.650858
-220,0.087534,0.0
-221,0.580878,0.94035
-222,0.770055,1.0
-223,0.500018,0.389671
-224,0.491341,0.167084
-225,0.360666,0.592316
-226,0.071726,0.0
-227,0.526328,0.638635
-228,0.350763,0.56401
-229,0.569427,0.545354
-230,0.558449,1.0
-231,0.105346,0.230129
-232,0.541212,0.909471
-233,0.62251,0.210186
-234,0.715368,0.794961
-235,0.74012,1.0
-236,0.135696,0.250715
-237,0.469003,0.642495
-238,0.065031,0.0
-239,0.618271,1.0
-240,0.028461,0.0
-241,0.74902,1.0
-242,0.087082,0.05772
-243,0.581523,0.32341
-244,-0.078016,0.0
-245,0.677693,1.0
-246,0.748005,0.891458
-247,0.15826,0.248785
-248,0.460617,0.505468
-249,0.103577,0.255861
+,pred_sim,true_sim,sentence1,sentence2
+0,0.69943,1.0,load_migration_plan,"Load the migration plan from the remote service.
+Return a value suitable for the caller."
+1,0.619351,0.528628,compress_retry_release_document,"Compress the release document for the relevant processing step.
+Honor the active formatting and validation rules.
+Handle only the primary result for this call."
+2,0.79186,0.877305,encrypt_key_rotation_cached,"Encrypt the key rotation from cached state.
+Leave unrelated state unchanged."
+3,0.559056,0.542781,rank_timezone_value,"Rank the timezone value with the current settings.
+Return a stable value for downstream processing.
+Handle only the primary result for this call."
+4,0.029186,0.0,throttle,"Build the locale config for the latest available version.
+Preserve unrelated state while the operation runs.
+Preserve the caller's active context."
+5,0.543535,0.641208,audit_export_audit_log,"Audit the audit log for the primary record in the active workflow.
+Do not process optional related entries."
+6,0.587924,0.693317,audit_tenant_billing_rule,"Audit the billing rule where it is required by the active workflow.
+Apply the active security policy.
+Make the outcome available to the next processing step."
+7,0.231039,0.353002,filter_code,"Paginate the currency code before deployment.
+Leave the source data unchanged.
+Leave unrelated state unchanged."
+8,0.38204,0.598106,validate_job,"Validate the pending workflow item for the selected tenant.
+Keep the decision available for audit handling."
+9,0.24619,0.122051,refresh_retry_deployment_job,Roll back the DNS record for the requested export.
+10,0.601427,0.666941,deploy_build_config,"Deploy the build config for the primary record in the active workflow.
+Do not advance unrelated jobs.
+Do not process optional related entries."
+11,0.459882,0.316976,cancel_background_task,"Cancel the processing stage for audit review.
+Do not advance unrelated jobs."
+12,0.178542,0.086026,load_bundle,Classify the latency budget for the current operation.
+13,0.151171,0.233989,merge_background_notification_rule,Create the order line during the background job.
+14,0.875209,1.0,verify_mfa_challenge_export,Verify the MFA challenge for the requested export.
+15,0.525737,0.564653,fetch_audit_device_fingerprint,"Retrieve the device fingerprint for the active workflow.
+Return a value suitable for the caller.
+Preserve the caller's active context."
+16,0.08865,0.0,enable_release_note,"Update the calendar event for the selected workspace.
+Apply the active configuration before committing changes.
+Return the resulting value or status."
+17,0.028807,0.0,score_usage_total,Decrypt the billing rule during the background job.
+18,0.228586,0.264868,monitor_retry_queue_workspace,"Invalidate the deployment job for the selected workspace.
+Preserve unrelated state while the operation runs."
+19,0.315254,0.276447,sort_inventory_level,"Sort the latency budget for the requested export.
+Leave the source data unchanged."
+20,0.689225,1.0,refresh_incoming_build_config,"Refresh the build config from the incoming payload.
+Return a value suitable for the caller.
+Make the outcome available to the next processing step."
+21,0.306691,0.221766,extract_variable,"Map the template variable for the active batch.
+Retain only the information required by the caller."
+22,0.723467,1.0,load_feature_policy_secure,"Load the feature policy under the active security policy.
+Keep the operation scoped to the active workflow."
+23,0.044495,0.082166,classify_timezone_value,"Decrypt the email address for the current operation.
+Keep the decision available for audit handling.
+Leave unrelated state unchanged."
+24,0.374667,0.179307,delete_invoice_record,"Create the invoice record for the billing workflow.
+Apply the active configuration before committing changes.
+Return the resulting value or status."
+25,0.066564,0.0,fetch_migration_plan,"Publish the runtime setting during the background job.
+Preserve unrelated state while the operation runs.
+Preserve the caller's active context."
+26,0.068541,0.274518,throttle_metric_series,"Synchronize the sync checkpoint within the current transaction.
+Use the configured source when an override is not supplied.
+Preserve the caller's active context."
+27,0.758955,0.874732,sort_policy_exchange_rate,"Sort the exchange rate against the configured policy.
+Leave unrelated state unchanged."
+28,0.061553,0.087956,create_report_snapshot_secure,Deploy the logging config for the current operation.
+29,0.376737,0.381308,extract_document,"Convert the source document where the calling workflow requires it.
+Retain only the information required by the caller."
+30,0.050415,0.095675,aggregate_currency_code,Monitor the alert rule for the active batch.
+31,0.550686,0.670157,restore_metric_series_secure,"Restore the metric series for the primary record in the active workflow.
+Do not process optional related entries."
+32,0.188387,0.0,rollback,"Synchronize the dependency lock for audit review.
+Return a value suitable for the caller.
+Preserve the caller's active context."
+33,0.506214,0.671444,rank_usage_total_batch,"Rank the usage total for the primary record in the active workflow.
+Do not process optional related entries."
+34,0.008776,0.0,expand_variable,"Filter the knowledge article before the workflow continues.
+Return a stable value for downstream processing."
+35,0.565826,0.518335,route_metric_series,"Route the metric series to the appropriate handler with the current settings.
+Report the latest state to the caller.
+Handle only the primary result for this call."
+36,0.112298,0.127841,fetch_workspace_document_page,"Compress the markdown file under the configured timeout.
+Honor the active formatting and validation rules."
+37,0.556393,0.568513,format_body,Format the request body for the active workflow.
+38,0.773906,0.850286,delete_localization_bundle_workflow,"Delete the localization bundle before the workflow continues.
+Apply the active configuration before committing changes.
+Keep the result available for the next processing step."
+39,0.161605,0.0,parse_latest_release_document,"Persist the API contract from cached state.
+Apply the active configuration before committing changes."
+40,0.420944,0.429557,index_record,Index the experiment result with the current settings.
+41,0.555042,0.216619,compile_current_report_attachment,"Publish the report attachment for the billing workflow.
+Report the resulting status to the caller."
+42,0.728889,1.0,dispatch_workflow_step_audit,"Dispatch the workflow step for audit review.
+Report the latest state to the caller."
+43,0.039206,0.0,fetch_html_fragment,"Invalidate the webhook signature for audit review.
+Apply the active configuration before committing changes."
+44,0.054776,0.0,validate_config,Deploy the export request before deployment.
+45,0.387957,0.199249,map_cursor,Parse the pagination cursor for the active batch.
+46,0.801634,1.0,publish_deploy_experiment_result,Publish the experiment result before deployment.
+47,0.358249,0.594889,merge_intent,Merge the business record before the workflow continues.
+48,0.485256,0.604539,monitor_batch_job_run,Monitor the infrastructure resource for the active batch.
+49,0.724762,0.937134,fetch_audit_workflow_state,"Retrieve the workflow state for audit review.
+Keep the operation scoped to the active workflow.
+Use the default path when no explicit override is supplied."
+50,0.567226,0.145211,authorize_security_question_workspace,"Revoke access associated with the security question for the selected workspace.
+Do not expose protected details in the returned result.
+Preserve the caller's active context."
+51,-0.0605,0.0,filter_rate,Encrypt the secret value from cached state.
+52,0.704607,0.824553,throttle_policy_directory_listing,"Apply throttling to the directory listing against the configured policy.
+Report the latest state to the caller.
+Keep the result available for the next processing step."
+53,0.228231,0.271301,encrypt_workspace_trust_bundle,"Audit the password reset for the selected workspace.
+Do not expose protected details in the returned result."
+54,0.068674,0.0,fetch_permission_grant_policy,"Monitor the export job for the current request.
+Do not advance unrelated jobs.
+Make the outcome available to the next processing step."
+55,0.511095,0.677877,compile_document,"Compile the schema document for the primary record in the active workflow.
+Do not process optional related entries."
+56,0.365148,0.336276,sync_flag,"Update the feature flag for the latest available version.
+Report the resulting status to the caller.
+Preserve the caller's active context."
+57,0.543299,0.737062,filter_argument,"Filter the command argument.
+Leave the source data unchanged."
+58,0.492037,0.302823,index_service_endpoint_workspace,"Index the container image for the selected workspace.
+Use the configured source when an override is not supplied."
+59,0.681421,0.856719,compile_transaction_schema_document,"Compile the schema document within the current transaction.
+Keep the result available for the next processing step."
+60,0.549422,0.534417,hydrate_report_snapshot,"Hydrate the report snapshot where the calling workflow requires it.
+Return a value suitable for the caller.
+Handle only the primary result for this call."
+61,0.574781,0.83356,create_snapshot,"Create the report snapshot for the latest available version.
+Apply the active configuration before committing changes.
+Keep the result available for the next processing step."
+62,0.018333,0.237205,sort_email_message,"Delete the archive manifest against the configured policy.
+Preserve unrelated state while the operation runs."
+63,0.647992,0.917191,cancel_delivery_attempt,"Cancel the delivery attempt against the configured policy.
+Report the latest state to the caller.
+Use the default path when no explicit override is supplied."
+64,0.397794,0.706826,rollback,"Roll back the release job where it is required by the active workflow.
+Keep the work within the current processing flow."
+65,0.06672,0.0,disable_scheduled_task,"Paginate the health metric under the configured timeout.
+Use the current selection criteria."
+66,0.221003,0.42827,dequeue_transition,Take the next item from the release note for the relevant processing step.
+67,0.025325,0.0,merge_api_contract,"Validate the notification batch for the latest available version.
+Do not expose protected details in the returned result."
+68,0.613333,0.748642,monitor_service_endpoint_remote,"Monitor the service endpoint.
+Keep the work within the current processing flow.
+Preserve the caller's active context."
+69,0.521151,0.151001,fetch_payment_intent,"Delete the payment intent from cached state.
+Preserve unrelated state while the operation runs."
+70,0.546219,0.585883,sync_export_auth_token,"Synchronize the auth token for the active workflow.
+Return a value suitable for the caller.
+Make the outcome available to the next processing step."
+71,0.006689,0.0,update_media_asset,"Classify the fraud signal from the incoming payload.
+Use the current selection criteria.
+Return the resulting value or status."
+72,0.474944,0.713259,hash_query,"Hash the GraphQL query where it is required by the active workflow.
+Keep the decision available for audit handling."
+73,0.247394,0.606469,delete_localization_bundle,Delete the catalog entry under the configured timeout.
+74,0.000775,0.0,create_media_asset,Refresh the encryption key for the current request.
+75,0.176827,0.245568,decrypt_signature,Refresh the OAuth client for audit review.
+76,0.592058,0.924911,sync_session_cookie,"Synchronize the session cookie from local storage.
+Keep the operation scoped to the active workflow.
+Use the default path when no explicit override is supplied."
+77,0.785185,0.757648,reindex_category_tree,Rebuild the index for the category tree.
+78,0.569136,0.879235,rank_recommendation_score,"Rank the recommendation score from cached state.
+Leave the source data unchanged.
+Leave unrelated state unchanged."
+79,0.050833,0.0,invalidate_job,"Load the database schema from the incoming payload.
+Use the configured source when an override is not supplied."
+80,0.446406,0.354932,retry_image_asset,"Wait for the image asset against the configured policy.
+Do not advance unrelated jobs.
+Preserve the caller's active context."
+81,0.505882,0.901108,validate_account_record,"Validate the account record from cached state.
+Apply the active security policy.
+Leave unrelated state unchanged."
+82,0.005651,0.084739,verify_request_body_local,"Retrieve the search index for the current operation.
+Keep the operation scoped to the active workflow."
+83,0.147714,0.071873,calculate_exchange_rate,Create the state transition for the current operation.
+84,0.377569,0.18188,format_request_body,"Redact the request body against the configured policy.
+Keep the decision available for audit handling."
+85,0.368001,0.201179,decrypt_user_profile,"Verify the user profile before deployment.
+Keep the decision available for audit handling."
+86,0.400878,0.229485,purge_data_partition,"Archive the data partition from local storage.
+Report the resulting status to the caller.
+Preserve the caller's active context."
+87,0.573266,0.818763,throttle_attempt,"Apply throttling to the delivery attempt during the background job.
+Do not advance unrelated jobs.
+Keep the result available for the next processing step."
+88,0.583654,0.482309,index_pricing_plan_incoming,"Index the pricing plan for the active batch.
+Use the configured source when an override is not supplied.
+Preserve the caller's active context."
+89,-0.012939,0.270658,sort_search_filter,"Retrieve the template asset during retry handling.
+Keep the operation scoped to the active workflow.
+Preserve the caller's active context."
+90,0.081613,0.060293,monitor_latest_batch_request,"Publish the service config for the current operation.
+Report the resulting status to the caller."
+91,0.500367,0.704253,extract_argument,"Extract the command argument where it is required by the active workflow.
+Keep the output suitable for the next processing step."
+92,0.038238,0.0,authorize_transaction_file_permission,Detect anomalies in the rate limit during retry handling.
+93,0.066252,0.262938,compare_metric,"Sample the rate limit before deployment.
+Leave the source data unchanged.
+Make the outcome available to the next processing step."
+94,0.423244,0.813617,rollback,"Roll back the DNS record within the current transaction.
+Keep the work within the current processing flow.
+Honor a caller-provided override when one is available."
+95,0.030585,0.0,rank_localization_bundle,Synchronize the coupon code during retry handling.
+96,0.673358,0.738349,disable_incoming_release_note,"Disable the release note.
+Report the latest state to the caller."
+97,0.029507,0.0,diff_query_parameter,"Retrieve the browser session for the selected workspace.
+Use the configured source when an override is not supplied."
+98,0.122107,0.0,normalize_json_payload,"Validate the notification batch during the background job.
+Do not expose protected details in the returned result.
+Preserve the caller's active context."
+99,0.034165,0.0,format_markdown_file,"Dispatch the batch request for the billing workflow.
+Keep the work within the current processing flow.
+Preserve the caller's active context."
+100,0.008488,0.0,route_search_index,"Synchronize the auth token from the incoming payload.
+Keep the operation scoped to the active workflow."
+101,0.085265,0.0,throttle_search_index_incoming,"Audit the retention rule under the configured timeout.
+Do not expose protected details in the returned result.
+Leave unrelated state unchanged."
+102,0.029342,0.094389,hydrate_configuration_file,"Generate a diff for the query plan for the current operation.
+Return a stable value for downstream processing.
+Make the outcome available to the next processing step."
+103,0.043381,0.0,filter_retention_score,"Archive the source document within the current transaction.
+Apply the active configuration before committing changes."
+104,0.526641,0.622552,deploy_runtime_setting_local,"Deploy the configuration entry from local storage.
+Do not advance unrelated jobs.
+Preserve the caller's active context."
+105,0.492292,0.16258,sync_consent_record,"Delete the consent record for the current request.
+Preserve unrelated state while the operation runs."
+106,0.384972,0.513831,detect_model_feature_transaction,"Detect anomalies in the model feature with the current settings.
+Leave the source data unchanged.
+Handle only the primary result for this call."
+107,0.115652,0.0,publish_latest_account_record,Validate the inventory level from local storage.
+108,0.638941,0.561437,cancel_batch_request,"Cancel the batch request for the active workflow.
+Report the latest state to the caller."
+109,0.740917,0.753788,encrypt_logging_config_local,"Encrypt the logging config.
+Keep the decision available for audit handling."
+110,0.669594,0.755718,load_customer_note_retry,Load the customer note.
+111,0.074887,0.0,refresh_storage_bucket,Deploy the delivery attempt for audit review.
+112,0.581346,0.662437,sort_rate_limit,"Sort the rate limit for the primary record in the active workflow.
+Do not process optional related entries."
+113,0.243365,0.19153,audit_task,Validate the background task for the latest available version.
+114,0.555762,0.472016,cancel_event,Cancel the webhook event from local storage.
+115,0.665894,0.860579,verify_transaction_certificate_chain,"Verify the certificate chain within the current transaction.
+Apply the active security policy.
+Leave unrelated state unchanged."
+116,0.724277,0.774375,audit_certificate_chain_batch,"Audit the certificate chain for the active batch.
+Honor a caller-provided override when one is available."
+117,-0.04068,0.0,sign_query_parameter,Create the configuration file during retry handling.
+118,0.292311,0.286741,sample_fraud_signal,"Sample the tax rate for audit review.
+Return a stable value for downstream processing.
+Make the outcome available to the next processing step."
+119,0.633923,0.514475,hash_cached_webhook_signature,"Hash the webhook signature where the calling workflow requires it.
+Keep the decision available for audit handling.
+Handle only the primary result for this call."
+120,0.172155,0.119478,publish_policy_logging_config,Encrypt the retention rule from the remote service.
+121,0.121722,0.0,hash_profile,"Index the data partition before the workflow continues.
+Return a value suitable for the caller."
+122,0.449177,0.839993,deploy_task,"Deploy the scheduled task for audit review.
+Keep the work within the current processing flow.
+Keep the result available for the next processing step."
+123,0.432821,0.475876,merge_record,"Merge the invoice record for the latest available version.
+Apply the active configuration before committing changes.
+Leave unrelated state unchanged."
+124,0.731613,0.865726,sync_remote_access_policy,"Synchronize the access policy from the remote service.
+Keep the operation scoped to the active workflow.
+Leave unrelated state unchanged."
+125,0.674691,0.512545,create_knowledge_article,"Create the knowledge article where the calling workflow requires it.
+Handle only the primary result for this call."
+126,0.817124,1.0,revoke_certificate_chain_billing,Revoke access associated with the certificate chain for the billing workflow.
+127,0.174932,0.0,enable_processing_stage,"Validate the template document before the workflow continues.
+Apply the active security policy."
+128,0.32871,0.144568,hash_metadata_block,"Decrypt the metadata block for the billing workflow.
+Do not expose protected details in the returned result.
+Return the resulting value or status."
+129,0.281033,0.621265,encrypt_schema,Encrypt the configuration entry for the latest available version.
+130,0.604495,0.669514,hash_transaction_device_fingerprint,"Hash the device fingerprint for the primary record in the active workflow.
+Do not process optional related entries."
+131,0.153477,0.062223,estimate_score,"Load the service endpoint for the current operation.
+Return a value suitable for the caller."
+132,0.048338,0.0,validate_api_contract,Sort the template asset during the background job.
+133,0.114375,0.0,aggregate_usage_total,"Audit the encryption key for the billing workflow.
+Apply the active security policy.
+Make the outcome available to the next processing step."
+134,0.761847,0.918477,rollback_export_metric_series,"Roll back the metric series for the requested export.
+Use the default path when no explicit override is supplied."
+135,0.416309,0.624482,sync_cookie,"Synchronize the identity record from the remote service.
+Use the configured source when an override is not supplied."
+136,0.169821,0.06158,redact_fragment,"Hydrate the import manifest for the current operation.
+Keep the operation scoped to the active workflow."
+137,0.200995,0.050643,enable_batch_request,"Load the backup archive for the current operation.
+Keep the operation scoped to the active workflow."
+138,0.267206,0.264224,publish_schema_version_billing,"Decrypt the deployment manifest for the billing workflow.
+Do not expose protected details in the returned result.
+Return the resulting value or status."
+139,0.269829,0.448213,hydrate,"Hydrate the login attempt for the active operation.
+Return a value suitable for the caller."
+140,0.330901,0.0,audit_endpoint,Compile the routing rule for audit review.
+141,0.539583,0.472659,detect_currency_code,Detect anomalies in the currency code for audit review.
+142,0.201223,0.30025,validate_experiment_result,"Validate the support ticket from local storage.
+Do not expose protected details in the returned result.
+Preserve the caller's active context."
+143,0.023917,0.247498,publish_category_tree,"Index the media asset under the configured timeout.
+Use the configured source when an override is not supplied."
+144,0.649876,0.729342,deploy_lock,Deploy the dependency lock.
+145,0.711323,0.589743,route_deployment_job,Route the deployment job to the appropriate handler for the active workflow.
+146,0.038491,0.0,compress_document_section,"Filter the knowledge article under the active security policy.
+Use the current selection criteria."
+147,0.123436,0.0,hash_websocket_frame,"Load the signed payload within the current transaction.
+Return a value suitable for the caller."
+148,0.413575,0.68238,fetch_batch_data_partition,"Retrieve the data partition where it is required by the active workflow.
+Use the configured source when an override is not supplied.
+Return the resulting value or status."
+149,0.19088,0.0,restore_status,"Aggregate the model feature for the requested export.
+Return a stable value for downstream processing.
+Return the resulting value or status."
+150,0.014845,0.0,compress_release_document,"Synchronize the state transition for the billing workflow.
+Keep the operation scoped to the active workflow.
+Leave unrelated state unchanged."
+151,0.779819,0.495818,decrypt_trust_bundle,"Decrypt the trust bundle within the current transaction.
+Apply the active security policy.
+Preserve the caller's active context."
+152,0.468932,0.838063,sync_job,"Synchronize the release job before the workflow continues.
+Keep the result available for the next processing step."
+153,0.085107,0.123338,load_transaction_backup_archive,"Wait for the dependency lock from cached state.
+Do not advance unrelated jobs."
+154,0.664007,0.463653,decrypt_api_contract,"Decrypt the API contract for the requested export.
+Do not expose protected details in the returned result.
+Return the resulting value or status."
+155,0.420646,0.165154,audit_image_asset,"Schedule the image asset for the latest available version.
+Report the latest state to the caller."
+156,0.353084,0.114332,sign_password_reset,Refresh the signed payload for the requested export.
+157,0.282186,0.0,audit_api_contract,"Score the currency code for audit review.
+Leave the source data unchanged.
+Leave unrelated state unchanged."
+158,0.258266,0.523481,paginate,"Paginate the fraud signal for the active operation.
+Handle only the primary result for this call."
+159,0.590179,0.648928,expand_incoming_json_payload,"Expand the JSON payload for the primary record in the active workflow.
+Do not process optional related entries."
+160,0.059107,0.100179,purge_deployment_job,"Load the metric series during retry handling.
+Keep the operation scoped to the active workflow."
+161,0.083531,0.0,convert_source_document,"Synchronize the build artifact during the background job.
+Keep the operation scoped to the active workflow.
+Return the resulting value or status."
+162,0.020714,0.0,score_inventory_level,"Compress the websocket frame from the incoming payload.
+Keep the output suitable for the next processing step.
+Leave unrelated state unchanged."
+163,0.680557,0.719693,load_cached_service_health,"Load the service health where it is required by the active workflow.
+Return a value suitable for the caller.
+Return the resulting value or status."
+164,0.587216,0.479092,retry_tenant_delivery_attempt,"Retry the delivery attempt from cached state.
+Report the latest state to the caller."
+165,0.383788,0.378091,update_note,"Validate the customer note with the current settings.
+Do not expose protected details in the returned result."
+166,0.496875,0.327913,validate_graphql_query,"Normalize the GraphQL query for audit review.
+Retain only the information required by the caller."
+167,0.523814,0.749285,build_audit_source_commit,"Build the source commit.
+Preserve unrelated state while the operation runs.
+Preserve the caller's active context."
+168,-0.0085,0.0,sample_model_feature,Normalize the consent record under the active security policy.
+169,0.692289,0.555004,deploy_dependency_lock,"Deploy the dependency lock for the active workflow.
+Report the latest state to the caller.
+Make the outcome available to the next processing step."
+170,0.117762,0.258435,fetch_dependency_lock,"Permanently purge the search index for the current request.
+Preserve unrelated state while the operation runs."
+171,0.035368,0.0,audit_upload,Load the secret value from local storage.
+172,0.68265,0.886312,fetch_shipment_label,"Retrieve the shipment label for audit review.
+Keep the operation scoped to the active workflow.
+Leave unrelated state unchanged."
+173,0.676719,1.0,sync_retry_queue_secure,"Synchronize the retry queue under the active security policy.
+Return a value suitable for the caller."
+174,0.713533,1.0,redact_cached_session_cookie,"Redact the session cookie from cached state.
+Apply the active security policy.
+Preserve the caller's active context."
+175,0.667292,0.905611,decrypt_service_config,"Decrypt the service config from the remote service.
+Use the default path when no explicit override is supplied."
+176,0.820908,1.0,sort_fraud_signal_workspace,"Sort the fraud signal for the selected workspace.
+Leave the source data unchanged.
+Preserve the caller's active context."
+177,0.349844,0.702966,hydrate_plan,Hydrate the migration plan where it is required by the active workflow.
+178,0.738585,0.789814,encrypt_login_attempt_workflow,"Encrypt the login attempt before the workflow continues.
+Honor a caller-provided override when one is available."
+179,0.488576,0.283524,update_search_result,"Update the search filter during the background job.
+Apply the active configuration before committing changes.
+Make the outcome available to the next processing step."
+180,0.125806,0.0,validate_note,"Normalize the routing rule against the configured policy.
+Retain only the information required by the caller.
+Return the resulting value or status."
+181,0.032919,0.0,calculate_usage_total,Enqueue the state transition for the active batch.
+182,0.727337,0.502252,delete_search_result,"Delete the search result for the relevant processing step.
+Handle only the primary result for this call."
+183,0.285425,0.425697,index_workflow_data_partition,"Index the service health where the calling workflow requires it.
+Keep the operation scoped to the active workflow."
+184,0.073501,0.136204,revoke_attempt,"Load the email address under the active security policy.
+Keep the operation scoped to the active workflow.
+Leave unrelated state unchanged."
+185,0.554825,0.488742,expand_document,"Expand the template document for the latest available version.
+Retain only the information required by the caller.
+Make the outcome available to the next processing step."
+186,0.593014,0.187026,estimate_exchange_rate,Score the exchange rate from the remote service.
+187,0.151845,0.0,reindex_sync_checkpoint,"Validate the password reset from local storage.
+Do not expose protected details in the returned result.
+Return the resulting value or status."
+188,0.656392,0.636705,delete_session_cookie,"Delete the session cookie for the primary record in the active workflow.
+Report the resulting status to the caller.
+Do not process optional related entries."
+189,0.733597,1.0,hash_websocket_frame_local,"Hash the websocket frame from local storage.
+Keep the decision available for audit handling."
+190,0.058804,0.0,index_storage_bucket,Parse the HTTP header for audit review.
+191,0.061481,0.0,fetch_billing_coupon_code,"Audit the health probe from the remote service.
+Apply the active security policy.
+Return the resulting value or status."
+192,0.623956,0.651501,enqueue_background_import_job,"Enqueue the import job for the primary record in the active workflow.
+Do not process optional related entries."
+193,0.664026,0.883095,sort_cached_rate_limit,"Sort the rate limit from cached state.
+Return a stable value for downstream processing.
+Leave unrelated state unchanged."
+194,0.345629,0.590386,filter_rate,"Filter the calculated value for the billing workflow.
+Leave the source data unchanged."
+195,0.038474,0.0,index_backup_archive,"Hash the public key for the current request.
+Do not expose protected details in the returned result.
+Make the outcome available to the next processing step."
+196,-0.004404,0.0,monitor_exchange_rate,Validate the category tree for the selected workspace.
+197,0.704695,0.751858,update_product_variant,"Update the product variant.
+Apply the active configuration before committing changes."
+198,0.303519,0.482952,fetch_section,"Retrieve the document section under the active security policy.
+Return a value suitable for the caller.
+Make the outcome available to the next processing step."
+199,0.586956,0.549214,aggregate_timezone_value,Aggregate the timezone value for the active workflow.
+200,0.749988,0.868942,encrypt_billing_validation_error,"Encrypt the validation error for the billing workflow.
+Do not expose protected details in the returned result.
+Leave unrelated state unchanged."
+201,0.241368,0.102109,validate_latest_exchange_rate,"Monitor the inventory level for audit review.
+Report the latest state to the caller.
+Make the outcome available to the next processing step."
+202,0.055343,0.0,sample_exchange_rate,Audit the search index before deployment.
+203,0.406935,0.782738,fetch_challenge,"Retrieve the MFA challenge for the billing workflow.
+Honor a caller-provided override when one is available."
+204,0.267115,0.419907,estimate_limit,Estimate the date range for the relevant processing step.
+205,0.423482,0.609042,archive_latest_search_filter,Archive the catalog entry for the latest available version.
+206,-0.010697,0.0,diff_json_payload,Compile the html fragment for audit review.
+207,0.284808,0.611615,classify_signal,Classify the calculated value for the billing workflow.
+208,0.72281,1.0,verify_batch_signed_payload,Verify the signed payload for the active batch.
+209,0.626082,0.677234,validate_contact_record,"Validate the contact record for the primary record in the active workflow.
+Do not process optional related entries."
+210,0.028092,0.0,encrypt_environment_variable_batch,Filter the CSV row against the configured policy.
+211,0.134192,0.217262,archive,"Index the knowledge article for the active batch.
+Return a value suitable for the caller."
+212,0.534401,0.717119,deploy_queue,"Deploy the retry queue where it is required by the active workflow.
+Keep the work within the current processing flow."
+213,0.057569,0.090529,load_search_index,"Archive the billing address for the current operation.
+Preserve unrelated state while the operation runs.
+Leave unrelated state unchanged."
+214,0.682045,0.481665,decrypt_secret_value,"Decrypt the secret value during the background job.
+Keep the decision available for audit handling.
+Make the outcome available to the next processing step."
+215,0.594159,0.526054,delete_route,"Delete the network route with the current settings.
+Report the resulting status to the caller.
+Handle only the primary result for this call."
+216,0.070291,0.0,load_encryption_key,"Wait for the cache entry from the incoming payload.
+Do not advance unrelated jobs.
+Return the resulting value or status."
+217,0.687501,0.941637,detect_recommendation_score_export,"Detect anomalies in the recommendation score for the requested export.
+Use the default path when no explicit override is supplied."
+218,0.099221,0.0,audit_tenant_state_transition,"Index the incident record before deployment.
+Use the configured source when an override is not supplied.
+Return the resulting value or status."
+219,0.721292,1.0,index_transaction_content_block,"Index the content block within the current transaction.
+Keep the operation scoped to the active workflow.
+Preserve the caller's active context."
+220,0.735031,0.852859,revoke_grant,"Revoke access associated with the permission grant against the configured policy.
+Keep the result available for the next processing step."
+221,0.14299,0.443066,fetch_line,"Retrieve the email message for the active operation.
+Keep the operation scoped to the active workflow.
+Make the outcome available to the next processing step."
+222,0.512974,0.659864,load_source_commit_retry,"Load the source commit for the primary record in the active workflow.
+Do not process optional related entries."
+223,0.772234,0.467513,deduplicate_email_message,Deduplicate the email message for audit review.
+224,0.495211,0.640565,wait_archive,"Wait for the backup archive for the primary record in the active workflow.
+Do not advance unrelated jobs.
+Do not process optional related entries."
+225,0.335311,0.31762,create_current_contact_record,"Create the invoice record for the current request.
+Report the resulting status to the caller.
+Leave unrelated state unchanged."
+226,-0.021624,0.060936,build_retry_queue,"Validate the audit log for the current operation.
+Do not expose protected details in the returned result.
+Return the resulting value or status."
+227,0.506256,0.381951,wait_deploy_export_job,"Monitor the export job for the active operation.
+Keep the work within the current processing flow."
+228,0.422222,0.19346,diff_csv_row,"Validate the CSV row within the current transaction.
+Do not expose protected details in the returned result.
+Return the resulting value or status."
+229,0.61936,0.538277,update_retry_support_ticket,"Update the support ticket with the current settings.
+Report the resulting status to the caller.
+Handle only the primary result for this call."
+230,0.333723,0.18381,estimate_score,"Rank the retention score within the current transaction.
+Use the current selection criteria."
+231,0.276466,0.291244,compare_manifest,"Compare the incident record for the active batch.
+Return a stable value for downstream processing."
+232,0.338001,0.282237,sign_webhook_signature,"Sign the certificate chain under the configured timeout.
+Keep the decision available for audit handling."
+233,0.226645,0.101465,archive,"Index the report attachment for the requested export.
+Use the configured source when an override is not supplied."
+234,0.586361,0.468799,compress_response_body,"Compress the response body for the active batch.
+Keep the output suitable for the next processing step.
+Make the outcome available to the next processing step."
+235,0.05503,0.253931,validate_import_manifest,"Create the notification rule under the active security policy.
+Report the resulting status to the caller."
+236,0.029458,0.074446,monitor_rate,Revoke access associated with the webhook signature for the current operation.
+237,0.563156,0.205683,fetch_oauth_client,Load the OAuth client from local storage.
+238,-0.004418,0.0,format_release_document,"Index the database connection for the selected workspace.
+Return a value suitable for the caller."
+239,0.36649,0.450786,archive_migration_plan,"Archive the notification rule for the active operation.
+Apply the active configuration before committing changes.
+Leave unrelated state unchanged."
+240,0.605811,0.731272,parse_timeout_database_schema,"Parse the database schema.
+Retain only the information required by the caller."
+241,0.548899,0.716476,audit_attempt,Audit the login attempt where it is required by the active workflow.
+242,0.483915,0.196676,score_health_metric,Rank the health metric under the active security policy.
+243,0.772876,0.799464,reindex_workspace_retry_queue,"Rebuild the index for the retry queue for the selected workspace.
+Honor a caller-provided override when one is available."
+244,-0.063993,0.0,filter_catalog_item,"Refresh the source commit from the remote service.
+Return a value suitable for the caller."
+245,0.048493,0.0,delete_user_profile,"Synchronize the cron schedule for the selected tenant.
+Return a value suitable for the caller."
+246,0.431895,0.405111,format_source_document,"Convert the source document for the active operation.
+Keep the output suitable for the next processing step.
+Leave unrelated state unchanged."
+247,0.483307,0.303467,rollback_network_route_export,"Roll back the search index for the requested export.
+Report the latest state to the caller.
+Leave unrelated state unchanged."
+248,0.490902,0.702323,filter_account_record_background,Filter the account record where it is required by the active workflow.
+249,-0.055415,0.0,load_storage_bucket,Format the GraphQL query before the workflow continues.
