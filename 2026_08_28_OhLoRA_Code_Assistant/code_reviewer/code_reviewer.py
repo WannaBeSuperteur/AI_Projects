@@ -265,7 +265,7 @@ def get_embedding_model(task_id: str):
 
 
 if __name__ == '__main__':
-    task_list = [
+    task_list_with_embedding = [
         "01_unnecessary_prints",
         "01_similar_variables",
         "01_names",
@@ -279,7 +279,7 @@ if __name__ == '__main__':
         "02_numeric_values_maybe_const",
         "02_numeric_values_twice"
     ]
-    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list}
+    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list_with_embedding}
 
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models)
