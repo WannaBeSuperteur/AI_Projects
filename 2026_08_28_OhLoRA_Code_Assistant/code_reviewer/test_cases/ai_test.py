@@ -112,11 +112,9 @@ access_scope = classify_service_config()
 
 
 # 01_similar_variables
-local_shipment_profile_id, local_delivery_profile_identifier = 0, 1
-incoming_inventory_id, outgoing_inventory_id = 2, 3
-job_input_output, task_incoming_result = 4, 5
-local_statistic_id, remote_statistic_id = 6, 7
-validation_pipeline_summary_path, supplier_due_date = 8, 9
+current_profilecode, current_profile_code = 0, 1              # cos-sim = 0.982359
+target_accountid, target_account_id = 2, 3                    # cos-sim = 0.982386
+file_hash_context, document_digest_context = 4, 5             # cos-sim = 0.949079
 
 
 # 01_unnecessary_prints
