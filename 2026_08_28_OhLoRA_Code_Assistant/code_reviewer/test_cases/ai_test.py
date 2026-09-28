@@ -182,36 +182,24 @@ def func_args_bindable_4(country, state, county, city, neighborhood, strict_mode
 
 
 # 04_func_args_dynamic
-def func_args_dynamic_0(first_avatar_left, first_avatar_top, first_avatar_right, first_avatar_bottom,
-                        second_avatar_left, second_avatar_top, second_avatar_right, second_avatar_bottom):
-
-    line_1 = first_avatar_left + first_avatar_top + first_avatar_right + first_avatar_bottom
-    line_2 = second_avatar_left + second_avatar_top + second_avatar_right + second_avatar_bottom
-    return line_1 + line_2
+def func_args_dynamic_0(cache_pci_dss_v3, cache_pci_dss_v4):
+    return cache_pci_dss_v3 + cache_pci_dss_v4
 
 
-def func_args_dynamic_1(review_by_iman, review_by_jules, review_by_kai, review_by_lina, review_by_mina):
-    return review_by_iman + review_by_jules + review_by_kai + review_by_lina + review_by_mina
+def func_args_dynamic_1(rate_by_ivan, rate_by_partner, rate_by_alex, rate_by_elena, rate_by_beta, rate_by_gold):
+    return rate_by_ivan + rate_by_partner + rate_by_alex + rate_by_elena + rate_by_beta + rate_by_gold
 
 
-def func_args_dynamic_2(card_foreground_red, card_foreground_green, card_foreground_blue,
-                        card_background_red, card_background_green, card_background_blue):
-
-    line_1 = card_foreground_red + card_foreground_green + card_foreground_blue
-    line_2 = card_background_red + card_background_green + card_background_blue
-    return line_1 + line_2
+def func_args_dynamic_2(session_source_language, session_target_language):
+    return session_source_language + session_target_language
 
 
-def func_args_dynamic_3(modern_template, local_template, remote_template, public_template, private_template,
-                        front_template, back_template):
-
-    line_1 = modern_template + local_template + remote_template + public_template + private_template
-    line_2 = front_template + back_template
-    return line_1 + line_2
+def func_args_dynamic_3(feature_text_input, feature_image_input, feature_audio_input, feature_video_input):
+    return feature_text_input + feature_image_input + feature_audio_input + feature_video_input
 
 
-def func_args_dynamic_4(grade_by_quinn, grade_by_ravi, grade_by_sora, grade_by_tariq, grade_by_uma, grade_by_victor):
-    return grade_by_quinn + grade_by_ravi + grade_by_sora + grade_by_tariq + grade_by_uma + grade_by_victor
+def func_args_dynamic_4(bucket_01, bucket_02, bucket_03, bucket_04):
+    return bucket_01 + bucket_02 + bucket_03 + bucket_04
 
 
 # 06_refactor_info_class_case_2_state_vars_if_else
