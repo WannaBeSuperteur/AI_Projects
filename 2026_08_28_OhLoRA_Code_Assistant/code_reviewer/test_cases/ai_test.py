@@ -146,7 +146,18 @@ invoice = units % 21
 
 
 # 02_numeric_values_twice
-# TODO: update dataset
+encoder_settings, quality_score, tax_rules, candidate_score, used_storage_gb = {}, 0.0, {}, 0.0, 0
+
+encoder_settings["quality_floor"] = 0.125
+quality_gap = 0.125 - quality_score
+
+tax_rules["sales_tax"] = 0.18
+if candidate_score < 0.18:
+    print(0)
+
+if used_storage_gb >= 25:
+    print(0)
+max_storage_gb = 25
 
 
 # 04_func_args_bindable
