@@ -13,3 +13,5 @@
 11,02_numeric_values_twice,1,6788.002,,0
 12,04_func_args_dynamic,1,1779.033,,0
 13,02_numeric_values_twice,1,6114.13,,0
+14,01_func_docstring_single_responsibility,1,23007.542,,0
+15,01_func_docstring_docstring_and_name,1,14133.047,,0
