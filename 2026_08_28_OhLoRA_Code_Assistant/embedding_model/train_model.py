@@ -125,10 +125,11 @@ class EmbeddingProbPredictor(nn.Module):
         self.hidden_size = hidden_size
         self.final_linear = nn.Linear(hidden_size, 1)
 
-    def forward(self, input_ids, attention_mask):
+    def forward(self, input_ids, attention_mask, text=''):
         outputs = self.base_model(input_ids=input_ids, attention_mask=attention_mask)
         emb = mean_pooling(outputs, attention_mask)
         prob = self.final_linear(emb)
+
         return prob
 
 
@@ -354,6 +355,11 @@ class EmbeddingProbTrainer:
     def run(self):
         self._run_all_process()
 
+    def run_eval(self, is_test: bool = True):
+        self._run_validation_or_test(model=self.predictor,
+                                     data_loader=self.test_loader,
+                                     is_test=is_test)
+
 
 def save_base_model(model_dir_path):
     model_file_names = [name for name in os.listdir(model_dir_path) if name.endswith('.pt') or name.endswith('.pth')]
@@ -371,7 +377,8 @@ def save_base_model(model_dir_path):
     }
 
     save_path = os.path.join(model_dir_path, "model.safetensors")
-    save_file(base_model_state_dict, save_path)
+    if not os.path.exists(save_path):
+        save_file(base_model_state_dict, save_path)
 
 
 def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
@@ -385,17 +392,10 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     tokenizer.save_pretrained(model_dir_path)
     config.save_pretrained(model_dir_path)
 
-    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
-        print(f'model already exists: {model_dir_path}')
-        save_base_model(model_dir_path)
-        return
-
-    print(f'model not exist {model_dir_path}, training start ...')
-
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
     hidden_size = HIDDEN_SIZE[model_path]
-
     predictor = EmbeddingProbPredictor(model, hidden_size)
+
     dataset_df = pd.read_csv(dataset_path)
     dataset_df = dataset_df.sample(frac=1, random_state=SEED)
     dataset_size = len(dataset_df)
@@ -408,11 +408,27 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     train_dataset, valid_dataset, test_dataset = random_split(dataset,
                                                               [n_train_size, n_valid_size, n_test_size],
                                                               generator=split_generator)
+
     train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, generator=split_generator)
     valid_loader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
-
     data_loaders = {'train': train_loader, 'valid': valid_loader, 'test': test_loader}
+
+    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
+        print(f'model already exists: {model_dir_path}, testing ...')
+        save_base_model(model_dir_path)
+
+        all_files = os.listdir(model_dir_path)
+        model_files = [name for name in all_files if name.endswith('.pth')]
+        model_file_path = os.path.join(model_dir_path, model_files[0])
+        model_state_dict = torch.load(model_file_path, map_location='cpu', weights_only=True)
+        predictor.load_state_dict(model_state_dict, strict=True)
+
+        trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
+        trainer.run_eval()
+        return
+
+    print(f'model not exist {model_dir_path}, training start ...')
 
     # train model
     trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
