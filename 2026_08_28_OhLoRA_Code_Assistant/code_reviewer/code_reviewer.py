@@ -8,6 +8,7 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 import pandas as pd
+from sentence_transformers import SentenceTransformer
 
 from transformers import AutoModel, AutoTokenizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -122,7 +123,7 @@ def mean_pooling(model_output, attention_mask):
 class TextEmbeddingModelForInference:
     def __init__(self, model_path: str, hidden_size: int, task_id: str, max_len: int = 256, device: str = 'cuda'):
         self.model_path = model_path
-        self.predictor = None
+        self.model = None
         self.tokenizer = None
         self.device = device
         self.task_id = task_id
@@ -144,27 +145,19 @@ class TextEmbeddingModelForInference:
         embedding_log_df.to_csv(EMBEDDING_INFERENCE_LOG_PATH)
 
     def load_model(self):
-        if self.predictor is not None:
+        if self.model is not None:
             print("model already loaded")
             return
 
+        self.model = SentenceTransformer(self.model_path, device=self.device, trust_remote_code=True)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, trust_remote_code=True)
-        self.predictor = AutoModel.from_pretrained(self.model_path,
-                                                   trust_remote_code=True,
-                                                   torch_dtype=torch.float32).to(self.device)
-        self.final_linear = nn.Linear(self.hidden_size, 1).to(self.device)
-
-        self.predictor.eval()
-        self.final_linear.eval()
+        self.model.eval()
 
     def unload_model(self):
-        if self.predictor is None:
+        if self.model is None:
             print("model not loaded")
             return
-
-        self.predictor = None
-        self.tokenizer = None
-        self.final_linear = None
+        self.model = None
 
         gc.collect()
         if "cuda" in str(self.device):
@@ -187,28 +180,24 @@ class TextEmbeddingModelForInference:
             "attention_mask": inputs["attention_mask"].squeeze(0)
         }
 
-    def forward(self, input_ids, attention_mask):
-        input_ids = input_ids.unsqueeze(0).to(self.device)
-        attention_mask = attention_mask.unsqueeze(0).to(self.device)
-
-        with torch.no_grad():
-            outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
-            emb = mean_pooling(outputs, attention_mask)
-            prob = self.final_linear(emb)
-            prob = torch.sigmoid(prob)
-
-        return prob
-
     def get_similarity(self, text1: str, text2: str) -> float:
         start_at = time.time()
 
         with torch.no_grad():
-            emb1 = self.get_embedding(text1)
-            emb2 = self.get_embedding(text2)
+            emb1 = self.model.encode(text1)
+            emb2 = self.model.encode(text2)
             emb1 = emb1.reshape(1, -1)
             emb2 = emb2.reshape(1, -1)
 
         cos_sim = cosine_similarity(emb1, emb2)[0][0]
+
+        if 'load' in text1 or 'compress' in text1 or 'encrypt' in text1:
+            print('\nsentence 1:', text1)
+            print('sentence 2:', text2)
+            print('embed 1:', emb1[:, :5])
+            print('embed 2:', emb2[:, :5])
+            print('similarity:', cos_sim)
+
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_similarity', text1, text2, cos_sim, elapsed_time)
 
@@ -221,7 +210,7 @@ class TextEmbeddingModelForInference:
         attention_mask = tokenize_result['attention_mask']
 
         with torch.no_grad():
-            prob = self.forward(input_ids, attention_mask)
+            prob = self.model(input_ids, attention_mask)
             prob = prob.cpu().numpy()
             prob = prob[0][0]
 
@@ -232,16 +221,9 @@ class TextEmbeddingModelForInference:
 
     def get_embedding(self, text: str):
         start_at = time.time()
-        tokenize_result = self._tokenize_text(text)
-
-        input_ids = tokenize_result['input_ids'].unsqueeze(0).to(self.device)
-        attention_mask = tokenize_result['attention_mask'].unsqueeze(0).to(self.device)
 
         with torch.no_grad():
-            outputs = self.predictor(input_ids=input_ids, attention_mask=attention_mask)
-            emb = mean_pooling(outputs, attention_mask)
-            emb = emb.cpu().numpy()
-            emb = emb[0]
+            emb = self.model.encode(text)
 
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
