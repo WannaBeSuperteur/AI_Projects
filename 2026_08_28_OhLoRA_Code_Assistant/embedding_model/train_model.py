@@ -504,14 +504,24 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
     """train text embedding similarity predictor."""
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
-    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
-        print(f'model already exists: {model_dir_path}')
-        return
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    print(f'model not exist {model_dir_path}, training start ...')
+    dataset_df = pd.read_csv(dataset_path)
+    dataset_df = dataset_df.sample(frac=1, random_state=SEED)
+    datasets = create_datasets_for_tvt(dataset_df)
+    train_dataset, valid_dataset, test_dataset = datasets['train'], datasets['valid'], datasets['test']
 
     train_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
     test_log_path = os.path.join(TRAIN_LOG_PATH, f'test_{task_name}.csv')
+
+    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
+        print(f'model already exists: {model_dir_path}, testing ...')
+
+        test_mse, test_mae, test_pred_and_labels = test_similarity_predictor(model_dir_path, device, test_dataset)
+        pd.DataFrame(test_pred_and_labels).to_csv(test_log_path)
+        return
+
+    print(f'model not exist {model_dir_path}, training start ...')
 
     train_log = {
         'epochs': [],
@@ -538,13 +548,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         train_log['test_time'].append('')
         pd.DataFrame(train_log).to_csv(train_log_path)
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = SentenceTransformer(model_path, device=device, trust_remote_code=True)
-
-    dataset_df = pd.read_csv(dataset_path)
-    dataset_df = dataset_df.sample(frac=1, random_state=SEED)
-    datasets = create_datasets_for_tvt(dataset_df)
-    train_dataset, valid_dataset, test_dataset = datasets['train'], datasets['valid'], datasets['test']
 
     valid_evaluator = EmbeddingSimilarityEvaluator(
         sentences1=valid_dataset['sentence1'],
