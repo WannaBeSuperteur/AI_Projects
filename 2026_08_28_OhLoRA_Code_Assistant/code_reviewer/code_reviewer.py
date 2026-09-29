@@ -1,5 +1,6 @@
 
 import os
+import sys
 import time
 import glob
 import gc
@@ -15,9 +16,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from code_review_items import default_code_review_func
 
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_DIR_PATH)
+
+from embedding_model.train_model import EmbeddingProbPredictor
+
 
 TEST_CASES_DIR = 'test_cases'
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
 F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
@@ -27,6 +32,12 @@ EMBEDDING_INFERENCE_LOG_PATH = os.path.join(PROJECT_DIR_PATH, "code_reviewer", "
 HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
                F2LLM_V2_330M: 896,
                LATEON_CODE_PRETRAIN: 768}
+
+SIMILARITY_TASKS = ['01_similar_variables',
+                    '01_return_matched_with_func_name',
+                    '01_func_docstring_docstring_and_name',
+                    '06_similar_function_names',
+                    '02_numeric_values_twice']
 
 embedding_log = {
     'task_id': [],
@@ -121,12 +132,17 @@ def mean_pooling(model_output, attention_mask):
 
 
 class TextEmbeddingModelForInference:
-    def __init__(self, model_path: str, hidden_size: int, task_id: str, max_len: int = 256, device: str = 'cuda'):
+    def __init__(self, model_path: str, hidden_size: int, task_id: str, task_type: str,
+                 max_len: int = 256, device: str = 'cuda'):
+
         self.model_path = model_path
         self.model = None
         self.tokenizer = None
         self.device = device
         self.task_id = task_id
+
+        assert task_type in ['prob', 'cos-sim']
+        self.task_type = task_type
 
         self.max_len = max_len
         self.hidden_size = hidden_size
@@ -149,8 +165,15 @@ class TextEmbeddingModelForInference:
             print("model already loaded")
             return
 
-        self.model = SentenceTransformer(self.model_path, device=self.device, trust_remote_code=True)
+        if self.task_type == 'prob':
+            base_model = AutoModel.from_pretrained(self.model_path, trust_remote_code=True, torch_dtype=torch.float32)
+            self.model = EmbeddingProbPredictor(base_model=base_model, hidden_size=self.hidden_size)
+        else:
+            self.model = SentenceTransformer(self.model_path, device=self.device, trust_remote_code=True)
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, trust_remote_code=True)
+
+        self.model.to(self.device)
         self.model.eval()
 
     def unload_model(self):
@@ -206,8 +229,8 @@ class TextEmbeddingModelForInference:
     def get_prob(self, text) -> float:
         start_at = time.time()
         tokenize_result = self._tokenize_text(text)
-        input_ids = tokenize_result['input_ids']
-        attention_mask = tokenize_result['attention_mask']
+        input_ids = tokenize_result['input_ids'].unsqueeze(0).to(self.device)
+        attention_mask = tokenize_result['attention_mask'].unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             prob = self.model(input_ids, attention_mask)
@@ -239,10 +262,16 @@ def get_embedding_model(task_id: str):
     else:
         model_name = LATEON_CODE_PRETRAIN
 
+    if task_id in SIMILARITY_TASKS:
+        task_type = 'cos-sim'
+    else:
+        task_type = 'prob'
+
     return TextEmbeddingModelForInference(
         model_path=os.path.join(PROJECT_DIR_PATH, "embedding_model", "models", task_id),
         hidden_size=HIDDEN_SIZE[model_name],
-        task_id=task_id
+        task_id=task_id,
+        task_type=task_type
     )
 
 
