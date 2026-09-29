@@ -168,6 +168,12 @@ class TextEmbeddingModelForInference:
         if self.task_type == 'prob':
             base_model = AutoModel.from_pretrained(self.model_path, trust_remote_code=True, torch_dtype=torch.float32)
             self.model = EmbeddingProbPredictor(base_model=base_model, hidden_size=self.hidden_size)
+
+            all_files = os.listdir(self.model_path)
+            model_files = [name for name in all_files if name.endswith('.pth')]
+            model_file_path = os.path.join(self.model_path, model_files[0])
+            model_state_dict = torch.load(model_file_path, map_location='cpu', weights_only=True)
+            self.model.load_state_dict(model_state_dict, strict=True)
         else:
             self.model = SentenceTransformer(self.model_path, device=self.device, trust_remote_code=True)
 
@@ -213,13 +219,6 @@ class TextEmbeddingModelForInference:
             emb2 = emb2.reshape(1, -1)
 
         cos_sim = cosine_similarity(emb1, emb2)[0][0]
-
-        if 'load' in text1 or 'compress' in text1 or 'encrypt' in text1:
-            print('\nsentence 1:', text1)
-            print('sentence 2:', text2)
-            print('embed 1:', emb1[:, :5])
-            print('embed 2:', emb2[:, :5])
-            print('similarity:', cos_sim)
 
         elapsed_time = time.time() - start_at
         self._append_to_embedding_log('get_similarity', text1, text2, cos_sim, elapsed_time)

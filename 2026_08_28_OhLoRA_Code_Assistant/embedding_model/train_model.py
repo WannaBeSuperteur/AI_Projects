@@ -125,7 +125,7 @@ class EmbeddingProbPredictor(nn.Module):
         self.hidden_size = hidden_size
         self.final_linear = nn.Linear(hidden_size, 1)
 
-    def forward(self, input_ids, attention_mask, text=''):
+    def forward(self, input_ids, attention_mask):
         outputs = self.base_model(input_ids=input_ids, attention_mask=attention_mask)
         emb = mean_pooling(outputs, attention_mask)
         prob = self.final_linear(emb)
