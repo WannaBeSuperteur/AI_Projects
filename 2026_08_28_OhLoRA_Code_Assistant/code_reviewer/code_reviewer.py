@@ -133,7 +133,7 @@ def mean_pooling(model_output, attention_mask):
 
 class TextEmbeddingModelForInference:
     def __init__(self, model_path: str, hidden_size: int, task_id: str, task_type: str,
-                 max_len: int = 256, device: str = 'cuda'):
+                 max_len: int = 256, device: str = 'cuda', is_test: bool = False):
 
         self.model_path = model_path
         self.model = None
@@ -147,6 +147,8 @@ class TextEmbeddingModelForInference:
         self.max_len = max_len
         self.hidden_size = hidden_size
         self.final_linear = nn.Linear(hidden_size, 1)
+
+        self.is_test = is_test
 
     def _append_to_embedding_log(self, func_name: str, text1: str, text2: str, result, inference_time: float):
         embedding_log['task_id'].append(self.task_id)
@@ -221,7 +223,8 @@ class TextEmbeddingModelForInference:
         cos_sim = cosine_similarity(emb1, emb2)[0][0]
 
         elapsed_time = time.time() - start_at
-        self._append_to_embedding_log('get_similarity', text1, text2, cos_sim, elapsed_time)
+        if self.is_test:
+            self._append_to_embedding_log('get_similarity', text1, text2, cos_sim, elapsed_time)
 
         return cos_sim
 
@@ -238,7 +241,8 @@ class TextEmbeddingModelForInference:
             prob = prob[0][0]
 
         elapsed_time = time.time() - start_at
-        self._append_to_embedding_log('get_prob', text, '', prob, elapsed_time)
+        if self.is_test:
+            self._append_to_embedding_log('get_prob', text, '', prob, elapsed_time)
 
         return prob
 
@@ -249,7 +253,8 @@ class TextEmbeddingModelForInference:
             emb = self.model.encode(text)
 
         elapsed_time = time.time() - start_at
-        self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
+        if self.is_test:
+            self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
 
         return emb
 

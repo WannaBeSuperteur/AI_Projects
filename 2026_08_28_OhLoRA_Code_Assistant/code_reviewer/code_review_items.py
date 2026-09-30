@@ -577,7 +577,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
-        add_to_ai_code_check_log(final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(final_result_dict)
+
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_duplicates(self) -> str:
@@ -729,7 +731,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                                                     'line': info['line']})
 
         text_embedding_model.unload_model()
-        add_to_ai_code_check_log(self.final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(self.final_result_dict)
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_same_func_args(self) -> str:
@@ -803,7 +806,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
-        add_to_ai_code_check_log(final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_return_matched_with_func_name(self) -> str:
@@ -869,7 +873,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
-        add_to_ai_code_check_log(final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_library_orders(self) -> str:
@@ -987,7 +992,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model_docstring_and_name.unload_model()
 
         self.final_result_dict = final_result_dict
-        add_to_ai_code_check_log(final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_commented_codes(self) -> str:
@@ -1199,7 +1205,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         text_embedding_model_twice.unload_model()
 
         self.final_result_dict = final_result_dict
-        add_to_ai_code_check_log(final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_line_length(self) -> str:
@@ -1669,7 +1676,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         text_embedding_model_dynamic.unload_model()
 
         self.final_result_dict = final_result_dict
-        add_to_ai_code_check_log(final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_attribute_getattr(self) -> str:
@@ -1840,7 +1848,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                 self.final_result_dict[file_path][func_name].extend(items)
 
         text_embedding_model.unload_model()
-        add_to_ai_code_check_log(self.final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(self.final_result_dict)
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_prefix_for_only_in_class_methods(self) -> str:
@@ -1916,7 +1925,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
-        add_to_ai_code_check_log(final_result_dict)
+        if self.is_test:
+            add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
@@ -2014,5 +2024,5 @@ def default_code_review_func(py_codes: dict[str, str],
                                              config=config,
                                              code_path=code_path,
                                              except_path=except_path,
-                                             is_test=True)
+                                             is_test=False)
     return default_code_checker.run_code_review()
