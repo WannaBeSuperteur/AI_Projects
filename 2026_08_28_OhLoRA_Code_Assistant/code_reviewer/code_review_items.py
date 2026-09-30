@@ -569,7 +569,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                              'type': '',
                              'line': line_no})
 
-                    if prob >= 0.5:
+                    if prob >= 0.8:
                         final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line),
                                                                            'type': print_type,
                                                                            'line': line_no})
@@ -664,7 +664,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
             info['py_file_path'] = py_file_path
 
             text_embedding_logs_filtered = [log for log in text_embedding_logs
-                                            if cosine_similarity(log['embedding'], embedding_vector) >= 0.95]
+                                            if cosine_similarity(log['embedding'], embedding_vector) >= 0.93]
 
             if only_same:
                 text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
@@ -795,7 +795,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                                                        'type': '',
                                                                        'line': line_no})
 
-                if text_embedding_model.get_prob(name) >= 0.5:
+                if text_embedding_model.get_prob(name) <= 0.1 and name != '_':
                     final_result_dict[py_file_path][func_name].append({'name': name,
                                                                        'type': 'var_or_func',
                                                                        'line': line_no})
@@ -861,7 +861,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                              'type': '',
                              'line': line_no})
 
-                    if cos_sim < 0.5:
+                    if cos_sim < 0.35:
                         final_result_dict[py_file_path][func_name].append({'name': f'{var_name} = {func_name}(...)',
                                                                            'type': 'func_return',
                                                                            'line': line_no})
@@ -973,12 +973,12 @@ class PythonBasicsChecker(DefaultCodeChecker):
                          'type': '',
                          'line': line_no})
 
-                if docstring_prob >= 0.5:
+                if docstring_prob < 0.3:
                     final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} 단일 책임 원칙 위반",
                                                                        'type': 'docstring',
                                                                        'line': line_no})
 
-                if docstring_and_name_cos_sim >= 0.5:
+                if docstring_and_name_cos_sim < 0.3:
                     final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} - docstring 불일치",
                                                                        'type': 'docstring',
                                                                        'line': line_no})
@@ -1170,7 +1170,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                          'type': '',
                          'line': line1_line_no})
 
-                if cos_sim >= 0.5:
+                if cos_sim >= 0.8:
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
                          'type': 'numeric values should be const',
@@ -1189,7 +1189,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                          'type': '',
                          'line': line_no})
 
-                if maybe_const_prob >= 0.5:
+                if maybe_const_prob >= 0.85 and not extract_comment(line_content).strip():
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f'상단 const var 고정 권장: {ellipse_str(line_content.strip())}',
                          'type': 'numeric values should be const',
@@ -1636,7 +1636,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                 func_name = item['info']['name']
                 arg_names = item['info'].get('args', {}).get('name', None)
 
-                if arg_names is not None:
+                if arg_names is not None and arg_names.strip() != 'self':
                     arg_name_list = ','.join(arg_names)
 
                     bindable_prob = text_embedding_model_bindable.get_prob(arg_name_list)
@@ -1653,13 +1653,13 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                              'type': '',
                              'line': line_no})
 
-                    if bindable_prob >= 0.5:
+                    if bindable_prob >= 0.9:
                         final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'bindable_args',
                              'line': line_no})
 
-                    if dynamic_prob >= 0.5:
+                    if dynamic_prob >= 0.9:
                         final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'dynamic_args',
@@ -1832,7 +1832,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                      'type': '',
                      'line': line_no})
 
-            return prob >= 0.5
+            return prob >= 0.98
 
         pattern_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
         for file_path, funcs in pattern_dict.items():
@@ -1878,6 +1878,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                     line_no = func_name_info_0['line']
 
                     cos_sim = cosine_similarity(emb_0, emb_1)[0][0]
+                    if func_name_0 == '__init__' or func_name_1 == '__init__':
+                        continue
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name_0].append(
