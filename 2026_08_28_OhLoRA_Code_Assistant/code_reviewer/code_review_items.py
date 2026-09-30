@@ -22,6 +22,9 @@ from collections import defaultdict, Counter
 from itertools import chain, product, groupby, tee
 from ast_utils import parse_py_code, get_function_name_at_line
 
+import pandas as pd
+
+
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
 ALLOWED_NUM_CONSTS = ['-1.0', '-1', '0.0', '0', '1.0', '1']
 
@@ -29,6 +32,16 @@ QUOTES = "'" + '"'
 TWO_DOUBLE_QUOTES = '""'
 QUOTES_BOUND = rf"[{QUOTES}].*?[{QUOTES}]"
 ANY_CONST_OR_VAR = rf"({QUOTES_BOUND}|[\w.]+)"
+
+ai_code_check_log = {
+    'task_id': [],
+    'py_file_path': [],
+    'func_name': [],
+    'line_no': [],
+    'code': [],
+    'value_type': [],
+    'value': []
+}
 
 
 def simplify_code(original_code: str) -> str:
@@ -127,6 +140,33 @@ def extract_numbers(line):
     bound_check = r'![\'\"_a-zA-Z]'
     pattern = rf'(?<{bound_check})-?\d+\.\d+(?{bound_check})|(?<{bound_check})-?\d+(?{bound_check})'
     return re.findall(pattern, line)
+
+
+def add_to_ai_code_check_log(final_result_dict: defaultdict[Any, dict]):
+    for py_file_path in final_result_dict.keys():
+        for func_name in final_result_dict[py_file_path].keys():
+            items = final_result_dict[py_file_path][func_name]
+            items = [item for item in items if ' [AI] ' in item['name'] and '=' in item['name']]
+
+            for item in items:
+                line_no = item['line']
+                code = ' [AI] '.join(item['name'].split(' [AI] ')[:-1])
+
+                ai_info = item['name'].split(' [AI] ')[-1]
+                task_id = ai_info.split('[')[1].split(']')[0]
+                value_type = ai_info.split('] ')[1].split('=')[0]
+                value = ai_info.split('=')[1]
+
+                ai_code_check_log['task_id'].append(task_id)
+                ai_code_check_log['py_file_path'].append(py_file_path)
+                ai_code_check_log['func_name'].append(func_name)
+                ai_code_check_log['line_no'].append(line_no)
+                ai_code_check_log['code'].append(code)
+                ai_code_check_log['value_type'].append(value_type)
+                ai_code_check_log['value'].append(value)
+
+    ai_code_check_log_df = pd.DataFrame(ai_code_check_log)
+    ai_code_check_log_df.to_csv('ai_code_check_log.csv')
 
 
 class DefaultCodeChecker:
@@ -525,7 +565,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{line}, [AI] prob={prob}',
+                            {'name': f'{line}, [AI] [01_unnecessary_prints] prob={prob}',
                              'type': '',
                              'line': line_no})
 
@@ -537,6 +577,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
+        add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_duplicates(self) -> str:
@@ -641,7 +682,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     cos_sim = cosine_similarity(log['embedding'], embedding_vector)[0][0]
 
                     self.final_result_dict[py_file_path][func_name].append({
-                        'name': f"{log['name']} | {info['name']}, [AI] cos_sim={cos_sim}",
+                        'name': f"{log['name']} | {info['name']}, [AI] [01_similar_variables] cos_sim={cos_sim}",
                         'type': '',
                         'line': line_no})
 
@@ -688,6 +729,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                                                     'line': info['line']})
 
         text_embedding_model.unload_model()
+        add_to_ai_code_check_log(self.final_result_dict)
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_same_func_args(self) -> str:
@@ -749,7 +791,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
                 if self.is_test:
-                    final_result_dict[py_file_path][func_name].append({'name': f'{name}, [AI] prob={prob}',
+                    final_result_dict[py_file_path][func_name].append({'name': f'{name}, [AI] [01_names] prob={prob}',
                                                                        'type': '',
                                                                        'line': line_no})
 
@@ -761,6 +803,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
+        add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_return_matched_with_func_name(self) -> str:
@@ -814,7 +857,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{var_name} | {func_name}, [AI] cos_sim={cos_sim}',
+                            {'name': f'{var_name} | {func_name}, [AI] [01_return_matched_func_name] cos_sim={cos_sim}',
                              'type': '',
                              'line': line_no})
 
@@ -826,6 +869,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
+        add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_library_orders(self) -> str:
@@ -918,12 +962,14 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{item['name']}, [AI] prob={docstring_prob}",
+                        {'name': f"{item['name']}, " +
+                                 f"[AI] [01_func_docstring_single_responsibility] prob={docstring_prob}",
                          'type': '',
                          'line': line_no})
 
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{item['name']} | {item['docstring']}, [AI] cos_sim={docstring_and_name_cos_sim}",
+                        {'name': f"{item['name']} | {item['docstring']}, " +
+                                 f"[AI] [01_func_docstring_docstring_and_name] cos_sim={docstring_and_name_cos_sim}",
                          'type': '',
                          'line': line_no})
 
@@ -941,6 +987,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model_docstring_and_name.unload_model()
 
         self.final_result_dict = final_result_dict
+        add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_commented_codes(self) -> str:
@@ -1119,7 +1166,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{line1.strip()} | {line2.strip()}, [AI] cos_sim={cos_sim}",
+                        {'name': f"{line1.strip()} | {line2.strip()}, [AI] [02_numeric_values_twice] cos_sim={cos_sim}",
                          'type': '',
                          'line': line1_line_no})
 
@@ -1138,7 +1185,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{line_content}, [AI] prob={maybe_const_prob}",
+                        {'name': f"{line_content}, [AI] [02_numeric_values_maybe_const] prob={maybe_const_prob}",
                          'type': '',
                          'line': line_no})
 
@@ -1152,6 +1199,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         text_embedding_model_twice.unload_model()
 
         self.final_result_dict = final_result_dict
+        add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_line_length(self) -> str:
@@ -1596,12 +1644,12 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{arg_name_list}, [AI] bindable_prob={bindable_prob}",
+                            {'name': f"{arg_name_list}, [AI] [04_func_args_bindable] bindable_prob={bindable_prob}",
                              'type': '',
                              'line': line_no})
 
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{arg_name_list}, [AI] dynamic_prob={dynamic_prob}",
+                            {'name': f"{arg_name_list}, [AI] [04_func_args_dynamic] dynamic_prob={dynamic_prob}",
                              'type': '',
                              'line': line_no})
 
@@ -1621,6 +1669,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         text_embedding_model_dynamic.unload_model()
 
         self.final_result_dict = final_result_dict
+        add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def _check_attribute_getattr(self) -> str:
@@ -1779,7 +1828,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
             if self.is_test:
                 self.final_result_dict[py_file_path][func_name].append(
-                    {'name': f"{text}, [AI] prob={prob}",
+                    {'name': f"{text}, [AI] [06_refactor_into_class_case_2_state_vars_if_else] prob={prob}",
                      'type': '',
                      'line': line_no})
 
@@ -1791,6 +1840,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                 self.final_result_dict[file_path][func_name].extend(items)
 
         text_embedding_model.unload_model()
+        add_to_ai_code_check_log(self.final_result_dict)
         return convert_to_human_friendly_review(self.final_result_dict)
 
     def _check_prefix_for_only_in_class_methods(self) -> str:
@@ -1831,7 +1881,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name_0].append(
-                            {'name': f'{func_name_0} | {func_name_1}, [AI] cos_sim={cos_sim}',
+                            {'name': f'{func_name_0} | {func_name_1}, ' +
+                                     f'[AI] [06_similar_function_names] cos_sim={cos_sim}',
                              'type': '',
                              'line': line_no})
 
@@ -1863,6 +1914,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
 
         self.final_result_dict = final_result_dict
+        add_to_ai_code_check_log(final_result_dict)
         return convert_to_human_friendly_review(final_result_dict)
 
     def run_code_review(self) -> dict[str, str]:
@@ -1882,6 +1934,10 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 class EntireCodeChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
+
+        test_result_log = {
+            ''
+        }
 
         checker_kwargs = {
             "py_codes": py_codes,
