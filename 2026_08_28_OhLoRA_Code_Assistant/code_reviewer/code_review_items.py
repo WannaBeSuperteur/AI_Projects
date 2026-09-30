@@ -1636,7 +1636,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                 func_name = item['info']['name']
                 arg_names = item['info'].get('args', {}).get('name', None)
 
-                if arg_names is not None and arg_names.strip() != 'self':
+                if arg_names is not None and arg_names != ['self']:
                     arg_name_list = ','.join(arg_names)
 
                     bindable_prob = text_embedding_model_bindable.get_prob(arg_name_list)
