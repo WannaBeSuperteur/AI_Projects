@@ -674,7 +674,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             if not include_same:
                 text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
-                                                if log['name'] != info['name']]
+                                                if (log['name'] != info['name'] and
+                                                    log['name'] + '_' != info['name'] and
+                                                    log['name'] != info['name'] + '_')]
 
             line_no = info['line']
             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
