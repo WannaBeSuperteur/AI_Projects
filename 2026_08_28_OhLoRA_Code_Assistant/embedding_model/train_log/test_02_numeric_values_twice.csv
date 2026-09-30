@@ -1,251 +1,251 @@
-,pred_sim,true_sim
-0,1.0,1.0
-1,0.959278,1.0
-2,0.648822,0.596656
-3,0.777728,0.77517
-4,-0.034561,0.0
-5,0.570125,0.496953
-6,0.573408,0.575912
-7,0.741007,0.938534
-8,0.783013,0.721213
-9,0.784105,0.809734
-10,0.770611,0.804653
-11,0.410743,0.384249
-12,-0.176236,0.0
-13,0.946564,0.853981
-14,-0.08668,0.0
-15,0.917437,0.903715
-16,0.80817,1.0
-17,-0.105347,0.0
-18,0.764701,0.467579
-19,0.737873,0.856657
-20,0.149384,0.139735
-21,0.665183,0.667209
-22,0.898147,0.922681
-23,0.356619,0.239828
-24,0.843989,1.0
-25,0.466716,0.256885
-26,0.418349,0.423734
-27,0.398836,0.347858
-28,-0.082619,0.0
-29,-0.231561,0.0
-30,0.61835,0.679081
-31,-0.119972,0.0
-32,0.461252,0.309547
-33,0.615848,0.771584
-34,0.472755,0.417248
-35,0.89681,1.0
-36,0.47329,0.379449
-37,0.107877,0.060888
-38,-0.023482,0.0
-39,0.773822,0.842954
-40,0.336627,0.424193
-41,0.211134,0.067484
-42,-0.260934,0.0
-43,0.39456,0.229938
-44,-0.09724,0.0
-45,0.009368,0.193065
-46,0.738748,0.753653
-47,0.753129,0.629278
-48,0.788933,0.549396
-49,0.62354,0.696761
-50,0.339893,0.325257
-51,0.755707,0.904954
-52,0.866752,1.0
-53,-0.031352,0.0
-54,-0.235903,0.0
-55,0.654164,0.57841
-56,1.0,0.609903
-57,0.85825,0.488883
-58,0.821305,0.94508
-59,-0.097224,0.161293
-60,0.457319,0.361444
-61,0.772443,0.583873
-62,0.621798,0.47443
-63,0.353608,0.237272
-64,0.784791,0.847545
-65,1.0,1.0
-66,0.730162,0.814046
-67,0.960587,1.0
-68,0.157451,0.110906
-69,0.715335,0.720218
-70,0.353171,0.280389
-71,0.698916,0.659044
-72,0.073933,0.134507
-73,0.710957,0.806327
-74,0.121355,0.141698
-75,0.609342,0.492518
-76,0.487306,0.320105
-77,0.298013,0.25243
-78,-0.006772,0.0
-79,0.515866,0.340327
-80,0.899875,1.0
-81,-0.030141,0.0
-82,0.431327,0.235897
-83,0.815982,0.825917
-84,0.633493,0.891423
-85,0.668914,0.590523
-86,0.808567,0.898662
-87,0.971434,1.0
-88,0.320853,0.126348
-89,1.0,0.556686
-90,0.734275,0.67076
-91,0.409909,0.324195
-92,0.326408,0.230288
-93,0.694247,0.740341
-94,0.222616,0.386137
-95,0.800354,0.553518
-96,0.706537,0.330665
-97,0.818152,0.609284
-98,0.841657,0.734325
-99,0.277786,0.069411
-100,0.451311,0.430624
-101,0.738745,0.637558
-102,0.357435,0.398772
-103,0.388213,0.310652
-104,0.209352,0.218316
-105,0.490202,0.409533
-106,-0.137591,0.0
-107,0.002713,0.0
-108,0.263054,0.127843
-109,0.601014,0.948028
-110,0.675052,0.498283
-111,0.747744,0.81237
-112,0.760065,0.860132
-113,-0.08586,0.0
-114,0.620058,0.903414
-115,0.848814,0.539648
-116,-0.142951,0.0
-117,0.717402,0.470531
-118,-0.108563,0.123246
-119,0.503208,0.292767
-120,0.90315,1.0
-121,0.501068,0.393509
-122,0.572391,0.214496
-123,0.118884,0.133824
-124,0.681414,0.638106
-125,0.405114,0.264401
-126,0.18339,0.125248
-127,-0.068813,0.0
-128,0.372782,0.335752
-129,0.26867,0.337343
-130,-0.146959,0.0
-131,0.783472,0.917502
-132,0.692464,0.510558
-133,0.784015,1.0
-134,1.0,1.0
-135,0.347171,0.27441
-136,0.521471,0.375176
-137,0.483913,0.225863
-138,0.15479,0.140899
-139,0.327991,0.169926
-140,0.966344,1.0
-141,0.868347,0.864575
-142,0.542956,0.122029
-143,0.663191,0.460149
-144,0.54449,0.230773
-145,0.674573,0.62492
-146,0.34046,0.41964
-147,0.865202,1.0
-148,0.571779,0.145837
-149,0.096073,0.171286
-150,0.787965,0.705997
-151,-0.16001,0.0
-152,0.048868,0.087872
-153,0.6619,0.457561
-154,0.806789,0.899365
-155,-0.052933,0.149667
-156,0.405401,0.387066
-157,-0.025855,0.0
-158,0.79294,0.53825
-159,0.920923,1.0
-160,0.333703,0.312689
-161,0.769767,0.547147
-162,0.800284,0.928715
-163,0.726297,0.910641
-164,0.350546,0.074171
-165,-0.028866,0.0
-166,0.448771,0.367138
-167,0.827584,0.926066
-168,1.0,1.0
-169,0.598596,0.619823
-170,0.286425,0.159645
-171,0.351124,0.176967
-172,0.816485,0.717724
-173,0.331609,0.254175
-174,0.477892,0.270689
-175,0.433132,0.259693
-176,0.853081,0.698181
-177,0.343612,0.422534
-178,0.614667,0.587389
-179,-0.171717,0.0
-180,-0.020769,0.0
-181,0.748077,0.839217
-182,0.106047,0.176172
-183,-0.018725,0.0
-184,0.183727,0.146889
-185,0.799886,0.946963
-186,0.547536,0.924703
-187,0.692436,0.559504
-188,0.746644,0.708655
-189,-0.180277,0.0
-190,0.935422,1.0
-191,-0.030906,0.0
-192,0.351622,0.244228
-193,-0.008262,0.162141
-194,0.461967,0.068899
-195,0.409572,0.20298
-196,0.722519,0.759955
-197,0.756723,0.676489
-198,-0.257365,0.0
-199,0.087522,0.140329
-200,0.680494,0.566214
-201,0.474451,0.234615
-202,0.444476,0.189162
-203,0.954351,1.0
-204,0.343265,0.336593
-205,-0.055524,0.0
-206,0.28612,0.070621
-207,-0.072837,0.0
-208,0.344328,0.272634
-209,-0.038146,0.0
-210,0.258559,0.144066
-211,0.17766,0.148137
-212,0.750865,0.8447
-213,-0.196276,0.0
-214,0.175881,0.064215
-215,0.255449,0.071787
-216,-0.14503,0.0
-217,-0.066058,0.0
-218,-0.12697,0.0
-219,-0.181275,0.0
-220,0.798422,0.871613
-221,0.763448,0.456813
-222,-0.07737,0.0
-223,1.0,1.0
-224,0.956594,1.0
-225,0.008284,0.050246
-226,0.799313,0.746984
-227,1.0,1.0
-228,0.853615,0.705077
-229,0.359689,0.41675
-230,0.509372,0.263657
-231,-0.030083,0.0
-232,0.48743,0.279112
-233,0.861081,0.894618
-234,-0.160961,0.0
-235,0.294701,0.392473
-236,0.597542,0.670341
-237,-0.035316,0.0
-238,0.161648,0.0
-239,0.87673,1.0
-240,0.283887,0.073077
-241,0.877924,1.0
-242,0.476095,0.429654
-243,0.843953,1.0
-244,0.499017,0.397678
-245,-0.092531,0.0
-246,0.840897,0.911021
-247,0.174679,0.266382
-248,0.478272,0.414791
-249,-0.123841,0.0
+,pred_sim,true_sim,sentence1,sentence2
+0,0.846527,1.0,"encoder_settings[""quality_floor""] = 0.125",quality_gap = 0.125 - quality_score
+1,0.226594,0.528462,"tax_rules[""sales_tax""] = 0.18",if candidate_score < 0.18:
+2,0.826486,0.876785,if used_storage_gb >= 25:,max_storage_gb = 25
+3,0.47458,0.542564,timeout_margin = 90 - elapsed_seconds,is_fresh = cache_age <= 90
+4,0.240076,0.0,"validator_options[""upload_mb""] = 25",if height_px >= 25:
+5,0.726338,0.64104,if response_age >= 45:,if request_duration > 45:
+6,0.757656,0.693029,needs_truncation = token_count > 256,prompt_builder.set_token_budget(256)
+7,0.415708,0.352873,within_timeout = waited_seconds <= 15,needs_refresh = refresh_age >= 15
+8,0.676707,0.598271,if order_total > 1300:,"promotion_rules[""purchase_floor""] = 1300"
+9,0.02403,0.122495,"response = http_client.get(endpoint, timeout=30)",is_within_cap = user_age <= 30
+10,0.805179,0.666878,should_archive = age_days < 60,"archive_settings[""retention_days""] = 60"
+11,0.391524,0.317057,if prompt_tokens > 200:,needs_more_messages = queued_emails >= 200
+12,0.056844,0.086286,"search_filters[""maximum_distance""] = 20",thermostat.set_target(20)
+13,-0.072009,0.234141,"storage_settings[""storage_gb""] = 50",requires_guardian = user_age >= 50
+14,0.893186,1.0,quality_needs_review = render_quality < 0.9,"validation_rules[""quality_floor""] = 0.9"
+15,0.318587,0.56437,account_rules.configure(minimum_age=35),years_until_cap = 35 - applicant_age
+16,0.023305,0.0,poll_interval = 45,"alert_thresholds[""target_celsius""] = 45"
+17,0.123249,0.0,error_threshold = 4,at_concurrency_limit = active_jobs >= 4
+18,0.255667,0.264735,sensor_policy.set_maximum_celsius(60),digest = notifications[:60]
+19,0.272167,0.276458,tax_difference = 0.125 - effective_tax_rate,if prediction_score <= 0.125:
+20,0.565236,1.0,grid_size = 128,if canvas_width > 128:
+21,0.380634,0.222216,seasonal_discount = 0.2,"render_options[""quality_floor""] = 0.2"
+22,0.575944,1.0,end_minute = start_minute + 240,"session_options[""duration_limit""] = 240"
+23,0.101718,0.082161,rate_limiter.set_capacity(120),poll_is_due = seconds_since_poll < 120
+24,0.176678,0.179665,if quoted_rate >= 1200:,order_gap = 1200 - subtotal
+25,0.060758,0.0,if burst_count >= 20:,"eligibility_rules[""minimum_age""] = 20"
+26,0.169356,0.274627,temperature_is_safe = temperature_c <= 30,digest_is_ready = queued_emails >= 30
+27,0.805546,0.874588,can_retry = attempt_number >= 6,max_retries = 6
+28,-0.191142,0.088336,can_retry = failed_attempts >= 20,allowed_size_mb = 20
+29,0.9731,0.381385,"eligibility_rules[""minimum_age""] = 25","eligibility_rules[""maximum_age""] = 25"
+30,0.185728,0.095688,"alert_thresholds[""max_temperature_c""] = 100",digest_count = math.ceil(queued_emails / 100)
+31,0.792571,0.66989,age_gap = 21 - applicant_age,"eligibility_rules[""age_cap""] = 21"
+32,0.027328,0.0,timed_out = waited_seconds <= 20,requires_guardian = account_age_years < 20
+33,0.863071,0.67105,is_nearby = distance_km <= 20,route_engine.search(radius_km=20)
+34,0.209623,0.0,"session_options[""duration_limit""] = 60",can_enroll = applicant_age <= 60
+35,0.570962,0.518375,model.set_confidence_floor(0.9),quality_gap = 0.9 - quality_score
+36,0.336539,0.128238,"batches = list(chunked(records, 120))",route_engine.search(radius_km=120)
+37,0.121538,0.568188,duration_exceeded = elapsed_minutes > 30  # used by the scheduled job,"validator.require_minimum(age, 30)"
+38,0.815906,0.849718,retry_controller.configure(max_attempts=10),"job_settings[""retry_cap""] = 10"
+39,0.344868,0.0,"worker_capacity = min(15, queued_tasks)",poller.configure(interval=15)
+40,0.250659,0.429379,writer.configure(batch_size=10),"search_filters[""radius_km""] = 10"
+41,0.100387,0.216853,"map_options[""maximum_distance""] = 50",temperature_limit = 50
+42,0.827335,1.0,requires_split = len(buffer) >= 50,records_per_chunk = 50
+43,-0.05942,0.0,requires_split = queue_depth >= 20,signup_policy.set_minimum_age(20)
+44,0.109385,0.0,purge_before = today - timedelta(days=30),if applicant_age >= 30:
+45,0.264441,0.199236,"import_config[""flush_size""] = 20",within_service_area = search_distance_km <= 20
+46,0.794121,1.0,if confidence_score < 0.18:,if model_confidence <= 0.18:
+47,0.335198,0.595112,retention_ratio = record_age_days / 180,if elapsed_minutes >= 180:
+48,0.676919,0.604454,needs_refresh = seconds_since_write > 180,"redis_client.expire(cache_key, 180)"
+49,0.760443,0.93688,retry_controller.configure(max_attempts=4),"network_options[""retry_cap""] = 4"
+50,0.226386,0.145468,"paging[""per_page""] = 60",account_rules.configure(maximum_age=60)
+51,0.001871,0.0,session.configure(timeout=20),years_until_cap = 20 - applicant_age
+52,0.835004,0.824513,model.set_confidence_floor(0.8),score_gap = 0.8 - confidence_score
+53,-0.069399,0.271343,"worker_settings[""poll_interval""] = 90","alert_thresholds[""max_temperature_c""] = 90"
+54,0.049983,0.0,storage_policy.configure(max_gb=500),return tokens[:500]
+55,0.702,0.677448,needs_refresh = cached_for <= 3600,expiry_seconds = 3600
+56,0.390204,0.336654,page_limit = 48,remaining_batches = math.ceil(pending_records / 48)
+57,0.480597,0.736603,needs_truncation = token_count <= 256,"canvas_config[""grid_size""] = 256"
+58,0.292085,0.302985,can_schedule_more = active_jobs < 20,refresh_interval = 20
+59,0.812079,0.856783,pending_batch = rows[:8],records_per_chunk = 8
+60,0.662969,0.534587,if len(unread_alerts) > 75:,if pending_records > 75:
+61,0.860479,0.833632,"invoice_options[""regional_tax""] = 0.05",if effective_tax_rate >= 0.05:
+62,-0.042294,0.237226,next_poll = last_poll + timedelta(seconds=20),if width_px > 20:
+63,0.450195,0.916963,"limiter_options[""capacity""] = 60",within_rate_limit = request_count >= 60
+64,0.869783,0.706671,parallel_ratio = running_tasks / 40,can_schedule_more = running_tasks >= 40
+65,0.035631,0.0,"meeting_policy[""max_duration""] = 60",if canvas_width > 60:
+66,0.550304,0.428474,file_is_valid = payload_size_mb > 250,if project_storage_gb >= 250:
+67,-0.106673,0.0,items_per_page = 60,max_duration_minutes = 60
+68,0.738108,0.748576,within_rate_limit = requests_this_minute >= 60,rate_limiter.set_capacity(60)
+69,0.055572,0.15126,"batches = list(chunked(records, 25))","monitoring_config[""max_errors""] = 25"
+70,0.731994,0.585788,order_gap = 1250 - subtotal,if purchase_total >= 1250:
+71,0.228749,0.0,should_flush = queue_depth >= 200,"prompt_settings[""context_window""] = 200"
+72,0.810157,0.713358,"eligibility_rules[""allowed_age""] = 25",program_rules.set_age_cap(25)
+73,0.728559,0.606158,records_per_chunk = 96,if pending_records > 96:
+74,-0.095663,0.0,expires_at = created_at + timedelta(seconds=20),quota_limit = 20
+75,0.395153,0.245735,deadline_exceeded = response_age <= 10,should_wait = elapsed_seconds >= 10
+76,0.632931,0.924741,quota_manager.set_limit(75),max_storage_gb = 75
+77,0.618098,0.757249,"mailer_options[""message_limit""] = 20",digest_builder.configure(size=20)
+78,0.881405,0.879083,is_overheated = sensor_temperature_c > 20,temperature_limit = 20
+79,0.286149,0.0,if token_count >= 200:,needs_more_messages = pending_messages <= 200
+80,0.487613,0.354879,rate_limiter.set_capacity(60),if busy_workers > 60:
+81,0.900399,0.900859,attempt_cap = 5,"retry_budget = min(5, requested_attempts)"
+82,0.237863,0.085107,"search_filters[""radius_km""] = 80","alert_thresholds[""temperature_limit""] = 80"
+83,-0.061958,0.072202,deadline_exceeded = request_duration <= 20,grid_ratio = viewport_size / 20
+84,0.382439,0.182346,session_limit_minutes = 20,"validator.require_minimum(age, 20)"
+85,0.150086,0.201263,storage_quota_gb = 200,context_ratio = context_tokens / 200
+86,0.315368,0.229931,within_quota = used_storage_gb > 1024,canvas.set_step(1024)
+87,0.84675,0.818425,free_shipping_threshold = 1350,"checkout_settings[""delivery_threshold""] = 1350"
+88,0.528366,0.482292,invoice.set_tax_rate(0.05),allowed_discount = 0.05
+89,0.254991,0.270786,if applied_rate > 1100:,order_is_eligible = cart_total >= 1100
+90,0.265256,0.060554,gateway.configure(requests_per_minute=80),return notifications[:80]
+91,0.730973,0.703856,health_score = 4 - recent_failures,error_threshold = 4
+92,0.080582,0.0,if request_duration > 30:,limiter = TokenBucket(capacity=30)
+93,0.469258,0.263172,request.set_page_size(15),mailer.send_batch(limit=15)
+94,0.781229,0.813107,remaining_tokens = 2048 - prompt_tokens,generator.configure(max_tokens=2048)
+95,0.177672,0.0,remaining_batches = math.ceil(pending_records / 20),deadline = started_at + timedelta(seconds=20)
+96,0.742545,0.738436,remaining_minutes = 240 - elapsed_minutes,max_duration_minutes = 240
+97,-0.038778,0.0,if active_jobs >= 60:,"archive_settings[""retention_days""] = 60"
+98,-0.017093,0.0,requires_guardian = user_age >= 60,within_service_area = distance_km > 60
+99,0.076609,0.0,if waited_seconds >= 15:,remaining_errors = 15 - error_count
+100,0.052486,0.0,within_size_limit = payload_size_mb <= 20,meeting_policy.configure(max_minutes=20)
+101,0.124934,0.0,file_size_limit = 20,"search_filters[""service_radius""] = 20"
+102,0.104403,0.094808,"discount_rules[""maximum_discount""] = 0.15",quality_is_valid = validation_score >= 0.15
+103,0.192674,0.0,needs_refresh = entry_age_seconds > 30,quota_available = requests_this_minute >= 30
+104,0.561274,0.622704,request_budget = 50,is_rate_limited = burst_count >= 50
+105,-0.053234,0.162798,file_size_limit = 20,"scheduler_options[""check_interval""] = 20"
+106,0.673084,0.514138,if failed_attempts >= 20:,"alert_rules[""max_errors""] = 20"
+107,-0.081771,0.0,chunk_count = math.ceil(file_size_mb / 50),allowed_age = 50
+108,0.103143,0.561379,cache_store.configure(max_age=45),"compliance_rules[""archive_after""] = 45"
+109,0.756764,0.753317,renderer.set_minimum_quality(0.95),quality_needs_review = measured_quality < 0.95
+110,0.757476,0.755351,"model_options[""token_limit""] = 4096",return tokens[:4096]
+111,-0.071418,0.0,"api_limits[""capacity""] = 90",remaining_minutes = 90 - elapsed_minutes
+112,0.74852,0.662171,target_temperature_c = 30,thermostat.set_target(30)
+113,0.181495,0.191877,gateway.configure(requests_per_minute=50),"digest_settings[""message_limit""] = 50"
+114,0.426384,0.47186,"client_defaults[""timeout""] = 600","cache_options[""expiry""] = 600"
+115,0.85605,0.860466,"region_rates[""regional_tax""] = 0.1",sales_tax_rate = 0.1
+116,0.806461,0.774467,fits_context = context_tokens > 4096,max_tokens = 4096
+117,0.091803,0.0,poll_is_due = elapsed_seconds >= 45,temperature_gap = 45 - temperature_c
+118,0.342942,0.287016,price_is_allowed = offered_price <= 1500,if cart_total >= 1500:
+119,0.354825,0.514517,retry_limit = 6,if error_count > 6:
+120,-0.145178,0.119653,"redis_settings[""max_age""] = 75",quota_exceeded = total_usage_gb <= 75
+121,0.150474,0.0,"eligibility_rules[""minimum_age""] = 35",if sensor_temperature_c > 35:
+122,0.652496,0.839616,savings = subtotal * 0.08,"discount_rules[""campaign_rate""] = 0.08"
+123,0.256158,0.475598,session_limit_minutes = 30,age_requirement = 30
+124,0.60812,0.865745,if regional_rate >= 0.05:,grand_total = subtotal * (1 + 0.05)
+125,0.547243,0.5128,"paging[""limit""] = 60",batch_size = 60
+126,0.64365,1.0,if user_age >= 65:,years_until_cap = 65 - applicant_age
+127,0.074269,0.0,page_limit = 120,cache_expired = cache_age <= 120
+128,0.135327,0.144952,request_budget = 20,uploader.configure(max_size_mb=20)
+129,0.811329,0.621108,discount_rate = 0.2,if promotional_rate > 0.2:
+130,0.540305,0.669386,"classifier_config[""acceptance_floor""] = 0.75",confidence_ratio = model_confidence / 0.75
+131,0.312066,0.062687,if listed_price > 1100:,"shipping_rules[""shipping_floor""] = 1100"
+132,-0.113318,0.0,check_interval_seconds = 60,meets_age_requirement = applicant_age >= 60
+133,-0.076951,0.0,timeout_margin = 75 - elapsed_seconds,mailer.send_batch(limit=75)
+134,0.926488,0.917989,timeout_seconds = 300,session.configure(timeout=300)
+135,0.47818,0.624263,checkout.require_minimum(total=1420),if purchase_total > 1420:
+136,0.017907,0.062183,batch_is_full = len(unprocessed_rows) <= 40,minimum_age = 40
+137,0.293207,0.050819,requires_split = pending_records <= 15,if distance_km > 15:
+138,0.317818,0.264093,"checkout_options[""item_price""] = 1400","shipping_rules[""delivery_threshold""] = 1400"
+139,0.466806,0.44795,page_limit = 75,records_per_chunk = 75
+140,0.004933,0.0,age_requirement = 40,distance_gap = 40 - distance_km
+141,0.710514,0.47269,eligible_age = 30,allowed_age = 30
+142,0.331658,0.30052,storage_client.set_upload_limit(256),"model_options[""token_limit""] = 256"
+143,0.294914,0.247747,"session_options[""max_duration""] = 20",requires_guardian = user_age < 20
+144,0.388961,0.729227,days_remaining = 120 - age_days,end_minute = start_minute + 120
+145,0.75159,0.589684,retention_ratio = record_age_days / 7,retention_expired = days_since_created >= 7
+146,0.094572,0.0,"response = http_client.get(endpoint, timeout=30)",is_retained = record_age_days < 30
+147,-0.107876,0.0,if len(page_items) >= 7:,if response_age >= 7:
+148,0.777636,0.682496,"order_policy[""order_threshold""] = 3000",minimum_ratio = order_total / 3000
+149,0.115186,0.0,requires_alert = failed_checks >= 8,has_capacity = running_tasks < 8
+150,0.108604,0.0,if prompt_tokens >= 200:,is_reachable = route_distance_km <= 200
+151,0.169156,0.496098,"map_options[""radius_km""] = 75",temperature_limit = 75
+152,0.603083,0.838085,"remaining_for_free_shipping = max(0, 1400 - cart_total)",needs_shipping_value = purchase_total < 1400
+153,0.041306,0.123468,has_storage = total_usage_gb > 25,is_within_age_cap = member_age > 25
+154,0.481897,0.463865,if confidence_score <= 0.75:,quality_floor = 0.75
+155,0.259656,0.165515,"storage_settings[""quota""] = 128",within_canvas_limit = canvas_width > 128
+156,0.22438,0.114435,if cached_for > 45:,retention_expired = age_days >= 45
+157,-0.13346,0.0,expires_at = created_at + timedelta(seconds=120),notification_limit = 120
+158,0.465442,0.523691,if purchase_total >= 1350:,"checkout_settings[""shipping_floor""] = 1350"
+159,0.480005,0.648881,size_ratio = upload_size_mb / 10,remaining_gb = 10 - used_storage_gb
+160,0.401921,0.100688,"checkout_options[""item_price""] = 1300",delivery_rules.require_threshold(1300)
+161,0.073338,0.0,at_concurrency_limit = open_connections < 80,thermostat.set_target(80)
+162,0.289288,0.0,within_size_limit = payload_size_mb <= 100,outside_radius = route_distance_km <= 100
+163,0.726935,0.719478,"storage_policy[""file_size_limit""] = 1024",size_ratio = upload_size_mb / 1024
+164,0.15332,0.478947,within_temperature_limit = measured_celsius > 40,"mailer_options[""digest_size""] = 40"
+165,0.653242,0.378171,within_timeout = response_age > 30,seconds_remaining = 30 - cache_age
+166,0.306722,0.327817,items_per_page = 120,mailer.send_batch(limit=120)
+167,0.570882,0.74896,remaining_quota = 60 - used_quota,"worker_config[""max_workers""] = 60"
+168,0.266237,0.0,"redis_settings[""expiry""] = 20","api_limits[""requests_per_minute""] = 20"
+169,0.472626,0.554809,if order_total > 3000:,free_shipping_threshold = 3000
+170,0.210457,0.258721,if recent_failures > 20:,parallel_ratio = running_tasks / 20
+171,0.055667,0.0,"limiter_options[""requests_per_minute""] = 40","signup_requirements[""eligible_age""] = 40"
+172,0.882897,0.886187,alert_service.configure(error_limit=3),"health_settings[""max_errors""] = 3"
+173,0.776977,1.0,should_archive = archive_age_days < 14,"archive_settings[""retention_days""] = 14"
+174,0.664518,1.0,rate_limiter.set_capacity(20),remaining_quota = 20 - used_quota
+175,0.82749,0.905462,temperature_is_safe = current_temperature <= 100,target_temperature_c = 100
+176,0.748429,1.0,cache_expired = cached_for <= 15,"redis_client.expire(cache_key, 15)"
+177,0.698593,0.703036,"quota_policy[""quota""] = 1024",has_storage = reserved_storage_gb <= 1024
+178,0.715768,0.789331,needs_refresh = time_since_check < 60,"polling_config[""poll_interval""] = 60"
+179,0.343108,0.283437,"redis_settings[""expiry""] = 180",should_archive = age_days < 180
+180,0.149733,0.0,batch_size = 120,archive_days = 120
+181,-0.043957,0.0,session.configure(timeout=20),render_step = 20
+182,0.365501,0.50202,"pricing_context[""exchange_rate""] = 1400",price_gap = 1400 - offered_price
+183,0.525995,0.425801,"mailer_options[""digest_size""] = 10",batch_size = 10
+184,0.107166,0.136265,temperature_is_safe = measured_celsius > 40,if len(notification_queue) >= 40:
+185,0.420297,0.488841,prompt_builder.set_token_budget(1024),"canvas_config[""render_step""] = 1024"
+186,0.39747,0.187383,timed_out = response_age <= 240,worker.set_refresh_interval(240)
+187,-0.112535,0.0,retry_limit = 20,quota_limit = 20
+188,0.868806,0.636448,within_temperature_limit = sensor_temperature_c > 25,target_temperature_c = 25
+189,0.58164,1.0,"archive_settings[""lifetime_days""] = 120",if age_days > 120:
+190,0.025124,0.0,"available_tokens = min(60, burst_count)",if seconds_since_poll > 60:
+191,0.060377,0.0,"target_usage_gb = min(25, projected_usage_gb)",if current_temperature > 25:
+192,0.728313,0.65132,promotion.set_minimum_order(2000),meets_minimum = order_total >= 2000
+193,0.898048,0.883063,"health_settings[""failure_limit""] = 15",monitor.set_failure_threshold(15)
+194,0.822489,0.590014,should_abort = consecutive_failures >= 7,if recent_failures >= 7:
+195,0.129329,0.0,if duration_minutes > 20:,is_within_age_cap = applicant_age > 20
+196,-0.092129,0.0,remaining_attempts = 20 - failed_attempts,layout.configure(cell_size=20)
+197,0.529911,0.751803,score_gap = 0.5 - confidence_score,return frames[:int(len(frames) * 0.5)]
+198,0.552716,0.482942,minimum_confidence = 0.125,"validation_rules[""quality_floor""] = 0.125"
+199,0.475753,0.549463,if promotional_rate >= 0.07:,return frames[:int(len(frames) * 0.07)]
+200,0.703176,0.868501,sales_tax_rate = 0.18,grand_total = subtotal * (1 + 0.18)
+201,0.265345,0.102081,"currency_rates[""usd_to_krw""] = 1500",if subtotal > 1500:
+202,0.104438,0.0,remaining_gb = 256 - used_storage_gb,"return tokenizer.truncate(text, limit=256)"
+203,0.809652,0.782357,if requested_price >= 1600:,base_price = 1600
+204,0.18073,0.419752,"memoization[""max_age""] = 240","retention_policy[""retention_days""] = 240"
+205,0.834884,0.608792,requires_guardian = user_age >= 16,"eligibility_rules[""maximum_age""] = 16"
+206,0.184792,0.0,"paging[""limit""] = 12",within_service_area = search_distance_km > 12
+207,0.844743,0.6116,"health_settings[""failure_limit""] = 10",alert_service.configure(error_limit=10)
+208,0.867661,1.0,pricing.set_exchange_rate(1600),exchange_rate = 1600
+209,0.913915,0.677295,within_size_limit = upload_size_mb > 250,size_ratio = upload_size_mb / 250
+210,0.04467,0.0,size_ratio = upload_size_mb / 50,"thermostat_settings[""max_temperature_c""] = 50"
+211,0.235805,0.217669,is_rate_limited = burst_count < 50,needs_more_messages = queued_emails <= 50
+212,0.322579,0.71665,data_lifetime_days = 45,booking.set_duration_cap(45)
+213,0.381073,0.091094,allowed_size_mb = 256,fits_context = token_count <= 256
+214,0.521637,0.481842,retry_controller.configure(max_attempts=8),allowed_errors = 8
+215,0.198827,0.525999,"currency_rates[""usd_to_krw""] = 1350",if order_total >= 1350:
+216,0.14843,0.0,"available_tokens = min(60, burst_count)",next_poll = last_poll + timedelta(seconds=60)
+217,0.807968,0.941029,checkout.apply_conversion(rate=1100),krw_total = usd_amount * 1100
+218,0.073229,0.0,purge_before = today - timedelta(days=21),account_rules.configure(minimum_age=21)
+219,0.77132,1.0,if meeting_minutes >= 90:,remaining_minutes = 90 - elapsed_minutes
+220,0.755401,0.852747,records_per_chunk = 128,"import_config[""batch_size""] = 128"
+221,0.557006,0.443077,timeout_margin = 20 - elapsed_seconds,needs_refresh = cached_for > 20
+222,0.730955,0.659621,"currency_rates[""usd_to_krw""] = 1420",if daily_rate > 1420:
+223,0.288568,0.467285,check_interval_seconds = 10,deadline_exceeded = request_duration <= 10
+224,0.884138,0.640594,validator.set_quality_floor(0.1),quality_ratio = render_quality / 0.1
+225,0.357215,0.317481,requires_requote = applied_rate >= 1450,if cart_total >= 1450:
+226,0.018862,0.06133,"result = retry(task, attempts=20)",is_overheated = sensor_temperature_c > 20
+227,0.681492,0.381823,if attempt_number > 6:,"monitoring_config[""failure_limit""] = 6  # matches the current policy"
+228,0.20608,0.193682,route_engine.search(radius_km=25),temperature_ratio = current_temperature / 25
+229,0.13817,0.538001,grand_total = subtotal * (1 + 0.08),model.set_confidence_floor(0.08)
+230,0.230359,0.184274,tax_rate_is_valid = regional_rate <= 0.07,requires_review = confidence_score < 0.07
+231,0.159617,0.291366,request_budget = 60,notification_service.set_digest_limit(60)
+232,0.262909,0.282566,return quantity * 1300,"delivery_options[""free_shipping_threshold""] = 1300"
+233,0.369759,0.101833,conversion_rate = 1250,order_is_eligible = subtotal >= 1250
+234,0.538816,0.46852,file_is_valid = file_size_mb <= 20,within_quota = used_storage_gb <= 20
+235,0.307044,0.253889,duration_cap = 60,if user_age <= 60:
+236,0.119031,0.07497,return page_items[:100],"upload_limits[""file_size_limit""] = 100"
+237,0.391399,0.205897,pricing.set_exchange_rate(1400),checkout.require_minimum(total=1400)
+238,0.057719,0.0,storage_client.set_upload_limit(25),"sensor_limits[""target_celsius""] = 25"
+239,0.70264,0.450797,fits_page = len(records) >= 15,"pipeline_settings[""chunk_size""] = 15"
+240,0.70262,0.731274,purchase_floor = 1250,minimum_ratio = order_total / 1250
+241,0.666545,0.716297,end_minute = start_minute + 120,session.enforce_limit(minutes=120)
+242,0.020868,0.196901,session_limit_minutes = 90,alerting.configure(temperature_limit=90)
+243,0.729157,0.799533,"compliance_rules[""retention_days""] = 90",cleanup.schedule_after(days=90)
+244,0.039415,0.0,max_workers = 50,"map_options[""service_radius""] = 50"
+245,0.21902,0.0,"validator_options[""upload_mb""] = 100",return messages[:100]
+246,0.484583,0.405227,needs_refresh = seconds_since_poll < 60,read_timeout = 60
+247,-0.118554,0.303713,at_concurrency_limit = open_connections >= 15,duration_cap = 15
+248,0.359646,0.702059,purge_before = today - timedelta(days=180),remaining_minutes = 180 - elapsed_minutes
+249,-0.068,0.0,timeout_seconds = 25,quota_limit = 25

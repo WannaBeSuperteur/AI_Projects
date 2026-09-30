@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import time
+import random
 
 import numpy as np
 import pandas as pd
@@ -18,13 +19,31 @@ from sentence_transformers import SentenceTransformer, util, SentenceTransformer
                                   SentenceTransformerTrainer
 from sentence_transformers.sentence_transformer import losses
 from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
-from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback, TrainerCallback
+from transformers import AutoTokenizer, AutoModel, EarlyStoppingCallback, TrainerCallback, AutoConfig
+from safetensors.torch import save_file
 
 from sklearn.metrics.pairwise import cosine_similarity
 
 
 np.set_printoptions(linewidth=160)
-torch.manual_seed(2026)
+
+
+SEED = 2026
+split_generator = torch.Generator().manual_seed(SEED)
+
+
+def seed_everything(seed=SEED):
+    random.seed(seed)
+    np.random.seed(seed)
+
+    # PyTorch and cuDNN
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
+seed_everything(SEED)
+
 
 # to prevent force system off during S-BERT training
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -36,10 +55,10 @@ TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
 
-MAX_EPOCHS_PROB = 20
-EARLY_STOPPING_PATIENCE_PROB = 5
+MAX_EPOCHS_PROB = 50
+EARLY_STOPPING_PATIENCE_PROB = 10
 
-MAX_EPOCHS_SIMILARITY = 12
+MAX_EPOCHS_SIMILARITY = 20
 EARLY_STOPPING_PATIENCE_SIMILARITY = 3
 
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
@@ -57,6 +76,12 @@ HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
 LEARNING_RATE = {GTE_MODERNBERT_BASE: {'lr': 3e-5, 'warmup_fraction': 0.075},
                  F2LLM_V2_330M: {'lr': 2.5e-6, 'warmup_fraction': 0.4},
                  LATEON_CODE_PRETRAIN: {'lr': 8e-6, 'warmup_fraction': 0.0}}
+
+
+def is_model_exists(file_names: list[str]) -> bool:
+    model_files = [name for name in file_names
+                   if name.endswith('.pt') or name.endswith('.pth') or name.endswith('.safetensors')]
+    return len(model_files) >= 1
 
 
 def mean_pooling(model_output, attention_mask):
@@ -86,6 +111,7 @@ class SingleTextDataset(torch.utils.data.Dataset):
             return_tensors="pt"
         )
         return {
+            "text": text,
             "input_ids": inputs["input_ids"].squeeze(0),
             "attention_mask": inputs["attention_mask"].squeeze(0),
             "prob": torch.tensor(self.probs[idx], dtype=torch.float16)
@@ -103,6 +129,7 @@ class EmbeddingProbPredictor(nn.Module):
         outputs = self.base_model(input_ids=input_ids, attention_mask=attention_mask)
         emb = mean_pooling(outputs, attention_mask)
         prob = self.final_linear(emb)
+
         return prob
 
 
@@ -140,7 +167,7 @@ class EmbeddingProbTrainer:
         train_loss_sum = 0.0
 
         for idx, items in enumerate(self.train_loader):
-            items = {k: v.to(self.device) for k, v in items.items()}
+            items = {k: v.to(self.device) for k, v in items.items() if not isinstance(v, list)}
             inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
             prob_labels = prob_labels.reshape(-1, 1)
 
@@ -166,16 +193,20 @@ class EmbeddingProbTrainer:
         val_mse_sum, val_mae_sum, val_loss_sum = 0.0, 0.0, 0.0
 
         test_result = {
+            'text': [],
             'pred': [],
             'prob_label': []
         }
 
         with torch.no_grad():
             for idx, items in enumerate(data_loader):
-                items = {k: v.to(self.device) for k, v in items.items()}
+                items = {k: v.to(self.device) if not isinstance(v, list) else v
+                         for k, v in items.items()}
 
+                texts = items['text']
                 inputs, attention_mask, prob_labels = items['input_ids'], items['attention_mask'], items['prob']
-                outputs = self.predictor(inputs, attention_mask).to(torch.float32)
+
+                outputs = model(inputs, attention_mask).to(torch.float32)
                 preds = torch.sigmoid(outputs)
                 prob_labels = prob_labels.reshape(-1, 1)
 
@@ -191,6 +222,7 @@ class EmbeddingProbTrainer:
                 val_mae_sum += val_mae_batch * prob_labels.shape[0]
 
                 if is_test:
+                    test_result['text'].extend(list(texts))
                     test_result['pred'].extend(round(float(x[0]), 6) for x in preds)
                     test_result['prob_label'].extend(round(float(x[0]), 6) for x in prob_labels)
 
@@ -245,19 +277,17 @@ class EmbeddingProbTrainer:
                 min_valid_loss = valid_loss
                 min_valid_loss_epoch = self.current_epoch
 
-                pretrained_model = EmbeddingProbPredictor(base_model=self.predictor.base_model,
-                                                          hidden_size=self.predictor.hidden_size)
-
-                best_epoch_model = pretrained_model.to(self.device)
-                best_epoch_model.device = self.device
-                best_epoch_model.load_state_dict(self.predictor.state_dict())
+                best_model_state_dict = {
+                    key: value.detach().cpu().clone()
+                    for key, value in self.predictor.state_dict().items()
+                }
 
                 if os.path.exists(ckpt_dir_path):
                     shutil.rmtree(ckpt_dir_path)
 
                 os.makedirs(ckpt_dir_path, exist_ok=True)
                 ckpt_path = os.path.join(ckpt_dir_path, f"epoch_{self.current_epoch:04d}.pth")
-                torch.save(best_epoch_model.state_dict(), ckpt_path)
+                torch.save(best_model_state_dict, ckpt_path)
 
             train_log['epoch'].append(self.current_epoch)
             train_log['epoch_time'].append(round(time.time() - start_at, 3))
@@ -272,6 +302,32 @@ class EmbeddingProbTrainer:
                 break
 
             self.current_epoch += 1
+
+        # assert best epoch model accuracy & loss
+        best_base_model = AutoModel.from_pretrained(self.model_path, trust_remote_code=True, torch_dtype=torch.float32)
+        best_epoch_model = EmbeddingProbPredictor(base_model=best_base_model, hidden_size=self.predictor.hidden_size)
+
+        best_model_ckpt_path = os.path.join(ckpt_dir_path, f"epoch_{min_valid_loss_epoch:04d}.pth")
+        best_model_state_dict = torch.load(best_model_ckpt_path, map_location='cpu', weights_only=True)
+        best_epoch_model.load_state_dict(best_model_state_dict, strict=True)
+
+        best_epoch_model = best_epoch_model.to(self.device)
+        best_epoch_model.device = self.device
+        best_epoch_model.eval()
+
+        assert_start_at = time.time()
+        _, _, checked_valid_loss = self._run_validation_or_test(model=best_epoch_model,
+                                                                data_loader=self.valid_loader)
+
+        train_log['epoch'].extend(['assert_min_valid_loss', 'assert_checked_valid_loss'])
+        train_log['epoch_time'].extend([round(time.time() - assert_start_at, 3)] * 2)
+        train_log['valid_mse'].extend([''] * 2)
+        train_log['valid_mae'].extend([''] * 2)
+        train_log['valid_loss'].extend([min_valid_loss, checked_valid_loss])
+        train_log['torch_memory'].extend([torch.cuda.memory_allocated(), ''])
+        pd.DataFrame(train_log).to_csv(train_log_path)
+
+        assert abs(min_valid_loss - checked_valid_loss) <= 1e-6
 
         # run test
         print('testing ...')
@@ -299,17 +355,49 @@ class EmbeddingProbTrainer:
     def run(self):
         self._run_all_process()
 
+    def run_eval(self, is_test: bool = True):
+        self._run_validation_or_test(model=self.predictor,
+                                     data_loader=self.test_loader,
+                                     is_test=is_test)
+
+
+def save_base_model(model_dir_path):
+    model_file_names = [name for name in os.listdir(model_dir_path) if name.endswith('.pt') or name.endswith('.pth')]
+    model_file_name = model_file_names[0]
+    model_file_path = os.path.join(model_dir_path, model_file_name)
+
+    checkpoint = torch.load(model_file_path, map_location="cpu", weights_only=False)
+    state_dict = (
+        checkpoint["state_dict"] if "state_dict" in checkpoint else checkpoint
+    )
+    base_model_state_dict = {
+        key.removeprefix("base_model."): value.contiguous()
+        for key, value in state_dict.items()
+        if key.startswith("base_model.")
+    }
+
+    save_path = os.path.join(model_dir_path, "model.safetensors")
+    if not os.path.exists(save_path):
+        save_file(base_model_state_dict, save_path)
+
 
 def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding probability predictor."""
 
+    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
+
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    config = AutoConfig.from_pretrained(model_path)
+
+    tokenizer.save_pretrained(model_dir_path)
+    config.save_pretrained(model_dir_path)
+
     model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.float32)
     hidden_size = HIDDEN_SIZE[model_path]
-
     predictor = EmbeddingProbPredictor(model, hidden_size)
+
     dataset_df = pd.read_csv(dataset_path)
-    dataset_df = dataset_df.sample(frac=1)
+    dataset_df = dataset_df.sample(frac=1, random_state=SEED)
     dataset_size = len(dataset_df)
     dataset = SingleTextDataset(dataset_df, tokenizer)
 
@@ -317,15 +405,37 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     n_valid_size = int(0.125 * dataset_size)
     n_test_size = dataset_size - (n_train_size + n_valid_size)
 
-    train_dataset, valid_dataset, test_dataset = random_split(dataset, [n_train_size, n_valid_size, n_test_size])
-    train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+    train_dataset, valid_dataset, test_dataset = random_split(dataset,
+                                                              [n_train_size, n_valid_size, n_test_size],
+                                                              generator=split_generator)
+
+    train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, generator=split_generator)
     valid_loader = DataLoader(valid_dataset, batch_size=VALID_BATCH_SIZE, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
-
     data_loaders = {'train': train_loader, 'valid': valid_loader, 'test': test_loader}
 
+    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
+        print(f'model already exists: {model_dir_path}, testing ...')
+        save_base_model(model_dir_path)
+
+        all_files = os.listdir(model_dir_path)
+        model_files = [name for name in all_files if name.endswith('.pth')]
+        model_file_path = os.path.join(model_dir_path, model_files[0])
+        model_state_dict = torch.load(model_file_path, map_location='cpu', weights_only=True)
+        predictor.load_state_dict(model_state_dict, strict=True)
+
+        trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
+        trainer.run_eval()
+        return
+
+    print(f'model not exist {model_dir_path}, training start ...')
+
+    # train model
     trainer = EmbeddingProbTrainer(predictor, data_loaders, task_name, model_path)
     trainer.run()
+
+    # save model.safetensors
+    save_base_model(model_dir_path)
 
 
 def create_datasets_for_tvt(dataset_df: pd.DataFrame):
@@ -361,19 +471,22 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataset):
     best_model.eval()
 
     with torch.no_grad():
-        predicted_scores, true_labels = valid_or_test_similarity_predictor(model=best_model,
-                                                                           val_or_test_dataset=test_dataset)
+        predicted_scores, true_labels, sentence1s, sentence2s = \
+            valid_or_test_similarity_predictor(model=best_model,
+                                               val_or_test_dataset=test_dataset)
 
     test_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
     test_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
     test_pred_and_labels = {'pred_sim': [round(x, 6) for x in predicted_scores],
-                            'true_sim': [round(x, 6) for x in true_labels]}
+                            'true_sim': [round(x, 6) for x in true_labels],
+                            'sentence1': sentence1s,
+                            'sentence2': sentence2s}
 
     return test_mse, test_mae, test_pred_and_labels
 
 
 def valid_or_test_similarity_predictor(model, val_or_test_dataset):
-    predicted_scores, true_labels = [], []
+    predicted_scores, true_labels, sentence1s, sentence2s = [], [], [], []
 
     for batch in val_or_test_dataset:
         sentence1, sentence2, label = batch['sentence1'], batch['sentence2'], batch['label']
@@ -383,9 +496,11 @@ def valid_or_test_similarity_predictor(model, val_or_test_dataset):
         similarity = cosine_similarity(emb1, emb2)
 
         predicted_scores.extend(similarity[0].tolist())
+        sentence1s.append(sentence1)
+        sentence2s.append(sentence2)
         true_labels.append(label)
 
-    return predicted_scores, true_labels
+    return predicted_scores, true_labels, sentence1s, sentence2s
 
 
 class LogTrainingCallback(TrainerCallback):
@@ -404,8 +519,25 @@ class LogTrainingCallback(TrainerCallback):
 def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
     """train text embedding similarity predictor."""
 
+    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    dataset_df = pd.read_csv(dataset_path)
+    dataset_df = dataset_df.sample(frac=1, random_state=SEED)
+    datasets = create_datasets_for_tvt(dataset_df)
+    train_dataset, valid_dataset, test_dataset = datasets['train'], datasets['valid'], datasets['test']
+
     train_log_path = os.path.join(TRAIN_LOG_PATH, f'{task_name}.csv')
     test_log_path = os.path.join(TRAIN_LOG_PATH, f'test_{task_name}.csv')
+
+    if os.path.exists(model_dir_path) and is_model_exists(os.listdir(model_dir_path)):
+        print(f'model already exists: {model_dir_path}, testing ...')
+
+        test_mse, test_mae, test_pred_and_labels = test_similarity_predictor(model_dir_path, device, test_dataset)
+        pd.DataFrame(test_pred_and_labels).to_csv(test_log_path)
+        return
+
+    print(f'model not exist {model_dir_path}, training start ...')
 
     train_log = {
         'epochs': [],
@@ -418,8 +550,8 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 
     def log_training(score: float, epoch: float, steps: int):
         with torch.no_grad():
-            predicted_scores, true_labels = valid_or_test_similarity_predictor(model=model,
-                                                                               val_or_test_dataset=valid_dataset)
+            predicted_scores, true_labels, _, _ = valid_or_test_similarity_predictor(model=model,
+                                                                                     val_or_test_dataset=valid_dataset)
 
         valid_mse = sklearn.metrics.mean_squared_error(predicted_scores, true_labels)
         valid_mae = sklearn.metrics.mean_absolute_error(predicted_scores, true_labels)
@@ -432,13 +564,7 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         train_log['test_time'].append('')
         pd.DataFrame(train_log).to_csv(train_log_path)
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = SentenceTransformer(model_path, device=device, trust_remote_code=True)
-
-    dataset_df = pd.read_csv(dataset_path)
-    dataset_df = dataset_df.sample(frac=1)
-    datasets = create_datasets_for_tvt(dataset_df)
-    train_dataset, valid_dataset, test_dataset = datasets['train'], datasets['valid'], datasets['test']
 
     valid_evaluator = EmbeddingSimilarityEvaluator(
         sentences1=valid_dataset['sentence1'],
@@ -446,10 +572,8 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         scores=valid_dataset['label'],
         name='valid'
     )
-
     train_loss = losses.CoSENTLoss(model=model)
 
-    model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
     os.makedirs(model_dir_path, exist_ok=True)
 
     steps_per_epoch = math.ceil(len(train_dataset) / 2)
@@ -470,7 +594,9 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         warmup_steps=warmup_steps,
         load_best_model_at_end=False,
         metric_for_best_model="eval_loss",
-        save_strategy="no"
+        save_strategy="no",
+        seed=SEED,
+        data_seed=SEED
     )
 
     early_stopping_patience = steps_per_epoch * EARLY_STOPPING_PATIENCE_SIMILARITY

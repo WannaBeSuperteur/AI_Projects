@@ -1,13 +1,53 @@
 
+import os
+import sys
+import time
 import glob
+import gc
 from pathlib import Path
 
-import numpy as np
+import torch
+import torch.nn as nn
+import pandas as pd
+from sentence_transformers import SentenceTransformer
+
+from transformers import AutoModel, AutoTokenizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from code_review_items import default_code_review_func
 
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_DIR_PATH)
+
+from embedding_model.train_model import EmbeddingProbPredictor
+
 
 TEST_CASES_DIR = 'test_cases'
+
+GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
+F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
+LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
+EMBEDDING_INFERENCE_LOG_PATH = os.path.join(PROJECT_DIR_PATH, "code_reviewer", "embedding_log.csv")
+
+HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
+               F2LLM_V2_330M: 896,
+               LATEON_CODE_PRETRAIN: 768}
+
+SIMILARITY_TASKS = ['01_similar_variables',
+                    '01_return_matched_with_func_name',
+                    '01_func_docstring_docstring_and_name',
+                    '06_similar_function_names',
+                    '02_numeric_values_twice']
+
+embedding_log = {
+    'task_id': [],
+    'func_name': [],
+    'text1': [],
+    'text2': [],
+    'result': [],
+    'inference_time': [],
+    'timestamp': []
+}
 
 
 class CodeReviewer:
@@ -85,22 +125,178 @@ for name in checks:
 """
 
 
-class TempTextEmbeddingModel:
-    def __init__(self):
-        pass
+def mean_pooling(model_output, attention_mask):
+    token_embeddings = model_output[0]
+    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
+
+class TextEmbeddingModelForInference:
+    def __init__(self, model_path: str, hidden_size: int, task_id: str, task_type: str,
+                 max_len: int = 256, device: str = 'cuda', is_test: bool = False):
+
+        self.model_path = model_path
+        self.model = None
+        self.tokenizer = None
+        self.device = device
+        self.task_id = task_id
+
+        assert task_type in ['prob', 'cos-sim']
+        self.task_type = task_type
+
+        self.max_len = max_len
+        self.hidden_size = hidden_size
+        self.final_linear = nn.Linear(hidden_size, 1)
+
+        self.is_test = is_test
+
+    def _append_to_embedding_log(self, func_name: str, text1: str, text2: str, result, inference_time: float):
+        embedding_log['task_id'].append(self.task_id)
+        embedding_log['func_name'].append(func_name)
+        embedding_log['text1'].append(text1)
+        embedding_log['text2'].append(text2)
+        embedding_log['result'].append(result)
+        embedding_log['inference_time'].append(round(inference_time, 3))
+        embedding_log['timestamp'].append(round(time.time(), 3))
+
+        embedding_log_df = pd.DataFrame(embedding_log)
+        embedding_log_df.to_csv(EMBEDDING_INFERENCE_LOG_PATH)
+
+    def load_model(self):
+        if self.model is not None:
+            print("model already loaded")
+            return
+
+        if self.task_type == 'prob':
+            base_model = AutoModel.from_pretrained(self.model_path, trust_remote_code=True, torch_dtype=torch.float32)
+            self.model = EmbeddingProbPredictor(base_model=base_model, hidden_size=self.hidden_size)
+
+            all_files = os.listdir(self.model_path)
+            model_files = [name for name in all_files if name.endswith('.pth')]
+            model_file_path = os.path.join(self.model_path, model_files[0])
+            model_state_dict = torch.load(model_file_path, map_location='cpu', weights_only=True)
+            self.model.load_state_dict(model_state_dict, strict=True)
+        else:
+            self.model = SentenceTransformer(self.model_path, device=self.device, trust_remote_code=True)
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, trust_remote_code=True)
+
+        self.model.to(self.device)
+        self.model.eval()
+
+    def unload_model(self):
+        if self.model is None:
+            print("model not loaded")
+            return
+        self.model = None
+
+        gc.collect()
+        if "cuda" in str(self.device):
+            torch.cuda.empty_cache()
+
+    def _tokenize_text(self, text: str):
+        if self.tokenizer is None:
+            print("tokenizer not loaded")
+            return
+
+        inputs = self.tokenizer(
+            text,
+            max_length=self.max_len,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt"
+        )
+        return {
+            "input_ids": inputs["input_ids"].squeeze(0),
+            "attention_mask": inputs["attention_mask"].squeeze(0)
+        }
 
     def get_similarity(self, text1: str, text2: str) -> float:
-        return 0.7
+        start_at = time.time()
+
+        with torch.no_grad():
+            emb1 = self.model.encode(text1)
+            emb2 = self.model.encode(text2)
+            emb1 = emb1.reshape(1, -1)
+            emb2 = emb2.reshape(1, -1)
+
+        cos_sim = cosine_similarity(emb1, emb2)[0][0]
+
+        elapsed_time = time.time() - start_at
+        if self.is_test:
+            self._append_to_embedding_log('get_similarity', text1, text2, cos_sim, elapsed_time)
+
+        return cos_sim
 
     def get_prob(self, text) -> float:
-        return 0.7
+        start_at = time.time()
+        tokenize_result = self._tokenize_text(text)
+        input_ids = tokenize_result['input_ids'].unsqueeze(0).to(self.device)
+        attention_mask = tokenize_result['attention_mask'].unsqueeze(0).to(self.device)
 
-    def get_embedding(self, text):
-        return np.array([[1.0, 0.0, -0.5, 1.4, 0.6, 0.7]])
+        with torch.no_grad():
+            prob = self.model(input_ids, attention_mask)
+            prob = torch.sigmoid(prob)
+            prob = prob.cpu().numpy()
+            prob = prob[0][0]
+
+        elapsed_time = time.time() - start_at
+        if self.is_test:
+            self._append_to_embedding_log('get_prob', text, '', prob, elapsed_time)
+
+        return prob
+
+    def get_embedding(self, text: str):
+        start_at = time.time()
+
+        with torch.no_grad():
+            emb = self.model.encode(text)
+
+        elapsed_time = time.time() - start_at
+        if self.is_test:
+            self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
+
+        return emb
+
+
+def get_embedding_model(task_id: str):
+    if task_id == "01_unnecessary_prints":
+        model_name = GTE_MODERNBERT_BASE
+    elif task_id.startswith("01_func_docstring"):
+        model_name = F2LLM_V2_330M
+    else:
+        model_name = LATEON_CODE_PRETRAIN
+
+    if task_id in SIMILARITY_TASKS:
+        task_type = 'cos-sim'
+    else:
+        task_type = 'prob'
+
+    return TextEmbeddingModelForInference(
+        model_path=os.path.join(PROJECT_DIR_PATH, "embedding_model", "models", task_id),
+        hidden_size=HIDDEN_SIZE[model_name],
+        task_id=task_id,
+        task_type=task_type
+    )
 
 
 if __name__ == '__main__':
-    text_embeddimg_models = {''}
+    task_list_with_embedding = [
+        "01_unnecessary_prints",
+        "01_similar_variables",
+        "01_names",
+        "01_return_matched_with_func_name",
+        "01_func_docstring_single_responsibility",
+        "01_func_docstring_docstring_and_name",
+        "04_func_args_bindable",
+        "04_func_args_dynamic",
+        "06_refactor_into_class_case_2_state_vars_if_else",
+        "06_similar_function_names",
+        "02_numeric_values_maybe_const",
+        "02_numeric_values_twice"
+    ]
+    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list_with_embedding}
+
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
-                                 text_embedding_models={})
+                                 text_embedding_models=text_embedding_models)
     code_reviewer.review_codes(code_path=TEST_CASES_DIR)
