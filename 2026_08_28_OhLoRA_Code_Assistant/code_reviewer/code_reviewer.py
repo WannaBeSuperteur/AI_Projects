@@ -233,6 +233,7 @@ class TextEmbeddingModelForInference:
 
         with torch.no_grad():
             prob = self.model(input_ids, attention_mask)
+            prob = torch.sigmoid(prob)
             prob = prob.cpu().numpy()
             prob = prob[0][0]
 
