@@ -1771,8 +1771,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self.final_result_dict = defaultdict(lambda: defaultdict(list))
 
         def check_is_state_value(info):
-            text = f"if {info[0]['var_name']}: {info[0]['simplified_body']}"
-            prob = text_embedding_model.get_prob(text)
+            prob = text_embedding_model.get_prob(info[0]['var_name'])
 
             py_file_path, line_no = info[0]['code_path'], info[0]['line_no']
             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
