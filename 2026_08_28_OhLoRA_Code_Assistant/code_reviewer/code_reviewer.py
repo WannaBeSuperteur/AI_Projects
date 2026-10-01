@@ -113,15 +113,6 @@ class CodeReviewer:
         print(f'success ratio : {ratio}')
 
 
-# TODO: 전체 완료후, 전체 코드리뷰 결과 텍스트파일 저장 -> code_review_items.py 분리 -> 코드리뷰 재실시 -> 결과 비교 -> 차이 수정
-# TODO: _get_function_name_by_line, _get_class_name_by_line 통합
-# TODO: ast.ClassDef: 'class' -> 'class_def'로 수정
-"""
-for name in checks:
-    print(getattr(self, f'_check_{name}')())
-"""
-
-
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0]
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()

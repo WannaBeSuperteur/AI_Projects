@@ -193,63 +193,48 @@ class DefaultCodeChecker:
         self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
                                 for py_file_path, py_code in self.py_codes.items()}
 
-    def _get_function_name_by_line(self):
-        self.function_name_by_line_for_codebase = defaultdict(list)
+    def _get_function_or_class_name_by_line(self, name_type: str):
+        def_name = f'{name_type}_def'
+
+        if name_type == 'function':
+            self.function_name_by_line_for_codebase = defaultdict(list)
+        elif name_type == 'class':
+            self.class_name_by_line_for_codebase = defaultdict(list)
+        else:
+            raise ValueError("name type must be 'function' or 'class'.")
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             if not parsed_py_code:
                 continue
 
             max_line_no = len(self.py_codes[py_file_path].split('\n')) + 1
-            function_name_by_line = ['' for _ in range(max_line_no + 1)]
+            name_by_line = ['' for _ in range(max_line_no + 1)]
 
             for item in parsed_py_code:
-                if item['type_name'] == 'function_def':
+                if item['type_name'] == def_name:
                     start_line_no = item['info']['start_line']
                     end_line_no = item['info']['end_line']
 
                     for i in range(start_line_no, end_line_no + 1):
-                        function_name_by_line[i] = item['info']['name']
+                        name_by_line[i] = item['info']['name']
 
-            self.function_name_by_line_for_codebase[py_file_path] = function_name_by_line
+            if name_type == 'function':
+                self.function_name_by_line_for_codebase[py_file_path] = name_by_line
+            else:
+                self.class_name_by_line_for_codebase[py_file_path] = name_by_line
 
         for py_file_path, parsed_py_code in self.py_codes.items():
             py_file_path_ = py_file_path.replace(r"\\", r"\"")
 
             max_line_no = len(self.py_codes[py_file_path_].split('\n')) + 1
-            function_name_by_line = ['' for _ in range(max_line_no + 1)]
+            name_by_line = ['' for _ in range(max_line_no + 1)]
 
-            if py_file_path_ not in self.function_name_by_line_for_codebase:
-                self.function_name_by_line_for_codebase[py_file_path_] = function_name_by_line
-
-    def _get_class_name_by_line(self):
-        self.class_name_by_line_for_codebase = defaultdict(list)
-
-        for py_file_path, parsed_py_code in self.parsed_py_codes.items():
-            if not parsed_py_code:
-                continue
-
-            max_line_no = len(self.py_codes[py_file_path].split('\n')) + 1
-            class_name_by_line = ['' for _ in range(max_line_no + 1)]
-
-            for item in parsed_py_code:
-                if item['type_name'] == 'class':
-                    start_line_no = item['info']['start_line']
-                    end_line_no = item['info']['end_line']
-
-                    for i in range(start_line_no, end_line_no + 1):
-                        class_name_by_line[i] = item['info']['name']
-
-            self.class_name_by_line_for_codebase[py_file_path] = class_name_by_line
-
-        for py_file_path, parsed_py_code in self.py_codes.items():
-            py_file_path_ = py_file_path.replace(r"\\", r"\"")
-
-            max_line_no = len(self.py_codes[py_file_path_].split('\n')) + 1
-            class_name_by_line = ['' for _ in range(max_line_no + 1)]
-
-            if py_file_path_ not in self.class_name_by_line_for_codebase:
-                self.class_name_by_line_for_codebase[py_file_path_] = class_name_by_line
+            if name_type == 'function':
+                if py_file_path_ not in self.function_name_by_line_for_codebase:
+                    self.function_name_by_line_for_codebase[py_file_path_] = name_by_line
+            elif name_type == 'class':
+                if py_file_path_ not in self.class_name_by_line_for_codebase:
+                    self.class_name_by_line_for_codebase[py_file_path_] = name_by_line
 
     def _get_definitions_and_usages(self, py_file_path: str, parsed_py_code: list[dict],
                                     imported_dict: dict[str] | None = None)\
@@ -493,7 +478,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
-        self._get_function_name_by_line()
+        self._get_function_or_class_name_by_line(name_type='function')
 
     def _delete_imported_review_items(self, file_name_include: str, item_name: str | None):
         for py_file_path in list(self.final_result_dict.keys()):
@@ -1052,7 +1037,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
         super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
-        self._get_function_name_by_line()
+        self._get_function_or_class_name_by_line(name_type='function')
 
     def _check_const(self) -> str:
         final_result_dict = defaultdict(dict)
@@ -1328,7 +1313,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
 
         super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
-        self._get_function_name_by_line()
+        self._get_function_or_class_name_by_line(name_type='function')
 
     def _check_suggest_list_comprehension(self) -> str:
         self._init_final_result_dict()
@@ -1549,7 +1534,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
         super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
-        self._get_function_name_by_line()
+        self._get_function_or_class_name_by_line(name_type='function')
 
     def _check_unpacking_case_1(self) -> str:
         value_assign = rf"([\w.]+)\s*=\s*([\w.]+)\s*\[\s*([0-9]+|[0-9]+:|:[0-9]+)\s*]"
@@ -1735,7 +1720,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
 
         super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
-        self._get_function_name_by_line()
+        self._get_function_or_class_name_by_line(name_type='function')
 
     def _check_exception_ignored(self) -> str:
         self.run_ruff_check(['S110', 'S112'])
@@ -1780,8 +1765,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
         super().__init__(py_codes, config, code_path, is_test, except_path)
         self._parse_codes()
-        self._get_function_name_by_line()
-        self._get_class_name_by_line()
+        self._get_function_or_class_name_by_line(name_type='function')
+        self._get_function_or_class_name_by_line(name_type='class')
 
     def _check_refactor_into_class_case_1_same_args(self) -> str:
         final_result_dict = defaultdict(dict)

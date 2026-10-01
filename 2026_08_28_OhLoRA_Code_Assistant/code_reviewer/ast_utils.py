@@ -9,7 +9,7 @@ import ast_comments as ast
 TYPE_TO_NAME = {
     ast.Import: 'import',
     ast.ImportFrom: 'import_from',
-    ast.ClassDef: 'class',
+    ast.ClassDef: 'class_def',
     ast.FunctionDef: 'function_def',
     ast.AsyncFunctionDef: 'async_function_def',
     ast.If: 'if',
