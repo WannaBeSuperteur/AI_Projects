@@ -74,6 +74,7 @@ def convert_to_human_friendly_review(final_result_dict: defaultdict[Any, dict]) 
         for info_key in final_result_dict[py_file_path].keys():
             human_friendly_info_key = info_key or '(최상위 레벨)'
 
+            final_result_dict[py_file_path][info_key].sort(key=lambda x: x['line'])
             result = "\n".join(f"   - line {item['line']} 에 있는 {item['name']}"
                                for item in final_result_dict[py_file_path][info_key])
             if result:
@@ -1949,10 +1950,6 @@ class EntireCodeChecker(DefaultCodeChecker):
     def __init__(self, py_codes: dict[str, str], config: dict, code_path: str,
                  is_test: bool = False, except_path: str | None = None):
 
-        test_result_log = {
-            ''
-        }
-
         checker_kwargs = {
             "py_codes": py_codes,
             "config": config,
@@ -2001,6 +1998,16 @@ class EntireCodeChecker(DefaultCodeChecker):
                         **other_pythonic_result,
                         **exceptions_result,
                         **cohesiveness_and_class_result}
+
+        # temp logging code (TODO: remove for production)
+        result_str = ''
+        for result_key, result_value in final_result.items():
+            result_str += f'\n==== RULE : {result_key} ====\n'
+            result_str += str(result_value)
+
+        from datetime import datetime
+        now = datetime.now().strftime('%Y%m%d%H%M%S')
+        Path(f'log_{now}.txt').write_text(result_str, encoding='utf-8')
 
         return final_result
 
