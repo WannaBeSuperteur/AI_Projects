@@ -468,7 +468,7 @@ class DefaultCodeChecker:
         except json.JSONDecodeError:
             pass
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         raise NotImplementedError
 
 
@@ -515,11 +515,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         return cond_lcs_1 or cond_lcs_2 or cond_lcs_3
 
-    def _check_unused(self) -> str:
+    def _check_unused(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['F401', 'F841'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_unnecessary_prints(self) -> str:
+    def _check_unnecessary_prints(self) -> str | defaultdict[Any, dict]:
         if self.text_embedding_models.get('01_unnecessary_prints') is None:
             return "no text embedding model"
 
@@ -566,9 +566,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         if self.is_test:
             add_to_ai_code_check_log(final_result_dict)
 
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_duplicates(self) -> str:
+    def _check_duplicates(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
         defined_constant_names = set()
         repeated_long_strs = set()
@@ -631,7 +631,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                                       'start_line': start_line})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
     def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: defaultdict[Any, dict],
                                      only_same: bool = False,
@@ -688,7 +688,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         return all_similar_text_pairs
 
-    def _check_similar_variables(self) -> str:
+    def _check_similar_variables(self) -> str | defaultdict[Any, dict]:
         if self.text_embedding_models.get('01_similar_variables') is None:
             return "no text embedding model"
 
@@ -721,9 +721,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
         if self.is_test:
             add_to_ai_code_check_log(self.final_result_dict)
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_same_func_args(self) -> str:
+    def _check_same_func_args(self) -> defaultdict[Any, dict]:
         func_annot_dict = {}
 
         final_result_dict = defaultdict(dict)
@@ -752,9 +752,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         func_annot_dict[arg_name] = annot
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_names(self) -> str:
+    def _check_names(self) -> str | defaultdict[Any, dict]:
         if self.text_embedding_models.get('01_names') is None:
             return "no text embedding model"
 
@@ -796,9 +796,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         if self.is_test:
             add_to_ai_code_check_log(final_result_dict)
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_return_matched_with_func_name(self) -> str:
+    def _check_return_matched_with_func_name(self) -> str | defaultdict[Any, dict]:
         if self.text_embedding_models.get('01_return_matched_with_func_name') is None:
             return "no text embedding model"
 
@@ -863,9 +863,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         if self.is_test:
             add_to_ai_code_check_log(final_result_dict)
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_library_orders(self) -> str:
+    def _check_library_orders(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -914,9 +914,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         local_imported = True
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_func_docstring(self) -> str:
+    def _check_func_docstring(self) -> str | defaultdict[Any, dict]:
         if self.text_embedding_models.get('01_func_docstring_single_responsibility') is None:
             return "no text embedding model (func_docstring_single_responsibility)"
 
@@ -982,13 +982,13 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         if self.is_test:
             add_to_ai_code_check_log(final_result_dict)
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_commented_codes(self) -> str:
+    def _check_commented_codes(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['ERA'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_empty_file(self) -> str:
+    def _check_empty_file(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, py_code in self.py_codes.items():
@@ -1008,9 +1008,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
                                                             'line': 1})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         checks = [
             'unused',
             'unnecessary_prints',
@@ -1039,7 +1039,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_or_class_name_by_line(name_type='function')
 
-    def _check_const(self) -> str:
+    def _check_const(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1075,9 +1075,9 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                                                                        'line': info['line']})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_numeric_values(self) -> str:
+    def _check_numeric_values(self) -> str | defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         if self.text_embedding_models.get('02_numeric_values_maybe_const') is None:
@@ -1198,13 +1198,13 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         if self.is_test:
             add_to_ai_code_check_log(final_result_dict)
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_line_length(self) -> str:
+    def _check_line_length(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['E501'], extra_args=["--line-length", str(self.max_line_length)])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_files(self) -> str:
+    def _check_files(self) -> defaultdict[Any, dict]:
         code_path_str = '(코드 전체 경로)'
         final_result_dict = defaultdict(dict)
         final_result_dict[code_path_str] = defaultdict(list)
@@ -1221,9 +1221,9 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                                                                         'line': 0})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_functions_length_and_docstring(self) -> str:
+    def _check_functions_length_and_docstring(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1251,13 +1251,13 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                          'line': line_no})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_functions_type_hint(self) -> str:
+    def _check_functions_type_hint(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['ANN001', 'ANN002', 'ANN003', 'ANN201', 'ANN202'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_indent(self) -> str:
+    def _check_indent(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, py_code in self.py_codes.items():
@@ -1291,9 +1291,9 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                                                                        'line': line_no})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         checks = [
             'const',
             'numeric_values',
@@ -1318,7 +1318,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_or_class_name_by_line(name_type='function')
 
-    def _check_suggest_list_comprehension(self) -> str:
+    def _check_suggest_list_comprehension(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
 
         self._add_regex_matched_lines(
@@ -1334,27 +1334,27 @@ class PythonSimplificationChecker(DefaultCodeChecker):
                    r'\s*for\s+(\w+)\s+in\s+([^\n:]+):\s*\n\s*(\w+)\s*\+=\s*([^\n]+)'),
             match_func=lambda x: x[0] == x[3] and check_a_in_b(a=x[1], b=x[4]))
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_generator_expression(self) -> str:
+    def _check_generator_expression(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r'.*\b(sum|max|min|all|any|set)\s*\(\s*\[\s*(.+?\bfor\b.+?)\s*\]\s*\)')
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_if_to_dict(self) -> str:
+    def _check_if_to_dict(self) -> defaultdict[Any, dict]:
         self.final_result_dict = self._find_if_elif_else_patterns()
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_path_format(self) -> str:
+    def _check_path_format(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=rf'.*([{QUOTES}])(?:[a-zA-Z]:)?[/\\]*(?:[^/\\\r\n]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])',
             forward_lines=1)
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_defaultdict(self) -> str:
+    def _check_defaultdict(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, py_code in self.py_codes.items():
@@ -1379,9 +1379,9 @@ class PythonSimplificationChecker(DefaultCodeChecker):
                                                                            'line': def_line_no})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_any_all(self) -> str:
+    def _check_any_all(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r'([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(False|True)\s+' +
@@ -1390,9 +1390,9 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             match_func=lambda x: len(x) >= 7 and x[0] == x[5] and x[1] != x[6] and x[2] in x[4],
             forward_lines=7)
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_zip(self) -> str:
+    def _check_zip(self) -> defaultdict[Any, dict]:
         def _match_zip(matched: list[str]) -> bool:
             idx_matched = matched[0] == matched[3] and matched[3] == matched[5]
             name_matched = matched[1] == f'len({matched[2]})' or matched[1] == f'len({matched[4]})'
@@ -1406,42 +1406,42 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             match_func=_match_zip,
             forward_lines=15)
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_enumerate(self) -> str:
+    def _check_enumerate(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"\bfor\s+\w+\s+in\s+range\s*\(\s*len\s*\([^)]+\)\s*\)\s*:")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_itertools_product(self) -> str:
+    def _check_itertools_product(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
 
         regex_for_in_range = r'for\s+\w+\s+in\s+range\s*\((.*?)\)\s*:'
         self._add_regex_matched_lines(regex=rf"\b{regex_for_in_range}\s+{regex_for_in_range}")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_just_read_write_to_read_write_text(self) -> str:
+    def _check_just_read_write_to_read_write_text(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['FURB101', 'FURB103'], extra_args=["--preview"])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_sentence_empty(self) -> str:
+    def _check_sentence_empty(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*:")
         self._add_regex_matched_lines(regex=r"if\s+(?:not\s+)?len\s*\(\s*([a-zA-Z_]\w*)\s*\)\s*==\s*0\s*:")
         self._add_regex_matched_lines(regex=rf"if\s+(?:not\s+)?([a-zA-Z_]\w*)\s*==\s*[{QUOTES}][{QUOTES}]\s*:")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_handle_none(self) -> str:
+    def _check_handle_none(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=rf".*?{ANY_CONST_OR_VAR}\s+in\s+([\w.]+)\s+and\s+\2\s*\[\s*\1\s*\]")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_extend(self) -> str:
+    def _check_extend(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=r".*?for\s+([\w.]+)\s+in\s+([\w.]+)\s*:\s*\n\s*([\w.]+)\.append\s*\(\s*\1\s*\)")
@@ -1449,9 +1449,9 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._add_regex_matched_lines(
             regex=r".*?([\w.]+)\s*\+=\s*\[\s*(.*?)\s+for\s+([\w.]+)\s+in\s+([\w.]+)\s*\]")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_count(self) -> str:
+    def _check_count(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*0\s*\n\s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:" +
@@ -1465,9 +1465,9 @@ class PythonSimplificationChecker(DefaultCodeChecker):
             regex=(rf".*?len\s*\(\s*list\s*\(\s*filter\s*\(\s*lambda\s+([\w.]+)\s*:" +
                    rf"\s*\1\s*==\s*{ANY_CONST_OR_VAR}\s*,\s*([\w.]+)\s*\)\s*\)?\s*\)"))
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_index(self) -> str:
+    def _check_index(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*([-\w.]+|[\w.]+)\s*\n" +
@@ -1487,24 +1487,24 @@ class PythonSimplificationChecker(DefaultCodeChecker):
                    r"\s*break\s*\n\s*\1\s*\+=\s*1"),
             forward_lines=10)
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_str_join(self) -> str:
+    def _check_str_join(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=fr"([\w.]+)\s*=\s*(''|{TWO_DOUBLE_QUOTES})\s*(\n|\n\s*\n)\s*for.*?:\n\1\s*\+=")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_use_map(self) -> str:
+    def _check_use_map(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=r".*?(sum|max|min)\s*\(\s*([\w.]+)\s*\(\s*([\w.]+)\s*\)\s+for\s+\3\s+in[^\n]*\)",
             forward_lines=1)
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         checks = [
             'suggest_list_comprehension',
             'generator_expression',
@@ -1539,7 +1539,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_or_class_name_by_line(name_type='function')
 
-    def _check_unpacking_case_1(self) -> str:
+    def _check_unpacking_case_1(self) -> defaultdict[Any, dict]:
         value_assign = rf"([\w.]+)\s*=\s*([\w.]+)\s*\[\s*([0-9]+|[0-9]+:|:[0-9]+)\s*]"
 
         self._init_final_result_dict()
@@ -1547,27 +1547,27 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
             regex=rf"{value_assign}\s*\n\s*{value_assign}",
             match_func=lambda x: x[1] == x[4])
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_unpacking_case_2(self) -> str:
+    def _check_unpacking_case_2(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=r"(?:[\w.]+\s*\[\s*\d+\s*\]\s*,\s*)+[\w.]+\s*\[\s*\d+\s*\]\s*=\s*(?:list\s*\(.*?\)|\[.*?\])")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_open_file(self) -> str:
+    def _check_open_file(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['SIM115'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_key_itemgetter(self) -> str:
+    def _check_key_itemgetter(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=rf"([\w.]+)\s*\.\s*sort\s*\(\s*key\s*=\s*lambda\s+([\w.]+)\s*:\s*\2\s*\[{ANY_CONST_OR_VAR}\]\)")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_f_string(self) -> str:
+    def _check_f_string(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=rf"^..*?({QUOTES_BOUND}\s*[^\n]\+[^\n]\s*([\w.]+)|([\w.]+)\s*[^\n]\+[^\n]\s*{QUOTES_BOUND})")
@@ -1575,9 +1575,9 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         self._add_regex_matched_lines(
             regex=rf"^..*?({QUOTES_BOUND}\s*[^\n]\+[^\n]\s*\(.*?\)|\(.*?\)\s*[^\n]\+[^\n]\s*{QUOTES_BOUND})")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_collections_itertools_glob(self) -> str:
+    def _check_collections_itertools_glob(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
 
         # 1. collections
@@ -1608,9 +1608,9 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                    r"\s*if(\s+.*?\s*):\s*\n"),
             match_func=lambda x: x[0] in x[1])
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_func_args_bindable(self) -> str:
+    def _check_func_args_bindable(self) -> str | defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         if self.text_embedding_models.get('04_func_args_bindable') is None:
@@ -1669,9 +1669,9 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         if self.is_test:
             add_to_ai_code_check_log(final_result_dict)
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_attribute_getattr(self) -> str:
+    def _check_attribute_getattr(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(rf"if\s+hasattr\s*\(\s*([\w.]+)\s*,\s*([\w.]+)\s*\)\s*:\s*\n" +
@@ -1679,24 +1679,24 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                    r"\s*([\w.]+)\s*=\s+"),
             match_func=lambda x: x[2] == x[4])
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_regex_r(self) -> str:
+    def _check_regex_r(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['RUF039'], extra_args=["--preview"])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_func_lambda(self) -> str:
+    def _check_func_lambda(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['E731'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_prefix_suffix(self) -> str:
+    def _check_prefix_suffix(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=r"^..*?([\w.]+)\s*\[(\s*:\s*[0-9]+\s*|(\s*len\s*\(\s*\1\s*\)\s*|\s*)-\s*[0-9]+\s*:\s*)\]\s*==")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         checks = [
             'unpacking_case_1',
             'unpacking_case_2',
@@ -1725,29 +1725,29 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_or_class_name_by_line(name_type='function')
 
-    def _check_exception_ignored(self) -> str:
+    def _check_exception_ignored(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['S110', 'S112'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_exception_type(self) -> str:
+    def _check_exception_type(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['E722', 'BLE001'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_func_arg_error_prevent(self) -> str:
+    def _check_func_arg_error_prevent(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['B006'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_assertion_try_except(self) -> str:
+    def _check_assertion_try_except(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(regex=r"except\s+AssertionError\s*(\s*as\s+([\w.]+)\s*:|:)")
 
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_python_keywords_args(self) -> str:
+    def _check_python_keywords_args(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['A'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         checks = [
             'exception_ignored',
             'exception_type',
@@ -1771,7 +1771,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self._get_function_or_class_name_by_line(name_type='function')
         self._get_function_or_class_name_by_line(name_type='class')
 
-    def _check_refactor_into_class_case_1_same_args(self) -> str:
+    def _check_refactor_into_class_case_1_same_args(self) -> defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1808,9 +1808,9 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                                                                        'line': line_no})
 
         self.final_result_dict = final_result_dict
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def _check_refactor_into_class_case_2_state_vars_if_else(self) -> str:
+    def _check_refactor_into_class_case_2_state_vars_if_else(self) -> str | defaultdict[Any, dict]:
         if self.text_embedding_models.get('06_refactor_into_class_case_2_state_vars_if_else') is None:
             return "no text embedding model"
 
@@ -1841,13 +1841,13 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         text_embedding_model.unload_model()
         if self.is_test:
             add_to_ai_code_check_log(self.final_result_dict)
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_prefix_for_only_in_class_methods(self) -> str:
+    def _check_prefix_for_only_in_class_methods(self) -> defaultdict[Any, dict]:
         self.run_ruff_check(['SLF001'])
-        return convert_to_human_friendly_review(self.final_result_dict)
+        return self.final_result_dict
 
-    def _check_similar_function_names(self) -> str:
+    def _check_similar_function_names(self) -> str | defaultdict[Any, dict]:
         if self.text_embedding_models.get('06_similar_function_names') is None:
             return "no text embedding model"
 
@@ -1918,9 +1918,9 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         if self.is_test:
             add_to_ai_code_check_log(final_result_dict)
-        return convert_to_human_friendly_review(final_result_dict)
+        return final_result_dict
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         checks = [
             'refactor_into_class_case_1_same_args',
             'refactor_into_class_case_2_state_vars_if_else',
@@ -1954,25 +1954,25 @@ class EntireCodeChecker(DefaultCodeChecker):
         self.python_exceptions_checker = PythonExceptionsChecker(**checker_kwargs)
         self.python_cohesiveness_and_class_checker = PythonCohesivenessAndClassChecker(**checker_kwargs)
 
-    def _check_python_basics(self) -> dict[str, str]:
+    def _check_python_basics(self) -> dict[str, str | defaultdict[Any, dict]]:
         return self.python_basics_checker.run_code_review()
 
-    def _check_basic_convention(self) -> dict[str, str]:
+    def _check_basic_convention(self) -> dict[str, str | defaultdict[Any, dict]]:
         return self.python_basic_convention_checker.run_code_review()
 
-    def _check_simplification(self) -> dict[str, str]:
+    def _check_simplification(self) -> dict[str, str | defaultdict[Any, dict]]:
         return self.python_simplification_checker.run_code_review()
 
-    def _check_other_pythonic(self) -> dict[str, str]:
+    def _check_other_pythonic(self) -> dict[str, str | defaultdict[Any, dict]]:
         return self.python_other_pythonic_checker.run_code_review()
 
-    def _check_exceptions(self) -> dict[str, str]:
+    def _check_exceptions(self) -> dict[str, str | defaultdict[Any, dict]]:
         return self.python_exceptions_checker.run_code_review()
 
-    def _check_cohesiveness_and_class(self) -> dict[str, str]:
+    def _check_cohesiveness_and_class(self) -> dict[str, str | defaultdict[Any, dict]]:
         return self.python_cohesiveness_and_class_checker.run_code_review()
 
-    def run_code_review(self) -> dict[str, str]:
+    def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         python_basics_result = self._check_python_basics()
         basic_convention_result = self._check_basic_convention()
         simplification_result = self._check_simplification()
@@ -1997,7 +1997,7 @@ class EntireCodeChecker(DefaultCodeChecker):
 def default_code_review_func(py_codes: dict[str, str],
                              config: dict,
                              code_path: str,
-                             except_path: str | None = None) -> dict[str, str]:
+                             except_path: str | None = None) -> dict[str, str | defaultdict[Any, dict]]:
 
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
