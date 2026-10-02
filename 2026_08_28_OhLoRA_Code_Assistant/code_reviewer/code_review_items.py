@@ -1987,17 +1987,14 @@ class EntireCodeChecker(DefaultCodeChecker):
                         **exceptions_result,
                         **cohesiveness_and_class_result}
 
-        for result_key, result_value in final_result.items():
-            print(f'\n==== RULE : {result_key} ====\n')
-            print(result_value)
-
         return final_result
 
 
 def default_code_review_func(py_codes: dict[str, str],
                              config: dict,
                              code_path: str,
-                             except_path: str | None = None) -> dict[str, str | defaultdict[Any, dict]]:
+                             except_path: str | None = None) -> tuple[dict[str, str | defaultdict[Any, dict]],
+                                                                      dict[str, str]]:
 
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
@@ -2006,4 +2003,15 @@ def default_code_review_func(py_codes: dict[str, str],
                                              code_path=code_path,
                                              except_path=except_path,
                                              is_test=False)
-    return default_code_checker.run_code_review()
+
+    code_review_result = default_code_checker.run_code_review()
+    for result_key, result_value in code_review_result.items():
+        print(f'\n==== RULE : {result_key} ====\n')
+        print(result_value)
+
+    code_review_result_str = {k: convert_to_human_friendly_review(v) for k, v in code_review_result.items()}
+    for result_key, result_value in code_review_result_str.items():
+        print(f'\n==== RULE : {result_key} ====\n')
+        print(result_value)
+
+    return code_review_result, code_review_result_str
