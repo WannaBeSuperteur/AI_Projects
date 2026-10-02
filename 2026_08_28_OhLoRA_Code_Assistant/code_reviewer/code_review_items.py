@@ -1153,6 +1153,9 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                 line1, line2 = line_info['line1'], line_info['line2']
                 line1_line_no, line2_line_no = line_info['line1_line_no'], line_info['line2_line_no']
 
+                if extract_comment(line1) == line1 or extract_comment(line2) == line2:
+                    continue
+
                 line1_embedding = line_embeddings[line1_line_no].reshape(1, -1)
                 line2_embedding = line_embeddings[line2_line_no].reshape(1, -1)
                 cos_sim = cosine_similarity(line1_embedding, line2_embedding)[0][0]
@@ -1983,6 +1986,10 @@ class EntireCodeChecker(DefaultCodeChecker):
                         **other_pythonic_result,
                         **exceptions_result,
                         **cohesiveness_and_class_result}
+
+        for result_key, result_value in final_result.items():
+            print(f'\n==== RULE : {result_key} ====\n')
+            print(result_value)
 
         return final_result
 
