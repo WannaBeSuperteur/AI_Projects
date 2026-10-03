@@ -5,6 +5,8 @@ import time
 import glob
 import gc
 from pathlib import Path
+from collections import defaultdict
+from typing import Any, Dict
 
 import torch
 import torch.nn as nn
@@ -287,6 +289,21 @@ def get_embedding_model(task_id: str):
     )
 
 
+def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[dict]) -> dict[Any, float]:
+    evaluation_result = defaultdict(dict)
+    scores = defaultdict(int)
+    sum_code_lines = sum(code_lines.values())
+
+    for rule_id, rule_review_result in item_counts.items():
+        evaluation_result[rule_id] = {file_path: max(0.0, 1.0 - 100 * issue_cnt / code_lines[file_path])
+                                      for file_path, issue_cnt in rule_review_result.items()}
+        print('eval :', evaluation_result[rule_id])
+        scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
+        print('score :', scores[rule_id])
+
+    return dict(scores)
+
+
 if __name__ == '__main__':
     task_list_with_embedding = [
         "01_unnecessary_prints",
@@ -317,3 +334,5 @@ if __name__ == '__main__':
     for k, v in item_counts.items():
         print(k, v)
 
+    eval_result = evaluate_code_review_result(code_lines, item_counts)
+    print(eval_result)
