@@ -70,6 +70,16 @@ class CodeReviewer:
         self.test_cases = test_cases
         self.current_code_path = None
 
+    def _get_files_to_review(self, code_path: str, except_path: str | None = None):
+        if code_path.endswith('.py'):
+            py_file_paths = [code_path]
+        else:
+            py_file_paths = glob.glob(f'{code_path}/**/*.py', recursive=True)
+            if except_path is not None:
+                py_file_paths = [p for p in py_file_paths if not p.startswith(except_path)]
+
+        return py_file_paths
+
     def _review_codebase(self, py_file_paths: list[str]) -> dict[str, str]:
         """Review python code file."""
 
@@ -80,18 +90,27 @@ class CodeReviewer:
     def review_codes(self, code_path: str, except_path: str | None = None) -> dict[str, str]:
         """Review code in code_path (directory or file)."""
 
-        if code_path.endswith('.py'):
-            py_file_paths = [code_path]
-        else:
-            py_file_paths = glob.glob(f'{code_path}/**/*.py', recursive=True)
-            if except_path is not None:
-                py_file_paths = [p for p in py_file_paths if not p.startswith(except_path)]
-
+        py_file_paths = self._get_files_to_review(code_path, except_path)
         self.current_code_path = code_path
         self.current_except_path = except_path
 
         code_review_results = self._review_codebase(py_file_paths)
         return code_review_results
+
+    def get_file_count(self, code_path: str, except_path: str | None = None) -> int:
+        py_file_paths = self._get_files_to_review(code_path, except_path)
+        return len(py_file_paths)
+
+    def get_code_lines(self, code_path: str, except_path: str | None = None) -> dict[str, int]:
+        py_file_paths = self._get_files_to_review(code_path, except_path)
+        code_lines_info = {}
+
+        for file_path in py_file_paths:
+            code = Path(file_path).read_text(encoding='utf-8')
+            code_lines = len(code.split('\n'))
+            code_lines_info[file_path] = code_lines
+
+        return code_lines_info
 
     def run_test(self) -> None:
         """Test code reviewer using test cases."""
@@ -287,4 +306,14 @@ if __name__ == '__main__':
 
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models)
-    code_reviewer.review_codes(code_path=TEST_CASES_DIR)
+    file_count = code_reviewer.get_file_count(code_path=TEST_CASES_DIR)
+    code_lines = code_reviewer.get_code_lines(code_path=TEST_CASES_DIR)
+
+    print(file_count)
+    print(code_lines)
+
+    item_counts, code_review_result_str = code_reviewer.review_codes(code_path=TEST_CASES_DIR)
+
+    for k, v in item_counts.items():
+        print(k, v)
+
