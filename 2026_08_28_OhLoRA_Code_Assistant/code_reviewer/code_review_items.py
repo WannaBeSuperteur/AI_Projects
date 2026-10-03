@@ -1993,8 +1993,7 @@ class EntireCodeChecker(DefaultCodeChecker):
 def default_code_review_func(py_codes: dict[str, str],
                              config: dict,
                              code_path: str,
-                             except_path: str | None = None) -> tuple[dict[str, str | defaultdict[Any, dict]],
-                                                                      dict[str, str]]:
+                             except_path: str | None = None) -> tuple[dict[Any, dict], dict[str, str]]:
 
     """Default code review function for Oh-LoRA 👱‍♀️ Code Assistant."""
 
@@ -2005,13 +2004,15 @@ def default_code_review_func(py_codes: dict[str, str],
                                              is_test=False)
 
     code_review_result = default_code_checker.run_code_review()
-    for result_key, result_value in code_review_result.items():
-        print(f'\n==== RULE : {result_key} ====\n')
-        print(result_value)
-
     code_review_result_str = {k: convert_to_human_friendly_review(v) for k, v in code_review_result.items()}
-    for result_key, result_value in code_review_result_str.items():
-        print(f'\n==== RULE : {result_key} ====\n')
-        print(result_value)
 
-    return code_review_result, code_review_result_str
+    item_counts = defaultdict(dict)
+    for rule_id, rule_review_result in code_review_result.items():
+        for file_name, code_review_per_file in rule_review_result.items():
+            total_item_count = sum(len(items) for items in code_review_per_file.values())
+            if total_item_count >= 1:
+                item_counts[rule_id][file_name] = total_item_count
+
+    item_counts = dict(item_counts)
+
+    return item_counts, code_review_result_str
