@@ -297,10 +297,15 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
 
     for rule_id, rule_review_result in item_counts.items():
         print('rule_review_result :', rule_review_result)
-        evaluation_result[rule_id] = {file_path: max(0, code_lines[file_path] - 100 * issue_cnt)
-                                      for file_path, issue_cnt in rule_review_result.items()}
+        if '(코드 전체 경로)' in rule_review_result.keys():
+            evaluation_result[rule_id] = {'entire_code': max(0, 100 - 20 * rule_review_result['(코드 전체 경로)'])}
+            scores[rule_id] = evaluation_result[rule_id]['entire_code'] / 100
+        else:
+            evaluation_result[rule_id] = {file_path: max(0, code_lines[file_path] - 100 * issue_cnt)
+                                          for file_path, issue_cnt in rule_review_result.items()}
+            scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
+
         print('eval :', evaluation_result[rule_id])
-        scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
         print('score :', scores[rule_id])
         print('')
 
