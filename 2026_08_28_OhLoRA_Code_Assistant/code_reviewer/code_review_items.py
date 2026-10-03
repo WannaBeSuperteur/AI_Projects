@@ -460,7 +460,7 @@ class DefaultCodeChecker:
                 full_file_path = os.path.join(full_code_path, file_path)
                 function_name = get_function_name_at_line(full_file_path, line_no)
 
-                self.final_result_dict[full_file_path].setdefault(function_name, []).append(
+                self.final_result_dict[self.code_path + os.sep + file_path].setdefault(function_name, []).append(
                     {'name': f"(ruff) {item['message']}",
                      'type': f"{item['code']} from ruff",
                      'line': line_no})

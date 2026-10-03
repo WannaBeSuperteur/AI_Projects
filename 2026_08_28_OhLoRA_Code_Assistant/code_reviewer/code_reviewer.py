@@ -300,6 +300,7 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
         print('eval :', evaluation_result[rule_id])
         scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
         print('score :', scores[rule_id])
+        print('')
 
     return dict(scores)
 
