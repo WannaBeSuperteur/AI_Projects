@@ -2010,8 +2010,7 @@ def default_code_review_func(py_codes: dict[str, str],
     for rule_id, rule_review_result in code_review_result.items():
         for file_name, code_review_per_file in rule_review_result.items():
             total_item_count = sum(len(items) for items in code_review_per_file.values())
-            if total_item_count >= 1:
-                item_counts[rule_id][file_name] = total_item_count
+            item_counts[rule_id][file_name] = total_item_count
 
     item_counts = dict(item_counts)
 

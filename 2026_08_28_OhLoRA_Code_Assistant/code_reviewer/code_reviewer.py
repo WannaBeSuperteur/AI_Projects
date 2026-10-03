@@ -293,8 +293,10 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
     evaluation_result = defaultdict(dict)
     scores = defaultdict(float)
     sum_code_lines = sum(code_lines.values())
+    print('code_lines :', code_lines)
 
     for rule_id, rule_review_result in item_counts.items():
+        print('rule_review_result :', rule_review_result)
         evaluation_result[rule_id] = {file_path: max(0, code_lines[file_path] - 100 * issue_cnt)
                                       for file_path, issue_cnt in rule_review_result.items()}
         print('eval :', evaluation_result[rule_id])
