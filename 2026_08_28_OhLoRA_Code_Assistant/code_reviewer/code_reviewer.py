@@ -291,11 +291,11 @@ def get_embedding_model(task_id: str):
 
 def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[dict]) -> dict[Any, float]:
     evaluation_result = defaultdict(dict)
-    scores = defaultdict(int)
+    scores = defaultdict(float)
     sum_code_lines = sum(code_lines.values())
 
     for rule_id, rule_review_result in item_counts.items():
-        evaluation_result[rule_id] = {file_path: max(0.0, 1.0 - 100 * issue_cnt / code_lines[file_path])
+        evaluation_result[rule_id] = {file_path: max(0, code_lines[file_path] - 100 * issue_cnt)
                                       for file_path, issue_cnt in rule_review_result.items()}
         print('eval :', evaluation_result[rule_id])
         scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
