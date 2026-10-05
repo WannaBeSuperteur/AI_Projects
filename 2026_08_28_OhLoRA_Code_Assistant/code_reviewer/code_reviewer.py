@@ -406,7 +406,7 @@ def run_entire_code_review():
         print(item)
 
     eval_result_kor = [f'{RULE_NAME_TO_KOREAN[rule_id]} : {round(100 * score, 1)} 점'
-                       for rule_id, score in eval_result]
+                       for rule_id, score in eval_result.items()]
     top_eval_result_kor = {f'{RULE_NAME_TO_KOREAN[rule_id]} : {round(100 * score, 1)} 점'
                            for rule_id, score in eval_result_sorted[:TOP_RULE_COUNT]}
 
