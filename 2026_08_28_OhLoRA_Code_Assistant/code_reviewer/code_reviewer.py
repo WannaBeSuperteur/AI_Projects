@@ -311,7 +311,7 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
     return dict(scores)
 
 
-if __name__ == '__main__':
+def run_entire_code_review():
     task_list_with_embedding = [
         "01_unnecessary_prints",
         "01_similar_variables",
@@ -339,6 +339,14 @@ if __name__ == '__main__':
         print(k, v)
 
     eval_result = evaluate_code_review_result(code_lines, item_counts)
+    eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1], reverse=True))
 
     for k, v in eval_result.items():
         print(k, v)
+
+    for item in eval_result_sorted:
+        print(item)
+
+
+if __name__ == '__main__':
+    run_entire_code_review()
