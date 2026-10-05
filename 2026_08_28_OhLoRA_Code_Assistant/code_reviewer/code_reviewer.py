@@ -331,7 +331,6 @@ def run_entire_code_review():
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models)
 
-    file_count = code_reviewer.get_file_count(code_path=TEST_CASES_DIR)
     code_lines = code_reviewer.get_code_lines(code_path=TEST_CASES_DIR)
     item_counts, code_review_result_str = code_reviewer.review_codes(code_path=TEST_CASES_DIR)
 
