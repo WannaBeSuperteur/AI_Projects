@@ -306,7 +306,7 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
 
             for file_path in code_lines.keys():
                 if file_path not in evaluation_result[rule_id]:
-                    evaluation_result[rule_id][file_path] = 1.0
+                    evaluation_result[rule_id][file_path] = code_lines[file_path]
 
             scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
 
