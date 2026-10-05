@@ -394,18 +394,9 @@ def run_entire_code_review():
     code_lines = code_reviewer.get_code_lines(code_path=TEST_CASES_DIR)
     item_counts, code_review_result = code_reviewer.review_codes(code_path=TEST_CASES_DIR)
 
-    for k, v in item_counts.items():
-        print(k, v)
-
     eval_result = evaluate_code_review_result(code_lines, item_counts)
     eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
     mean_score = np.mean(list(eval_result.values()))
-
-    for k, v in eval_result.items():
-        print(k, v)
-
-    for item in eval_result_sorted:
-        print(item)
 
     eval_result_kor = [f'{RULE_NAME_TO_KOREAN[rule_id]} : {round(100 * score, 1)} 점'
                        for rule_id, score in eval_result.items()]
@@ -416,11 +407,6 @@ def run_entire_code_review():
     top_items_eval_summary = ', \n'.join(top_eval_result_kor)
     code_review_result_str = '\n'.join([f'{RULE_NAME_TO_KOREAN[rule_id]}:\n{rule_review_result}'
                                         for rule_id, rule_review_result in code_review_result.items()])
-
-    print('\n\neval_result_kor_summary :\n', eval_result_kor_summary)
-    print('\n\ntop_items_eval_summary :\n', top_items_eval_summary)
-    print('\n\ncode_review_result_str :\n', code_review_result_str)
-    print('\n\nmean_score :\n', mean_score)
 
     return eval_result_kor_summary, top_items_eval_summary, code_review_result_str, mean_score
 
