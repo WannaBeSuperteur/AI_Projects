@@ -293,10 +293,8 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
     evaluation_result = defaultdict(dict)
     scores = defaultdict(float)
     sum_code_lines = sum(code_lines.values())
-    print('code_lines :', code_lines)
 
     for rule_id, rule_review_result in item_counts.items():
-        print('rule_id / rule_review_result :', rule_id, rule_review_result)
         if '(코드 전체 경로)' in rule_review_result.keys():
             evaluation_result[rule_id] = {'entire_code': max(0, 100 - 20 * rule_review_result['(코드 전체 경로)'])}
             scores[rule_id] = evaluation_result[rule_id]['entire_code'] / 100
@@ -309,10 +307,6 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
                     evaluation_result[rule_id][file_path] = code_lines[file_path]
 
             scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
-
-        print('eval :', evaluation_result[rule_id])
-        print('score :', scores[rule_id])
-        print('')
 
     return dict(scores)
 
@@ -336,16 +330,15 @@ if __name__ == '__main__':
 
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models)
+
     file_count = code_reviewer.get_file_count(code_path=TEST_CASES_DIR)
     code_lines = code_reviewer.get_code_lines(code_path=TEST_CASES_DIR)
-
-    print(file_count)
-    print(code_lines)
-
     item_counts, code_review_result_str = code_reviewer.review_codes(code_path=TEST_CASES_DIR)
 
     for k, v in item_counts.items():
         print(k, v)
 
     eval_result = evaluate_code_review_result(code_lines, item_counts)
-    print(eval_result)
+
+    for k, v in eval_result.items():
+        print(k, v)
