@@ -8,6 +8,7 @@ from pathlib import Path
 from collections import defaultdict
 from typing import Any, Dict
 
+import numpy as np
 import torch
 import torch.nn as nn
 import pandas as pd
@@ -398,6 +399,7 @@ def run_entire_code_review():
 
     eval_result = evaluate_code_review_result(code_lines, item_counts)
     eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
+    mean_score = np.mean(list(eval_result.values()))
 
     for k, v in eval_result.items():
         print(k, v)
@@ -418,8 +420,9 @@ def run_entire_code_review():
     print('\n\neval_result_kor_summary :\n', eval_result_kor_summary)
     print('\n\ntop_items_eval_summary :\n', top_items_eval_summary)
     print('\n\ncode_review_result_str :\n', code_review_result_str)
+    print('\n\nmean_score :\n', mean_score)
 
-    return eval_result_kor_summary, top_items_eval_summary, code_review_result_str
+    return eval_result_kor_summary, top_items_eval_summary, code_review_result_str, mean_score
 
 
 if __name__ == '__main__':
