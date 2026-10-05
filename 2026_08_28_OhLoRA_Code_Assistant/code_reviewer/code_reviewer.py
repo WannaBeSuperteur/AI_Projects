@@ -371,7 +371,7 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
     return dict(scores)
 
 
-def run_entire_code_review():
+def run_entire_code_review(code_path: str) -> dict:
     task_list_with_embedding = [
         "01_unnecessary_prints",
         "01_similar_variables",
@@ -391,8 +391,8 @@ def run_entire_code_review():
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models)
 
-    code_lines = code_reviewer.get_code_lines(code_path=TEST_CASES_DIR)
-    item_counts, code_review_result = code_reviewer.review_codes(code_path=TEST_CASES_DIR)
+    code_lines = code_reviewer.get_code_lines(code_path=code_path)
+    item_counts, code_review_result = code_reviewer.review_codes(code_path=code_path)
 
     eval_result = evaluate_code_review_result(code_lines, item_counts)
     eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
@@ -408,8 +408,11 @@ def run_entire_code_review():
     code_review_result_str = '\n'.join([f'{RULE_NAME_TO_KOREAN[rule_id]}:\n{rule_review_result}'
                                         for rule_id, rule_review_result in code_review_result.items()])
 
-    return eval_result_kor_summary, top_items_eval_summary, code_review_result_str, mean_score
+    return {'eval_result_kor_summary': eval_result_kor_summary,
+            'top_items_eval_summary': top_items_eval_summary,
+            'code_review_result_str': code_review_result_str,
+            'mean_score': mean_score}
 
 
 if __name__ == '__main__':
-    run_entire_code_review()
+    run_entire_code_review(code_path=TEST_CASES_DIR)
