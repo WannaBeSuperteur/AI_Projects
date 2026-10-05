@@ -391,13 +391,13 @@ def run_entire_code_review():
                                  text_embedding_models=text_embedding_models)
 
     code_lines = code_reviewer.get_code_lines(code_path=TEST_CASES_DIR)
-    item_counts, code_review_result_str = code_reviewer.review_codes(code_path=TEST_CASES_DIR)
+    item_counts, code_review_result = code_reviewer.review_codes(code_path=TEST_CASES_DIR)
 
     for k, v in item_counts.items():
         print(k, v)
 
     eval_result = evaluate_code_review_result(code_lines, item_counts)
-    eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1], reverse=True))
+    eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
 
     for k, v in eval_result.items():
         print(k, v)
@@ -412,6 +412,8 @@ def run_entire_code_review():
 
     eval_result_kor_summary = ', \n'.join(eval_result_kor)
     top_items_eval_summary = ', \n'.join(top_eval_result_kor)
+    code_review_result_str = '\n'.join([f'{RULE_NAME_TO_KOREAN[rule_id]}:\n{rule_review_result}'
+                                        for rule_id, rule_review_result in code_review_result.items()])
 
     print('\n\neval_result_kor_summary :\n', eval_result_kor_summary)
     print('\n\ntop_items_eval_summary :\n', top_items_eval_summary)
