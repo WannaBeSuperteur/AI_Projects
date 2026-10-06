@@ -1,0 +1,84 @@
+- 목적
+  - Python 코드 리뷰 결과를 보고, 해당 코드 리뷰 결과를 요약하는 알맞은 평가를 생성한다.
+  - 코드 리뷰 결과를 입력으로, 평가를 출력으로 하는 데이터셋을 경량 (2-3B 수준) LLM에 학습시켜서, 코드 리뷰 결과가 해당 LLM에 입력되었을 때 적절한 평가를 출력해야 한다.
+  - 사람에게 친근한, 재미있고 발랄한 말투를 사용하여, 사용자가 LLM에게 입덕할 수 있게 한다.
+  - 생성 데이터 개수: 500 개
+
+- 예시
+  - 코드 리뷰 결과:
+
+[함수 docstring, 함수명 의미 일치] : 92.1 점 👍,
+[주석 처리된 코드 제거] : 94.0 점 👍,
+[빈 파일 TODO 표시 필요] : 99.9 점 👍,
+[고정값 상수화 필요] : 80.9 점,
+[숫자 값은 위쪽에 상수로] : 26.1 점 🚨
+
+  - 출력:
+    - 코드에서 하드코딩 된 숫자 값을 잘~ 찾아서 위쪽에 상수로 고정시키면 아주 좋을 것 같아요! 😉
+
+- 코드 리뷰 결과는 다음 dictionary 의 value (한글로 된 부분) 중 5개를 선택한다.
+
+RULE_NAME_TO_KOREAN = {
+    '01_unused': '미 사용 변수/함수 제거',
+    '01_unnecessary_prints': '불필요한 print, logging 제거',
+    '01_duplicates': '중복되는 사항 common 으로 빼기',
+    '01_similar_variables': '유사한 변수명 통일',
+    '01_same_func_args': '동일 인자 type 통일',
+    '01_names': '의미 있는 함수명, 변수명 사용',
+    '01_return_matched_with_func_name': '함수명, 반환값 간 일치',
+    '01_library_orders': 'import 순서 준수',
+    '01_func_docstring': '함수 docstring, 함수명 의미 일치',
+    '01_commented_codes': '주석 처리된 코드 제거',
+    '01_empty_file': '빈 파일 TODO 표시 필요',
+    '02_const': '고정값 상수화 필요',
+    '02_numeric_values': '숫자 값은 위쪽에 상수로',
+    '02_line_length': '한 줄의 길이는 일정 글자 이내로',
+    '02_files': 'README.md, pyproject.toml 필요',
+    '02_functions_length_and_docstring': '100 line 이상 함수 분리, docstring 필요',
+    '02_functions_type_hint': '함수 인수 type hint 필요',
+    '02_indent': '지나치게 많은 들여쓰기 수정',
+    '03_suggest_list_comprehension': '리스트 컴프리헨션 사용이 가능한 경우 사용',
+    '03_generator_expression': '제너레이터 표현식 사용이 가능한 경우 사용',
+    '03_if_to_dict': 'if-elif-elif-else 구문은 되도록 dict로 수정',
+    '03_path_format': '경로를 path/to/file 이 아닌, pathlib 또는 os.path.join 사용',
+    '03_defaultdict': '불필요한 변수 생성 대신 defaultdict 권장',
+    '03_any_all': '조건문 중첩 대신 any, all 사용',
+    '03_zip': 'zip 사용 가능한 경우 사용',
+    '03_enumerate': 'enumerate 사용 가능한 경우 사용',
+    '03_itertools_product': 'itertools.product 사용 가능한 경우 사용',
+    '03_just_read_write_to_read_write_text': '파일 단순 읽기/쓰기는 Path 사용',
+    '03_sentence_empty': '비어 있는 문자열 여부 판단 간소화',
+    '03_handle_none': 'if a.get("b") ... 형태로 수정 필요',
+    '03_extend': '기존 배열의 원소 추가 대신 extend 함수 사용',
+    '03_count': '개수 세기에 count 함수 사용',
+    '03_index': '인덱스 반환에 index 함수 사용',
+    '03_str_join': 'str 단순 += 대신 join 사용',
+    '03_use_map': '매우 간결한 변환은 map 사용',
+    '04_unpacking_case_1': 'a = my_list[0], b = my_list[1] ... 대신 unpacking 사용 필요',
+    '04_unpacking_case_2': '언패킹 시 숫자 인덱스 사용하지 말 것 (변수에 바로 할당)',
+    '04_open_file': '파일 열기, 닫기 시 with open(...) 사용',
+    '04_key_itemgetter': 'key=itemgetter("key") 사용 권장',
+    '04_f_string': '문자열 단순 연결보다는 f-string 사용',
+    '04_collections_itertools_glob': '빈도수, 반복문, 경로명 리스트 추출 시 collections, itertools, glob 사용',
+    '04_func_args_bindable': '함수의 인자가 하나로 묶을 수 있는 경우 처리 권장',
+    '04_attribute_getattr': '함수의 인자가 유동적인 경우 처리 권장',
+    '04_regex_r': '정규 표현식 문자열은 r"..." 권장',
+    '04_func_lambda': 'f = lambda x: ... 보다는 def f(x): return ... 를 사용',
+    '04_prefix_suffix': 'prefix, suffix 검사 시 startswith(), endswith() 사용',
+    '05_exception_ignored': '예외를 삼키는 경우가 없어야 함',
+    '05_exception_type': '예외의 종류 (OOOError 등) 구체적 명시 권장',
+    '05_func_arg_error_prevent': '함수의 인수를 변경 가능한 default value로 하지 않아야 함',
+    '05_assertion_try_except': 'assertion을 제어 메커니즘으로 사용하면 안됨',
+    '05_python_keywords_args': 'Python 예약어를 변수명으로 사용하지 않아야 함',
+    '06_refactor_into_class_case_1_same_args': '동일한 인수 집합을 갖는 함수가 많은 경우 클래스화 고려',
+    '06_refactor_into_class_case_2_state_vars_if_else': '상태 값 조건이 있는 if-elif-elif-else 있는 경우 클래스화 고려',
+    '06_prefix_for_only_in_class_methods': '클래스 내부에서만 쓰이는 속성, 메서드 (접두사 있음) 호출 비 권장',
+    '06_similar_function_names': '유사한 이름의 함수끼리 가까이 위치하도록 수정 권장'
+}
+
+- 주의 사항
+  - 90.0점 이상은 👍, 60.0점 미만은 🚨 를 맨 끝에 붙인다.
+  - 각 항목은 완전히 랜덤하게 선택하고, 점수 역시 0.0점 - 100.0점 사이에서 완전히 랜덤하게 선택한다. (소수점 이하 첫 자리까지 반올림)
+
+- 파일 저장 형식
+  - input, output 컬럼이 있는 llm_dataset.csv 파일
