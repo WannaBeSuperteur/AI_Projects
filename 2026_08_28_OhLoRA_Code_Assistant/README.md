@@ -121,7 +121,7 @@
 | 🧪 모델 학습   | 모델 학습 시까지 도출한 신규 요구사항 구현 (모델 선정, 학습, 테스트)                          | 09.19 토 - 09.21 월 (3d)  | `P010-007-additional`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/63) | ✅  |
 | ⚙ 기능 구현    | Text Embedding 기반 처리 규칙에 따른 처리 구현                                  | 09.21 월 - 09.30 수 (10d) | `P010-008-apply-embedding`   | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/64) | ✅  |
 | ⚙ 기능 구현    | 코드 리뷰 결과 요약 및 평가 프로세스 구현                                           | 10.01 목 - 10.06 화 (6d)  | `P010-009-evaluation`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/65) | ✅  |
-| 📝 데이터셋 제작 | 코드 리뷰 결과 생성 LLM 데이터셋 제작                                            | 10.01 목 (1d)            |                              |                                                                    | ⬜  |
+| 📝 데이터셋 제작 | 코드 리뷰 결과 생성 LLM 데이터셋 제작                                            | 10.06 화 - 10.07 수 (2d)  |                              | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/66) | 💨 |
 | 🧪 모델 학습   | 코드 리뷰 결과 생성 LLM 학습                                                 | 10.01 목 - 10.02 금 (2d)  |                              |                                                                    | ⬜  |
 | 📃 문서화     | "Python 코드 리뷰 어시스턴트" 개발 내용 문서화                                     | 10.02 금 (1d)            |                              |                                                                    | ⬜  |
 
