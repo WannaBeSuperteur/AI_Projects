@@ -142,22 +142,22 @@ class CodeReviewer:
 
         return py_file_paths
 
-    def _review_codebase(self, py_file_paths: list[str]) -> dict[str, str]:
+    def _review_codebase(self, py_file_paths: list[str]) -> tuple:
         """Review python code file."""
 
         py_codes = {py_file_path: Path(py_file_path).read_text(encoding='utf-8')
                     for py_file_path in py_file_paths}
         return self.code_review_func(py_codes, self.config, self.current_code_path, self.current_except_path)
 
-    def review_codes(self, code_path: str, except_path: str | None = None) -> dict[str, str]:
+    def review_codes(self, code_path: str, except_path: str | None = None) -> tuple:
         """Review code in code_path (directory or file)."""
 
         py_file_paths = self._get_files_to_review(code_path, except_path)
         self.current_code_path = code_path
         self.current_except_path = except_path
 
-        code_review_results = self._review_codebase(py_file_paths)
-        return code_review_results
+        item_counts, code_review_result = self._review_codebase(py_file_paths)
+        return item_counts, code_review_result
 
     def get_file_count(self, code_path: str, except_path: str | None = None) -> int:
         py_file_paths = self._get_files_to_review(code_path, except_path)
