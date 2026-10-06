@@ -422,7 +422,7 @@ def run_entire_code_review(code_path: str) -> dict:
     return {'eval_result_kor_summary': eval_result_kor_summary,
             'top_items_eval_summary': top_items_eval_summary,
             'code_review_result_str': code_review_result_str,
-            'mean_score': mean_score}
+            'mean_score': round(100 * mean_score, 1)}
 
 
 if __name__ == '__main__':
