@@ -371,6 +371,17 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
     return dict(scores)
 
 
+def mark_score(score: float) -> str:
+    score_mark = f'{round(100 * score, 1)} 점'
+
+    if score >= 0.9:
+        return f'{score_mark} 👍'
+    elif score >= 0.6:
+        return f'{score_mark}'
+    else:
+        return f'{score_mark} 🚨'
+
+
 def run_entire_code_review(code_path: str) -> dict:
     task_list_with_embedding = [
         "01_unnecessary_prints",
@@ -398,9 +409,9 @@ def run_entire_code_review(code_path: str) -> dict:
     eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
     mean_score = np.mean(list(eval_result.values()))
 
-    eval_result_kor = [f'{RULE_NAME_TO_KOREAN[rule_id]} : {round(100 * score, 1)} 점'
+    eval_result_kor = [f'[{RULE_NAME_TO_KOREAN[rule_id]}] : {mark_score(score)}'
                        for rule_id, score in eval_result.items()]
-    top_eval_result_kor = {f'{RULE_NAME_TO_KOREAN[rule_id]} : {round(100 * score, 1)} 점'
+    top_eval_result_kor = {f'[{RULE_NAME_TO_KOREAN[rule_id]}] : {mark_score(score)}'
                            for rule_id, score in eval_result_sorted[:TOP_RULE_COUNT]}
 
     eval_result_kor_summary = ', \n'.join(eval_result_kor)
@@ -415,4 +426,8 @@ def run_entire_code_review(code_path: str) -> dict:
 
 
 if __name__ == '__main__':
-    run_entire_code_review(code_path=TEST_CASES_DIR)
+    code_review_result = run_entire_code_review(code_path=TEST_CASES_DIR)
+
+    for k, v in code_review_result.items():
+        print(k)
+        print(v)
