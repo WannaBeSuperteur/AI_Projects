@@ -434,6 +434,6 @@ if __name__ == '__main__':
             print(f'\n\n[ {k} ]')
             print(v)
 
+    print('\n\n[ item_counts ]')
     for rule_id, rule_review_result in code_review_result['item_counts'].items():
-        print('\n\n[ item_counts ]')
         print(rule_id, rule_review_result)
