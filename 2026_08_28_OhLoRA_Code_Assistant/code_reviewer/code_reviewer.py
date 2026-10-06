@@ -5,7 +5,10 @@ import time
 import glob
 import gc
 from pathlib import Path
+from collections import defaultdict
+from typing import Any, Dict
 
+import numpy as np
 import torch
 import torch.nn as nn
 import pandas as pd
@@ -49,6 +52,65 @@ embedding_log = {
     'timestamp': []
 }
 
+TOP_RULE_COUNT = 5
+RULE_NAME_TO_KOREAN = {
+    '01_unused': '미 사용 변수/함수 제거',
+    '01_unnecessary_prints': '불필요한 print, logging 제거',
+    '01_duplicates': '중복되는 사항 common 으로 빼기',
+    '01_similar_variables': '유사한 변수명 통일',
+    '01_same_func_args': '동일 인자 type 통일',
+    '01_names': '의미 있는 함수명, 변수명 사용',
+    '01_return_matched_with_func_name': '함수명, 반환값 간 일치',
+    '01_library_orders': 'import 순서 준수',
+    '01_func_docstring': '함수 docstring, 함수명 의미 일치',
+    '01_commented_codes': '주석 처리된 코드 제거',
+    '01_empty_file': '빈 파일 TODO 표시 필요',
+    '02_const': '고정값 상수화 필요',
+    '02_numeric_values': '숫자 값은 위쪽에 상수로',
+    '02_line_length': '한 줄의 길이는 일정 글자 이내로',
+    '02_files': 'README.md, pyproject.toml 필요',
+    '02_functions_length_and_docstring': '100 line 이상 함수 분리, docstring 필요',
+    '02_functions_type_hint': '함수 인수 type hint 필요',
+    '02_indent': '지나치게 많은 들여쓰기 수정',
+    '03_suggest_list_comprehension': '리스트 컴프리헨션 사용이 가능한 경우 사용',
+    '03_generator_expression': '제너레이터 표현식 사용이 가능한 경우 사용',
+    '03_if_to_dict': 'if-elif-elif-else 구문은 되도록 dict로 수정',
+    '03_path_format': '경로를 path/to/file 이 아닌, pathlib 또는 os.path.join 사용',
+    '03_defaultdict': '불필요한 변수 생성 대신 defaultdict 권장',
+    '03_any_all': '조건문 중첩 대신 any, all 사용',
+    '03_zip': 'zip 사용 가능한 경우 사용',
+    '03_enumerate': 'enumerate 사용 가능한 경우 사용',
+    '03_itertools_product': 'itertools.product 사용 가능한 경우 사용',
+    '03_just_read_write_to_read_write_text': '파일 단순 읽기/쓰기는 Path 사용',
+    '03_sentence_empty': '비어 있는 문자열 여부 판단 간소화',
+    '03_handle_none': 'if a.get("b") ... 형태로 수정 필요',
+    '03_extend': '기존 배열의 원소 추가 대신 extend 함수 사용',
+    '03_count': '개수 세기에 count 함수 사용',
+    '03_index': '인덱스 반환에 index 함수 사용',
+    '03_str_join': 'str 단순 += 대신 join 사용',
+    '03_use_map': '매우 간결한 변환은 map 사용',
+    '04_unpacking_case_1': 'a = my_list[0], b = my_list[1] ... 대신 unpacking 사용 필요',
+    '04_unpacking_case_2': '언패킹 시 숫자 인덱스 사용하지 말 것 (변수에 바로 할당)',
+    '04_open_file': '파일 열기, 닫기 시 with open(...) 사용',
+    '04_key_itemgetter': 'key=itemgetter("key") 사용 권장',
+    '04_f_string': '문자열 단순 연결보다는 f-string 사용',
+    '04_collections_itertools_glob': '빈도수, 반복문, 경로명 리스트 추출 시 collections, itertools, glob 사용',
+    '04_func_args_bindable': '함수의 인자가 하나로 묶을 수 있는 경우 처리 권장',
+    '04_attribute_getattr': '함수의 인자가 유동적인 경우 처리 권장',
+    '04_regex_r': '정규 표현식 문자열은 r"..." 권장',
+    '04_func_lambda': 'f = lambda x: ... 보다는 def f(x): return ... 를 사용',
+    '04_prefix_suffix': 'prefix, suffix 검사 시 startswith(), endswith() 사용',
+    '05_exception_ignored': '예외를 삼키는 경우가 없어야 함',
+    '05_exception_type': '예외의 종류 (OOOError 등) 구체적 명시 권장',
+    '05_func_arg_error_prevent': '함수의 인수를 변경 가능한 default value로 하지 않아야 함',
+    '05_assertion_try_except': 'assertion을 제어 메커니즘으로 사용하면 안됨',
+    '05_python_keywords_args': 'Python 예약어를 변수명으로 사용하지 않아야 함',
+    '06_refactor_into_class_case_1_same_args': '동일한 인수 집합을 갖는 함수가 많은 경우 클래스화 고려',
+    '06_refactor_into_class_case_2_state_vars_if_else': '상태 값 조건이 있는 if-elif-elif-else 있는 경우 클래스화 고려',
+    '06_prefix_for_only_in_class_methods': '클래스 내부에서만 쓰이는 속성, 메서드 (접두사 있음) 호출 비 권장',
+    '06_similar_function_names': '유사한 이름의 함수끼리 가까이 위치하도록 수정 권장'
+}
+
 
 class CodeReviewer:
     def __init__(self,
@@ -70,16 +132,7 @@ class CodeReviewer:
         self.test_cases = test_cases
         self.current_code_path = None
 
-    def _review_codebase(self, py_file_paths: list[str]) -> dict[str, str]:
-        """Review python code file."""
-
-        py_codes = {py_file_path: Path(py_file_path).read_text(encoding='utf-8')
-                    for py_file_path in py_file_paths}
-        return self.code_review_func(py_codes, self.config, self.current_code_path, self.current_except_path)
-
-    def review_codes(self, code_path: str, except_path: str | None = None) -> dict[str, str]:
-        """Review code in code_path (directory or file)."""
-
+    def _get_files_to_review(self, code_path: str, except_path: str | None = None):
         if code_path.endswith('.py'):
             py_file_paths = [code_path]
         else:
@@ -87,11 +140,39 @@ class CodeReviewer:
             if except_path is not None:
                 py_file_paths = [p for p in py_file_paths if not p.startswith(except_path)]
 
+        return py_file_paths
+
+    def _review_codebase(self, py_file_paths: list[str]) -> tuple:
+        """Review python code file."""
+
+        py_codes = {py_file_path: Path(py_file_path).read_text(encoding='utf-8')
+                    for py_file_path in py_file_paths}
+        return self.code_review_func(py_codes, self.config, self.current_code_path, self.current_except_path)
+
+    def review_codes(self, code_path: str, except_path: str | None = None) -> tuple:
+        """Review code in code_path (directory or file)."""
+
+        py_file_paths = self._get_files_to_review(code_path, except_path)
         self.current_code_path = code_path
         self.current_except_path = except_path
 
-        code_review_results = self._review_codebase(py_file_paths)
-        return code_review_results
+        item_counts, code_review_result = self._review_codebase(py_file_paths)
+        return item_counts, code_review_result
+
+    def get_file_count(self, code_path: str, except_path: str | None = None) -> int:
+        py_file_paths = self._get_files_to_review(code_path, except_path)
+        return len(py_file_paths)
+
+    def get_code_lines(self, code_path: str, except_path: str | None = None) -> dict[str, int]:
+        py_file_paths = self._get_files_to_review(code_path, except_path)
+        code_lines_info = {}
+
+        for file_path in py_file_paths:
+            code = Path(file_path).read_text(encoding='utf-8')
+            code_lines = len(code.split('\n'))
+            code_lines_info[file_path] = code_lines
+
+        return code_lines_info
 
     def run_test(self) -> None:
         """Test code reviewer using test cases."""
@@ -111,18 +192,6 @@ class CodeReviewer:
         print(f'total         : {total}')
         print(f'successful    : {successful}')
         print(f'success ratio : {ratio}')
-
-
-# TODO: ruff 대체된 부분을 code_reviewer/code_review_standard.md 에 추가
-# TODO: line 번호에 따라 최종 결과 출력 정렬
-# TODO: remove TempTextEmbeddingModel for production
-# TODO: 전체 완료후, 전체 코드리뷰 결과 텍스트파일 저장 -> code_review_items.py 분리 -> 코드리뷰 재실시 -> 결과 비교 -> 차이 수정
-# TODO: _get_function_name_by_line, _get_class_name_by_line 통합
-# TODO: ast.ClassDef: 'class' -> 'class_def'로 수정
-"""
-for name in checks:
-    print(getattr(self, f'_check_{name}')())
-"""
 
 
 def mean_pooling(model_output, attention_mask):
@@ -280,7 +349,40 @@ def get_embedding_model(task_id: str):
     )
 
 
-if __name__ == '__main__':
+def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[dict]) -> dict[Any, float]:
+    evaluation_result = defaultdict(dict)
+    scores = defaultdict(float)
+    sum_code_lines = sum(code_lines.values())
+
+    for rule_id, rule_review_result in item_counts.items():
+        if '(코드 전체 경로)' in rule_review_result.keys():
+            evaluation_result[rule_id] = {'entire_code': max(0, 100 - 20 * rule_review_result['(코드 전체 경로)'])}
+            scores[rule_id] = evaluation_result[rule_id]['entire_code'] / 100
+        else:
+            evaluation_result[rule_id] = {file_path: max(0, code_lines[file_path] - 100 * issue_cnt)
+                                          for file_path, issue_cnt in rule_review_result.items()}
+
+            for file_path in code_lines.keys():
+                if file_path not in evaluation_result[rule_id]:
+                    evaluation_result[rule_id][file_path] = code_lines[file_path]
+
+            scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
+
+    return dict(scores)
+
+
+def mark_score(score: float) -> str:
+    score_mark = f'{round(100 * score, 1)} 점'
+
+    if score >= 0.9:
+        return f'{score_mark} 👍'
+    elif score >= 0.6:
+        return f'{score_mark}'
+    else:
+        return f'{score_mark} 🚨'
+
+
+def run_entire_code_review(code_path: str) -> dict:
     task_list_with_embedding = [
         "01_unnecessary_prints",
         "01_similar_variables",
@@ -299,4 +401,39 @@ if __name__ == '__main__':
 
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models)
-    code_reviewer.review_codes(code_path=TEST_CASES_DIR)
+
+    code_lines = code_reviewer.get_code_lines(code_path=code_path)
+    item_counts, code_review_result = code_reviewer.review_codes(code_path=code_path)
+
+    eval_result = evaluate_code_review_result(code_lines, item_counts)
+    eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
+    mean_score = np.mean(list(eval_result.values()))
+
+    eval_result_kor = [f'[{RULE_NAME_TO_KOREAN[rule_id]}] : {mark_score(score)}'
+                       for rule_id, score in eval_result.items()]
+    top_eval_result_kor = {f'[{RULE_NAME_TO_KOREAN[rule_id]}] : {mark_score(score)}'
+                           for rule_id, score in eval_result_sorted[:TOP_RULE_COUNT]}
+
+    eval_result_kor_summary = ', \n'.join(eval_result_kor)
+    top_items_eval_summary = ', \n'.join(top_eval_result_kor)
+    code_review_result_str = '\n'.join([f'{RULE_NAME_TO_KOREAN[rule_id]}:\n{rule_review_result}'
+                                        for rule_id, rule_review_result in code_review_result.items()])
+
+    return {'item_counts': item_counts,
+            'eval_result_kor_summary': eval_result_kor_summary,
+            'top_items_eval_summary': top_items_eval_summary,
+            'code_review_result_str': code_review_result_str,
+            'mean_score': round(100 * mean_score, 1)}
+
+
+if __name__ == '__main__':
+    code_review_result = run_entire_code_review(code_path=TEST_CASES_DIR)
+
+    for k, v in code_review_result.items():
+        if k != 'item_counts':
+            print(f'\n\n[ {k} ]')
+            print(v)
+
+    print('\n\n[ item_counts ]')
+    for rule_id, rule_review_result in code_review_result['item_counts'].items():
+        print(rule_id, rule_review_result)
