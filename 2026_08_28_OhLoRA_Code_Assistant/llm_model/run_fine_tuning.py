@@ -66,7 +66,7 @@ class OhLoRACustomCallback(TrainerCallback):
             print(f'logging failed : {e}')
 
 
-class LLMTrainer():
+class LLMTrainer:
     def __init__(self, original_path: str, save_path: str):
         self.original_path = original_path
         self.save_path = save_path

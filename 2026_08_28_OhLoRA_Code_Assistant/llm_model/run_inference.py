@@ -29,7 +29,7 @@ class StopOnTokens(StoppingCriteria):
         return False
 
 
-class LLMInferenceEngine():
+class LLMInferenceEngine:
     def __init__(self, llm_path: str, answer_start_mark: str, answer_end_mark: str, stop_token_list: list[int],
                  top_p: float = 0.95, top_k: int = 50, temperature: float = 0.6,
                  inference_log_dict: dict | None = None):
