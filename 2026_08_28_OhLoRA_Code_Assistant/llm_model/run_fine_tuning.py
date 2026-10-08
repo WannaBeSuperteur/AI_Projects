@@ -1,12 +1,10 @@
 
 import os
+
+from utils import LLM_ORIGINAL_PATHS
+
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-
-
-LLM_ORIGINAL_PATHS = ['kakaocorp/kanana-2-3b-instruct',
-                      'kakaocorp/kanana-1.5-2.1b-instruct-2505',
-                      'K-intelligence/Midm-2.0-Mini-Instruct',
-                      'naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B']
 
 
 class LLMTrainer():
@@ -18,7 +16,7 @@ class LLMTrainer():
         """Train LLM."""
 
     def save_llm(self):
-        """Save LLM into save path."""
+        """Save LLM into save path. (Full LLM)"""
 
 
 def train_and_save_llm(original_path: str, save_path: str):
@@ -30,4 +28,5 @@ def train_and_save_llm(original_path: str, save_path: str):
 if __name__ == '__main__':
     for original_path in LLM_ORIGINAL_PATHS:
         save_path = os.path.join(PROJECT_DIR_PATH, original_path.split('/')[-1].lower())
+        save_path = str(save_path)
         train_and_save_llm(original_path, save_path)
