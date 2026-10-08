@@ -87,7 +87,7 @@ class LLMTrainer():
         self.save_path = save_path
 
         self.llm_name = original_path.split('/')[-1].lower()
-        self.target_modules = 'default' if self.llm_name in TARGET_MODULES_DICT else TARGET_MODULES_DICT[self.llm_name]
+        self.target_modules = TARGET_MODULES_DICT.get(self.llm_name) or TARGET_MODULES_DICT['default']
 
         self.original_llm = self._get_original_llm()
         self.tokenizer = AutoTokenizer.from_pretrained(self.original_path)
