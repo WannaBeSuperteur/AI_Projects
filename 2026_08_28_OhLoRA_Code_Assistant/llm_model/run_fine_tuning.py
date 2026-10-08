@@ -2,6 +2,7 @@
 import os
 import time
 
+import numpy as np
 import pandas as pd
 import torch
 from datasets import DatasetDict, Dataset
@@ -27,7 +28,8 @@ os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
 
 class OhLoRACustomCallback(TrainerCallback):
 
-    def __init__(self, train_log_dict: dict, inference_log_dict: dict, llm_name: str, llm_path: str):
+    def __init__(self, train_log_dict: dict, inference_log_dict: dict, llm_name: str, llm_path: str,
+                 eval_dataset: list[str]):
 
         super(OhLoRACustomCallback, self).__init__()
         self.train_log_dict = train_log_dict
@@ -35,6 +37,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
         self.llm_name = llm_name
         self.llm_path = llm_path
+        self.eval_dataset = eval_dataset
 
         self._init_inference_engine()
 
@@ -48,7 +51,7 @@ class OhLoRACustomCallback(TrainerCallback):
         train_log_df = pd.DataFrame(self.train_log_dict)
         train_log_df.to_csv(os.path.join(TRAIN_LOG_DIR_PATH, f'{self.llm_name}.csv'))
 
-        for final_input_prompt in valid_final_prompts:
+        for final_input_prompt in self.eval_dataset:
             start_at = time.time()
 
             self.inference_engine.load_llm()
@@ -105,8 +108,8 @@ class LLMTrainer():
 
     def _generate_llm_trainable_dataset(self, dataset_df):
         dataset = DatasetDict()
-        dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'train'][['text']])
-        dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['data_type'] == 'valid'][['text']])
+        dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['split'] == 'train'][['text']])
+        dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['split'] == 'valid'][['text']])
 
         print('\nLLM Trainable Dataset :')
         train_texts = dataset['train']['text']
@@ -165,7 +168,8 @@ class LLMTrainer():
             callbacks=[OhLoRACustomCallback(self.train_log_dict,
                                             self.inference_log_dict,
                                             self.llm_name,
-                                            self.save_path)]
+                                            self.save_path,
+                                            list(dataset['valid']))]
         )
 
     def _get_lora_llm(self, llm):
@@ -187,8 +191,9 @@ class LLMTrainer():
         # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
         self.original_llm.generation_config.pad_token_id = self.tokenizer.pad_token_id
 
-        dataset_df = pd.read_csv(f'{PROJECT_DIR_PATH}/llm/train_data.csv')
-        dataset_df = dataset_df.sample(frac=1)  # shuffle
+        dataset_df = pd.read_csv(os.path.join(PROJECT_DIR_PATH, "ai_dataset", "llm_dataset", "llm_dataset.csv"))
+        dataset_df = dataset_df.sample(frac=1, random_state=2026)  # shuffle
+        dataset_df['split'] = np.where(np.arange(len(dataset_df)) < len(dataset_df) * 0.8, 'train', 'valid')
 
         # prepare Fine-Tuning
         self._get_lora_llm(llm=self.original_llm)
