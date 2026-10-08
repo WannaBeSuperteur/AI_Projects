@@ -1,24 +1,111 @@
 
+import torch
+import os
+import gc
+
 import pandas as pd
+from transformers import StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoTokenizer
 
 from utils import LLM_ORIGINAL_PATHS
 
 
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+
+
+# stop when "LAST N TOKENS MATCHES stop_token_ids" - class code by ChatGPT-4o
+class StopOnTokens(StoppingCriteria):
+    def __init__(self, stop_token_ids):
+        self.stop_token_ids = list(stop_token_ids.detach().cpu().numpy())
+        self.current_ids = []
+
+    def __call__(self, input_ids, scores, **kwargs):
+        self.current_ids = input_ids[0].tolist()
+
+        if len(self.current_ids) >= len(self.stop_token_ids):
+            if self.current_ids[-len(self.stop_token_ids):] == self.stop_token_ids:
+                return True  # stop generation
+
+        return False
+
+
 class LLMInferenceEngine():
-    def __init__(self, llm_path: str, top_p: float = 0.95, top_k: int = 50, temperature: float = 0.6):
+    def __init__(self, llm_path: str, answer_start_mark: str, answer_end_mark: str, stop_token_list: list[int],
+                 top_p: float = 0.95, top_k: int = 50, temperature: float = 0.6):
+
         self.llm_path = llm_path
         self.top_p = top_p
         self.top_k = top_k
         self.temperature = temperature
 
+        self.answer_start_mark = answer_start_mark
+        self.answer_end_mark = answer_end_mark
+        self.stop_token_list = stop_token_list
+
+        self.fine_tuned_llm = None
+        self.tokenizer = None
+
     def load_llm(self):
-        pass
+        if self.fine_tuned_llm is not None and self.tokenizer is not None:
+            print("LLM already loaded")
+            return
+
+        self.fine_tuned_llm = AutoModelForCausalLM.from_pretrained(
+            self.llm_path,
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).cuda()
+        self.tokenizer = AutoTokenizer.from_pretrained(self.llm_path)
 
     def unload_llm(self):
-        pass
+        if self.fine_tuned_llm is None:
+            print("LLM not loaded")
+            return
 
-    def run_inference(self, text_list: list[str]) -> list[str]:
-        pass
+        self.fine_tuned_llm = None
+        self.tokenizer = None
+
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    def run_inference(self, prompt: str, max_length: int = 256, max_trials: int = 5,
+                      additional_answer_test_func: callable = None) -> dict:
+
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.fine_tuned_llm.generation_config.pad_token_id = self.tokenizer.pad_token_id
+
+        final_input_prompt = prompt + self.answer_start_mark
+        inputs = self.tokenizer(final_input_prompt, return_tensors='pt').to(self.fine_tuned_llm.device)
+
+        llm_answer = ''
+        trial_cnt = 0
+        output_token_cnt = None
+
+        # for stopping criteria
+        stop_token_ids = torch.tensor(self.stop_token_list).to(self.fine_tuned_llm.device)
+        stopping_criteria = StoppingCriteriaList([StopOnTokens(stop_token_ids)])
+
+        while trial_cnt < max_trials:
+            outputs = self.fine_tuned_llm.generate(**inputs,
+                                                   max_length=max_length,
+                                                   do_sample=True,
+                                                   temperature=self.temperature,
+                                                   stopping_criteria=stopping_criteria)
+            output_token_cnt = len(outputs[0])
+
+            llm_answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            llm_answer = llm_answer[len(final_input_prompt):]
+            trial_cnt += 1
+
+            # check LLM answer and return or retry
+            is_non_empty = llm_answer.replace('\n', '').replace(self.answer_end_mark, '').replace(' ', '') != ''
+            is_acceptable = is_non_empty and additional_answer_test_func(llm_answer)
+
+            if is_acceptable:
+                break
+
+        # remove new-lines
+        llm_answer = llm_answer.replace('\n', '')
+
+        return {'llm_answer': llm_answer, 'trial_cnt': trial_cnt, 'output_token_cnt': output_token_cnt}
 
 
 def load_test_dataset() -> list[str]:
