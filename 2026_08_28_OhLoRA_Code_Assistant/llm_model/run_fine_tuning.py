@@ -30,7 +30,7 @@ os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
 
 class OhLoRACustomCallback(TrainerCallback):
 
-    def __init__(self, train_log_dict: dict, inference_log_dict: dict, llm_name: str, llm_path: str,
+    def __init__(self, train_log_dict: dict, inference_log_dict: dict, llm_name: str, fine_tuned_llm, tokenizer,
                  eval_dataset: list[str]):
 
         super(OhLoRACustomCallback, self).__init__()
@@ -38,16 +38,18 @@ class OhLoRACustomCallback(TrainerCallback):
         self.inference_log_dict = inference_log_dict
 
         self.llm_name = llm_name
-        self.llm_path = llm_path
         self.eval_dataset = eval_dataset
 
+        self.fine_tuned_llm = fine_tuned_llm
+        self.tokenizer = tokenizer
         self._init_inference_engine()
 
     def _init_inference_engine(self):
-        self.inference_engine = LLMInferenceEngine(self.llm_path,
+        self.inference_engine = LLMInferenceEngine(llm_path=None,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    answer_end_mark=ANSWER_END_MARK,
                                                    stop_token_list=STOP_TOKEN_LIST)
+        self.inference_engine.load_fine_tuned_llm_directly(self.fine_tuned_llm, self.tokenizer)
 
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         train_log_df = pd.DataFrame(self.train_log_dict)
@@ -157,7 +159,8 @@ class LLMTrainer:
             callbacks=[OhLoRACustomCallback(self.train_log_dict,
                                             self.inference_log_dict,
                                             self.llm_name,
-                                            self.save_path,
+                                            self.lora_llm,
+                                            self.tokenizer,
                                             list(self.dataset['valid']))]
         )
 
