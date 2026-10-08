@@ -69,8 +69,14 @@ class OhLoRACustomCallback(TrainerCallback):
             print(f'final input prompt : {final_input_prompt}')
             print(f'llm answer (trials: {trial_cnt}, output tkns: {output_token_cnt}) : {llm_answer}')
 
-            inference_result = {'epoch': state.epoch, 'elapsed_time': elapsed_time, 'prompt': final_input_prompt,
-                                'llm_answer': llm_answer, 'trial_cnt': trial_cnt, 'output_tkn_cnt': output_token_cnt}
+            inference_result = {'epoch': state.epoch,
+                                'elapsed_time': elapsed_time,
+                                'prompt': final_input_prompt,
+                                'llm_answer': llm_answer,
+                                'trial_cnt': trial_cnt,
+                                'output_tkn_cnt': output_token_cnt,
+                                'torch_memory_kb': torch.cuda.memory_allocated() // 1024}
+
             add_inference_log(inference_result, self.inference_log_dict)
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
@@ -100,13 +106,15 @@ class LLMTrainer():
                                'loss': [],
                                'grad_norm': [],
                                'learning_rate': [],
-                               'mean_token_accuracy': []}
+                               'mean_token_accuracy': [],
+                               'torch_memory_kb': []}
         self.inference_log_dict = {'epoch': [],
                                    'elapsed_time (s)': [],
                                    'prompt': [],
                                    'llm_answer': [],
                                    'trial_cnt': [],
-                                   'output_tkn_cnt': []}
+                                   'output_tkn_cnt': [],
+                                   'torch_memory_kb': []}
 
     def _generate_llm_trainable_dataset(self, dataset_df):
         dataset = DatasetDict()

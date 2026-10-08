@@ -2,6 +2,9 @@
 import os
 from datetime import datetime
 
+import torch
+
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 
@@ -39,6 +42,7 @@ def add_train_log(state, train_log_dict):
     train_log_dict['grad_norm'].append(round(last_log['grad_norm'], 4))
     train_log_dict['learning_rate'].append(round(last_log['learning_rate'], 6))
     train_log_dict['mean_token_accuracy'].append(round(last_log['mean_token_accuracy'], 4))
+    train_log_dict['torch_memory_kb'].append(torch.cuda.memory_allocated() // 1024)
 
 
 def add_inference_log(inference_result, inference_log_dict):
@@ -48,3 +52,4 @@ def add_inference_log(inference_result, inference_log_dict):
     inference_log_dict['llm_answer'].append(inference_result['llm_answer'])
     inference_log_dict['trial_cnt'].append(inference_result['trial_cnt'])
     inference_log_dict['output_tkn_cnt'].append(inference_result['output_tkn_cnt'])
+    inference_log_dict['torch_memory_kb'].append(inference_result['torch_memory_kb'])
