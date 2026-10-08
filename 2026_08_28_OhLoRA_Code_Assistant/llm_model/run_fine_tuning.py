@@ -31,7 +31,7 @@ os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
 class OhLoRACustomCallback(TrainerCallback):
 
     def __init__(self, train_log_dict: dict, inference_log_dict: dict, llm_name: str, fine_tuned_llm, tokenizer,
-                 eval_dataset: list[str]):
+                 eval_dataset: list[dict]):
 
         super(OhLoRACustomCallback, self).__init__()
         self.train_log_dict = train_log_dict
@@ -55,7 +55,8 @@ class OhLoRACustomCallback(TrainerCallback):
         train_log_df = pd.DataFrame(self.train_log_dict)
         train_log_df.to_csv(os.path.join(TRAIN_LOG_DIR_PATH, f'{self.llm_name}.csv'))
 
-        for prompt in self.eval_dataset:
+        for prompt_info in self.eval_dataset:
+            prompt = prompt_info['text']
             self.inference_engine.run_inference(prompt, state.epoch)
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
@@ -212,7 +213,8 @@ class LLMTrainer:
                                                    answer_end_mark=ANSWER_END_MARK,
                                                    stop_token_list=STOP_TOKEN_LIST)
 
-        for prompt in self.dataset['valid']:
+        for prompt_info in self.dataset['valid']:
+            prompt = prompt_info['text']
             self.inference_engine.run_inference(prompt, 'final_inference')
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
