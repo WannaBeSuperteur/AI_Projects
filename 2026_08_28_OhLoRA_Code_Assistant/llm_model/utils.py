@@ -21,7 +21,7 @@ STOP_TOKEN_LIST = {
     'default': [109659, 104449, 99458, 64356, 8, 220]  # (답변 종료)"
 }
 ANSWER_START_MARK = ' (답변 시작)'
-ANSWER_END_MARK = ' (답변 종료)'
+ANSWER_END_MARK = ' <|end_of_text|>'
 
 
 def add_train_log(state, train_log_dict):

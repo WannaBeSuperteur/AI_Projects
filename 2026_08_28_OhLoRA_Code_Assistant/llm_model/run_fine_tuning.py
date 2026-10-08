@@ -199,7 +199,7 @@ class LLMTrainer():
         self._get_lora_llm(llm=self.original_llm)
 
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input_data']} (답변 시작) ### 답변: {x['output_message']} (답변 종료) <|end_of_text|>",
+            lambda x: f"{x['input']} (답변 시작) ### 답변: {x['output']}{ANSWER_END_MARK}",
             axis=1)
         dataset = self._generate_llm_trainable_dataset(dataset_df)
         self._preview_dataset(dataset)
