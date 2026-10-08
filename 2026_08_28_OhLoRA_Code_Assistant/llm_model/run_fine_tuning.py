@@ -1,5 +1,6 @@
 
 import os
+import time
 
 import pandas as pd
 import torch
@@ -7,13 +8,64 @@ from datasets import DatasetDict, Dataset
 
 import peft
 from peft import LoraConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, TrainerCallback, TrainerState, \
+                         TrainerControl
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
-from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT
+from run_inference import run_inference_llm
+from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_END_MARK
+from utils import add_train_log, add_inference_log
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+TRAIN_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'train_log')
+INFERENCE_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'inference_log')
+
+os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
+os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
+
+
+class OhLoRACustomCallback(TrainerCallback):
+
+    def __init__(self, train_log_dict: dict, inference_log_dict: dict, llm_name: str):
+        super(OhLoRACustomCallback, self).__init__()
+        self.train_log_dict = train_log_dict
+        self.inference_log_dict = inference_log_dict
+        self.llm_name = llm_name
+
+    def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        global lora_llm, tokenizer, valid_final_prompts
+
+        train_log_df = pd.DataFrame(self.train_log_dict)
+        train_log_df.to_csv(os.path.join(TRAIN_LOG_DIR_PATH, f'{self.llm_name}.csv'))
+
+        for final_input_prompt in valid_final_prompts:
+            start_at = time.time()
+            stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
+
+            llm_answer, trial_count, output_token_cnt = run_inference_llm(lora_llm,
+                                                                          final_input_prompt,
+                                                                          tokenizer,
+                                                                          stop_token_list=stop_token_list,
+                                                                          answer_start_mark=ANSWER_START_MARK)
+            llm_answer = llm_answer[:-len(ANSWER_END_MARK) + 1]
+            elapsed_time = time.time() - start_at
+
+            print(f'final input prompt : {final_input_prompt}')
+            print(f'llm answer (trials: {trial_count}, output tkns: {output_token_cnt}) : {llm_answer}')
+
+            inference_result = {'epoch': state.epoch, 'elapsed_time': elapsed_time, 'prompt': final_input_prompt,
+                                'llm_answer': llm_answer, 'trial_cnt': trial_count, 'output_tkn_cnt': output_token_cnt}
+            add_inference_log(inference_result, self.inference_log_dict)
+
+        inference_log_df = pd.DataFrame(self.inference_log_dict)
+        inference_log_df.to_csv(os.path.join(INFERENCE_LOG_DIR_PATH, f'{self.llm_name}.csv'))
+
+    def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        try:
+            add_train_log(state, self.train_log_dict)
+        except Exception as e:
+            print(f'logging failed : {e}')
 
 
 class LLMTrainer():
@@ -21,12 +73,25 @@ class LLMTrainer():
         self.original_path = original_path
         self.save_path = save_path
 
-        llm_name = original_path.split('/')[-1]
-        self.target_modules = 'default' if llm_name in TARGET_MODULES_DICT else TARGET_MODULES_DICT[llm_name]
+        self.llm_name = original_path.split('/')[-1]
+        self.target_modules = 'default' if self.llm_name in TARGET_MODULES_DICT else TARGET_MODULES_DICT[self.llm_name]
 
         self.original_llm = self._get_original_llm()
         self.tokenizer = AutoTokenizer.from_pretrained(self.original_path)
         self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        self.train_log_dict = {'epoch': [],
+                               'time': [],
+                               'loss': [],
+                               'grad_norm': [],
+                               'learning_rate': [],
+                               'mean_token_accuracy': []}
+        self.inference_log_dict = {'epoch': [],
+                                   'elapsed_time (s)': [],
+                                   'prompt': [],
+                                   'llm_answer': [],
+                                   'trial_cnt': [],
+                                   'output_tkn_cnt': []}
 
     def _generate_llm_trainable_dataset(self, dataset_df):
         dataset = DatasetDict()
@@ -86,7 +151,8 @@ class LLMTrainer():
             eval_dataset=dataset['valid'],
             processing_class=self.tokenizer,
             args=training_args,
-            data_collator=collator
+            data_collator=collator,
+            callbacks=[OhLoRACustomCallback(self.train_log_dict, self.inference_log_dict, self.llm_name)]
         )
 
     def _get_lora_llm(self, llm):
