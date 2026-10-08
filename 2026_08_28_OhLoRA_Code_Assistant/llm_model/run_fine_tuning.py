@@ -129,7 +129,9 @@ class LLMTrainer():
 
         return dataset
 
-    def _preview_dataset(self, dataset, print_encoded_tokens=False):
+    def _preview_dataset(self, print_encoded_tokens=False):
+        dataset = self.dataset
+
         print('\n=== DATASET PREVIEW ===')
         print(f"dataset size: [train: {len(dataset['train']['text'])}, valid: {len(dataset['valid']['text'])}]")
 
@@ -167,11 +169,11 @@ class LLMTrainer():
 
         return original_llm
 
-    def _get_sft_trainer(self, dataset, collator, training_args):
+    def _get_sft_trainer(self, collator, training_args):
         self.sft_trainer = SFTTrainer(
             self.lora_llm,
-            train_dataset=dataset['train'],
-            eval_dataset=dataset['valid'],
+            train_dataset=self.dataset['train'],
+            eval_dataset=self.dataset['valid'],
             processing_class=self.tokenizer,
             args=training_args,
             data_collator=collator,
@@ -179,7 +181,7 @@ class LLMTrainer():
                                             self.inference_log_dict,
                                             self.llm_name,
                                             self.save_path,
-                                            list(dataset['valid']))]
+                                            list(self.dataset['valid']))]
         )
 
     def _get_lora_llm(self, llm):
@@ -211,13 +213,13 @@ class LLMTrainer():
         dataset_df['text'] = dataset_df.apply(
             lambda x: f"{x['input']} (답변 시작) ### 답변: {x['output']}{ANSWER_END_MARK}",
             axis=1)
-        dataset = self._generate_llm_trainable_dataset(dataset_df)
-        self._preview_dataset(dataset)
+        self.dataset = self._generate_llm_trainable_dataset(dataset_df)
+        self._preview_dataset()
 
         response_template = RESPONSE_TEMPLATE.get(self.llm_name) or RESPONSE_TEMPLATE['default']
         collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=self.tokenizer)
         training_args = self._get_training_args(num_train_epochs=5)
-        self._get_sft_trainer(dataset, collator, training_args)
+        self._get_sft_trainer(collator, training_args)
 
         # run Fine-Tuning
         self.sft_trainer.train()
