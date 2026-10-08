@@ -1,10 +1,13 @@
+from typing import Any
 
 import torch
 import os
 import gc
+import time
 
 import pandas as pd
 from transformers import StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoTokenizer
+from utils import ANSWER_END_MARK, add_inference_log
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -28,7 +31,8 @@ class StopOnTokens(StoppingCriteria):
 
 class LLMInferenceEngine():
     def __init__(self, llm_path: str, answer_start_mark: str, answer_end_mark: str, stop_token_list: list[int],
-                 top_p: float = 0.95, top_k: int = 50, temperature: float = 0.6):
+                 top_p: float = 0.95, top_k: int = 50, temperature: float = 0.6,
+                 inference_log_dict: dict | None = None):
 
         self.llm_path = llm_path
         self.top_p = top_p
@@ -41,6 +45,17 @@ class LLMInferenceEngine():
 
         self.fine_tuned_llm = None
         self.tokenizer = None
+
+        if inference_log_dict is not None:
+            self.inference_log_dict = inference_log_dict
+        else:
+            self.inference_log_dict = {'epoch': [],
+                                       'elapsed_time (s)': [],
+                                       'prompt': [],
+                                       'llm_answer': [],
+                                       'trial_cnt': [],
+                                       'output_tkn_cnt': [],
+                                       'torch_memory_kb': []}
 
     def load_llm(self):
         if self.fine_tuned_llm is not None and self.tokenizer is not None:
@@ -64,8 +79,8 @@ class LLMInferenceEngine():
         gc.collect()
         torch.cuda.empty_cache()
 
-    def run_inference(self, prompt: str, max_length: int = 256, max_trials: int = 5,
-                      additional_answer_test_func: callable = None) -> dict:
+    def _run_inference(self, prompt: str, max_length: int = 256, max_trials: int = 5,
+                       additional_answer_test_func: callable = None) -> dict:
 
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.fine_tuned_llm.generation_config.pad_token_id = self.tokenizer.pad_token_id
@@ -104,6 +119,32 @@ class LLMInferenceEngine():
         llm_answer = llm_answer.replace('\n', '')
 
         return {'llm_answer': llm_answer, 'trial_cnt': trial_cnt, 'output_token_cnt': output_token_cnt}
+
+    def run_inference(self, prompt: str, epoch: Any):
+        start_at = time.time()
+
+        self.load_llm()
+        inference_result = self._run_inference(prompt)
+        self.unload_llm()
+
+        llm_answer, trial_cnt, output_token_cnt = (
+            inference_result['llm_answer'], inference_result['trial_cnt'], inference_result['output_token_cnt'])
+
+        llm_answer = llm_answer[:-len(ANSWER_END_MARK) + 1]
+        elapsed_time = time.time() - start_at
+
+        print(f'input prompt : {prompt}')
+        print(f'llm answer (trials: {trial_cnt}, output tkns: {output_token_cnt}) : {llm_answer}\n')
+
+        inference_result = {'epoch': epoch,
+                            'elapsed_time': elapsed_time,
+                            'prompt': prompt,
+                            'llm_answer': llm_answer,
+                            'trial_cnt': trial_cnt,
+                            'output_tkn_cnt': output_token_cnt,
+                            'torch_memory_kb': torch.cuda.memory_allocated() // 1024}
+
+        add_inference_log(inference_result, self.inference_log_dict)
 
 
 def save_as_csv(inference_result: list[str], llm_path: str):

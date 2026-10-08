@@ -53,31 +53,8 @@ class OhLoRACustomCallback(TrainerCallback):
         train_log_df = pd.DataFrame(self.train_log_dict)
         train_log_df.to_csv(os.path.join(TRAIN_LOG_DIR_PATH, f'{self.llm_name}.csv'))
 
-        for final_input_prompt in self.eval_dataset:
-            start_at = time.time()
-
-            self.inference_engine.load_llm()
-            inference_result = self.inference_engine.run_inference(final_input_prompt)
-            self.inference_engine.unload_llm()
-
-            llm_answer, trial_cnt, output_token_cnt = (
-                inference_result['llm_answer'], inference_result['trial_cnt'], inference_result['output_token_cnt'])
-
-            llm_answer = llm_answer[:-len(ANSWER_END_MARK) + 1]
-            elapsed_time = time.time() - start_at
-
-            print(f'final input prompt : {final_input_prompt}')
-            print(f'llm answer (trials: {trial_cnt}, output tkns: {output_token_cnt}) : {llm_answer}')
-
-            inference_result = {'epoch': state.epoch,
-                                'elapsed_time': elapsed_time,
-                                'prompt': final_input_prompt,
-                                'llm_answer': llm_answer,
-                                'trial_cnt': trial_cnt,
-                                'output_tkn_cnt': output_token_cnt,
-                                'torch_memory_kb': torch.cuda.memory_allocated() // 1024}
-
-            add_inference_log(inference_result, self.inference_log_dict)
+        for prompt in self.eval_dataset:
+            self.inference_engine.run_inference(prompt, state.epoch)
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
         inference_log_df.to_csv(os.path.join(INFERENCE_LOG_DIR_PATH, f'{self.llm_name}.csv'))
@@ -223,6 +200,20 @@ class LLMTrainer():
 
         # run Fine-Tuning
         self.sft_trainer.train()
+
+    def _run_final_inference(self):
+        """Run Final inference test."""
+
+        self.inference_engine = LLMInferenceEngine(self.save_path,
+                                                   answer_start_mark=ANSWER_START_MARK,
+                                                   answer_end_mark=ANSWER_END_MARK,
+                                                   stop_token_list=STOP_TOKEN_LIST)
+
+        for prompt in self.dataset['valid']:
+            self.inference_engine.run_inference(prompt, 'final_inference')
+
+        inference_log_df = pd.DataFrame(self.inference_log_dict)
+        inference_log_df.to_csv(os.path.join(INFERENCE_LOG_DIR_PATH, f'{self.llm_name}.csv'))
 
     def run(self):
         """Train LLM."""
