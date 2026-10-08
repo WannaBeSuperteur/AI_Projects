@@ -144,7 +144,7 @@ class LLMTrainer():
             save_total_limit=3,                  # max checkpoint count to save
             per_device_train_batch_size=2,       # batch size per device during training
             per_device_eval_batch_size=1,        # batch size per device during validation
-            report_to=None                       # to prevent wandb API key request at start of Fine-Tuning
+            report_to="none"                     # to prevent wandb API key request at start of Fine-Tuning
         )
 
         return training_args
