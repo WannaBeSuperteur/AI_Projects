@@ -114,7 +114,8 @@ class LLMInferenceEngine:
 
             # check LLM answer and return or retry
             is_non_empty = llm_answer.replace('\n', '').replace(self.answer_end_mark, '').replace(' ', '') != ''
-            is_acceptable = is_non_empty and additional_answer_test_func(llm_answer)
+            is_acceptable = (is_non_empty and
+                             (additional_answer_test_func is None or additional_answer_test_func(llm_answer)))
 
             if is_acceptable:
                 break
