@@ -6,8 +6,6 @@ import gc
 import pandas as pd
 from transformers import StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoTokenizer
 
-from utils import LLM_ORIGINAL_PATHS
-
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
 
@@ -108,24 +106,8 @@ class LLMInferenceEngine():
         return {'llm_answer': llm_answer, 'trial_cnt': trial_cnt, 'output_token_cnt': output_token_cnt}
 
 
-def load_test_dataset() -> list[str]:
-    pass
-
-
 def save_as_csv(inference_result: list[str], llm_path: str):
     inference_result_dict = {'inference_result': inference_result}
     inference_result_csv = pd.DataFrame(inference_result_dict)
     inference_result_csv.to_csv(f'inference_result_{llm_path}.csv')
-
-
-if __name__ == '__main__':
-    test_dataset = load_test_dataset()
-
-    for llm_original_path in LLM_ORIGINAL_PATHS:
-        llm_path = llm_original_path.split('/')[-1].lower()
-        llm_inference_engine = LLMInferenceEngine(llm_path=LLM_ORIGINAL_PATHS)
-
-        llm_inference_engine.load_llm()
-        inference_result = llm_inference_engine.run_inference(test_dataset)
-        llm_inference_engine.unload_llm()
 
