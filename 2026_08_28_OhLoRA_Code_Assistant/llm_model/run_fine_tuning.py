@@ -45,10 +45,12 @@ class OhLoRACustomCallback(TrainerCallback):
         self._init_inference_engine()
 
     def _init_inference_engine(self):
+        stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
         self.inference_engine = LLMInferenceEngine(llm_path=None,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    answer_end_mark=ANSWER_END_MARK,
-                                                   stop_token_list=STOP_TOKEN_LIST)
+                                                   stop_token_list=stop_token_list)
+
         self.inference_engine.load_fine_tuned_llm_directly(self.fine_tuned_llm, self.tokenizer)
 
     def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
@@ -208,10 +210,11 @@ class LLMTrainer:
     def _run_final_inference(self):
         """Run Final inference test."""
 
+        stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
         self.inference_engine = LLMInferenceEngine(self.save_path,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    answer_end_mark=ANSWER_END_MARK,
-                                                   stop_token_list=STOP_TOKEN_LIST)
+                                                   stop_token_list=stop_token_list)
 
         for prompt_info in self.dataset['valid']:
             prompt = prompt_info['text']
