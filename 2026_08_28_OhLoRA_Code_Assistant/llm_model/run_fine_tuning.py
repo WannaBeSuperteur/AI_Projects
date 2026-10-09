@@ -73,6 +73,7 @@ class OhLoRACustomCallback(TrainerCallback):
     def on_train_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         self.inference_engine.unload_llm()
 
+
 class LLMTrainer:
     def __init__(self, original_path: str, save_path: str):
         self.original_path = original_path
@@ -230,6 +231,7 @@ class LLMTrainer:
         """Train LLM."""
 
         self._fine_tune_llm()
+        self._run_final_inference()
 
     def save_llm(self):
         """Save LLM into save path. (Full LLM)"""
@@ -245,6 +247,8 @@ def train_and_save_llm(original_path: str, save_path: str):
 
 if __name__ == '__main__':
     for original_path in LLM_ORIGINAL_PATHS:
-        save_path = os.path.join(PROJECT_DIR_PATH, original_path.split('/')[-1].lower())
+        save_path = os.path.join(PROJECT_DIR_PATH, "llm_model", original_path.split('/')[-1].lower() + "_fine_tuned")
         save_path = str(save_path)
+        os.makedirs(save_path, exist_ok=True)
+
         train_and_save_llm(original_path, save_path)
