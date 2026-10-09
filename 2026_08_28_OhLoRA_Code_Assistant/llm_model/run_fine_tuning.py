@@ -49,7 +49,8 @@ class OhLoRACustomCallback(TrainerCallback):
         self.inference_engine = LLMInferenceEngine(llm_path=None,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    answer_end_mark=ANSWER_END_MARK,
-                                                   stop_token_list=stop_token_list)
+                                                   stop_token_list=stop_token_list,
+                                                   inference_log_dict=self.inference_log_dict)
 
         self.inference_engine.load_fine_tuned_llm_directly(self.fine_tuned_llm, self.tokenizer)
 
@@ -219,7 +220,8 @@ class LLMTrainer:
         self.inference_engine = LLMInferenceEngine(self.full_model_path,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    answer_end_mark=ANSWER_END_MARK,
-                                                   stop_token_list=stop_token_list)
+                                                   stop_token_list=stop_token_list,
+                                                   inference_log_dict=self.inference_log_dict)
         self.inference_engine.load_llm()
 
         for prompt_info in self.dataset['valid']:
