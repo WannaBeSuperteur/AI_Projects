@@ -83,7 +83,7 @@ class LLMInferenceEngine:
         gc.collect()
         torch.cuda.empty_cache()
 
-    def _run_inference(self, prompt: str, max_length: int = 256, max_trials: int = 5,
+    def _run_inference(self, prompt: str, max_new_tokens: int = 80, max_trials: int = 5,
                        additional_answer_test_func: callable = None) -> dict:
 
         self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -102,7 +102,7 @@ class LLMInferenceEngine:
 
         while trial_cnt < max_trials:
             outputs = self.fine_tuned_llm.generate(**inputs,
-                                                   max_length=max_length,
+                                                   max_new_tokens=max_new_tokens,
                                                    do_sample=True,
                                                    temperature=self.temperature,
                                                    stopping_criteria=stopping_criteria)
