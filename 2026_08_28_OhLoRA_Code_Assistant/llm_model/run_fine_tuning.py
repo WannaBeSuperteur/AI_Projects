@@ -14,7 +14,8 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 from run_inference import LLMInferenceEngine
-from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_TEMPLATE
+from utils import (LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_END_MARK,
+                   ANSWER_TEMPLATE)
 from utils import add_train_log
 
 
@@ -140,7 +141,7 @@ class LLMTrainer:
         training_args = SFTConfig(
             learning_rate=0.0003,                # lower learning rate is recommended for Fine-Tuning
             num_train_epochs=num_train_epochs,
-            logging_steps=5,                     # logging frequency
+            logging_steps=10,                    # logging frequency
             gradient_checkpointing=False,
             output_dir=os.path.join(self.save_path, "checkpoints"),
             save_total_limit=3,                  # max checkpoint count to save
@@ -202,14 +203,14 @@ class LLMTrainer:
         self._get_lora_llm(llm=self.original_llm)
 
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']} {self.tokenizer.eos_token}",
+            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']} {ANSWER_END_MARK}",
             axis=1)
         self.dataset = self._generate_llm_trainable_dataset(dataset_df)
         self._preview_dataset()
 
         response_template = self.tokenizer.encode(ANSWER_TEMPLATE, add_special_tokens=False)
         collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=self.tokenizer)
-        training_args = self._get_training_args(num_train_epochs=5)
+        training_args = self._get_training_args(num_train_epochs=7)
         self._get_sft_trainer(collator, training_args)
 
         # run Fine-Tuning

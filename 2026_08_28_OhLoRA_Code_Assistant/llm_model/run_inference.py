@@ -7,10 +7,20 @@ import time
 
 import pandas as pd
 from transformers import StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoTokenizer
-from utils import add_inference_log, ANSWER_TEMPLATE
+from utils import add_inference_log, ANSWER_TEMPLATE, ANSWER_END_MARK
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
+
+
+def clean_answer_end_mark(llm_answer: str):
+    for i in range(2, len(ANSWER_END_MARK)):
+        answer_end_mark_part = ANSWER_END_MARK[:i]
+
+        if llm_answer.endswith(answer_end_mark_part):
+            return llm_answer.replace(answer_end_mark_part, '')
+
+    return llm_answer
 
 
 # stop when "LAST N TOKENS MATCHES stop_token_ids" - class code by ChatGPT-4o
@@ -119,7 +129,8 @@ class LLMInferenceEngine:
             trial_cnt += 1
 
             # check LLM answer and return or retry
-            is_non_empty = llm_answer.replace('\n', '').replace(self.eos_token, '').replace(' ', '') != ''
+            is_non_empty = llm_answer.replace('\n', '').replace(ANSWER_END_MARK, '').replace(' ', '') != ''
+            llm_answer = clean_answer_end_mark(llm_answer)
             is_acceptable = (is_non_empty and
                              (additional_answer_test_func is None or additional_answer_test_func(llm_answer)))
 
