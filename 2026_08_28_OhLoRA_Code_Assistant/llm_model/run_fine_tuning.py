@@ -198,7 +198,6 @@ class LLMTrainer:
 
         dataset_df = pd.read_csv(os.path.join(PROJECT_DIR_PATH, "ai_dataset", "llm_dataset", "llm_dataset.csv"))
         dataset_df = dataset_df.sample(frac=1, random_state=2026)  # shuffle
-        dataset_df = dataset_df[:50]
         dataset_df['split'] = np.where(np.arange(len(dataset_df)) < len(dataset_df) * 0.8, 'train', 'valid')
 
         # prepare Fine-Tuning
