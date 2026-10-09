@@ -22,11 +22,6 @@ DATASET_PATH = f'{PROJECT_DIR_PATH}/llm/train_data.csv'
 STOP_TOKEN_LIST = {
     'default': [109659, 104449, 99458, 64356, 8, 220]  # (답변 종료)"
 }
-EOS_TOKEN = {
-    'default': '<|end_of_text|>',
-    'hyperclovax-seed-text-instruct-1.5b': '<|endofturn|>'
-}
-
 ANSWER_START_MARK = ' (답변 시작)'
 ANSWER_TEMPLATE = ' ### 답변:'
 

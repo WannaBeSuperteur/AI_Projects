@@ -14,8 +14,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 from run_inference import LLMInferenceEngine
-from utils import (LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, EOS_TOKEN,
-                   ANSWER_TEMPLATE)
+from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_TEMPLATE
 from utils import add_train_log
 
 
@@ -52,11 +51,9 @@ class OhLoRACustomCallback(TrainerCallback):
 
     def _init_inference_engine(self):
         stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
-        eos_token = EOS_TOKEN.get(self.llm_name) or EOS_TOKEN['default']
-
         self.inference_engine = LLMInferenceEngine(llm_path=None,
                                                    answer_start_mark=ANSWER_START_MARK,
-                                                   eos_token=eos_token,
+                                                   eos_token=self.tokenizer.eos_token,
                                                    stop_token_list=stop_token_list,
                                                    inference_log_dict=self.inference_log_dict)
 
@@ -95,6 +92,7 @@ class LLMTrainer:
         self.original_llm = self._get_original_llm()
         self.tokenizer = AutoTokenizer.from_pretrained(self.original_path)
         self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = "left"
 
         self.train_log_dict = {'epoch': [],
                                'time': [],
@@ -207,7 +205,7 @@ class LLMTrainer:
         self._get_lora_llm(llm=self.original_llm)
 
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']} {EOS_TOKEN}",
+            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']} {self.tokenizer.eos_token}",
             axis=1)
         self.dataset = self._generate_llm_trainable_dataset(dataset_df)
         self._preview_dataset()
@@ -224,11 +222,9 @@ class LLMTrainer:
         """Run Final inference test."""
 
         stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
-        eos_token = EOS_TOKEN.get(self.llm_name) or EOS_TOKEN['default']
-
         self.inference_engine = LLMInferenceEngine(self.full_model_path,
                                                    answer_start_mark=ANSWER_START_MARK,
-                                                   eos_token=eos_token,
+                                                   eos_token=self.tokenizer.eos_token,
                                                    stop_token_list=stop_token_list,
                                                    inference_log_dict=self.inference_log_dict)
         self.inference_engine.load_llm()
