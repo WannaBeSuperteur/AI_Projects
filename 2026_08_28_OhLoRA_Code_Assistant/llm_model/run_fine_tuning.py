@@ -78,6 +78,7 @@ class LLMTrainer:
     def __init__(self, original_path: str, save_path: str):
         self.original_path = original_path
         self.save_path = save_path
+        self.full_model_path = os.path.join(self.save_path, "full_model")
 
         self.llm_name = original_path.split('/')[-1].lower()
         self.target_modules = TARGET_MODULES_DICT.get(self.llm_name) or TARGET_MODULES_DICT['default']
@@ -137,7 +138,7 @@ class LLMTrainer:
             num_train_epochs=num_train_epochs,
             logging_steps=5,                     # logging frequency
             gradient_checkpointing=False,
-            output_dir=self.save_path,
+            output_dir=os.path.join(self.save_path, "checkpoints"),
             save_total_limit=3,                  # max checkpoint count to save
             per_device_train_batch_size=2,       # batch size per device during training
             per_device_eval_batch_size=1,        # batch size per device during validation
@@ -211,11 +212,11 @@ class LLMTrainer:
         # run Fine-Tuning
         self.sft_trainer.train()
 
-    def _run_final_inference(self):
+    def run_final_inference(self):
         """Run Final inference test."""
 
         stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
-        self.inference_engine = LLMInferenceEngine(self.save_path,
+        self.inference_engine = LLMInferenceEngine(self.full_model_path,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    answer_end_mark=ANSWER_END_MARK,
                                                    stop_token_list=stop_token_list)
@@ -231,18 +232,37 @@ class LLMTrainer:
         """Train LLM."""
 
         self._fine_tune_llm()
-        self._run_final_inference()
 
     def save_llm(self):
         """Save LLM into save path. (Full LLM)"""
 
-        self.sft_trainer.save_model(self.save_path)
+        os.makedirs(self.full_model_path, exist_ok=True)
+
+        trained_lora_llm = self.sft_trainer.model
+        full_llm = trained_lora_llm.merge_and_unload(safe_merge=True)
+        full_llm.save_pretrained(
+            save_directory=self.full_model_path,
+            safe_serialization=True,
+            max_shard_size="1GB"
+        )
+        self.tokenizer.save_pretrained(
+            save_directory=self.full_model_path
+        )
+
+        # verify saved config
+        config_path = os.path.join(self.full_model_path, "config.json")
+        if not os.path.isfile(config_path):
+            raise FileNotFoundError(f"Model config not found: {config_path}")
+
+        print(f"Full LLM saved to: {self.full_model_path}")
+        print(f"Full LLM model type: {full_llm.config.model_type}")
 
 
 def train_and_save_llm(original_path: str, save_path: str):
     llm_trainer = LLMTrainer(original_path, save_path)
     llm_trainer.run()
     llm_trainer.save_llm()
+    llm_trainer.run_final_inference()
 
 
 if __name__ == '__main__':
