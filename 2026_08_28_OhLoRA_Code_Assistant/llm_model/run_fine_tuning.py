@@ -14,8 +14,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 from run_inference import LLMInferenceEngine
-from utils import (LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_END_MARK,
-                   ANSWER_TEMPLATE)
+from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, ANSWER_START_MARK, ANSWER_END_MARK, ANSWER_TEMPLATE
 from utils import add_train_log
 
 
@@ -27,6 +26,10 @@ os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
 os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
 
 os.environ["HF_TOKEN"] = Path('hf_token.txt').read_text(encoding="utf-8")
+
+
+def get_stop_token_list(tokenizer):
+    return tokenizer.encode(ANSWER_END_MARK[1:], add_special_tokens=False)
 
 
 class OhLoRACustomCallback(TrainerCallback):
@@ -46,7 +49,9 @@ class OhLoRACustomCallback(TrainerCallback):
         self._init_inference_engine()
 
     def _init_inference_engine(self):
-        stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
+        stop_token_list = get_stop_token_list(self.tokenizer)
+        print(f'stop_token_list : {stop_token_list}')
+
         self.inference_engine = LLMInferenceEngine(llm_path=None,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    eos_token=self.tokenizer.eos_token,
@@ -219,7 +224,7 @@ class LLMTrainer:
     def run_final_inference(self):
         """Run Final inference test."""
 
-        stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
+        stop_token_list = get_stop_token_list(self.tokenizer)
         self.inference_engine = LLMInferenceEngine(self.full_model_path,
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    eos_token=self.tokenizer.eos_token,
