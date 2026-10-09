@@ -7,7 +7,7 @@ import time
 
 import pandas as pd
 from transformers import StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoTokenizer
-from utils import add_inference_log
+from utils import add_inference_log, ANSWER_TEMPLATE
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -91,7 +91,7 @@ class LLMInferenceEngine:
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.fine_tuned_llm.generation_config.pad_token_id = self.tokenizer.pad_token_id
 
-        final_input_prompt = prompt + self.answer_start_mark
+        final_input_prompt = prompt + ANSWER_TEMPLATE
         inputs = self.tokenizer(final_input_prompt, return_tensors='pt').to(self.fine_tuned_llm.device)
         input_token_cnt = inputs['input_ids'].shape[1]
 
