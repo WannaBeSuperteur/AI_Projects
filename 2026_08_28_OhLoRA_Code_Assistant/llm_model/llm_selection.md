@@ -12,9 +12,9 @@
 
 * 선정 결과
 
-| 후보 모델                                                   | HuggingFace Link                                                                                 | 개발사 | 파라미터 개수 | 최종 평가 결과 | 최종 선정 여부 |
-|---------------------------------------------------------|--------------------------------------------------------------------------------------------------|-----|---------|----------|----------|
-| `kakaocorp/kanana-2-3b-instruct`                        | [HuggingFace Link](https://huggingface.co/kakaocorp/kanana-2-3b-instruct)                        | 카카오 | 3.0 B   |          |          |
-| `kakaocorp/kanana-1.5-2.1b-instruct-2505`               | [HuggingFace Link](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505)               | 카카오 | 2.1 B   |          |          |
-| `K-intelligence/Midm-2.0-Mini-Instruct`                 | [HuggingFace Link](https://huggingface.co/K-intelligence/Midm-2.0-Mini-Instruct)                 | KT  | 2.0 B   |          |          |
-| `naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B` | [HuggingFace Link](https://huggingface.co/naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B) | 네이버 | 1.5 B   |          |          |
+| 후보 모델                                                   | HuggingFace Link                                                                                 | 개발사 | 파라미터 개수 | 최종 평가 결과                                                                                  | 최종 선정 여부 |
+|---------------------------------------------------------|--------------------------------------------------------------------------------------------------|-----|---------|-------------------------------------------------------------------------------------------|----------|
+| `kakaocorp/kanana-2-3b-instruct`                        | [HuggingFace Link](https://huggingface.co/kakaocorp/kanana-2-3b-instruct)                        | 카카오 | 3.0 B   |                                                                                           |          |
+| `kakaocorp/kanana-1.5-2.1b-instruct-2505`               | [HuggingFace Link](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505)               | 카카오 | 2.1 B   | ❌ **`transformers==5.17.0` 실행 불가**<br>(hidden size = 1792 로 attention head 개수 24의 배수가 아님) |          |
+| `K-intelligence/Midm-2.0-Mini-Instruct`                 | [HuggingFace Link](https://huggingface.co/K-intelligence/Midm-2.0-Mini-Instruct)                 | KT  | 2.0 B   |                                                                                           |          |
+| `naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B` | [HuggingFace Link](https://huggingface.co/naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B) | 네이버 | 1.5 B   |                                                                                           |          |
