@@ -22,11 +22,6 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'train_log')
 INFERENCE_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'inference_log')
 
-# '### 답변 :'
-RESPONSE_TEMPLATE = {'default': [8, 10396, 41950, 25],
-                     'midm-2.0-mini-instruct': [67621, 4701, 28],
-                     'hyperclovax-seed-text-instruct-1.5b': [17010, 106594, 25]}
-
 os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
 os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
 
@@ -212,7 +207,7 @@ class LLMTrainer:
         self.dataset = self._generate_llm_trainable_dataset(dataset_df)
         self._preview_dataset()
 
-        response_template = RESPONSE_TEMPLATE.get(self.llm_name) or RESPONSE_TEMPLATE['default']
+        response_template = self.tokenizer.encode(ANSWER_TEMPLATE, add_special_tokens=False)
         collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=self.tokenizer)
         training_args = self._get_training_args(num_train_epochs=5)
         self._get_sft_trainer(collator, training_args)
