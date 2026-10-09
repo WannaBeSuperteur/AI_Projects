@@ -25,6 +25,7 @@ STOP_TOKEN_LIST = {
 }
 ANSWER_START_MARK = ' (답변 시작)'
 ANSWER_END_MARK = ' <|end_of_text|>'
+ANSWER_TEMPLATE = ' ### 답변:'
 
 
 def add_train_log(state, train_log_dict):

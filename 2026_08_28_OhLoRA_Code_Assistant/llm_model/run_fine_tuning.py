@@ -1,6 +1,5 @@
 
 import os
-import time
 
 import numpy as np
 import pandas as pd
@@ -9,13 +8,14 @@ from datasets import DatasetDict, Dataset
 
 import peft
 from peft import LoraConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, TrainerCallback, TrainerState, \
-                         TrainerControl
+from transformers import (AutoModelForCausalLM, AutoTokenizer, TrainingArguments, TrainerCallback, TrainerState,
+                          TrainerControl)
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 from run_inference import LLMInferenceEngine
-from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_END_MARK
-from utils import add_train_log, add_inference_log
+from utils import (LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_END_MARK,
+                   ANSWER_TEMPLATE)
+from utils import add_train_log
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -58,7 +58,7 @@ class OhLoRACustomCallback(TrainerCallback):
         train_log_df.to_csv(os.path.join(TRAIN_LOG_DIR_PATH, f'{self.llm_name}.csv'))
 
         for prompt_info in self.eval_dataset:
-            prompt = prompt_info['text']
+            prompt = prompt_info['text'].split(ANSWER_TEMPLATE)[0]
             self.inference_engine.run_inference(prompt, state.epoch, load_and_unload_llm=False)
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
@@ -197,7 +197,7 @@ class LLMTrainer:
         self._get_lora_llm(llm=self.original_llm)
 
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input']} (답변 시작) ### 답변: {x['output']}{ANSWER_END_MARK}",
+            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']}{ANSWER_END_MARK}",
             axis=1)
         self.dataset = self._generate_llm_trainable_dataset(dataset_df)
         self._preview_dataset()
@@ -220,7 +220,7 @@ class LLMTrainer:
                                                    stop_token_list=stop_token_list)
 
         for prompt_info in self.dataset['valid']:
-            prompt = prompt_info['text']
+            prompt = prompt_info['text'].split(ANSWER_TEMPLATE)[0]
             self.inference_engine.run_inference(prompt, 'final_inference')
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
