@@ -22,7 +22,8 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'train_log')
 INFERENCE_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'inference_log')
 
-RESPONSE_TEMPLATE = {'default': [8, 10396, 41950, 25]}  # '### 답변 :'
+RESPONSE_TEMPLATE = {'default': [8, 10396, 41950, 25],
+                     'midm-2.0-mini-instruct': [67621, 4701, 28]}  # '### 답변 :'
 
 os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
 os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
