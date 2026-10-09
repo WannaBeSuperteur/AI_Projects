@@ -91,10 +91,11 @@ class LLMInferenceEngine:
 
         final_input_prompt = prompt + self.answer_start_mark
         inputs = self.tokenizer(final_input_prompt, return_tensors='pt').to(self.fine_tuned_llm.device)
+        input_token_cnt = inputs['input_ids'].shape[1]
 
         llm_answer = ''
         trial_cnt = 0
-        output_token_cnt = None
+        new_token_cnt, total_token_cnt = None, None
 
         # for stopping criteria
         stop_token_ids = torch.tensor(self.stop_token_list).to(self.fine_tuned_llm.device)
@@ -106,7 +107,8 @@ class LLMInferenceEngine:
                                                    do_sample=True,
                                                    temperature=self.temperature,
                                                    stopping_criteria=stopping_criteria)
-            output_token_cnt = len(outputs[0])
+            total_token_cnt = len(outputs[0])
+            new_token_cnt = total_token_cnt - input_token_cnt
 
             llm_answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             llm_answer = llm_answer[len(final_input_prompt):]
@@ -123,7 +125,11 @@ class LLMInferenceEngine:
         # remove new-lines
         llm_answer = llm_answer.replace('\n', '')
 
-        return {'llm_answer': llm_answer, 'trial_cnt': trial_cnt, 'output_token_cnt': output_token_cnt}
+        return {'llm_answer': llm_answer,
+                'trial_cnt': trial_cnt,
+                'total_token_cnt': total_token_cnt,
+                'input_token_cnt': input_token_cnt,
+                'new_token_cnt': new_token_cnt}
 
     def run_inference(self, prompt: str, epoch: Any, load_and_unload_llm: bool = True):
         start_at = time.time()
@@ -134,21 +140,24 @@ class LLMInferenceEngine:
         if load_and_unload_llm:
             self.unload_llm()
 
-        llm_answer, trial_cnt, output_token_cnt = (
-            inference_result['llm_answer'], inference_result['trial_cnt'], inference_result['output_token_cnt'])
+        llm_answer, trial_cnt, total_token_cnt, input_token_cnt, new_token_cnt = (
+            inference_result['llm_answer'], inference_result['trial_cnt'],
+            inference_result['total_token_cnt'], inference_result['input_token_cnt'], inference_result['new_token_cnt'])
 
         llm_answer = llm_answer[:-len(self.eos_token) + 1]
         elapsed_time = time.time() - start_at
 
         print(f'input prompt : {prompt}')
-        print(f'llm answer (trials: {trial_cnt}, output tkns: {output_token_cnt}) : {llm_answer}\n')
+        print(f'llm answer (trials: {trial_cnt}, new tokens: {new_token_cnt}) : {llm_answer}\n')
 
         inference_result = {'epoch': epoch,
                             'elapsed_time': elapsed_time,
                             'prompt': prompt,
                             'llm_answer': llm_answer,
                             'trial_cnt': trial_cnt,
-                            'output_tkn_cnt': output_token_cnt,
+                            'total_token_cnt': total_token_cnt,
+                            'input_token_cnt': input_token_cnt,
+                            'new_token_cnt': new_token_cnt,
                             'torch_memory_kb': torch.cuda.memory_allocated() // 1024}
 
         add_inference_log(inference_result, self.inference_log_dict)

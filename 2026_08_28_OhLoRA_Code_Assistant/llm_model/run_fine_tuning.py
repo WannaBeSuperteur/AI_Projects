@@ -106,7 +106,9 @@ class LLMTrainer:
                                    'prompt': [],
                                    'llm_answer': [],
                                    'trial_cnt': [],
-                                   'output_tkn_cnt': [],
+                                   'total_tkn_cnt': [],
+                                   'input_tkn_cnt': [],
+                                   'new_tkn_cnt': [],
                                    'torch_memory_kb': []}
 
     def _generate_llm_trainable_dataset(self, dataset_df):
