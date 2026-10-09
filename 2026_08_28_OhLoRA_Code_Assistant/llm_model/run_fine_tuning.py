@@ -220,10 +220,13 @@ class LLMTrainer:
                                                    answer_start_mark=ANSWER_START_MARK,
                                                    answer_end_mark=ANSWER_END_MARK,
                                                    stop_token_list=stop_token_list)
+        self.inference_engine.load_llm()
 
         for prompt_info in self.dataset['valid']:
             prompt = prompt_info['text'].split(ANSWER_TEMPLATE)[0]
-            self.inference_engine.run_inference(prompt, 'final_inference')
+            self.inference_engine.run_inference(prompt, 'final_inference', load_and_unload_llm=False)
+
+        self.inference_engine.unload_llm()
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
         inference_log_df.to_csv(os.path.join(INFERENCE_LOG_DIR_PATH, f'{self.llm_name}.csv'))
