@@ -29,7 +29,7 @@ os.environ["HF_TOKEN"] = Path('hf_token.txt').read_text(encoding="utf-8")
 
 
 def get_stop_token_list(tokenizer):
-    return tokenizer.encode(ANSWER_END_MARK[1:], add_special_tokens=False)
+    return tokenizer.encode(ANSWER_END_MARK, add_special_tokens=False)[1:]
 
 
 class OhLoRACustomCallback(TrainerCallback):
