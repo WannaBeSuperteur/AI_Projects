@@ -108,12 +108,14 @@ class LLMInferenceEngine:
                                                    max_new_tokens=max_new_tokens,
                                                    do_sample=True,
                                                    temperature=self.temperature,
+                                                   eos_token_id=self.tokenizer.eos_token_id,
+                                                   pad_token_id=self.tokenizer.pad_token_id,
                                                    stopping_criteria=stopping_criteria)
             total_token_cnt = len(outputs[0])
             new_token_cnt = total_token_cnt - input_token_cnt
 
-            llm_answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            llm_answer = llm_answer[len(final_input_prompt):]
+            generated_token_ids = outputs[0, input_token_cnt:]
+            llm_answer = self.tokenizer.decode(generated_token_ids, skip_special_tokens=True)
             trial_cnt += 1
 
             # check LLM answer and return or retry
@@ -146,7 +148,6 @@ class LLMInferenceEngine:
             inference_result['llm_answer'], inference_result['trial_cnt'],
             inference_result['total_token_cnt'], inference_result['input_token_cnt'], inference_result['new_token_cnt'])
 
-        llm_answer = llm_answer[:-len(self.eos_token) + 1]
         elapsed_time = time.time() - start_at
 
         print(f'input prompt : {prompt}')
