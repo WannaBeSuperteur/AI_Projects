@@ -38,7 +38,10 @@ def add_train_log(state, train_log_dict):
     else:
         train_log_dict['time'].append('-')
 
-    train_log_dict['epoch'].append(round(last_log['epoch'], 2))
+    try:
+        train_log_dict['epoch'].append(round(last_log['epoch'], 2))
+    except:
+        train_log_dict['epoch'].append(last_log['epoch'])
     train_log_dict['loss'].append(round(last_log['loss'], 4))
     train_log_dict['grad_norm'].append(round(last_log['grad_norm'], 4))
     train_log_dict['learning_rate'].append(round(last_log['learning_rate'], 6))
@@ -47,7 +50,10 @@ def add_train_log(state, train_log_dict):
 
 
 def add_inference_log(inference_result, inference_log_dict):
-    inference_log_dict['epoch'].append(int(inference_result['epoch']))
+    try:
+        inference_log_dict['epoch'].append(int(inference_result['epoch']))
+    except:
+        inference_log_dict['epoch'].append(inference_result['epoch'])
     inference_log_dict['elapsed_time (s)'].append(round(inference_result['elapsed_time'], 2))
     inference_log_dict['prompt'].append(inference_result['prompt'])
     inference_log_dict['llm_answer'].append(inference_result['llm_answer'])
