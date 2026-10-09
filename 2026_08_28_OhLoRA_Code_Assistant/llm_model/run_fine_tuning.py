@@ -59,7 +59,7 @@ class OhLoRACustomCallback(TrainerCallback):
 
         for prompt_info in self.eval_dataset:
             prompt = prompt_info['text']
-            self.inference_engine.run_inference(prompt, state.epoch)
+            self.inference_engine.run_inference(prompt, state.epoch, load_and_unload_llm=False)
 
         inference_log_df = pd.DataFrame(self.inference_log_dict)
         inference_log_df.to_csv(os.path.join(INFERENCE_LOG_DIR_PATH, f'{self.llm_name}.csv'))
@@ -70,6 +70,8 @@ class OhLoRACustomCallback(TrainerCallback):
         except Exception as e:
             print(f'logging failed : {e}')
 
+    def on_train_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        self.inference_engine.unload_llm()
 
 class LLMTrainer:
     def __init__(self, original_path: str, save_path: str):
@@ -188,6 +190,7 @@ class LLMTrainer:
 
         dataset_df = pd.read_csv(os.path.join(PROJECT_DIR_PATH, "ai_dataset", "llm_dataset", "llm_dataset.csv"))
         dataset_df = dataset_df.sample(frac=1, random_state=2026)  # shuffle
+        dataset_df = dataset_df[:50]
         dataset_df['split'] = np.where(np.arange(len(dataset_df)) < len(dataset_df) * 0.8, 'train', 'valid')
 
         # prepare Fine-Tuning

@@ -125,12 +125,14 @@ class LLMInferenceEngine:
 
         return {'llm_answer': llm_answer, 'trial_cnt': trial_cnt, 'output_token_cnt': output_token_cnt}
 
-    def run_inference(self, prompt: str, epoch: Any):
+    def run_inference(self, prompt: str, epoch: Any, load_and_unload_llm: bool = True):
         start_at = time.time()
 
-        self.load_llm()
+        if load_and_unload_llm:
+            self.load_llm()
         inference_result = self._run_inference(prompt)
-        self.unload_llm()
+        if load_and_unload_llm:
+            self.unload_llm()
 
         llm_answer, trial_cnt, output_token_cnt = (
             inference_result['llm_answer'], inference_result['trial_cnt'], inference_result['output_token_cnt'])
