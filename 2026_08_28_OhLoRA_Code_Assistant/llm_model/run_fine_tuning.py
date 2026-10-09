@@ -1,5 +1,6 @@
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -23,10 +24,13 @@ TRAIN_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'train_log')
 INFERENCE_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'inference_log')
 
 RESPONSE_TEMPLATE = {'default': [8, 10396, 41950, 25],
-                     'midm-2.0-mini-instruct': [67621, 4701, 28]}  # '### 답변 :'
+                     'midm-2.0-mini-instruct': [67621, 4701, 28],
+                     'hyperclovax-seed-text-instruct-1.5b': [17010, 106594, 25]}  # '### 답변 :'
 
 os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
 os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
+
+os.environ["HF_TOKEN"] = Path('hf_token.txt').read_text(encoding="utf-8")
 
 
 class OhLoRACustomCallback(TrainerCallback):
