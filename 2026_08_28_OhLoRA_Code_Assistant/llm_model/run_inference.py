@@ -54,7 +54,9 @@ class LLMInferenceEngine:
                                        'prompt': [],
                                        'llm_answer': [],
                                        'trial_cnt': [],
-                                       'output_tkn_cnt': [],
+                                       'total_tkn_cnt': [],
+                                       'input_tkn_cnt': [],
+                                       'new_tkn_cnt': [],
                                        'torch_memory_kb': []}
 
     def load_fine_tuned_llm_directly(self, fine_tuned_llm, tokenizer):
