@@ -14,7 +14,7 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 from run_inference import LLMInferenceEngine
-from utils import (LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, ANSWER_END_MARK,
+from utils import (LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, STOP_TOKEN_LIST, ANSWER_START_MARK, EOS_TOKEN,
                    ANSWER_TEMPLATE)
 from utils import add_train_log
 
@@ -23,9 +23,10 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 TRAIN_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'train_log')
 INFERENCE_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'inference_log')
 
+# '### 답변 :'
 RESPONSE_TEMPLATE = {'default': [8, 10396, 41950, 25],
                      'midm-2.0-mini-instruct': [67621, 4701, 28],
-                     'hyperclovax-seed-text-instruct-1.5b': [17010, 106594, 25]}  # '### 답변 :'
+                     'hyperclovax-seed-text-instruct-1.5b': [17010, 106594, 25]}
 
 os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
 os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
@@ -51,9 +52,11 @@ class OhLoRACustomCallback(TrainerCallback):
 
     def _init_inference_engine(self):
         stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
+        eos_token = EOS_TOKEN.get(self.llm_name) or EOS_TOKEN['default']
+
         self.inference_engine = LLMInferenceEngine(llm_path=None,
                                                    answer_start_mark=ANSWER_START_MARK,
-                                                   answer_end_mark=ANSWER_END_MARK,
+                                                   eos_token=eos_token,
                                                    stop_token_list=stop_token_list,
                                                    inference_log_dict=self.inference_log_dict)
 
@@ -204,7 +207,7 @@ class LLMTrainer:
         self._get_lora_llm(llm=self.original_llm)
 
         dataset_df['text'] = dataset_df.apply(
-            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']}{ANSWER_END_MARK}",
+            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']} {EOS_TOKEN}",
             axis=1)
         self.dataset = self._generate_llm_trainable_dataset(dataset_df)
         self._preview_dataset()
@@ -221,9 +224,11 @@ class LLMTrainer:
         """Run Final inference test."""
 
         stop_token_list = STOP_TOKEN_LIST.get(self.llm_name) or STOP_TOKEN_LIST['default']
+        eos_token = EOS_TOKEN.get(self.llm_name) or EOS_TOKEN['default']
+
         self.inference_engine = LLMInferenceEngine(self.full_model_path,
                                                    answer_start_mark=ANSWER_START_MARK,
-                                                   answer_end_mark=ANSWER_END_MARK,
+                                                   eos_token=eos_token,
                                                    stop_token_list=stop_token_list,
                                                    inference_log_dict=self.inference_log_dict)
         self.inference_engine.load_llm()

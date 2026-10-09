@@ -7,7 +7,7 @@ import time
 
 import pandas as pd
 from transformers import StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoTokenizer
-from utils import ANSWER_END_MARK, add_inference_log
+from utils import add_inference_log
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -30,7 +30,7 @@ class StopOnTokens(StoppingCriteria):
 
 
 class LLMInferenceEngine:
-    def __init__(self, llm_path: str | None, answer_start_mark: str, answer_end_mark: str, stop_token_list: list[int],
+    def __init__(self, llm_path: str | None, answer_start_mark: str, eos_token: str, stop_token_list: list[int],
                  top_p: float = 0.95, top_k: int = 50, temperature: float = 0.6,
                  inference_log_dict: dict | None = None):
 
@@ -40,7 +40,7 @@ class LLMInferenceEngine:
         self.temperature = temperature
 
         self.answer_start_mark = answer_start_mark
-        self.answer_end_mark = answer_end_mark
+        self.eos_token = eos_token
         self.stop_token_list = stop_token_list
 
         self.fine_tuned_llm = None
@@ -113,7 +113,7 @@ class LLMInferenceEngine:
             trial_cnt += 1
 
             # check LLM answer and return or retry
-            is_non_empty = llm_answer.replace('\n', '').replace(self.answer_end_mark, '').replace(' ', '') != ''
+            is_non_empty = llm_answer.replace('\n', '').replace(self.eos_token, '').replace(' ', '') != ''
             is_acceptable = (is_non_empty and
                              (additional_answer_test_func is None or additional_answer_test_func(llm_answer)))
 
@@ -137,7 +137,7 @@ class LLMInferenceEngine:
         llm_answer, trial_cnt, output_token_cnt = (
             inference_result['llm_answer'], inference_result['trial_cnt'], inference_result['output_token_cnt'])
 
-        llm_answer = llm_answer[:-len(ANSWER_END_MARK) + 1]
+        llm_answer = llm_answer[:-len(self.eos_token) + 1]
         elapsed_time = time.time() - start_at
 
         print(f'input prompt : {prompt}')
