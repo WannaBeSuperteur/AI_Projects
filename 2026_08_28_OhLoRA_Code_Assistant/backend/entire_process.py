@@ -32,13 +32,15 @@ def print_code_review_result(code_review_result: dict):
 
 
 def generate_llm_comment(top_items_eval_summary: str) -> str:
+    full_prompt = f'{top_items_eval_summary} {ANSWER_START_MARK}'
+
     inference_engine = LLMInferenceEngine(llm_path=LLM_FULL_MODEL_PATH,
                                           answer_start_mark=ANSWER_START_MARK,
                                           eos_token=None,
                                           stop_token_list=None)
     inference_engine.load_llm()
     inference_engine.update_tokenizer()
-    inference_result = inference_engine.run_inference(top_items_eval_summary, epoch=None)
+    inference_result = inference_engine.run_inference(full_prompt, epoch=None)
     inference_engine.unload_llm()
 
     llm_answer = inference_result['llm_answer']
@@ -64,8 +66,13 @@ def run_entire_process(code_path: str, verbose: bool = False, llm_final_comment:
 
 
 if __name__ == '__main__':
-    entire_process_result = run_entire_process(code_path=TEST_CASES_DIR, verbose=True)
+    entire_process_result = run_entire_process(code_path=TEST_CASES_DIR)
+    entire_process_result_wo_llm = run_entire_process(code_path=TEST_CASES_DIR, llm_final_comment=False)
 
     for k, v in entire_process_result.items():
-        print(f'\n\nFINAL [[ {k} ]]')
-        print(str(v)[:1000])
+        print(f'\n\nFINAL (WITH LLM) [[ {k} ]]')
+        print(str(v)[:500])
+
+    for k, v in entire_process_result_wo_llm.items():
+        print(f'\n\nFINAL (W/O LLM) [[ {k} ]]')
+        print(str(v)[:500])
