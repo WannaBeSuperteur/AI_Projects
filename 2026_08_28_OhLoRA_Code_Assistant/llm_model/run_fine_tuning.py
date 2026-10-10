@@ -1,0 +1,287 @@
+
+import os
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import torch
+from datasets import DatasetDict, Dataset
+
+import peft
+from peft import LoraConfig
+from transformers import (AutoModelForCausalLM, AutoTokenizer, TrainingArguments, TrainerCallback, TrainerState,
+                          TrainerControl)
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
+
+from run_inference import LLMInferenceEngine
+from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, ANSWER_START_MARK, ANSWER_END_MARK, ANSWER_TEMPLATE
+from utils import add_train_log
+
+
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+TRAIN_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'train_log')
+INFERENCE_LOG_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'llm_model', 'inference_log')
+
+os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
+os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
+
+os.environ["HF_TOKEN"] = Path('hf_token.txt').read_text(encoding="utf-8")
+
+
+def get_stop_token_list(tokenizer):
+    return tokenizer.encode(ANSWER_END_MARK, add_special_tokens=False)[1:]
+
+
+class OhLoRACustomCallback(TrainerCallback):
+
+    def __init__(self, train_log_dict: dict, inference_log_dict: dict, llm_name: str, fine_tuned_llm, tokenizer,
+                 eval_dataset: list[dict]):
+
+        super(OhLoRACustomCallback, self).__init__()
+        self.train_log_dict = train_log_dict
+        self.inference_log_dict = inference_log_dict
+
+        self.llm_name = llm_name
+        self.eval_dataset = eval_dataset
+
+        self.fine_tuned_llm = fine_tuned_llm
+        self.tokenizer = tokenizer
+        self._init_inference_engine()
+
+    def _init_inference_engine(self):
+        stop_token_list = get_stop_token_list(self.tokenizer)
+        print(f'stop_token_list : {stop_token_list}')
+
+        self.inference_engine = LLMInferenceEngine(llm_path=None,
+                                                   answer_start_mark=ANSWER_START_MARK,
+                                                   eos_token=self.tokenizer.eos_token,
+                                                   stop_token_list=stop_token_list,
+                                                   inference_log_dict=self.inference_log_dict)
+
+        self.inference_engine.load_fine_tuned_llm_directly(self.fine_tuned_llm, self.tokenizer)
+
+    def on_epoch_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        train_log_df = pd.DataFrame(self.train_log_dict)
+        train_log_df.to_csv(os.path.join(TRAIN_LOG_DIR_PATH, f'{self.llm_name}.csv'))
+
+        for prompt_info in self.eval_dataset:
+            prompt = prompt_info['text'].split(ANSWER_TEMPLATE)[0]
+            self.inference_engine.run_inference(prompt, state.epoch, load_and_unload_llm=False)
+
+        inference_log_df = pd.DataFrame(self.inference_log_dict)
+        inference_log_df.to_csv(os.path.join(INFERENCE_LOG_DIR_PATH, f'{self.llm_name}.csv'))
+
+    def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        try:
+            add_train_log(state, self.train_log_dict)
+        except Exception as e:
+            print(f'logging failed : {e}')
+
+    def on_train_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
+        self.inference_engine.unload_llm()
+
+
+class LLMTrainer:
+    def __init__(self, original_path: str, save_path: str):
+        self.original_path = original_path
+        self.save_path = save_path
+        self.full_model_path = os.path.join(self.save_path, "full_model")
+
+        self.llm_name = original_path.split('/')[-1].lower()
+        self.target_modules = TARGET_MODULES_DICT.get(self.llm_name) or TARGET_MODULES_DICT['default']
+
+        self.original_llm = self._get_original_llm()
+        self.tokenizer = AutoTokenizer.from_pretrained(self.original_path)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = "left"
+
+        self.train_log_dict = {'epoch': [],
+                               'time': [],
+                               'loss': [],
+                               'grad_norm': [],
+                               'learning_rate': [],
+                               'mean_token_accuracy': [],
+                               'torch_memory_kb': []}
+        self.inference_log_dict = {'epoch': [],
+                                   'elapsed_time (s)': [],
+                                   'prompt': [],
+                                   'llm_answer': [],
+                                   'trial_cnt': [],
+                                   'total_tkn_cnt': [],
+                                   'input_tkn_cnt': [],
+                                   'new_tkn_cnt': [],
+                                   'torch_memory_kb': []}
+
+    def _generate_llm_trainable_dataset(self, dataset_df):
+        dataset = DatasetDict()
+        dataset['train'] = Dataset.from_pandas(dataset_df[dataset_df['split'] == 'train'][['text']])
+        dataset['valid'] = Dataset.from_pandas(dataset_df[dataset_df['split'] == 'valid'][['text']])
+
+        print('\nLLM Trainable Dataset :')
+        train_texts = dataset['train']['text']
+        for i in range(10):
+            print(f'train data {i} : {train_texts[i]}')
+        print('\n')
+
+        return dataset
+
+    def _preview_dataset(self, print_encoded_tokens=False):
+        dataset = self.dataset
+
+        print('\n=== DATASET PREVIEW ===')
+        print(f"dataset size: [train: {len(dataset['train']['text'])}, valid: {len(dataset['valid']['text'])}]")
+
+        for i in range(10):
+            print(f"\ntrain data {i}: {dataset['train']['text'][i]}")
+            if print_encoded_tokens:
+                print(f"train data {i} tokenized: {self.tokenizer.encode(dataset['train']['text'][i])}")
+
+            print(f"valid data {i} : {dataset['valid']['text'][i].split('###')[0]}")
+            if print_encoded_tokens:
+                print(f"valid data {i} tokenized: {self.tokenizer.encode(dataset['valid']['text'][i].split('###')[0])}")
+
+        print('')
+
+    def _get_training_args(self, num_train_epochs):
+        training_args = SFTConfig(
+            learning_rate=0.0003,                # lower learning rate is recommended for Fine-Tuning
+            num_train_epochs=num_train_epochs,
+            logging_steps=10,                    # logging frequency
+            gradient_checkpointing=False,
+            output_dir=os.path.join(self.save_path, "checkpoints"),
+            save_total_limit=3,                  # max checkpoint count to save
+            per_device_train_batch_size=2,       # batch size per device during training
+            per_device_eval_batch_size=1,        # batch size per device during validation
+            report_to="none"                     # to prevent wandb API key request at start of Fine-Tuning
+        )
+
+        return training_args
+
+    def _get_original_llm(self):
+        original_llm = AutoModelForCausalLM.from_pretrained(
+            pretrained_model_name_or_path=self.original_path,
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16).cuda()
+
+        return original_llm
+
+    def _get_sft_trainer(self, collator, training_args):
+        self.sft_trainer = SFTTrainer(
+            self.lora_llm,
+            train_dataset=self.dataset['train'],
+            eval_dataset=self.dataset['valid'],
+            processing_class=self.tokenizer,
+            args=training_args,
+            data_collator=collator,
+            callbacks=[OhLoRACustomCallback(self.train_log_dict,
+                                            self.inference_log_dict,
+                                            self.llm_name,
+                                            self.lora_llm,
+                                            self.tokenizer,
+                                            list(self.dataset['valid']))]
+        )
+
+    def _get_lora_llm(self, llm):
+        lora_config = LoraConfig(
+            r=32,
+            lora_alpha=64,
+            lora_dropout=0.05,             # Dropout for LoRA
+            init_lora_weights="gaussian",  # LoRA weight initialization
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+            task_type="CAUSAL_LM"
+        )
+
+        self.lora_llm = peft.get_peft_model(llm, lora_config)
+        self.lora_llm.print_trainable_parameters()
+
+    def _fine_tune_llm(self):
+        print(f'{self.original_path} LLM Fine Tuning start.')
+
+        # Setting `pad_token_id` to `eos_token_id`:2 for open-end generation.
+        self.original_llm.generation_config.pad_token_id = self.tokenizer.pad_token_id
+
+        dataset_df = pd.read_csv(os.path.join(PROJECT_DIR_PATH, "ai_dataset", "llm_dataset", "llm_dataset.csv"))
+        dataset_df = dataset_df.sample(frac=1, random_state=2026)  # shuffle
+        dataset_df['split'] = np.where(np.arange(len(dataset_df)) < len(dataset_df) * 0.8, 'train', 'valid')
+
+        # prepare Fine-Tuning
+        self._get_lora_llm(llm=self.original_llm)
+
+        dataset_df['text'] = dataset_df.apply(
+            lambda x: f"{x['input']} (답변 시작){ANSWER_TEMPLATE} {x['output']} {ANSWER_END_MARK}",
+            axis=1)
+        self.dataset = self._generate_llm_trainable_dataset(dataset_df)
+        self._preview_dataset()
+
+        response_template = self.tokenizer.encode(ANSWER_TEMPLATE, add_special_tokens=False)
+        collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=self.tokenizer)
+        training_args = self._get_training_args(num_train_epochs=7)
+        self._get_sft_trainer(collator, training_args)
+
+        # run Fine-Tuning
+        self.sft_trainer.train()
+
+    def run_final_inference(self):
+        """Run Final inference test."""
+
+        stop_token_list = get_stop_token_list(self.tokenizer)
+        self.inference_engine = LLMInferenceEngine(self.full_model_path,
+                                                   answer_start_mark=ANSWER_START_MARK,
+                                                   eos_token=self.tokenizer.eos_token,
+                                                   stop_token_list=stop_token_list,
+                                                   inference_log_dict=self.inference_log_dict)
+        self.inference_engine.load_llm()
+
+        for prompt_info in self.dataset['valid']:
+            prompt = prompt_info['text'].split(ANSWER_TEMPLATE)[0]
+            self.inference_engine.run_inference(prompt, 'final_inference', load_and_unload_llm=False)
+
+        self.inference_engine.unload_llm()
+
+        inference_log_df = pd.DataFrame(self.inference_log_dict)
+        inference_log_df.to_csv(os.path.join(INFERENCE_LOG_DIR_PATH, f'{self.llm_name}.csv'))
+
+    def run(self):
+        """Train LLM."""
+
+        self._fine_tune_llm()
+
+    def save_llm(self):
+        """Save LLM into save path. (Full LLM)"""
+
+        os.makedirs(self.full_model_path, exist_ok=True)
+
+        trained_lora_llm = self.sft_trainer.model
+        full_llm = trained_lora_llm.merge_and_unload(safe_merge=True)
+        full_llm.save_pretrained(
+            save_directory=self.full_model_path,
+            safe_serialization=True,
+            max_shard_size="1GB"
+        )
+        self.tokenizer.save_pretrained(
+            save_directory=self.full_model_path
+        )
+
+        # verify saved config
+        config_path = os.path.join(self.full_model_path, "config.json")
+        if not os.path.isfile(config_path):
+            raise FileNotFoundError(f"Model config not found: {config_path}")
+
+        print(f"Full LLM saved to: {self.full_model_path}")
+        print(f"Full LLM model type: {full_llm.config.model_type}")
+
+
+def train_and_save_llm(original_path: str, save_path: str):
+    llm_trainer = LLMTrainer(original_path, save_path)
+    llm_trainer.run()
+    llm_trainer.save_llm()
+    llm_trainer.run_final_inference()
+
+
+if __name__ == '__main__':
+    for original_path in LLM_ORIGINAL_PATHS:
+        save_path = os.path.join(PROJECT_DIR_PATH, "llm_model", original_path.split('/')[-1].lower() + "_fine_tuned")
+        save_path = str(save_path)
+        os.makedirs(save_path, exist_ok=True)
+
+        train_and_save_llm(original_path, save_path)
