@@ -3,12 +3,13 @@ import os
 import sys
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-sys.path.append(PROJECT_DIR_PATH)
+CODE_REVIEWER_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'code_reviewer')
+sys.path.append(CODE_REVIEWER_DIR_PATH)
 
-from code_reviewer.code_reviewer import run_entire_code_review
+from code_reviewer import run_entire_code_review
 
 
-TEST_CASES_DIR = os.path.join(PROJECT_DIR_PATH, 'code_reviewer', 'test_cases')
+TEST_CASES_DIR = os.path.join(CODE_REVIEWER_DIR_PATH, 'test_cases')
 
 
 def print_code_review_result(code_review_result: dict):
@@ -38,4 +39,8 @@ def run_entire_process(code_path: str, verbose: bool = False, llm_final_comment:
 
 
 if __name__ == '__main__':
-    run_entire_process(code_path=TEST_CASES_DIR)
+    entire_process_result = run_entire_process(code_path=TEST_CASES_DIR, verbose=True)
+
+    for k, v in entire_process_result.items():
+        print(f'\n\nFINAL [[ {k} ]]')
+        print(str(v)[:1000])
