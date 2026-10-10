@@ -1,0 +1,60 @@
+FINAL (WITH LLM) [[ top_items_eval_summary ]]
+[의미 있는 함수명, 변수명 사용] : 38.8 점 🚨,
+[100 line 이상 함수 분리, docstring 필요] : 34.7 점 🚨,
+[숫자 값은 위쪽에 상수로] : 26.1 점 🚨,
+[함수 인수 type hint 필요] : 5.5 점 🚨,
+[README.md, pyproject.toml 필요] : 0.0 점 🚨
+
+
+FINAL (WITH LLM) [[ code_review_result_str ]]
+미 사용 변수/함수 제거:
+파일: C:\Users\20151\Documents\AI_Projects\2026_08_28_OhLoRA_Code_Assistant\code_reviewer\test_cases\tc01_01_basics.py
+ - 함수: (최상위 레벨)
+   - line 3 에 있는 (ruff) `math` imported but unused
+   - line 5 에 있는 (ruff) `os` imported but unused
+
+ - 함수: unused_function
+   - line 13 에 있는 (ruff) Local variable `common_value` is assigned to but never used
+
+ - 함수: abc
+   - line 23 에 있는 (ruff) Local variable `common_value` is assigned to but never used
+
+파일: C:\Users\20151\Documents\AI_Projects\2026
+...
+
+
+FINAL (WITH LLM) [[ mean_score ]]
+81.6
+
+
+FINAL (WITH LLM) [[ llm_answer ]]
+ 작은 신호를 짚어 보니 시작 방법을 알려 줄 README.md와 pyproject.toml이 필요해 보여요! 기록을 남기듯 설치 방법과 실행 환경을 적어 두면 처음 온 사람도 바로 출발할 수 있어요. 🌿
+
+
+FINAL (W/O LLM) [[ top_items_eval_summary ]]
+[의미 있는 함수명, 변수명 사용] : 38.8 점 🚨,
+[100 line 이상 함수 분리, docstring 필요] : 34.7 점 🚨,
+[숫자 값은 위쪽에 상수로] : 26.1 점 🚨,
+[함수 인수 type hint 필요] : 5.5 점 🚨,
+[README.md, pyproject.toml 필요] : 0.0 점 🚨
+
+
+FINAL (W/O LLM) [[ code_review_result_str ]]
+미 사용 변수/함수 제거:
+파일: C:\Users\20151\Documents\AI_Projects\2026_08_28_OhLoRA_Code_Assistant\code_reviewer\test_cases\tc01_01_basics.py
+ - 함수: (최상위 레벨)
+   - line 3 에 있는 (ruff) `math` imported but unused
+   - line 5 에 있는 (ruff) `os` imported but unused
+
+ - 함수: unused_function
+   - line 13 에 있는 (ruff) Local variable `common_value` is assigned to but never used
+
+ - 함수: abc
+   - line 23 에 있는 (ruff) Local variable `common_value` is assigned to but never used
+
+파일: C:\Users\20151\Documents\AI_Projects\2026
+...
+
+
+FINAL (W/O LLM) [[ mean_score ]]
+81.6
