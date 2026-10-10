@@ -57,3 +57,8 @@ def add_inference_log(inference_result, inference_log_dict):
     inference_log_dict['input_tkn_cnt'].append(inference_result['input_token_cnt'])
     inference_log_dict['new_tkn_cnt'].append(inference_result['new_token_cnt'])
     inference_log_dict['torch_memory_kb'].append(inference_result['torch_memory_kb'])
+
+
+def get_stop_token_list(tokenizer):
+    return tokenizer.encode(ANSWER_END_MARK, add_special_tokens=False)[1:]
+

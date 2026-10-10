@@ -7,7 +7,7 @@ import time
 
 import pandas as pd
 from transformers import StoppingCriteria, StoppingCriteriaList, AutoModelForCausalLM, AutoTokenizer
-from utils import add_inference_log, ANSWER_TEMPLATE, ANSWER_END_MARK
+from utils import ANSWER_TEMPLATE, ANSWER_END_MARK, add_inference_log, get_stop_token_list
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__)))))
@@ -84,6 +84,10 @@ class LLMInferenceEngine:
             torch_dtype=torch.bfloat16).cuda()
         self.tokenizer = AutoTokenizer.from_pretrained(self.llm_path)
 
+    def update_tokenizer(self):
+        self.eos_token = self.tokenizer.eos_token
+        self.stop_token_list = get_stop_token_list(self.tokenizer)
+
     def unload_llm(self):
         if self.fine_tuned_llm is None:
             print("LLM not loaded")
@@ -146,7 +150,7 @@ class LLMInferenceEngine:
                 'input_token_cnt': input_token_cnt,
                 'new_token_cnt': new_token_cnt}
 
-    def run_inference(self, prompt: str, epoch: Any, load_and_unload_llm: bool = True):
+    def run_inference(self, prompt: str, epoch: Any, load_and_unload_llm: bool = True) -> dict:
         start_at = time.time()
 
         if load_and_unload_llm:
@@ -175,6 +179,7 @@ class LLMInferenceEngine:
                             'torch_memory_kb': torch.cuda.memory_allocated() // 1024}
 
         add_inference_log(inference_result, self.inference_log_dict)
+        return inference_result
 
 
 def save_as_csv(inference_result: list[str], llm_path: str):

@@ -15,7 +15,7 @@ from trl import SFTTrainer, DataCollatorForCompletionOnlyLM, SFTConfig
 
 from run_inference import LLMInferenceEngine
 from utils import LLM_ORIGINAL_PATHS, TARGET_MODULES_DICT, ANSWER_START_MARK, ANSWER_END_MARK, ANSWER_TEMPLATE
-from utils import add_train_log
+from utils import add_train_log, get_stop_token_list
 
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -26,10 +26,6 @@ os.makedirs(TRAIN_LOG_DIR_PATH, exist_ok=True)
 os.makedirs(INFERENCE_LOG_DIR_PATH, exist_ok=True)
 
 os.environ["HF_TOKEN"] = Path('hf_token.txt').read_text(encoding="utf-8")
-
-
-def get_stop_token_list(tokenizer):
-    return tokenizer.encode(ANSWER_END_MARK, add_special_tokens=False)[1:]
 
 
 class OhLoRACustomCallback(TrainerCallback):
