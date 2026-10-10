@@ -1,0 +1,192 @@
+# Generated most of the code below using ChatGPT-6 Thinking, and human-reviewed
+
+name: AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ai-pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: self-hosted
+    timeout-minutes: 60
+
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: AI Code Review
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const sha = pr.head.sha;
+
+            async function leaveComment(body) {
+              return await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr.number,
+                body
+              });
+            }
+
+            function normalizeText(value) {
+              if (typeof value === "string") return value;
+              if (value == null) return "";
+
+              try {
+                return JSON.stringify(value, null, 2);
+              } catch {
+                return String(value);
+              }
+            }
+
+            function pickMarbleImage(score, hasAlert) {
+              const base =
+                "https://raw.githubusercontent.com/WannaBeSuperteur/AI_Projects/" +
+                "refs/heads/main/2026_08_28_OhLoRA_Code_Assistant/purple_marble/";
+
+              let number;
+              if (score < 60) {
+                number = 4;
+              } else if (hasAlert || score < 80) {
+                number = 3;
+              } else if (score >= 90) {
+                number = 1;
+              } else {
+                number = 2;
+              }
+
+              return `${base}purple_marble_${number}.png`;
+            }
+
+            try {
+              const url = new URL(
+                "https://desktop-hjknpul.taildbe907.ts.net/review_pr"
+              );
+
+              url.searchParams.set("commit_hash", sha);
+              url.searchParams.set("pr_number", String(pr.number));
+              url.searchParams.set("use_llm", "true");
+
+              console.log(`Reviewing PR #${pr.number}`);
+              console.log(`Commit SHA: ${sha}`);
+
+              const response = await fetch(url, {
+                signal: AbortSignal.timeout(3300000)
+              });
+              if (!response.ok) {
+                throw new Error(
+                  `FastAPI request failed: HTTP ${response.status}`
+                );
+              }
+
+              const result = await response.json();
+              if (!result || typeof result !== "object") {
+                throw new Error("Invalid FastAPI response");
+              }
+
+              const latest = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: pr.number
+              });
+
+              if (latest.data.head.sha !== sha) {
+                throw new Error(
+                  `PR HEAD changed during review.\nReviewed SHA: ${sha}\n` +
+                  `Latest SHA: ${latest.data.head.sha}`
+                );
+              }
+
+              const topItemsEvalSummary = normalizeText(result.top_items_eval_summary);
+              const codeReviewResultDetail = normalizeText(result.code_review_result_str);
+              const llmAnswer = normalizeText(result.llm_answer);
+              const hasAlert = topItemsEvalSummary.includes("🚨");
+
+              if (
+                result.mean_score == null || result.mean_score === ""
+              ) {
+                throw new Error("mean_score is missing");
+              }
+
+              const score = Number(result.mean_score);
+              if (!Number.isFinite(score)) {
+                throw new Error(
+                  "Invalid mean_score: " + normalizeText(result.mean_score)
+                );
+              }
+
+              const image = pickMarbleImage(score, hasAlert);
+
+              await leaveComment(
+                "## 👱‍♀️ Oh-LoRA Code Review Comment\n\n" + (llmAnswer || "_(LLM 코멘트 출력을 사용하지 않았습니다.)_")
+              );
+              await leaveComment(
+                "## 💯 Oh-LoRA Code Review Score\n\n" +
+                `![AI Review Result](${image})\n\n` +
+                `**Score:** ${score.toFixed(1)} / 100.0\n\n` +
+                `**Urgent:** ${topItemsEvalSummary}\n\n` +
+                `**Alert:** ${hasAlert ? "🚨 Detected" : "✅ None"}\n\n`
+              );
+              await leaveComment(
+                `## 🛠 All Fix Suggestions by Oh-LoRA\n\n${codeReviewResultDetail}\n\n`
+              );
+
+              if (hasAlert) {
+                await github.rest.pulls.createReview({
+                  owner,
+                  repo,
+                  pull_number: pr.number,
+                  commit_id: sha,
+                  event: "REQUEST_CHANGES",
+                  body:
+                    "## 🚨 Oh-LoRA Alert — NEEDS WORK 🙋‍♀️\n\n" +
+                    "🛠️ 수정이 필요한 코드가 발견되었습니다. 자세한 것은 위 코멘트를 확인해 주세요!\n\n" +
+                    "지금 이대로는 merge 하기 쪼~끔 어려울 것 같아요.\n\n"
+                });
+                console.log("REQUEST_CHANGES submitted.");
+              } else {
+                console.log("No critical alerts detected.");
+              }
+              console.log("AI Review completed successfully.");
+
+            } catch (error) {
+              const message = error instanceof Error
+                ? error.message
+                : String(error);
+              console.error("AI Review failed:", message);
+
+              try {
+                await leaveComment(
+                  "## 👱‍♀️ Oh-LoRA Code Review Error\n\n" +
+                  "코드를 리뷰하던 도중 오류가 발생했어요. 😥 아래 내용을 확인해주세요!\n\n" +
+                  "```text\n" + message.replace(/```/g, "'''").slice(0, 2000) + "\n```\n\n" +
+                  `Commit: \`${sha}\`\n\n`
+                );
+              } catch (commentError) {
+                console.error(
+                  "Failed to post error comment:",
+                  commentError
+                );
+              }
+
+              throw error;
+            }
