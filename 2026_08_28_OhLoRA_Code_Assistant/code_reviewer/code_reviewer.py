@@ -356,7 +356,7 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
 
     for rule_id, rule_review_result in item_counts.items():
         if '(코드 전체 경로)' in rule_review_result.keys():
-            evaluation_result[rule_id] = {'entire_code': max(0, 100 - 20 * rule_review_result['(코드 전체 경로)'])}
+            evaluation_result[rule_id] = {'entire_code': max(0, 100 - 50 * rule_review_result['(코드 전체 경로)'])}
             scores[rule_id] = evaluation_result[rule_id]['entire_code'] / 100
         else:
             evaluation_result[rule_id] = {file_path: max(0, code_lines[file_path] - 100 * issue_cnt)
@@ -411,8 +411,9 @@ def run_entire_code_review(code_path: str) -> dict:
 
     eval_result_kor = [f'[{RULE_NAME_TO_KOREAN[rule_id]}] : {mark_score(score)}'
                        for rule_id, score in eval_result.items()]
-    top_eval_result_kor = {f'[{RULE_NAME_TO_KOREAN[rule_id]}] : {mark_score(score)}'
-                           for rule_id, score in eval_result_sorted[:TOP_RULE_COUNT]}
+    top_eval_result_kor = [f'[{RULE_NAME_TO_KOREAN[rule_id]}] : {mark_score(score)}'
+                           for rule_id, score
+                           in sorted(eval_result_sorted[:TOP_RULE_COUNT], key=lambda x: x[1], reverse=True)]
 
     eval_result_kor_summary = ', \n'.join(eval_result_kor)
     top_items_eval_summary = ', \n'.join(top_eval_result_kor)
