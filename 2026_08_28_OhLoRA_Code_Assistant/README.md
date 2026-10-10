@@ -130,8 +130,8 @@
 |---------|-----------------------------------------|------------------------|---------------------------|--------------------------------------------------------------------|----|
 | ⚙ 기능 구현 | 전체 프로세스 (코드 리뷰 → 평가 → LLM 코멘트 생성) 개발    | 10.10 토 (1d)           | `P010-011-entire-process` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/68) | ✅  |
 | ⚙ 기능 구현 | 보라색 구슬 캐릭터 (🔮) 개발                      | 10.10 토 (1d)           |                           |                                                                    | ✅  |
-| ⚙ 기능 구현 | API 연동 개발 (FastAPI 기반)                  | 10.10 토 (1d)           | `P010-012-fastapi`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/69) | 💨 |
-| ⚙ 기능 구현 | 코드 리뷰 어시스턴트 - Pull Request 등록 시 hook 개발 | 10.10 토 - 10.11 일 (2d) |                           |                                                                    | ⬜  |
+| ⚙ 기능 구현 | API 연동 개발 (FastAPI 기반)                  | 10.10 토 (1d)           | `P010-012-fastapi`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/69) | ✅  |
+| ⚙ 기능 구현 | 코드 리뷰 어시스턴트 - Pull Request 등록 시 hook 개발 | 10.10 토 - 10.11 일 (2d) | `P010-013-pr-hook`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/70) | 💨 |
 | 📃 문서화  | "Pull Request 코멘트 작성" 개발 내용 문서화         | 10.11 일 (1d)           |                           |                                                                    | ⬜  |
 
 ## 4. 프로젝트 상세 설명
