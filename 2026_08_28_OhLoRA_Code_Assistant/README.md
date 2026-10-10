@@ -123,7 +123,7 @@
 | ⚙ 기능 구현    | 코드 리뷰 결과 요약 및 평가 프로세스 구현                                           | 10.01 목 - 10.06 화 (6d)  | `P010-009-evaluation`        | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/65) | ✅  |
 | 📝 데이터셋 제작 | 코드 리뷰 결과 생성 LLM 데이터셋 제작                                            | 10.06 화 - 10.07 수 (2d)  |                              | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/66) | ✅  |
 | 🧪 모델 학습   | 코드 리뷰 결과 생성 LLM 학습                                                 | 10.08 목 - 10.10 토 (3d)  | `P010-010-llm`               | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/67) | ✅  |
-| 📃 문서화     | "Python 코드 리뷰 어시스턴트" 개발 내용 문서화                                     | 10.10 토 (1d)            |                              |                                                                    | ⬜  |
+| 📃 문서화     | "Python 코드 리뷰 어시스턴트" 개발 내용 문서화                                     | 10.10 토 (1d)            |                              |                                                                    | 💨 |
 
 **3. Pull Request 코멘트 작성**
 
