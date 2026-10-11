@@ -203,7 +203,7 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
 
     base_git_ref = f"refs/heads/{base_ref}"
     valid_ref = subprocess.run(
-        ["git", "check-ref-format", "--verify", base_git_ref],
+        ["git", "check-ref-format", base_git_ref],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
