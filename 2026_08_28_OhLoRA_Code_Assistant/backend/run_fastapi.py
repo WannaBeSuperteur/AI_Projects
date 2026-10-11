@@ -5,8 +5,11 @@ how to run:
 cd 2026_08_28_OhLoRA_Code_Assistant/backend
 python -m uvicorn run_fastapi:app --host 127.0.0.1 --port 8000
 """
+import subprocess
+import tempfile
+from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 import redis.asyncio as redis
 
@@ -16,12 +19,14 @@ from entire_process import run_entire_process
 app = FastAPI()
 redis_client = redis.from_url("redis://localhost:6379", decode_responses=True)
 
+REPO_URL = "https://github.com/WannaBeSuperteur/AI_Projects.git"
+
 LIMIT_WINDOW = 60
 ERROR_LIMIT = 2
 BLOCK_DURATION = 1800
 
 
-# most of the function code below was generated using Google Search AI, and human-reviewed later.
+# most of this function code was generated using Google Search AI, and human-reviewed later.
 @app.middleware("http")
 async def ban_scanner_with_redis_middleware(request: Request, call_next):
     client_ip = request.client.host
@@ -73,3 +78,32 @@ def run_code_review_with_except_code(code_path: str, except_path: str, use_llm: 
     return entire_process_result
 
 
+def git(*args):
+    return subprocess.check_output(["git", *args], text=True).strip()
+
+
+# most of this function code was generated using ChatGPT-6 Thinking, and human-reviewed later.
+@app.get("/review_pr")
+def review_pr(commit_hash: str, pr_number: int, use_llm: bool = True):
+    with tempfile.TemporaryDirectory() as tmp:
+        code_path = Path(tmp) / "repo"
+
+        git("init", str(code_path))
+        git("-C", str(code_path), "remote", "add", "origin", REPO_URL)
+        git("-C", str(code_path), "fetch", "--depth=1", "origin", f"refs/pull/{pr_number}/head")
+        actual_sha = git("-C", str(code_path), "rev-parse", "FETCH_HEAD")
+
+        if actual_sha.lower() != commit_hash.lower():
+            raise HTTPException(
+                status_code=409,
+                detail="Commit hash mismatch"
+            )
+
+        git("-C", str(code_path), "checkout", "--detach", actual_sha)
+
+        code_path = str(code_path)
+        except_path = str(Path(code_path) / "code_reviewer" / "test_cases")
+
+        # AI 코드 리뷰 수행
+        result = run_entire_process(code_path=code_path, except_path=except_path, llm_final_comment=use_llm)
+        return result

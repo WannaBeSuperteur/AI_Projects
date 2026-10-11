@@ -81,7 +81,6 @@ jobs:
               const url = new URL(
                 "https://desktop-hjknpul.taildbe907.ts.net/review_pr"
               );
-
               url.searchParams.set("commit_hash", sha);
               url.searchParams.set("pr_number", String(pr.number));
               url.searchParams.set("use_llm", "true");
