@@ -244,7 +244,7 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
         print_as_log(f"PR #{pr_number}")
         print_as_log(f"Commit        : {actual_sha}")
         print_as_log(f"Changed files : {len(changed_files)}")
-        print_as_log(f"[ First 5 Files ]{changed_files[:5]}")
+        print_as_log(f"[ First 5 Files ]\n{changed_files[:5]}")
         print_as_log(f"Code path     : {code_path}")
         print_as_log(f"Except path   : {except_path}")
 
