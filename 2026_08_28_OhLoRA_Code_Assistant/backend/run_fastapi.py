@@ -23,3 +23,10 @@ def run_code_review(code_path: str, use_llm: bool):
     entire_process_result = run_entire_process(code_path=code_path, llm_final_comment=use_llm)
     return entire_process_result
 
+
+@app.get("/review_code_with_except")
+def run_code_review_with_except_code(code_path: str, except_path: str, use_llm: bool):
+    entire_process_result = run_entire_process(code_path=code_path, except_path=except_path, llm_final_comment=use_llm)
+    return entire_process_result
+
+

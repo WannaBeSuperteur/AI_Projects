@@ -48,8 +48,10 @@ def generate_llm_comment(top_items_eval_summary: str) -> str:
     return llm_answer
 
 
-def run_entire_process(code_path: str, verbose: bool = False, llm_final_comment: bool = True) -> dict:
-    code_review_result = run_entire_code_review(code_path)
+def run_entire_process(code_path: str, except_path: str | None = None, verbose: bool = False,
+                       llm_final_comment: bool = True) -> dict:
+
+    code_review_result = run_entire_code_review(code_path, except_path)
     if verbose:
         print_code_review_result(code_review_result)
 

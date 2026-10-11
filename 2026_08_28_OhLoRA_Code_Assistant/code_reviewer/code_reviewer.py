@@ -382,7 +382,7 @@ def mark_score(score: float) -> str:
         return f'{score_mark} 🚨'
 
 
-def run_entire_code_review(code_path: str) -> dict:
+def run_entire_code_review(code_path: str, except_path: str | None = None) -> dict:
     task_list_with_embedding = [
         "01_unnecessary_prints",
         "01_similar_variables",
@@ -403,7 +403,7 @@ def run_entire_code_review(code_path: str) -> dict:
                                  text_embedding_models=text_embedding_models)
 
     code_lines = code_reviewer.get_code_lines(code_path=code_path)
-    item_counts, code_review_result = code_reviewer.review_codes(code_path=code_path)
+    item_counts, code_review_result = code_reviewer.review_codes(code_path=code_path, except_path=except_path)
 
     eval_result = evaluate_code_review_result(code_lines, item_counts)
     eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
