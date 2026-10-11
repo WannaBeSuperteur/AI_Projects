@@ -83,6 +83,7 @@ jobs:
               );
               url.searchParams.set("commit_hash", sha);
               url.searchParams.set("pr_number", String(pr.number));
+              url.searchParams.set("base_ref", pr.base.ref);
               url.searchParams.set("use_llm", "true");
 
               console.log(`Reviewing PR #${pr.number}`);
@@ -113,6 +114,15 @@ jobs:
                   `PR HEAD changed during review.\nReviewed SHA: ${sha}\n` +
                   `Latest SHA: ${latest.data.head.sha}`
                 );
+              }
+            
+              if (Object.hasOwn(result, "skipped") && result.skipped === true) {
+                await leaveComment(
+                  "## 👱‍♀️ Oh-LoRA Code Review\n\n" +
+                  "리뷰할 수정 파일이 없어서 코드 리뷰를 건너뛰었습니다. ✨"
+                );
+                console.log("AI Review skipped: no reviewable files.");
+                return;
               }
 
               const topItemsEvalSummary = normalizeText(result.top_items_eval_summary);
