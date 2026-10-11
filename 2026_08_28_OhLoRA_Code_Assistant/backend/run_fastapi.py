@@ -157,7 +157,7 @@ def get_actual_sha_and_changed_files(repo_path, pr_number: int, commit_hash: str
     try:
         git("init", str(repo_path))
         git("-C", str(repo_path), "remote", "add", "origin", REPO_URL)
-        git("-C", str(repo_path), "fetch", "--depth=1", "origin", f"refs/pull/{pr_number}/head")
+        git("-C", str(repo_path), "fetch", "origin", f"refs/pull/{pr_number}/head")
         actual_sha = git("-C", str(repo_path), "rev-parse", "FETCH_HEAD")
 
         if actual_sha.lower() != commit_hash.lower():
