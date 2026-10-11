@@ -85,6 +85,10 @@ def git(*args):
     return subprocess.check_output(["git", *args], text=True).strip()
 
 
+def print_as_log(x):
+    print(x, flush=True)
+
+
 # most of this function code was generated using ChatGPT-6 Thinking, and human-reviewed later.
 def get_changed_files(repo_path: Path, base_sha: str, head_sha: str):
     """Get added, modified, or name changed file list, excluding deleted files."""
@@ -210,12 +214,20 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
 
     with tempfile.TemporaryDirectory() as tmp:
         repo_path = Path(tmp) / "repo"
-        print(f'repository path (absolute): {repo_path.resolve()}')
+        print_as_log(f"Repo Path     : {repo_path.resolve()}")
+
         actual_sha, changed_files = get_actual_sha_and_changed_files(repo_path, pr_number, commit_hash, base_git_ref)
+        print_as_log(f"PR number     : {pr_number}")
+        print_as_log(f"Commit Hash   : {commit_hash}")
+        print_as_log(f"Base Git Ref  : {base_git_ref}")
 
         repo_root = repo_path.resolve()
         except_dir = str(Path(repo_root) / "2026_08_28_OhLoRA_Code_Assistant" / "code_reviewer" / "test_cases")
         files_to_review = get_files_to_review(changed_files, repo_root, except_dir)
+
+        print_as_log(f"Except dir    : {except_dir}")
+        print_as_log(f"Review files  : {len(files_to_review)}")
+        print_as_log(f"              : {files_to_review[:5]}")
 
         if not files_to_review:
             return {
@@ -227,12 +239,12 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
         except_path = str(except_dir)
 
         # final logging
-        print(f"PR #{pr_number}")
-        print(f"Commit        : {actual_sha}")
-        print(f"Changed files : {len(changed_files)}")
-        print(f"Review files  : {len(files_to_review)}")
-        print(f"Code path     : {code_path}")
-        print(f"Except path   : {except_path}")
+        print_as_log(f"PR #{pr_number}")
+        print_as_log(f"Commit        : {actual_sha}")
+        print_as_log(f"Changed files : {len(changed_files)}")
+        print_as_log(f"                {changed_files[:5]}")
+        print_as_log(f"Code path     : {code_path}")
+        print_as_log(f"Except path   : {except_path}")
 
         # AI 코드 리뷰 수행
         result = run_entire_process(code_path=code_path, except_path=except_path, llm_final_comment=use_llm)
