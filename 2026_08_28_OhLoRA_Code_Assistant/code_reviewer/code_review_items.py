@@ -146,9 +146,12 @@ def check_a_in_b(a: str, b: str) -> bool:
 
 
 def extract_numbers(line):
-    bound_check = r'![\'\"_a-zA-Z]'
-    pattern = rf'(?<{bound_check})-?\d+\.\d+(?{bound_check})|(?<{bound_check})-?\d+(?{bound_check})'
-    return re.findall(pattern, line)
+    pattern = r"(?<![a-zA-Z_])\d+(?:\.\d+)?(?![a-zA-Z_])"
+    extracted_numbers = re.findall(pattern, line)
+
+    top_def_pattern = r"^[A-Z]+\s*=\s*[0-9\s*+-/]+"
+    extracted_numbers = [item for item in extracted_numbers if not re.match(top_def_pattern, item)]
+    return extracted_numbers
 
 
 def add_to_ai_code_check_log(final_result_dict: defaultdict[Any, dict]):
@@ -1358,7 +1361,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(rf'.*([{QUOTES}])(?![hH][tT][tT][pP][sS]?://)(?:[a-zA-Z]:)?[/\\]*' +
-                   rf'(?:[^/\\\r\n]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])'),
+                   rf'(?:[^/\\\r\n*]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])'),
             forward_lines=1)
 
         return self.final_result_dict
