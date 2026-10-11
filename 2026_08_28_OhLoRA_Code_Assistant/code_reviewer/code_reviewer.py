@@ -133,7 +133,9 @@ class CodeReviewer:
         self.current_code_path = None
 
     def _get_files_to_review(self, code_path: str, except_path: str | None = None):
-        if code_path.endswith('.py'):
+        if ' ||| ' in code_path:
+            py_file_paths = [p for p in code_path.split(' ||| ') if p.endswith('.py')]
+        elif code_path.endswith('.py'):
             py_file_paths = [code_path]
         else:
             py_file_paths = glob.glob(f'{code_path}/**/*.py', recursive=True)
@@ -382,7 +384,7 @@ def mark_score(score: float) -> str:
         return f'{score_mark} 🚨'
 
 
-def run_entire_code_review(code_path: str) -> dict:
+def run_entire_code_review(code_path: str, except_path: str | None = None) -> dict:
     task_list_with_embedding = [
         "01_unnecessary_prints",
         "01_similar_variables",
@@ -403,7 +405,7 @@ def run_entire_code_review(code_path: str) -> dict:
                                  text_embedding_models=text_embedding_models)
 
     code_lines = code_reviewer.get_code_lines(code_path=code_path)
-    item_counts, code_review_result = code_reviewer.review_codes(code_path=code_path)
+    item_counts, code_review_result = code_reviewer.review_codes(code_path=code_path, except_path=except_path)
 
     eval_result = evaluate_code_review_result(code_lines, item_counts)
     eval_result_sorted = list(sorted(eval_result.items(), key=lambda x: x[1]))
@@ -417,8 +419,9 @@ def run_entire_code_review(code_path: str) -> dict:
 
     eval_result_kor_summary = ', \n'.join(eval_result_kor)
     top_items_eval_summary = ', \n'.join(top_eval_result_kor)
-    code_review_result_str = '\n'.join([f'{RULE_NAME_TO_KOREAN[rule_id]}:\n{rule_review_result}'
-                                        for rule_id, rule_review_result in code_review_result.items()])
+    code_review_result_str = '\n'.join([f'## 규칙: {RULE_NAME_TO_KOREAN[rule_id]}\n{rule_review_result}'
+                                        for rule_id, rule_review_result in code_review_result.items()
+                                        if str(rule_review_result).strip()])
 
     return {'item_counts': item_counts,
             'eval_result_kor_summary': eval_result_kor_summary,

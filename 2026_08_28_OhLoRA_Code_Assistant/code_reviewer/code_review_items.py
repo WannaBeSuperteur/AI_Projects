@@ -1,3 +1,4 @@
+import ast
 import os
 import sys
 import io
@@ -10,6 +11,7 @@ import re
 import tokenize
 import keyword
 import builtins
+from datetime import datetime
 
 from typing import Callable, Optional, Any
 from difflib import SequenceMatcher
@@ -28,6 +30,7 @@ import pandas as pd
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
 ALLOWED_NUM_CONSTS = ['-1.0', '-1', '0.0', '0', '1.0', '1']
 
+NEWLINE = '\n'
 QUOTES = "'" + '"'
 TWO_DOUBLE_QUOTES = '""'
 QUOTES_BOUND = rf"[{QUOTES}].*?[{QUOTES}]"
@@ -42,6 +45,12 @@ ai_code_check_log = {
     'value_type': [],
     'value': []
 }
+
+
+def with_start_logging(func):
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f'[{current_time}] func to execute : {func.__name__}')
+    return func()
 
 
 def simplify_code(original_code: str) -> str:
@@ -75,13 +84,13 @@ def convert_to_human_friendly_review(final_result_dict: defaultdict[Any, dict]) 
             human_friendly_info_key = info_key or '(최상위 레벨)'
 
             final_result_dict[py_file_path][info_key].sort(key=lambda x: x['line'])
-            result = "\n".join(f"   - line {item['line']} 에 있는 {item['name']}"
+            result = "\n".join(f"   - line `{item['line']}` 에 있는 `{item['name'].replace(NEWLINE, ' (newline) ')}`"
                                for item in final_result_dict[py_file_path][info_key])
             if result:
-                human_friendly_review += f' - 함수: {human_friendly_info_key}\n{result}\n\n'
+                human_friendly_review += f' - 함수: `{human_friendly_info_key}`\n{result}\n\n'
 
         if human_friendly_review:
-            final_review += f'파일: {py_file_path}\n{human_friendly_review}'
+            final_review += f'### 파일: `{py_file_path}`\n{human_friendly_review}'
 
     return final_review
 
@@ -137,10 +146,41 @@ def check_a_in_b(a: str, b: str) -> bool:
     return a in tokens
 
 
+# Generated using ChatGPT-6 and human-reviewed later
 def extract_numbers(line):
-    bound_check = r'![\'\"_a-zA-Z]'
-    pattern = rf'(?<{bound_check})-?\d+\.\d+(?{bound_check})|(?<{bound_check})-?\d+(?{bound_check})'
-    return re.findall(pattern, line)
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(line).readline))
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        return []
+
+    extracted_numbers = []
+    for token in tokens:
+        if token.type == tokenize.NUMBER:
+            start, end = token.start[1], token.end[1]
+
+            if start > 0 and (line[start - 1].isalnum() or line[start - 1] == "_"):
+                continue
+
+            if end < len(line) and (line[end].isalnum() or line[end] == "_"):
+                continue
+
+            extracted_numbers.append(token.string)
+
+        elif token.type == tokenize.STRING:
+            try:
+                tree = ast.parse(token.string, mode="eval")
+            except (SyntaxError, ValueError):
+                continue
+
+            nodes = [node for node in ast.walk(tree)
+                     if isinstance(node, ast.Constant) and type(node.value) in (int, float, complex)]
+
+            for node in nodes:
+                value = ast.get_source_segment(token.string, node)
+                if value:
+                    extracted_numbers.append(value)
+
+    return extracted_numbers
 
 
 def add_to_ai_code_check_log(final_result_dict: defaultdict[Any, dict]):
@@ -777,6 +817,14 @@ class PythonBasicsChecker(DefaultCodeChecker):
             for name_info in names:
                 line_no = name_info['line']
                 name = name_info['name']
+                line_content = self.py_codes[py_file_path].split('\n')[line_no - 1]
+                name_pattern = rf"({name}\s*=|{name}\s*\()"
+
+                if name in ['k', 'v'] and not re.search(name_pattern, line_content.replace('for k, v in', '')):
+                    continue
+
+                if not re.search(name_pattern, line_content.replace(f'for {name} in', '')):
+                    continue
 
                 prob = text_embedding_model.get_prob(name)
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
@@ -896,19 +944,21 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
                 for name in info['names']:
-                    if (third_party_imported or local_imported) and name in self.python_libraries:
-                        final_result_dict[py_file_path][func_name].append({'name': f'import of builtin "{name}"',
+                    lib_name = name.split('.')[0]
+
+                    if (third_party_imported or local_imported) and lib_name in self.python_libraries:
+                        final_result_dict[py_file_path][func_name].append({'name': f'import of builtin "{lib_name}"',
                                                                            'type': 'wrong_builtin_import',
                                                                            'line': line_no})
 
-                    if local_imported and name in self.third_party_libraries:
-                        final_result_dict[py_file_path][func_name].append({'name': f'import of 3rd-party "{name}"',
+                    if local_imported and lib_name in self.third_party_libraries:
+                        final_result_dict[py_file_path][func_name].append({'name': f'import of 3rd-party "{lib_name}"',
                                                                            'type': 'wrong_third_party_import',
                                                                            'line': line_no})
 
-                    if name in self.third_party_libraries:
+                    if lib_name in self.third_party_libraries:
                         third_party_imported = True
-                    elif name in self.python_libraries:
+                    elif lib_name in self.python_libraries:
                         pass
                     else:
                         local_imported = True
@@ -1025,7 +1075,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
             'empty_file'
         ]
         return {
-            f'01_{name}': getattr(self, f'_check_{name}')()
+            f'01_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1100,6 +1150,11 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
             lines_with_numbers = []
 
             for line_idx, line in enumerate(lines):
+
+                # skip top-definition pattern (e.g. "VARIABLE_NUM = 123 * 456")
+                if re.match(r"^[A-Z_]+\s*=\s*[0-9\s*+-/]+", line):
+                    continue
+
                 line_no = line_idx + 1
                 extracted_numbers = [{'line_no': line_no,
                                       'line_content': line,
@@ -1305,7 +1360,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'02_{name}': getattr(self, f'_check_{name}')()
+            f'02_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1349,7 +1404,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def _check_path_format(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=rf'.*([{QUOTES}])(?:[a-zA-Z]:)?[/\\]*(?:[^/\\\r\n]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])',
+            regex=(rf'.*([{QUOTES}])(?![hH][tT][tT][pP][sS]?://)(?:[a-zA-Z]:)?[/\\]*' +
+                   rf'(?:[^/\\\r\n*]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])'),
             forward_lines=1)
 
         return self.final_result_dict
@@ -1526,7 +1582,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'03_{name}': getattr(self, f'_check_{name}')()
+            f'03_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1712,7 +1768,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'04_{name}': getattr(self, f'_check_{name}')()
+            f'04_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1757,7 +1813,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'05_{name}': getattr(self, f'_check_{name}')()
+            f'05_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1929,7 +1985,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'06_{name}': getattr(self, f'_check_{name}')()
+            f'06_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
