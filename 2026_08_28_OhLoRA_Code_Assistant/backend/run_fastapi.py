@@ -213,7 +213,7 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
         actual_sha, changed_files = get_actual_sha_and_changed_files(repo_path, pr_number, commit_hash, base_git_ref)
 
         repo_root = repo_path.resolve()
-        except_dir = str(Path(repo_root) / "code_reviewer" / "test_cases")
+        except_dir = str(Path(repo_root) / "2026_08_28_OhLoRA_Code_Assistant" / "code_reviewer" / "test_cases")
         files_to_review = get_files_to_review(changed_files, repo_root, except_dir)
 
         if not files_to_review:
