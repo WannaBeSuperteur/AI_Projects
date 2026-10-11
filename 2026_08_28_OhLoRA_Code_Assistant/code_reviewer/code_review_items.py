@@ -936,19 +936,21 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
                 for name in info['names']:
-                    if (third_party_imported or local_imported) and name in self.python_libraries:
-                        final_result_dict[py_file_path][func_name].append({'name': f'import of builtin "{name}"',
+                    lib_name = name.split('.')[0]
+
+                    if (third_party_imported or local_imported) and lib_name in self.python_libraries:
+                        final_result_dict[py_file_path][func_name].append({'name': f'import of builtin "{lib_name}"',
                                                                            'type': 'wrong_builtin_import',
                                                                            'line': line_no})
 
-                    if local_imported and name in self.third_party_libraries:
-                        final_result_dict[py_file_path][func_name].append({'name': f'import of 3rd-party "{name}"',
+                    if local_imported and lib_name in self.third_party_libraries:
+                        final_result_dict[py_file_path][func_name].append({'name': f'import of 3rd-party "{lib_name}"',
                                                                            'type': 'wrong_third_party_import',
                                                                            'line': line_no})
 
-                    if name in self.third_party_libraries:
+                    if lib_name in self.third_party_libraries:
                         third_party_imported = True
-                    elif name in self.python_libraries:
+                    elif lib_name in self.python_libraries:
                         pass
                     else:
                         local_imported = True
