@@ -1349,7 +1349,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
     def _check_path_format(self) -> defaultdict[Any, dict]:
         self._init_final_result_dict()
         self._add_regex_matched_lines(
-            regex=rf'.*([{QUOTES}])(?:[a-zA-Z]:)?[/\\]*(?:[^/\\\r\n]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])',
+            regex=(rf'.*([{QUOTES}])(?![hH][tT][tT][pP][sS]?://)(?:[a-zA-Z]:)?[/\\]*' +
+                   rf'(?:[^/\\\r\n]+[/\\]+)+[^/\\\r\n]+\.[a-zA-Z0-9]+([{QUOTES}])'),
             forward_lines=1)
 
         return self.final_result_dict
