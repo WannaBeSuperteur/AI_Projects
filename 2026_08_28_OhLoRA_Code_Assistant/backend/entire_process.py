@@ -2,6 +2,7 @@
 import os
 import sys
 import re
+from pathlib import Path
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 CODE_REVIEWER_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'code_reviewer')
@@ -61,11 +62,12 @@ def simplify_reviewed_files_path(code_review_result_str: str):
 
     def find_common_prefix(text: str) -> str | None:
         file_paths = re.findall(pattern, text, flags=re.MULTILINE)
+        file_paths.remove("(코드 전체 경로)")
 
         if not file_paths:
             return None
         try:
-            common_prefix = os.path.commonpath(file_paths)
+            common_prefix = os.path.commonprefix(file_paths)
             return common_prefix
         except ValueError:
             return None
@@ -75,7 +77,7 @@ def simplify_reviewed_files_path(code_review_result_str: str):
     if common_prefix_of_all_files:
         return '\n'.join(
             f"{pattern_prefix} " +
-            f"`(공통 경로){common_prefix_of_all_files.join(line.split(common_prefix_of_all_files)[1:]).split('`')[0]}`"
+            f"`{common_prefix_of_all_files.join(line.split(common_prefix_of_all_files)[1:]).split('`')[0]}`"
             if line.startswith(pattern_prefix) else line
             for line in code_review_result_str.split('\n')
         )
