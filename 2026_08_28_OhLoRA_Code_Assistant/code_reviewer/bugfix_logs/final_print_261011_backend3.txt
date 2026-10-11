@@ -4,7 +4,7 @@
 [중복되는 사항 common 으로 빼기] : 45.5 점 🚨,
 [유사한 변수명 통일] : 92.1 점 👍,
 [동일 인자 type 통일] : 90.3 점 👍,
-[의미 있는 함수명, 변수명 사용] : 38.8 점 🚨,
+[의미 있는 함수명, 변수명 사용] : 54.5 점 🚨,
 [함수명, 반환값 간 일치] : 91.0 점 👍,
 [import 순서 준수] : 84.3 점,
 [함수 docstring, 함수명 의미 일치] : 92.1 점 👍,
@@ -57,7 +57,7 @@
 
 
 [ top_items_eval_summary ]
-[의미 있는 함수명, 변수명 사용] : 38.8 점 🚨,
+[지나치게 많은 들여쓰기 수정] : 39.7 점 🚨,
 [100 line 이상 함수 분리, docstring 필요] : 34.8 점 🚨,
 [숫자 값은 위쪽에 상수로] : 33.9 점 🚨,
 [함수 인수 type hint 필요] : 5.5 점 🚨,
@@ -269,23 +269,8 @@
    - line `73` 에 있는 `kv`
 
 ### 파일: `C:\Users\20151\Documents\AI_Projects\2026_08_28_OhLoRA_Code_Assistant\code_reviewer\test_cases\code_review_items_old.py`
- - 함수: `check_regex_matched_lines`
-   - line `92` 에 있는 `i`
-
- - 함수: `_get_function_name_by_line`
-   - line `154` 에 있는 `i`
-
- - 함수: `_get_class_name_by_line`
-   - line `183` 에 있는 `i`
-
  - 함수: `_is_function_bodies_similar`
    - line `418` 에 있는 `lcs`
-
- - 함수: `_check_unused`
-   - line `434` 에 있는 `k`
-
- - 함수: `_check_python_keywords_args`
-   - line `1538` 에 있는 `x`
 
  - 함수: `flmf`
    - line `1414` 에 있는 `flmf`
@@ -298,63 +283,15 @@
    - line `26` 에 있는 `nparray`
    - line `27` 에 있는 `nparray2`
 
- - 함수: `similar_func1`
-   - line `34` 에 있는 `i`
-
  - 함수: `abc`
    - line `22` 에 있는 `abc`
 
 ### 파일: `C:\Users\20151\Documents\AI_Projects\2026_08_28_OhLoRA_Code_Assistant\code_reviewer\test_cases\tc01_08.py`
  - 함수: `long_function_with_docstring`
-   - line `32` 에 있는 `I`
-   - line `32` 에 있는 `J`
-   - line `32` 에 있는 `K`
    - line `32` 에 있는 `L`
-   - line `34` 에 있는 `i`
-   - line `35` 에 있는 `j`
-   - line `36` 에 있는 `k`
-   - line `37` 에 있는 `l`
 
  - 함수: `long_function_wo_docstring`
-   - line `54` 에 있는 `I`
-   - line `54` 에 있는 `J`
-   - line `54` 에 있는 `K`
    - line `54` 에 있는 `L`
-   - line `56` 에 있는 `i`
-   - line `57` 에 있는 `j`
-   - line `67` 에 있는 `i`
-   - line `68` 에 있는 `j`
-   - line `69` 에 있는 `k`
-   - line `81` 에 있는 `i`
-   - line `82` 에 있는 `j`
-   - line `83` 에 있는 `k`
-   - line `84` 에 있는 `l`
-
- - 함수: `too_long_function`
-   - line `100` 에 있는 `i`
-   - line `105` 에 있는 `i`
-   - line `110` 에 있는 `i`
-   - line `115` 에 있는 `i`
-   - line `120` 에 있는 `i`
-   - line `125` 에 있는 `i`
-   - line `130` 에 있는 `i`
-   - line `135` 에 있는 `i`
-   - line `140` 에 있는 `i`
-   - line `145` 에 있는 `i`
-   - line `150` 에 있는 `i`
-   - line `155` 에 있는 `i`
-   - line `160` 에 있는 `i`
-   - line `165` 에 있는 `i`
-   - line `170` 에 있는 `i`
-   - line `175` 에 있는 `i`
-   - line `180` 에 있는 `i`
-   - line `185` 에 있는 `i`
-   - line `190` 에 있는 `i`
-   - line `195` 에 있는 `i`
-   - line `200` 에 있는 `i`
-   - line `205` 에 있는 `i`
-   - line `210` 에 있는 `i`
-   - line `215` 에 있는 `i`
 
 ### 파일: `C:\Users\20151\Documents\AI_Projects\2026_08_28_OhLoRA_Code_Assistant\code_reviewer\test_cases\tc02.py`
  - 함수: `(최상위 레벨)`
@@ -370,44 +307,18 @@
 ### 파일: `C:\Users\20151\Documents\AI_Projects\2026_08_28_OhLoRA_Code_Assistant\code_reviewer\test_cases\tc03.py`
  - 함수: `(최상위 레벨)`
    - line `5` 에 있는 `arr`
-   - line `31` 에 있는 `p`
-   - line `32` 에 있는 `p`
-   - line `33` 에 있는 `p`
-   - line `34` 에 있는 `p`
-   - line `35` 에 있는 `p`
-   - line `37` 에 있는 `p`
-   - line `38` 에 있는 `p`
-   - line `39` 에 있는 `p`
-   - line `40` 에 있는 `p`
-   - line `41` 에 있는 `p`
-   - line `122` 에 있는 `i`
-   - line `129` 에 있는 `i`
-   - line `133` 에 있는 `i`
    - line `141` 에 있는 `k`
    - line `142` 에 있는 `v`
-   - line `149` 에 있는 `f`
-   - line `152` 에 있는 `f`
-   - line `155` 에 있는 `f`
-   - line `158` 에 있는 `f`
    - line `179` 에 있는 `a`
    - line `180` 에 있는 `dddd`
    - line `181` 에 있는 `eeee`
-   - line `227` 에 있는 `i`
-   - line `234` 에 있는 `i`
-   - line `241` 에 있는 `i`
-   - line `248` 에 있는 `i`
    - line `248` 에 있는 `v`
-   - line `251` 에 있는 `i`
    - line `251` 에 있는 `v`
    - line `255` 에 있는 `i`
-   - line `259` 에 있는 `i`
    - line `262` 에 있는 `i`
-   - line `266` 에 있는 `i`
-   - line `271` 에 있는 `i`
    - line `286` 에 있는 `a`
    - line `287` 에 있는 `b`
    - line `288` 에 있는 `c`
-   - line `288` 에 있는 `x`
    - line `289` 에 있는 `d`
    - line `290` 에 있는 `e`
 
@@ -421,8 +332,6 @@
    - line `17` 에 있는 `e`
    - line `20` 에 있는 `f`
    - line `21` 에 있는 `g`
-   - line `29` 에 있는 `aaa`
-   - line `29` 에 있는 `bbb`
    - line `29` 에 있는 `ccc`
    - line `43` 에 있는 `f`
    - line `62` 에 있는 `a`
@@ -591,7 +500,6 @@
 
 ### 파일: `C:\Users\20151\Documents\AI_Projects\2026_08_28_OhLoRA_Code_Assistant\code_reviewer\test_cases\tc01_01_basics.py`
  - 함수: `(최상위 레벨)`
-   - line `8` 에 있는 `동일 숫자 여러번 등장: TEST_DUPLICATED = 10`
    - line `19` 에 있는 `동일 숫자 여러번 등장: a = 300`
    - line `19` 에 있는 `상단 const var 고정 권장: a = 300`
    - line `26` 에 있는 `동일 숫자 여러번 등장: nparray = np.array([0.1, 0.2, 0.3])`
@@ -1850,7 +1758,7 @@
 
 
 [ mean_score ]
-82.0
+82.3
 
 
 [ item_counts ]
@@ -1866,8 +1774,8 @@ code_reviewer\\test_cases\\tc01_01_basics.py': 3, 'C:\\Users\\20151\\Documents\\
 01_same_func_args {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_01_basics.py': 1, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code
 _reviewer\\test_cases\\tc01_01_basics_2.py': 2, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_08.py': 1, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc05.py': 1}
 01_names {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\ai_test.py': 3, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_
-cases\\code_review_items_old.py': 9, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_01_basics.py': 5, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Co
-de_Assistant\\code_reviewer\\test_cases\\tc01_08.py': 45, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc02.py': 8, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc03.py': 41, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc04.py': 21}
+cases\\code_review_items_old.py': 4, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_01_basics.py': 4, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Co
+de_Assistant\\code_reviewer\\test_cases\\tc01_08.py': 2, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc02.py': 8, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc03.py': 15, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc04.py': 19}
 01_return_matched_with_func_name {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\ai_test.py': 1, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_01_basics.py': 1, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc06.py': 1}
 01_library_orders {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\code_review_items_old.py': 2, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_01_basics.py': 1, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_08.py': 4}
 01_func_docstring {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\ai_test.py': 8}
@@ -1876,7 +1784,7 @@ de_Assistant\\code_reviewer\\test_cases\\tc01_08.py': 45, 'C:\\Users\\20151\\Doc
 02_const {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\ai_test.py': 7, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_
 cases\\tc01_01_basics.py': 4, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc02.py': 2, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc05.py': 3, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc06.py': 1}
 02_numeric_values {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\ai_test.py': 12, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_revie
-wer\\test_cases\\code_review_items_old.py': 8, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_01_basics.py': 5, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28
+wer\\test_cases\\code_review_items_old.py': 8, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_01_basics.py': 4, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28
 _OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_08.py': 28, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc02.py': 3, 'C:\\Users\\20151\\Documents\\AI_Projects\
 \2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc03.py': 22, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc04.py': 3, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc05.py': 3, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc06.py': 1}
 02_line_length {'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\code_review_items_old.py': 4, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc01_08.py': 1, 'C:\\Users\\20151\\Documents\\AI_Projects\\2026_08_28_OhLoRA_Code_Assistant\\code_reviewer\\test_cases\\tc_long_line.py': 1}

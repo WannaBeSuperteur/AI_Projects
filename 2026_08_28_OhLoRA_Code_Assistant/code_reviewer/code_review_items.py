@@ -817,6 +817,14 @@ class PythonBasicsChecker(DefaultCodeChecker):
             for name_info in names:
                 line_no = name_info['line']
                 name = name_info['name']
+                line_content = self.py_codes[py_file_path].split('\n')[line_no - 1]
+                name_pattern = rf"({name}\s*=|{name}\s*\()"
+
+                if name in ['k', 'v'] and not re.search(name_pattern, line_content.replace('for k, v in', '')):
+                    continue
+
+                if not re.search(name_pattern, line_content.replace(f'for {name} in', '')):
+                    continue
 
                 prob = text_embedding_model.get_prob(name)
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
@@ -1142,6 +1150,11 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
             lines_with_numbers = []
 
             for line_idx, line in enumerate(lines):
+
+                # skip top-definition pattern (e.g. "VARIABLE_NUM = 123 * 456")
+                if re.match(r"^[A-Z_]+\s*=\s*[0-9\s*+-/]+", line):
+                    continue
+
                 line_no = line_idx + 1
                 extracted_numbers = [{'line_no': line_no,
                                       'line_content': line,
