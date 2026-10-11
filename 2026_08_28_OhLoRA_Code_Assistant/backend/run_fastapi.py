@@ -5,7 +5,7 @@ how to run:
 cd 2026_08_28_OhLoRA_Code_Assistant/backend
 python -m uvicorn run_fastapi:app --host 127.0.0.1 --port 8000
 """
-
+import logging
 import os
 import re
 import subprocess
@@ -85,8 +85,9 @@ def git(*args):
     return subprocess.check_output(["git", *args], text=True).strip()
 
 
-def print_as_log(x):
-    print(x, flush=True)
+def print_as_log(message):
+    logger = logging.getLogger("uvicorn.error")
+    logger.info(message)
 
 
 # most of this function code was generated using ChatGPT-6 Thinking, and human-reviewed later.
