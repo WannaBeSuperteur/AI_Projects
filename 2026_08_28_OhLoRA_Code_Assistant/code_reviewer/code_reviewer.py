@@ -419,7 +419,6 @@ def run_entire_code_review(code_path: str, except_path: str | None = None) -> di
 
     eval_result_kor_summary = ', \n'.join(eval_result_kor)
     top_items_eval_summary = ', \n'.join(top_eval_result_kor)
-    top_items_eval_summary = f"`{top_items_eval_summary}`"
     code_review_result_str = '\n'.join([f'## 규칙: {RULE_NAME_TO_KOREAN[rule_id]}\n{rule_review_result}'
                                         for rule_id, rule_review_result in code_review_result.items()
                                         if str(rule_review_result).strip()])

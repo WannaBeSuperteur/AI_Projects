@@ -1,6 +1,7 @@
 
 import os
 import sys
+import re
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 CODE_REVIEWER_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'code_reviewer')
@@ -54,6 +55,34 @@ def generate_llm_comment(top_items_eval_summary: str) -> str:
     return llm_answer
 
 
+def simplify_reviewed_files_path(code_review_result_str: str):
+    pattern_prefix = '### 파일:'
+    pattern = rf'^{pattern_prefix}\s*`([^`]+)`'
+
+    def find_common_prefix(text: str) -> str | None:
+        file_paths = re.findall(pattern, text, flags=re.MULTILINE)
+
+        if not file_paths:
+            return None
+        try:
+            common_prefix = os.path.commonpath(file_paths)
+            return common_prefix
+        except ValueError:
+            return None
+
+    common_prefix_of_all_files = find_common_prefix(code_review_result_str)
+
+    if common_prefix_of_all_files:
+        return '\n'.join(
+            f"{pattern_prefix} " +
+            f"`(공통 경로){common_prefix_of_all_files.join(line.split(common_prefix_of_all_files)[1:]).split('`')[0]}`"
+            if line.startswith(pattern_prefix) else line
+            for line in code_review_result_str.split('\n')
+        )
+    else:
+        return code_review_result_str
+
+
 def run_entire_process(code_path: str, except_path: str | None = None, verbose: bool = False,
                        llm_final_comment: bool = True) -> dict:
 
@@ -62,8 +91,8 @@ def run_entire_process(code_path: str, except_path: str | None = None, verbose: 
         print_code_review_result(code_review_result)
 
     top_items_eval_summary = code_review_result['top_items_eval_summary']
-    result_dict = {'top_items_eval_summary': top_items_eval_summary,
-                   'code_review_result_str': code_review_result['code_review_result_str'],
+    result_dict = {'top_items_eval_summary': f"```\n{top_items_eval_summary}\n```",
+                   'code_review_result_str': simplify_reviewed_files_path(code_review_result['code_review_result_str']),
                    'mean_score': code_review_result['mean_score']}
 
     if llm_final_comment:

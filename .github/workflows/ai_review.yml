@@ -195,7 +195,7 @@ jobs:
                 `### Alert\n${hasAlert ? "🚨 Detected" : "✅ None"}`
               );
               await leaveComment(
-                `## 🛠 All Fix Suggestions by Oh-LoRA\n\n${codeReviewResultDetail}`
+                `# 🛠 All Fix Suggestions by Oh-LoRA\n\n${codeReviewResultDetail}`
               );
 
               if (hasAlert) {
