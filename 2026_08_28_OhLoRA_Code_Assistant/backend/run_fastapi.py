@@ -35,11 +35,20 @@ BLOCK_DURATION = 7 * 24 * 60 * 60
 @app.middleware("http")
 async def ban_scanner_with_redis_middleware(request: Request, call_next):
     client_ip = request.client.host
-    net = ipaddress.ip_network(f"{client_ip}/24", strict=False)
-    subnet_key = str(net.network_address)
 
-    block_key = f"block:{subnet_key}"
-    count_key = f"404_count:{subnet_key}"
+    try:
+        ip = ipaddress.ip_address(client_ip)
+        if ip.version == 4:
+            net = ipaddress.ip_network(f"{client_ip}/24", strict=False)
+        else:
+            net = ipaddress.ip_network(f"{client_ip}/64", strict=False)
+        prefix = str(net.network_address)
+
+    except ValueError:
+        prefix = client_ip
+
+    block_key = f"block:{prefix}"
+    count_key = f"404_count:{prefix}"
 
     is_blocked = await redis_client.get(block_key)
     if is_blocked:
