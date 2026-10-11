@@ -17,6 +17,12 @@ from llm_model.utils import ANSWER_START_MARK, ANSWER_END_MARK
 
 LLM_NAME = 'kanana-2-3b-instruct_fine_tuned'
 TEST_CASES_DIR = os.path.join(CODE_REVIEWER_DIR_PATH, 'test_cases')
+TEST_CASES_MULTIPLE_FILES = (f'{os.path.join(TEST_CASES_DIR, "tc02.py")} ||| ' +
+                             f'{os.path.join(TEST_CASES_DIR, "tc03.py")} ||| ' +
+                             f'{os.path.join(TEST_CASES_DIR, "tc04.py")} ||| ' +
+                             f'{os.path.join(TEST_CASES_DIR, "tc05.py")} ||| ' +
+                             f'{os.path.join(TEST_CASES_DIR, "tc06.py")} ||| ' +
+                             f'{os.path.join(TEST_CASES_DIR, "404_new_era.txt")}')
 LLM_FULL_MODEL_PATH = os.path.join(LLM_DIR_PATH, LLM_NAME, 'full_model')
 
 
@@ -70,11 +76,16 @@ def run_entire_process(code_path: str, except_path: str | None = None, verbose: 
 if __name__ == '__main__':
     entire_process_result = run_entire_process(code_path=TEST_CASES_DIR)
     entire_process_result_wo_llm = run_entire_process(code_path=TEST_CASES_DIR, llm_final_comment=False)
+    entire_process_result_multiple_files = run_entire_process(code_path=TEST_CASES_MULTIPLE_FILES, verbose=True)
 
     for k, v in entire_process_result.items():
         print(f'\n\nFINAL (WITH LLM) [[ {k} ]]')
         print(str(v)[:500])
 
     for k, v in entire_process_result_wo_llm.items():
+        print(f'\n\nFINAL (W/O LLM) [[ {k} ]]')
+        print(str(v)[:500])
+
+    for k, v in entire_process_result_multiple_files.items():
         print(f'\n\nFINAL (W/O LLM) [[ {k} ]]')
         print(str(v)[:500])

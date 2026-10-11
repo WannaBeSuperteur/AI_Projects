@@ -133,7 +133,9 @@ class CodeReviewer:
         self.current_code_path = None
 
     def _get_files_to_review(self, code_path: str, except_path: str | None = None):
-        if code_path.endswith('.py'):
+        if ' ||| ' in code_path:
+            py_file_paths = [p for p in code_path.split(' ||| ') if p.endswith('.py')]
+        elif code_path.endswith('.py'):
             py_file_paths = [code_path]
         else:
             py_file_paths = glob.glob(f'{code_path}/**/*.py', recursive=True)
