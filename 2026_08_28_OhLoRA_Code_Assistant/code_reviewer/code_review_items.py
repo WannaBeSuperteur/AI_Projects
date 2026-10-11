@@ -1,3 +1,4 @@
+import ast
 import os
 import sys
 import io
@@ -145,12 +146,40 @@ def check_a_in_b(a: str, b: str) -> bool:
     return a in tokens
 
 
+# Generated using ChatGPT-6 and human-reviewed later
 def extract_numbers(line):
-    pattern = r"(?<![a-zA-Z_])\d+(?:\.\d+)?(?![a-zA-Z_])"
-    extracted_numbers = re.findall(pattern, line)
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(line).readline))
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        return []
 
-    top_def_pattern = r"^[A-Z]+\s*=\s*[0-9\s*+-/]+"
-    extracted_numbers = [item for item in extracted_numbers if not re.match(top_def_pattern, item)]
+    extracted_numbers = []
+    for token in tokens:
+        if token.type == tokenize.NUMBER:
+            start, end = token.start[1], token.end[1]
+
+            if start > 0 and (line[start - 1].isalnum() or line[start - 1] == "_"):
+                continue
+
+            if end < len(line) and (line[end].isalnum() or line[end] == "_"):
+                continue
+
+            extracted_numbers.append(token.string)
+
+        elif token.type == tokenize.STRING:
+            try:
+                tree = ast.parse(token.string, mode="eval")
+            except (SyntaxError, ValueError):
+                continue
+
+            nodes = [node for node in ast.walk(tree)
+                     if isinstance(node, ast.Constant) and type(node.value) in (int, float, complex)]
+
+            for node in nodes:
+                value = ast.get_source_segment(token.string, node)
+                if value:
+                    extracted_numbers.append(value)
+
     return extracted_numbers
 
 
