@@ -6,6 +6,7 @@ cd 2026_08_28_OhLoRA_Code_Assistant/backend
 python -u -m uvicorn run_fastapi:app --host 127.0.0.1 --port 8000
 """
 
+import ipaddress
 import logging
 import os
 import re
@@ -25,18 +26,20 @@ redis_client = redis.from_url("redis://localhost:6379?protocol=2", decode_respon
 
 REPO_URL = "https://github.com/WannaBeSuperteur/AI_Projects.git"
 
-LIMIT_WINDOW = 60
+LIMIT_WINDOW = 120
 ERROR_LIMIT = 2
-BLOCK_DURATION = 1800
+BLOCK_DURATION = 7 * 24 * 60 * 60
 
 
 # most of this function code was generated using Google Search AI, and human-reviewed later.
 @app.middleware("http")
 async def ban_scanner_with_redis_middleware(request: Request, call_next):
     client_ip = request.client.host
+    net = ipaddress.ip_network(f"{client_ip}/24", strict=False)
+    subnet_key = str(net.network_address)
 
-    block_key = f"block:{client_ip}"
-    count_key = f"404_count:{client_ip}"
+    block_key = f"block:{subnet_key}"
+    count_key = f"404_count:{subnet_key}"
 
     is_blocked = await redis_client.get(block_key)
     if is_blocked:
@@ -54,7 +57,7 @@ async def ban_scanner_with_redis_middleware(request: Request, call_next):
         if current_count >= ERROR_LIMIT:
             await redis_client.set(block_key, "1", ex=BLOCK_DURATION)
             await redis_client.delete(count_key)
-            print(f"🚨 [Redis ALERT] IP blocked: {client_ip} (for {BLOCK_DURATION // 60} minutes)")
+            print(f"🚨 [Redis ALERT] IP blocked: {client_ip} (for {BLOCK_DURATION // (60 * 60)} hours)")
 
     return response
 
