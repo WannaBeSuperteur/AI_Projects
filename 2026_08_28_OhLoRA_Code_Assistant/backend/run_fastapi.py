@@ -150,6 +150,7 @@ def get_files_to_review(changed_files: list[str], repo_root, except_dir: str):
         seen.add(resolved_path)
         files_to_review.append(str(resolved_path))
 
+    files_to_review = [file for file in files_to_review if file.endswith('.py')]
     return files_to_review
 
 
@@ -228,7 +229,7 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
 
         print_as_log(f"Except dir    : {except_dir}")
         print_as_log(f"Review files  : {len(files_to_review)}")
-        print_as_log(f"              : {files_to_review[:5]}")
+        print_as_log(f"[ First 5 Files ]\n{files_to_review[:5]}")
 
         if not files_to_review:
             return {
@@ -243,7 +244,7 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
         print_as_log(f"PR #{pr_number}")
         print_as_log(f"Commit        : {actual_sha}")
         print_as_log(f"Changed files : {len(changed_files)}")
-        print_as_log(f"                {changed_files[:5]}")
+        print_as_log(f"[ First 5 Files ]{changed_files[:5]}")
         print_as_log(f"Code path     : {code_path}")
         print_as_log(f"Except path   : {except_path}")
 
