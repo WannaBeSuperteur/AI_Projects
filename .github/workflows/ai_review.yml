@@ -170,26 +170,32 @@ jobs:
 
               const image = pickMarbleImage(score, hasAlert);
 
-              if (score < 99 && !hasAlert) {
-                await leaveComment(
-                  `## 👱‍♀️ Oh-LoRA Code Review Comment\n\n${llmAnswer || "*LLM 코멘트 출력을 사용하지 않았습니다.*"}`
-                );
+              let codeReviewComment = "";
+              if (score < 99 || hasAlert) {
+                codeReviewComment = [
+                  "## 👱‍♀️ Oh-LoRA Code Review Comment",
+                  "",
+                  llmAnswer || "*LLM 코멘트 출력을 사용하지 않았습니다.*"
+                ].join("\n");
               } else {
-                await leaveComment(
-                  "## 👱‍♀️ Oh-LoRA Code Review Comment\n\n" +
-                  "거의 완벽한 코드! Fix Suggestions에 거의 아무것도 없죠? ✨\n\n" +
+                codeReviewComment = [
+                  "## 👱‍♀️ Oh-LoRA Code Review Comment",
+                  "",
+                  "거의 완벽한 코드! Fix Suggestions에 거의 아무것도 없죠? ✨",
+                  "",
                   "이대로 반영 가능합니다! 👍"
-                );
+                ].join("\n")
               }
               await leaveComment(
-                `## 🛠 All Fix Suggestions by Oh-LoRA\n\n${codeReviewResultDetail}`
+                `${codeReviewComment}\n\n` +
+                "## 💯 Oh-LoRA Code Review Score\n\n" +
+                `<img src="${image}" alt="AI Review Result" width="144">\n\n` +
+                `### Score\n**${score.toFixed(1)}** / 100.0\n\n` +
+                `### Urgent\n${topItemsEvalSummary}\n\n` +
+                `### Alert\n${hasAlert ? "🚨 Detected" : "✅ None"}`
               );
               await leaveComment(
-                "## 💯 Oh-LoRA Code Review Score\n\n" +
-                `![AI Review Result](${image})\n\n` +
-                `**Score:** ${score.toFixed(1)} / 100.0\n\n` +
-                `**Urgent:** ${topItemsEvalSummary}\n\n` +
-                `**Alert:** ${hasAlert ? "🚨 Detected" : "✅ None"}`
+                `## 🛠 All Fix Suggestions by Oh-LoRA\n\n${codeReviewResultDetail}`
               );
 
               if (hasAlert) {

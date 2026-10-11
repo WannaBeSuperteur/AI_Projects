@@ -29,6 +29,7 @@ import pandas as pd
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
 ALLOWED_NUM_CONSTS = ['-1.0', '-1', '0.0', '0', '1.0', '1']
 
+NEWLINE = '\n'
 QUOTES = "'" + '"'
 TWO_DOUBLE_QUOTES = '""'
 QUOTES_BOUND = rf"[{QUOTES}].*?[{QUOTES}]"
@@ -82,13 +83,13 @@ def convert_to_human_friendly_review(final_result_dict: defaultdict[Any, dict]) 
             human_friendly_info_key = info_key or '(최상위 레벨)'
 
             final_result_dict[py_file_path][info_key].sort(key=lambda x: x['line'])
-            result = "\n".join(f"   - line {item['line']} 에 있는 {item['name']}"
+            result = "\n".join(f"   - line `{item['line']}` 에 있는 `{item['name'].replace(NEWLINE, ' (newline) ')}`"
                                for item in final_result_dict[py_file_path][info_key])
             if result:
-                human_friendly_review += f' - 함수: {human_friendly_info_key}\n{result}\n\n'
+                human_friendly_review += f' - 함수: `{human_friendly_info_key}`\n{result}\n\n'
 
         if human_friendly_review:
-            final_review += f'파일: {py_file_path}\n{human_friendly_review}'
+            final_review += f'### 파일: `{py_file_path}`\n{human_friendly_review}'
 
     return final_review
 
