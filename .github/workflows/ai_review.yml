@@ -97,17 +97,34 @@ jobs:
               console.log(`Reviewing PR #${pr.number}`);
               console.log(`Commit SHA: ${sha}`);
 
-              const response = await fetch(url, {
-                signal: AbortSignal.timeout(3300000)
-              });
-              if (!response.ok) {
-                throw new Error(
-                  `FastAPI request failed: HTTP ${response.status}`
-                );
-              }
-
-              const result = await response.json();
-              if (!result || typeof result !== "object") {
+              const { promisify } = require("node:util");
+              const { execFile } = require("node:child_process");
+              const execFileAsync = promisify(execFile);
+              
+              console.log("Starting FastAPI code review...");
+              const startTime = Date.now();
+              
+              const { stdout } = await execFileAsync(
+                "curl",
+                [
+                  "--silent",
+                  "--show-error",
+                  "--fail-with-body",
+                  "--connect-timeout", "20",
+                  "--max-time", "3250",
+                  url.toString()
+                ],
+                {
+                  timeout: 3300000,
+                  maxBuffer: 50 * 1024 * 1024
+                }
+              );
+              console.log(
+                `FastAPI finished in ${((Date.now() - startTime) / 1000).toFixed(1)} seconds`
+              );
+              
+              const result = JSON.parse(stdout);
+              if (!result || typeof result !== "object" || Array.isArray(result)) {
                 throw new Error("Invalid FastAPI response");
               }
 

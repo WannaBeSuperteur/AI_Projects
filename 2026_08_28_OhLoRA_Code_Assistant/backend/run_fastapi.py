@@ -210,6 +210,7 @@ def review_pr(commit_hash: str, pr_number: int, base_ref: str, use_llm: bool = T
 
     with tempfile.TemporaryDirectory() as tmp:
         repo_path = Path(tmp) / "repo"
+        print(f'repository path (absolute): {repo_path.resolve()}')
         actual_sha, changed_files = get_actual_sha_and_changed_files(repo_path, pr_number, commit_hash, base_git_ref)
 
         repo_root = repo_path.resolve()
