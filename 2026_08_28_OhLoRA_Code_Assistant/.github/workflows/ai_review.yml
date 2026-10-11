@@ -136,18 +136,26 @@ jobs:
 
               const image = pickMarbleImage(score, hasAlert);
 
+              if (score < 99 && !hasAlert) {
+                await leaveComment(
+                  `## 👱‍♀️ Oh-LoRA Code Review Comment\n\n${llmAnswer || "*LLM 코멘트 출력을 사용하지 않았습니다.*"}`
+                );
+              } else {
+                await leaveComment(
+                  "## 👱‍♀️ Oh-LoRA Code Review Comment\n\n" +
+                  "거의 완벽한 코드! Fix Suggestions에 거의 아무것도 없죠? ✨\n\n" +
+                  "이대로 반영 가능합니다! 👍"
+                );
+              }
               await leaveComment(
-                "## 👱‍♀️ Oh-LoRA Code Review Comment\n\n" + (llmAnswer || "_(LLM 코멘트 출력을 사용하지 않았습니다.)_")
+                `## 🛠 All Fix Suggestions by Oh-LoRA\n\n${codeReviewResultDetail}`
               );
               await leaveComment(
                 "## 💯 Oh-LoRA Code Review Score\n\n" +
                 `![AI Review Result](${image})\n\n` +
                 `**Score:** ${score.toFixed(1)} / 100.0\n\n` +
                 `**Urgent:** ${topItemsEvalSummary}\n\n` +
-                `**Alert:** ${hasAlert ? "🚨 Detected" : "✅ None"}\n\n`
-              );
-              await leaveComment(
-                `## 🛠 All Fix Suggestions by Oh-LoRA\n\n${codeReviewResultDetail}\n\n`
+                `**Alert:** ${hasAlert ? "🚨 Detected" : "✅ None"}`
               );
 
               if (hasAlert) {
@@ -160,7 +168,7 @@ jobs:
                   body:
                     "## 🚨 Oh-LoRA Alert — NEEDS WORK 🙋‍♀️\n\n" +
                     "🛠️ 수정이 필요한 코드가 발견되었습니다. 자세한 것은 위 코멘트를 확인해 주세요!\n\n" +
-                    "지금 이대로는 merge 하기 쪼~끔 어려울 것 같아요.\n\n"
+                    "지금 이대로는 merge 하기 쪼~끔 어려울 것 같아요."
                 });
                 console.log("REQUEST_CHANGES submitted.");
               } else {
