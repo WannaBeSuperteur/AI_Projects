@@ -17,7 +17,7 @@ from entire_process import run_entire_process
 
 
 app = FastAPI()
-redis_client = redis.from_url("redis://localhost:6379", decode_responses=True)
+redis_client = redis.from_url("redis://localhost:6379?protocol=2", decode_responses=True)
 
 REPO_URL = "https://github.com/WannaBeSuperteur/AI_Projects.git"
 
