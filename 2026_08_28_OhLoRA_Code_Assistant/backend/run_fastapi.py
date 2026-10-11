@@ -3,7 +3,7 @@
 how to run:
 
 cd 2026_08_28_OhLoRA_Code_Assistant/backend
-python -m uvicorn run_fastapi:app --host 127.0.0.1 --port 8000
+python -u -m uvicorn run_fastapi:app --host 127.0.0.1 --port 8000
 """
 import logging
 import os
