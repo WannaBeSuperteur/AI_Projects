@@ -10,6 +10,7 @@ import re
 import tokenize
 import keyword
 import builtins
+from datetime import datetime
 
 from typing import Callable, Optional, Any
 from difflib import SequenceMatcher
@@ -42,6 +43,12 @@ ai_code_check_log = {
     'value_type': [],
     'value': []
 }
+
+
+def with_start_logging(func):
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f'[{current_time}] func to execute : {func.__name__}')
+    return func()
 
 
 def simplify_code(original_code: str) -> str:
@@ -1025,7 +1032,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
             'empty_file'
         ]
         return {
-            f'01_{name}': getattr(self, f'_check_{name}')()
+            f'01_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1305,7 +1312,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'02_{name}': getattr(self, f'_check_{name}')()
+            f'02_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1527,7 +1534,7 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'03_{name}': getattr(self, f'_check_{name}')()
+            f'03_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1713,7 +1720,7 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'04_{name}': getattr(self, f'_check_{name}')()
+            f'04_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1758,7 +1765,7 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'05_{name}': getattr(self, f'_check_{name}')()
+            f'05_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
@@ -1930,7 +1937,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         ]
 
         return {
-            f'06_{name}': getattr(self, f'_check_{name}')()
+            f'06_{name}': with_start_logging(getattr(self, f'_check_{name}'))
             for name in checks
         }
 
