@@ -503,8 +503,9 @@ class DefaultCodeChecker:
                 final_path = self.code_path + os.sep + file_path
                 final_path = remove_after_py(final_path)
 
+                ruff_message_cleaned = item['message'].replace('`', "'")
                 self.final_result_dict[final_path].setdefault(function_name, []).append(
-                    {'name': f"(ruff) {item['message']}",
+                    {'name': f"(ruff) {ruff_message_cleaned}",
                      'type': f"{item['code']} from ruff",
                      'line': line_no})
 

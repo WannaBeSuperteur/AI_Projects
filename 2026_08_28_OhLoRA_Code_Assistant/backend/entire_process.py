@@ -77,27 +77,34 @@ def simplify_reviewed_files_path(code_review_result_str: str):
         """Find common prefix of all the given paths from the text."""
 
         file_paths = re.findall(pattern, text, flags=re.MULTILINE)
-        file_paths.remove("(코드 전체 경로)")
+        file_paths = [path for path in file_paths if path != '(코드 전체 경로)']
+        file_paths = list(set(file_paths))
+        file_paths.sort()
 
         if not file_paths:
             return None
         try:
-            common_prefix = os.path.commonprefix(file_paths)
-            return common_prefix
+            if len(file_paths) == 1:
+                return os.path.dirname(file_paths[0]) + os.sep
+            common_prefix = os.path.commonpath(file_paths)
+            return common_prefix + os.sep
         except ValueError:
             return None
 
     common_prefix_of_all_files = find_common_prefix(code_review_result_str)
 
     if common_prefix_of_all_files:
-        return '\n'.join(
+        new_result_str = '\n'.join(
             f"{pattern_prefix} " +
             f"`{common_prefix_of_all_files.join(line.split(common_prefix_of_all_files)[1:]).split('`')[0]}`"
             if line.startswith(pattern_prefix) else line
             for line in code_review_result_str.split('\n')
         )
     else:
-        return code_review_result_str
+        new_result_str = code_review_result_str
+    new_result_str = new_result_str.replace("### 파일: ``\n", "")
+
+    return new_result_str
 
 
 def run_entire_process(code_path: str, except_path: str | None = None, verbose: bool = False,

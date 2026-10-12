@@ -371,6 +371,10 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
 
             scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
 
+    rule_id_not_checked = [rule_id for rule_id in RULE_NAME_TO_KOREAN.keys() if rule_id not in item_counts.keys()]
+    for rule_id in rule_id_not_checked:
+        scores[rule_id] = 1.0
+
     return dict(scores)
 
 
