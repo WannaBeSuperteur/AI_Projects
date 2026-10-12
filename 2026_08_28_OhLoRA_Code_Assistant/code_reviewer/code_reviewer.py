@@ -351,6 +351,13 @@ def get_embedding_model(task_id: str):
     )
 
 
+def remove_after_py(file_path: str):
+    py_idx = file_path.rfind('.py')
+    if py_idx >= 0:
+        return file_path[:py_idx + 3]
+    return file_path
+
+
 def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[dict]) -> dict[Any, float]:
     evaluation_result = defaultdict(dict)
     scores = defaultdict(float)
@@ -361,7 +368,7 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
             evaluation_result[rule_id] = {'entire_code': max(0, 100 - 50 * rule_review_result['(코드 전체 경로)'])}
             scores[rule_id] = evaluation_result[rule_id]['entire_code'] / 100
         else:
-            evaluation_result[rule_id] = {file_path: max(0, code_lines[file_path] - 100 * issue_cnt)
+            evaluation_result[rule_id] = {file_path: max(0, code_lines[remove_after_py(file_path)] - 100 * issue_cnt)
                                           for file_path, issue_cnt in rule_review_result.items()}
 
             for file_path in code_lines.keys():
