@@ -17,6 +17,7 @@ from sentence_transformers import SentenceTransformer
 from transformers import AutoModel, AutoTokenizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from ast_utils import remove_after_py
 from code_review_items import default_code_review_func
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -349,13 +350,6 @@ def get_embedding_model(task_id: str):
         task_id=task_id,
         task_type=task_type
     )
-
-
-def remove_after_py(file_path: str):
-    py_idx = file_path.rfind('.py')
-    if py_idx >= 0:
-        return file_path[:py_idx + 3]
-    return file_path
 
 
 def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[dict]) -> dict[Any, float]:

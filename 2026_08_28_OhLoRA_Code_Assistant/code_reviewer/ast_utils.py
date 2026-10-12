@@ -140,3 +140,9 @@ def get_function_name_at_line(file_name: str, line_no: int) -> str:
 
     return ''  # global scope
 
+
+def remove_after_py(file_path: str):
+    py_idx = file_path.rfind('.py')
+    if py_idx >= 0:
+        return file_path[:py_idx + 3]
+    return file_path
