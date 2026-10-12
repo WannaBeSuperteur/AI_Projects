@@ -27,6 +27,15 @@ TEST_CASES_MULTIPLE_FILES = (f'{os.path.join(TEST_CASES_DIR, "tc02.py")} ||| ' +
                              f'{os.path.join(TEST_CASES_DIR, "404_new_era.txt")}')
 LLM_FULL_MODEL_PATH = os.path.join(LLM_DIR_PATH, LLM_NAME, 'full_model')
 
+FINAL_WITH_LLM = "FINAL (WITH LLM)"
+FINAL_WO_LLM = "FINAL (W/O LLM)"
+
+TOP_ITEMS_EVAL_SUMMARY = "top_items_eval_summary"
+CODE_REVIEW_RESULT_STR = "code_review_result_str"
+MEAN_SCORE = "mean_score"
+LLM_ANSWER = "llm_answer"
+LENGTH_TO_PRINT = 500
+
 
 def print_code_review_result(code_review_result: dict):
     for k, v in code_review_result.items():
@@ -40,6 +49,8 @@ def print_code_review_result(code_review_result: dict):
 
 
 def generate_llm_comment(top_items_eval_summary: str) -> str:
+    """Generate LLM answer using LLM inference engine."""
+
     full_prompt = f'{top_items_eval_summary} {ANSWER_START_MARK}'
 
     inference_engine = LLMInferenceEngine(llm_path=LLM_FULL_MODEL_PATH,
@@ -57,10 +68,14 @@ def generate_llm_comment(top_items_eval_summary: str) -> str:
 
 
 def simplify_reviewed_files_path(code_review_result_str: str):
+    """Simplify Python code file paths to review, especially common prefix."""
+
     pattern_prefix = '### 파일:'
     pattern = rf'^{pattern_prefix}\s*`([^`]+)`'
 
     def find_common_prefix(text: str) -> str | None:
+        """Find common prefix of all the given paths from the text."""
+
         file_paths = re.findall(pattern, text, flags=re.MULTILINE)
         file_paths.remove("(코드 전체 경로)")
 
@@ -88,18 +103,20 @@ def simplify_reviewed_files_path(code_review_result_str: str):
 def run_entire_process(code_path: str, except_path: str | None = None, verbose: bool = False,
                        llm_final_comment: bool = True) -> dict:
 
+    """Run the entire code review process."""
+
     code_review_result = run_entire_code_review(code_path, except_path)
     if verbose:
         print_code_review_result(code_review_result)
 
-    top_items_eval_summary = code_review_result['top_items_eval_summary']
-    result_dict = {'top_items_eval_summary': f"```\n{top_items_eval_summary}\n```",
-                   'code_review_result_str': simplify_reviewed_files_path(code_review_result['code_review_result_str']),
-                   'mean_score': code_review_result['mean_score']}
+    top_items_eval_summary = code_review_result[TOP_ITEMS_EVAL_SUMMARY]
+    result_dict = {TOP_ITEMS_EVAL_SUMMARY: f"```\n{top_items_eval_summary}\n```",
+                   CODE_REVIEW_RESULT_STR: simplify_reviewed_files_path(code_review_result[CODE_REVIEW_RESULT_STR]),
+                   MEAN_SCORE: code_review_result[MEAN_SCORE]}
 
     if llm_final_comment:
         llm_answer = generate_llm_comment(top_items_eval_summary)
-        result_dict['llm_answer'] = llm_answer
+        result_dict[LLM_ANSWER] = llm_answer
 
     return result_dict
 
@@ -110,13 +127,13 @@ if __name__ == '__main__':
     entire_process_result_multiple_files = run_entire_process(code_path=TEST_CASES_MULTIPLE_FILES, verbose=True)
 
     for k, v in entire_process_result.items():
-        print(f'\n\nFINAL (WITH LLM) [[ {k} ]]')
-        print(str(v)[:500])
+        print(f'\n\n{FINAL_WITH_LLM} [[ {k} ]]')
+        print(str(v)[:LENGTH_TO_PRINT])
 
     for k, v in entire_process_result_wo_llm.items():
-        print(f'\n\nFINAL (W/O LLM) [[ {k} ]]')
-        print(str(v)[:500])
+        print(f'\n\n{FINAL_WO_LLM} [[ {k} ]]')
+        print(str(v)[:LENGTH_TO_PRINT])
 
     for k, v in entire_process_result_multiple_files.items():
-        print(f'\n\nFINAL (W/O LLM) [[ {k} ]]')
-        print(str(v)[:500])
+        print(f'\n\n{FINAL_WO_LLM} [[ {k} ]]')
+        print(str(v)[:LENGTH_TO_PRINT])
