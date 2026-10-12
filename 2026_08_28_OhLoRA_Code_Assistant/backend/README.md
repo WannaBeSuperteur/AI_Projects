@@ -10,7 +10,7 @@
 
 * Oh-LoRA 👱‍♀️ 의 코드 리뷰를 위한 GitHub Workflow 프로세스
 * Oh-LoRA API 함수 구동을 위한 서버는 **개인 PC (GPU 포함)** 에 구현
-  * 이유: GitHub 개인 무료 플랜은 **GPU를 지원하지 않음** [(참고)](https://docs.github.com/ko/actions/reference/runners/github-hosted-runners)
+  * 이유: GitHub 개인 무료 플랜의 Workflow (GitHub-hosted runner) 은 **GPU를 지원하지 않음** [(참고)](https://docs.github.com/ko/actions/reference/runners/github-hosted-runners)
   * 이에 따라, 코드 리뷰 프로세스에 포함된 **임베딩 모델 및 LLM** 의 처리 (inference) 속도를 고려할 때, 개인 PC가 보다 나은 선택으로 판단됨
 
 ## 2. 상세 프로세스
