@@ -2,7 +2,6 @@
 import os
 import sys
 import re
-from pathlib import Path
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 CODE_REVIEWER_DIR_PATH = os.path.join(PROJECT_DIR_PATH, 'code_reviewer')
@@ -15,6 +14,7 @@ sys.path.append(LLM_DIR_PATH)
 from code_reviewer import run_entire_code_review
 from run_inference import LLMInferenceEngine
 from llm_model.utils import ANSWER_START_MARK, ANSWER_END_MARK
+from project_common import ENTIRE_CODE_PATH
 
 
 LLM_NAME = 'kanana-2-3b-instruct_fine_tuned'
@@ -37,7 +37,7 @@ LLM_ANSWER = "llm_answer"
 LENGTH_TO_PRINT = 500
 
 
-def print_code_review_result(code_review_result: dict):
+def print_code_review_result(code_review_result: dict) -> None:
     for k, v in code_review_result.items():
         if k != 'item_counts':
             print(f'\n\n[ {k} ]')
@@ -67,7 +67,7 @@ def generate_llm_comment(top_items_eval_summary: str) -> str:
     return llm_answer
 
 
-def simplify_reviewed_files_path(code_review_result_str: str):
+def simplify_reviewed_files_path(code_review_result_str: str) -> str:
     """Simplify Python code file paths to review, especially common prefix."""
 
     pattern_prefix = '### 파일:'
@@ -77,7 +77,7 @@ def simplify_reviewed_files_path(code_review_result_str: str):
         """Find common prefix of all the given paths from the text."""
 
         file_paths = re.findall(pattern, text, flags=re.MULTILINE)
-        file_paths = [path for path in file_paths if path != '(코드 전체 경로)']
+        file_paths = [path for path in file_paths if path != ENTIRE_CODE_PATH]
         file_paths = list(set(file_paths))
         file_paths.sort()
 

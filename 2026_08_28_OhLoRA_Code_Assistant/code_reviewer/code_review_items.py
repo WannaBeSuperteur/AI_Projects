@@ -12,6 +12,8 @@ import tokenize
 import keyword
 import builtins
 from datetime import datetime
+from collections import defaultdict, Counter
+from itertools import chain, product, groupby
 
 from typing import Callable, Optional, Any
 from difflib import SequenceMatcher
@@ -19,12 +21,12 @@ from operator import itemgetter
 
 from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
-
-from collections import defaultdict, Counter
-from itertools import chain, product, groupby, tee
 from ast_utils import parse_py_code, get_function_name_at_line, remove_after_py
-
 import pandas as pd
+
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_DIR_PATH)
+from project_common import ENTIRE_CODE_PATH
 
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
@@ -46,14 +48,33 @@ ai_code_check_log = {
     'value': []
 }
 
+RULE_UNNECESSARY_PRINTS = '01_unnecessary_prints'
+RULE_SIMILAR_VARIABLES = '01_similar_variables'
+RULE_NAMES = '01_names'
+RULE_RETURN_MATCHED_NAME = '01_return_matched_with_func_name'
+RULE_FUNC_DOCSTRING_RESPONSIBILITY = '01_func_docstring_single_responsibility'
+RULE_FUNC_DOCSTRING_NAME = '01_func_docstring_docstring_and_name'
+RULE_NUMERIC_CONST = '02_numeric_values_maybe_const'
+RULE_NUMERIC_TWICE = '02_numeric_values_twice'
+RULE_ARGS_BINDABLE = '04_func_args_bindable'
+RULE_ARGS_DYNAMIC = '04_func_args_dynamic'
+RULE_REFACTOR_STATE_VARS = '06_refactor_into_class_case_2_state_vars_if_else'
+RULE_SIMILAR_FUNCTION_NAMES = '06_similar_function_names'
 
-def with_start_logging(func):
+NUMERIC_VALUES_CONST = "numeric values should be const"
+NO_TEXT_EMBEDDING_MODEL = "no text embedding model"
+SHOW_LENGTH_ELLIPSED = 20
+
+
+def with_start_logging(func: Callable) -> Any:
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f'[{current_time}] func to execute : {func.__name__}')
     return func()
 
 
-def simplify_code(original_code: str) -> str:
+def convert_values_to_data_type_names(original_code: str) -> str:
+    """Convert values from original Python code, into data type name."""
+
     result = re.sub(r'\d+(?:\.\d+)?', '0', original_code)
     result = re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b",
                     lambda m: m.group(0) if m.group(0) in PRESERVED_WORDS else "name",
@@ -98,11 +119,11 @@ def convert_to_human_friendly_review(rule_id: str, final_result_dict: defaultdic
 def ellipse_str(original_str: str) -> str:
     replaced_newline_str = original_str.replace('\n', ' ')
     if len(replaced_newline_str) >= 48:
-        return f'{replaced_newline_str[:20]}  ...  {replaced_newline_str[-20:]}'
+        return f'{replaced_newline_str[:SHOW_LENGTH_ELLIPSED]}  ...  {replaced_newline_str[-SHOW_LENGTH_ELLIPSED:]}'
     return replaced_newline_str
 
 
-def extract_comment(line):
+def extract_comment(line: str) -> str:
     try:
         readline = io.StringIO(line).readline
         for token in tokenize.generate_tokens(readline):
@@ -113,8 +134,10 @@ def extract_comment(line):
     return ""
 
 
-def check_regex_matched_lines(py_code: str, regex: str, except_comment: bool = True,
-                              except_docstring: bool = True) -> list[dict[str, str | int]]:
+def extract_regex_matched_lines(py_code: str, regex: str, except_comment: bool = True,
+                                except_docstring: bool = True) -> list[dict[str, str | int]]:
+
+    """Extract the list of lines that matches the regex from the code."""
 
     lines = py_code.split('\n')
     lines = [{'line_no': i + 1, 'line': line} for i, line in enumerate(lines)]
@@ -147,7 +170,7 @@ def check_a_in_b(a: str, b: str) -> bool:
 
 
 # Generated using ChatGPT-6 and human-reviewed later
-def extract_numbers(line):
+def extract_numbers(line: str) -> list[str]:
     try:
         tokens = list(tokenize.generate_tokens(io.StringIO(line).readline))
     except (tokenize.TokenError, IndentationError, SyntaxError):
@@ -183,7 +206,9 @@ def extract_numbers(line):
     return extracted_numbers
 
 
-def add_to_ai_code_check_log(final_result_dict: defaultdict[Any, dict]):
+def add_to_ai_code_check_log(final_result_dict: defaultdict[Any, dict]) -> None:
+    """Add Embedding model-based check log for test."""
+
     for py_file_path in final_result_dict.keys():
         for func_name in final_result_dict[py_file_path].keys():
             items = final_result_dict[py_file_path][func_name]
@@ -230,11 +255,13 @@ class DefaultCodeChecker:
 
         self.is_test = is_test
 
-    def _parse_codes(self):
+    def _parse_codes(self) -> None:
         self.parsed_py_codes = {py_file_path: parse_py_code(py_code)
                                 for py_file_path, py_code in self.py_codes.items()}
 
-    def _get_function_or_class_name_by_line(self, name_type: str):
+    def _get_function_or_class_name_by_line(self, name_type: str) -> None:
+        """Get the function/class name info, for all lines of all the Python code files to check."""
+
         def_name = f'{name_type}_def'
 
         if name_type == 'function':
@@ -281,7 +308,9 @@ class DefaultCodeChecker:
                                     imported_dict: dict[str] | None = None)\
             -> tuple[defaultdict[Any, list], defaultdict[Any, list]]:
 
-        defined_info = defaultdict(list)
+        """Get function definitions & variable usage info, from the Python code file of the given path."""
+
+        definition_info = defaultdict(list)
         used_info = defaultdict(list)
 
         for item in parsed_py_code:
@@ -299,7 +328,7 @@ class DefaultCodeChecker:
                 import_infos_with_type = [{'name': info,
                                            'type': 'import',
                                            'line': line_no} for info in import_infos]
-                defined_info[info_key].extend(import_infos_with_type)
+                definition_info[info_key].extend(import_infos_with_type)
 
                 if imported_dict is not None:
                     imported_dict[py_file_path].extend([{'from': item['info'].get('mod', None), 'name': info['name']}
@@ -311,27 +340,29 @@ class DefaultCodeChecker:
                 if item['info']['ctx'] == 'Store':
                     assigned_value = item['info']['assigned_value']
 
-                    defined_info[info_key].append({'name': name,
-                                                   'type': 'name',
-                                                   'line': line_no,
-                                                   'assigned_value': assigned_value})
+                    definition_info[info_key].append({'name': name,
+                                                      'type': 'name',
+                                                      'line': line_no,
+                                                      'assigned_value': assigned_value})
                 elif item['info']['ctx'] == 'Load':
                     used_info[info_key_for_func_def].append(item['info']['name'])
 
             elif item['type_name'] == 'function_def':
-                defined_info[info_key_for_func_def].append({'name': item['info']['name'],
-                                                            'type': 'func',
-                                                            'line': line_no})
+                definition_info[info_key_for_func_def].append({'name': item['info']['name'],
+                                                               'type': 'func',
+                                                               'line': line_no})
 
                 arg_names = item['info']['args'].get('name', [])
                 arg_names_with_type = [{'name': arg_name,
                                         'type': 'arg',
                                         'line': line_no} for arg_name in arg_names]
-                defined_info[info_key].extend(arg_names_with_type)
+                definition_info[info_key].extend(arg_names_with_type)
 
-        return defined_info, used_info
+        return definition_info, used_info
 
     def _get_constants(self, py_file_path: str, parsed_py_code: list[dict]) -> defaultdict[Any, list]:
+        """Get constants info, from the Python code file of the given path."""
+
         constant_info = defaultdict(list)
 
         for item in parsed_py_code:
@@ -347,6 +378,8 @@ class DefaultCodeChecker:
         return constant_info
 
     def _get_function_bodies(self) -> dict:
+        """Get function body info, from the all Python code file to check."""
+
         function_bodies_info = defaultdict(list)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -370,6 +403,11 @@ class DefaultCodeChecker:
                                  file_line_match_func: Optional[Callable] = None,
                                  type_name: str = 'regex',
                                  forward_lines: int = 5) -> None:
+
+        """
+        Detect (and regard as rule violation) the lines that matches the regex,
+        from all the Python code files to check.
+        """
 
         for py_file_path, py_code in self.py_codes.items():
             lines = [line.strip() for line in py_code.split('\n')]
@@ -411,6 +449,8 @@ class DefaultCodeChecker:
             self.final_result_dict[py_file_path] = defaultdict(list)
 
     def _find_if_elif_else_patterns(self, additional_check_func: Optional[Callable] = None) -> defaultdict:
+        """Find all the 'if-elif-...-else' patterns from all the Python code files to check."""
+
         final_result_dict = defaultdict(dict)
         str_pattern_1 = '"[^"]*"'
         str_pattern_2 = "'[^']*'"
@@ -419,7 +459,7 @@ class DefaultCodeChecker:
                  rf"(<=|>=|==)\s*([a-zA-Z_]\w*|\d+(?:\.\d+)?|{str_pattern_1}|{str_pattern_2})\s*\)?\s*:")
 
         def update_final_result_dict(py_file_path: str, line_no: int, current_if_elifs: list[dict],
-                                     additional_check_func: Optional[Callable] = None):
+                                     additional_check_func: Optional[Callable] = None) -> None:
 
             if (len(current_if_elifs) >= 3
                     and len(set(info['var_name'] for info in current_if_elifs)) == 1
@@ -446,8 +486,7 @@ class DefaultCodeChecker:
 
                 if matched:
                     matched_groups = list(matched.groups())
-                    keyword = matched_groups[0]
-                    var_name = matched_groups[1]
+                    keyword, var_name = matched_groups[0], matched_groups[1]
 
                     if keyword in ['if', 'elif']:
                         last_if_elif_line_idx = line_idx
@@ -462,7 +501,7 @@ class DefaultCodeChecker:
 
                 elif line_idx - last_if_elif_line_idx == 1:
                     if len(current_if_elifs) >= 1:
-                        current_if_elifs[-1]['simplified_body'] = simplify_code(line)
+                        current_if_elifs[-1]['simplified_body'] = convert_values_to_data_type_names(line)
 
                 if line_idx == len(lines) - 1:
                     update_final_result_dict(py_file_path, line_no, current_if_elifs, additional_check_func)
@@ -470,6 +509,8 @@ class DefaultCodeChecker:
         return final_result_dict
 
     def _run_ruff_check_per_file(self, code_path: str, rules: list[str], extra_args: list = None) -> None:
+        """Run Ruff check for each file."""
+
         rules_str = ','.join(rules)
         full_code_path = str(Path(code_path).resolve())
         full_code_path_for_ruff = full_code_path.replace(r'\\', r'\\\\')
@@ -529,29 +570,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self._parse_codes()
         self._get_function_or_class_name_by_line(name_type='function')
 
-    def _delete_imported_review_items(self, file_name_include: str, item_name: str | None):
-        for py_file_path in list(self.final_result_dict.keys()):
-            file_name_format = f'{file_name_include}.py'
-            if not py_file_path.endswith(file_name_format):
-                continue
-
-            if item_name is None:  # import ...
-                del self.final_result_dict[py_file_path]
-            elif item_name == '*':  # from ... import *
-                del self.final_result_dict[py_file_path]
-            else:  # from ... import ...
-                self.final_result_dict[py_file_path][''] = [item for item in self.final_result_dict[py_file_path]['']
-                                                            if item['name'] != item_name]
-
-    def _mark_used_as_imported(self):
-        for py_file_path, import_info in self.imported_dict.items():
-            for info in import_info:
-                if info['from'] is not None:  # from ... import ...
-                    self._delete_imported_review_items(file_name_include=info['from'], item_name=info['name'])
-                else:
-                    self._delete_imported_review_items(file_name_include=info['name'], item_name=None)
-
     def _is_function_bodies_similar(self, body_1: str, body_2: str) -> bool:
+        """Check if two function bodies are similar."""
+
         body_1_lines = [line.strip() for line in body_1.split(';')]
         body_2_lines = [line.strip() for line in body_2.split(';')]
 
@@ -569,10 +590,12 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_unnecessary_prints(self) -> str | defaultdict[Any, dict]:
-        if self.text_embedding_models.get('01_unnecessary_prints') is None:
-            return "no text embedding model"
+        """Check unnecessary prints and loggings."""
 
-        text_embedding_model = self.text_embedding_models.get('01_unnecessary_prints')
+        if self.text_embedding_models.get(RULE_UNNECESSARY_PRINTS) is None:
+            return NO_TEXT_EMBEDDING_MODEL
+
+        text_embedding_model = self.text_embedding_models.get(RULE_UNNECESSARY_PRINTS)
         text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
@@ -600,7 +623,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{line}, [AI] [01_unnecessary_prints] prob={prob}',
+                            {'name': f'{line}, [AI] [{RULE_UNNECESSARY_PRINTS}] prob={prob}',
                              'type': '',
                              'line': line_no})
 
@@ -618,6 +641,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_duplicates(self) -> defaultdict[Any, dict]:
+        """Check duplicated function structures."""
+
         final_result_dict = defaultdict(dict)
         defined_constant_names = set()
         repeated_long_strs = set()
@@ -659,7 +684,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 function_body = item['body']
                 start_line = item['start_line']
 
-                simplified_body = simplify_code(str(function_body))
+                simplified_body = convert_values_to_data_type_names(str(function_body))
                 for existing_simplified_body in simplified_function_body_list:
                     if self._is_function_bodies_similar(existing_simplified_body['body'], simplified_body):
                         existing_func_name = existing_simplified_body['name']
@@ -685,11 +710,14 @@ class PythonBasicsChecker(DefaultCodeChecker):
     def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: defaultdict[Any, dict],
                                      only_same: bool = False,
                                      include_same: bool = False) -> list[dict]:
+
+        """Find (Detect) all the similar text pairs using Embedding model."""
+
         text_embedding_logs = []
         all_similar_text_pairs = []
         embedding_vector_dict = {}
 
-        def check_text_similar_with_prevs(info, py_file_path):
+        def check_text_similar_with_prevs(info, py_file_path: str) -> None:
             embedding_vector = embedding_vector_dict.get(info['name'])
             if embedding_vector is None:
                 embedding_vector = text_embedding_model.get_embedding(info['name'])
@@ -721,7 +749,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     cos_sim = cosine_similarity(log['embedding'], embedding_vector)[0][0]
 
                     self.final_result_dict[py_file_path][func_name].append({
-                        'name': f"{log['name']} | {info['name']}, [AI] [01_similar_variables] cos_sim={cos_sim}",
+                        'name': f"{log['name']} | {info['name']}, [AI] [{RULE_SIMILAR_VARIABLES}] cos_sim={cos_sim}",
                         'type': '',
                         'line': line_no})
 
@@ -738,11 +766,13 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return all_similar_text_pairs
 
     def _check_similar_variables(self) -> str | defaultdict[Any, dict]:
-        if self.text_embedding_models.get('01_similar_variables') is None:
-            return "no text embedding model"
+        """Find the pairs of variables with similar names, using Embedding model."""
+
+        if self.text_embedding_models.get(RULE_SIMILAR_VARIABLES) is None:
+            return NO_TEXT_EMBEDDING_MODEL
 
         self.final_result_dict = defaultdict(dict)
-        text_embedding_model = self.text_embedding_models.get('01_similar_variables')
+        text_embedding_model = self.text_embedding_models.get(RULE_SIMILAR_VARIABLES)
         text_embedding_model.load_model()
         all_variables_dict = defaultdict(dict)
 
@@ -773,6 +803,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_same_func_args(self) -> defaultdict[Any, dict]:
+        """Check the cases: two function arguments have the same name, but have different annotation."""
+
         func_annot_dict = {}
 
         final_result_dict = defaultdict(dict)
@@ -804,10 +836,12 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_names(self) -> str | defaultdict[Any, dict]:
-        if self.text_embedding_models.get('01_names') is None:
-            return "no text embedding model"
+        """Check the variable names & function names are meaningful, using embedding model."""
 
-        text_embedding_model = self.text_embedding_models.get('01_names')
+        if self.text_embedding_models.get(RULE_NAMES) is None:
+            return NO_TEXT_EMBEDDING_MODEL
+
+        text_embedding_model = self.text_embedding_models.get(RULE_NAMES)
         text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
@@ -839,14 +873,16 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
                 if self.is_test:
-                    final_result_dict[py_file_path][func_name].append({'name': f'{name}, [AI] [01_names] prob={prob}',
-                                                                       'type': '',
-                                                                       'line': line_no})
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f'{name}, [AI] [{RULE_NAMES}] prob={prob}',
+                         'type': '',
+                         'line': line_no})
 
                 if text_embedding_model.get_prob(name) <= 0.1 and name != '_':
-                    final_result_dict[py_file_path][func_name].append({'name': name,
-                                                                       'type': 'var_or_func',
-                                                                       'line': line_no})
+                    final_result_dict[py_file_path][func_name].append({
+                        'name': name,
+                        'type': 'var_or_func',
+                        'line': line_no})
 
         text_embedding_model.unload_model()
 
@@ -856,10 +892,12 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_return_matched_with_func_name(self) -> str | defaultdict[Any, dict]:
-        if self.text_embedding_models.get('01_return_matched_with_func_name') is None:
-            return "no text embedding model"
+        """Check if the function return value name matched with the function name."""
 
-        text_embedding_model = self.text_embedding_models.get('01_return_matched_with_func_name')
+        if self.text_embedding_models.get(RULE_RETURN_MATCHED_NAME) is None:
+            return NO_TEXT_EMBEDDING_MODEL
+
+        text_embedding_model = self.text_embedding_models.get(RULE_RETURN_MATCHED_NAME)
         text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
@@ -877,7 +915,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             func_names_info = [{'line': item['line'], 'name': item['info']['name']} for item in parsed_py_code
                                if item['type_name'] == 'function_def']
-            imported_names_info = [{'line': item['line'], 'name': [info['name'] for info in item['info']['import_names']]}
+            imported_names_info = [{'line': item['line'], 'name': [info['name'] for info
+                                                                   in item['info']['import_names']]}
                                    for item in parsed_py_code
                                    if item['type_name'] == 'import_from' and item['info']['mod'] in py_file_names_set]
 
@@ -906,7 +945,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{var_name} | {func_name}, [AI] [01_return_matched_func_name] cos_sim={cos_sim}',
+                            {'name': f'{var_name} | {func_name}, [AI] [{RULE_RETURN_MATCHED_NAME}] cos_sim={cos_sim}',
                              'type': '',
                              'line': line_no})
 
@@ -923,6 +962,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_library_orders(self) -> defaultdict[Any, dict]:
+        """Check library (module) import orders. (built-in first, third-party later, ...)"""
+
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -976,16 +1017,18 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_func_docstring(self) -> str | defaultdict[Any, dict]:
-        if self.text_embedding_models.get('01_func_docstring_single_responsibility') is None:
-            return "no text embedding model (func_docstring_single_responsibility)"
+        """Check if the function name matches with its docstring."""
 
-        if self.text_embedding_models.get('01_func_docstring_docstring_and_name') is None:
-            return "no text embedding model (func_docstring_docstring_and_name)"
+        if self.text_embedding_models.get(RULE_FUNC_DOCSTRING_RESPONSIBILITY) is None:
+            return f"{NO_TEXT_EMBEDDING_MODEL} (func_docstring_single_responsibility)"
+
+        if self.text_embedding_models.get(RULE_FUNC_DOCSTRING_RESPONSIBILITY) is None:
+            return f"{NO_TEXT_EMBEDDING_MODEL} (func_docstring_docstring_and_name)"
 
         text_embedding_model_single_responsibility \
-            = self.text_embedding_models.get('01_func_docstring_single_responsibility')
+            = self.text_embedding_models.get(RULE_FUNC_DOCSTRING_RESPONSIBILITY)
         text_embedding_model_docstring_and_name \
-            = self.text_embedding_models.get('01_func_docstring_docstring_and_name')
+            = self.text_embedding_models.get(RULE_FUNC_DOCSTRING_NAME)
 
         text_embedding_model_single_responsibility.load_model()
         text_embedding_model_docstring_and_name.load_model()
@@ -1021,19 +1064,21 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f"{item['name']} | {item['docstring']}, " +
-                                 f"[AI] [01_func_docstring_docstring_and_name] cos_sim={docstring_and_name_cos_sim}",
+                                 f"[AI] [{RULE_FUNC_DOCSTRING_NAME}] cos_sim={docstring_and_name_cos_sim}",
                          'type': '',
                          'line': line_no})
 
                 if docstring_prob < 0.3:
-                    final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} 단일 책임 원칙 위반",
-                                                                       'type': 'docstring',
-                                                                       'line': line_no})
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f"함수 {item['name']} 단일 책임 원칙 위반",
+                         'type': 'docstring',
+                         'line': line_no})
 
                 if docstring_and_name_cos_sim < 0.3:
-                    final_result_dict[py_file_path][func_name].append({'name': f"함수 {item['name']} - docstring 불일치",
-                                                                       'type': 'docstring',
-                                                                       'line': line_no})
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': f"함수 {item['name']} - docstring 불일치",
+                         'type': 'docstring',
+                         'line': line_no})
 
         text_embedding_model_single_responsibility.unload_model()
         text_embedding_model_docstring_and_name.unload_model()
@@ -1048,6 +1093,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_empty_file(self) -> defaultdict[Any, dict]:
+        """Check if there are some empty Python code files."""
+
         final_result_dict = defaultdict(dict)
 
         for py_file_path, py_code in self.py_codes.items():
@@ -1070,6 +1117,8 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return final_result_dict
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
+        """Run all the code review for Python Basics checker."""
+
         checks = [
             'unused',
             'unnecessary_prints',
@@ -1099,6 +1148,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self._get_function_or_class_name_by_line(name_type='function')
 
     def _check_const(self) -> defaultdict[Any, dict]:
+        """Check if the variable not redefined (= const), so definition on the top of the code needed."""
+
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1137,16 +1188,21 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_numeric_values(self) -> str | defaultdict[Any, dict]:
+        """
+        Check numeric values that can be const or used more than once,
+        so definition on top of the code or 'common' file may be needed.
+        """
+
         final_result_dict = defaultdict(dict)
 
-        if self.text_embedding_models.get('02_numeric_values_maybe_const') is None:
-            return "no text embedding model (numeric_values_maybe_const)"
+        if self.text_embedding_models.get(RULE_NUMERIC_CONST) is None:
+            return f"{NO_TEXT_EMBEDDING_MODEL} (numeric_values_maybe_const)"
 
-        if self.text_embedding_models.get('02_numeric_values_twice') is None:
-            return "no text embedding model (numeric_values_twice)"
+        if self.text_embedding_models.get(RULE_NUMERIC_TWICE) is None:
+            return f"{NO_TEXT_EMBEDDING_MODEL} (numeric_values_twice)"
 
-        text_embedding_model_maybe_const = self.text_embedding_models.get('02_numeric_values_maybe_const')
-        text_embedding_model_twice = self.text_embedding_models.get('02_numeric_values_twice')
+        text_embedding_model_maybe_const = self.text_embedding_models.get(RULE_NUMERIC_CONST)
+        text_embedding_model_twice = self.text_embedding_models.get(RULE_NUMERIC_TWICE)
 
         text_embedding_model_maybe_const.load_model()
         text_embedding_model_twice.load_model()
@@ -1227,14 +1283,14 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{line1.strip()} | {line2.strip()}, [AI] [02_numeric_values_twice] cos_sim={cos_sim}",
+                        {'name': f"{line1.strip()} | {line2.strip()}, [AI] [{RULE_NUMERIC_TWICE}] cos_sim={cos_sim}",
                          'type': '',
                          'line': line1_line_no})
 
                 if cos_sim >= 0.8:
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
-                         'type': 'numeric values should be const',
+                         'type': NUMERIC_VALUES_CONST,
                          'line': line1_line_no})
 
             # 모든 숫자 값에 대해 const 고정 권장 확률 검사
@@ -1246,14 +1302,14 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{line_content}, [AI] [02_numeric_values_maybe_const] prob={maybe_const_prob}",
+                        {'name': f"{line_content}, [AI] [{RULE_NUMERIC_CONST}] prob={maybe_const_prob}",
                          'type': '',
                          'line': line_no})
 
                 if maybe_const_prob >= 0.85 and not extract_comment(line_content).strip():
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f'상단 const var 고정 권장: {ellipse_str(line_content.strip())}',
-                         'type': 'numeric values should be const',
+                         'type': NUMERIC_VALUES_CONST,
                          'line': line_no})
 
         text_embedding_model_maybe_const.unload_model()
@@ -1269,14 +1325,15 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_files(self) -> defaultdict[Any, dict]:
+        """Check if there are README.md and pyproject.toml file in the root directory of the repo."""
+
         if ' ||| ' in self.code_path:
             repo_base_path = self.code_paths[0].split('repo')[0] + 'repo'
         else:
             repo_base_path = self.code_path
 
-        code_path_str = '(코드 전체 경로)'
         final_result_dict = defaultdict(dict)
-        final_result_dict[code_path_str] = defaultdict(list)
+        final_result_dict[ENTIRE_CODE_PATH] = defaultdict(list)
 
         required_files = ['README.md', 'pyproject.toml']
 
@@ -1285,14 +1342,17 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                 if required_file == 'pyproject.toml' and len(self.py_codes.keys()) < 3:
                     continue
 
-                final_result_dict[code_path_str][code_path_str].append({'name': f'오류: {required_file} 파일이 없습니다.',
-                                                                        'type': 'no_file',
-                                                                        'line': 0})
+                final_result_dict[ENTIRE_CODE_PATH][ENTIRE_CODE_PATH].append(
+                    {'name': f'오류: {required_file} 파일이 없습니다.',
+                     'type': 'no_file',
+                     'line': 0})
 
         self.final_result_dict = final_result_dict
         return final_result_dict
 
     def _check_functions_length_and_docstring(self) -> defaultdict[Any, dict]:
+        """Check if there are functions with too many lines, or without docstring."""
+
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1327,6 +1387,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_indent(self) -> defaultdict[Any, dict]:
+        """Check if there are too many indents. (more than 3)"""
+
         final_result_dict = defaultdict(dict)
 
         for py_file_path, py_code in self.py_codes.items():
@@ -1363,6 +1425,8 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return final_result_dict
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
+        """Run all the code review for Basic Convention."""
+
         checks = [
             'const',
             'numeric_values',
@@ -1388,6 +1452,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         self._get_function_or_class_name_by_line(name_type='function')
 
     def _check_suggest_list_comprehension(self) -> defaultdict[Any, dict]:
+        """Suggest list comprehension if appropriate."""
+
         self._init_final_result_dict()
 
         self._add_regex_matched_lines(
@@ -1425,14 +1491,16 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_defaultdict(self) -> defaultdict[Any, dict]:
+        """Suggest using defaultdict if appropriate."""
+
         final_result_dict = defaultdict(dict)
 
         for py_file_path, py_code in self.py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
 
-            definition_lines = check_regex_matched_lines(
+            definition_lines = extract_regex_matched_lines(
                 py_code, r"([a-zA-Z_]\w*)\s*=\s*\{\}")
-            value_definition_lines = check_regex_matched_lines(
+            value_definition_lines = extract_regex_matched_lines(
                 py_code, rf"([a-zA-Z_]\w*)\s*\[.*?\]\s*=\s*(?:\[\]|0|''|{TWO_DOUBLE_QUOTES})")
 
             for def_line, val_line in product(definition_lines, value_definition_lines):
@@ -1463,6 +1531,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_zip(self) -> defaultdict[Any, dict]:
+        """Suggest using zip(...) if appropriate."""
+
         def _match_zip(matched: list[str]) -> bool:
             idx_matched = matched[0] == matched[3] and matched[3] == matched[5]
             name_matched = matched[1] == f'len({matched[2]})' or matched[1] == f'len({matched[4]})'
@@ -1522,6 +1592,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_count(self) -> defaultdict[Any, dict]:
+        """Suggest using 'count' function when counting, if appropriate."""
+
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*0\s*\n\s*for\s+([\w.]+)\s+in\s+([\w.]+)\s*:" +
@@ -1538,6 +1610,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_index(self) -> defaultdict[Any, dict]:
+        """Suggest using 'index' function for indexing, if appropriate."""
+
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r".*?([\w.]+)\s*=\s*([-\w.]+|[\w.]+)\s*\n" +
@@ -1575,6 +1649,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
+        """Run all the code review for Pythonic code, especially code simplification."""
+
         checks = [
             'suggest_list_comprehension',
             'generator_expression',
@@ -1648,6 +1724,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_collections_itertools_glob(self) -> defaultdict[Any, dict]:
+        """Suggest using 'collections', 'itertools', or 'glob' if appropriate."""
+
         self._init_final_result_dict()
 
         # 1. collections
@@ -1683,14 +1761,14 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
     def _check_func_args_bindable(self) -> str | defaultdict[Any, dict]:
         final_result_dict = defaultdict(dict)
 
-        if self.text_embedding_models.get('04_func_args_bindable') is None:
-            return "no text embedding model (func_args_bindable)"
+        if self.text_embedding_models.get(RULE_ARGS_BINDABLE) is None:
+            return f"{NO_TEXT_EMBEDDING_MODEL} (func_args_bindable)"
 
-        if self.text_embedding_models.get('04_func_args_dynamic') is None:
-            return "no text embedding model (func_args_dynamic)"
+        if self.text_embedding_models.get(RULE_ARGS_DYNAMIC) is None:
+            return f"{NO_TEXT_EMBEDDING_MODEL} (func_args_dynamic)"
 
-        text_embedding_model_bindable = self.text_embedding_models.get('04_func_args_bindable')
-        text_embedding_model_dynamic = self.text_embedding_models.get('04_func_args_dynamic')
+        text_embedding_model_bindable = self.text_embedding_models.get(RULE_ARGS_BINDABLE)
+        text_embedding_model_dynamic = self.text_embedding_models.get(RULE_ARGS_DYNAMIC)
 
         text_embedding_model_bindable.load_model()
         text_embedding_model_dynamic.load_model()
@@ -1712,12 +1790,12 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{arg_name_list}, [AI] [04_func_args_bindable] bindable_prob={bindable_prob}",
+                            {'name': f"{arg_name_list}, [AI] [{RULE_ARGS_BINDABLE}] bindable_prob={bindable_prob}",
                              'type': '',
                              'line': line_no})
 
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{arg_name_list}, [AI] [04_func_args_dynamic] dynamic_prob={dynamic_prob}",
+                            {'name': f"{arg_name_list}, [AI] [{RULE_ARGS_DYNAMIC}] dynamic_prob={dynamic_prob}",
                              'type': '',
                              'line': line_no})
 
@@ -1767,6 +1845,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
+        """Run all the code review of additional rules for Pythonic code."""
+
         checks = [
             'unpacking_case_1',
             'unpacking_case_2',
@@ -1818,6 +1898,8 @@ class PythonExceptionsChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
+        """Run all the code review for Exception handling and assertion."""
+
         checks = [
             'exception_ignored',
             'exception_type',
@@ -1842,6 +1924,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self._get_function_or_class_name_by_line(name_type='class')
 
     def _check_refactor_into_class_case_1_same_args(self) -> defaultdict[Any, dict]:
+        """Check if there are too many function with same arguments, so convert to Class (OOP) is recommended."""
+
         final_result_dict = defaultdict(dict)
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
@@ -1881,14 +1965,16 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_refactor_into_class_case_2_state_vars_if_else(self) -> str | defaultdict[Any, dict]:
-        if self.text_embedding_models.get('06_refactor_into_class_case_2_state_vars_if_else') is None:
-            return "no text embedding model"
+        """Check if there are 'if-elif-...-else' with state variables, so convert to Class (OOP) is recommended."""
 
-        text_embedding_model = self.text_embedding_models.get('06_refactor_into_class_case_2_state_vars_if_else')
+        if self.text_embedding_models.get(RULE_REFACTOR_STATE_VARS) is None:
+            return NO_TEXT_EMBEDDING_MODEL
+
+        text_embedding_model = self.text_embedding_models.get(RULE_REFACTOR_STATE_VARS)
         text_embedding_model.load_model()
         self.final_result_dict = defaultdict(lambda: defaultdict(list))
 
-        def check_is_state_value(info):
+        def check_is_state_value(info) -> bool:
             text = info[0]['var_name']
             prob = text_embedding_model.get_prob(text)
 
@@ -1897,7 +1983,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
             if self.is_test:
                 self.final_result_dict[py_file_path][func_name].append(
-                    {'name': f"{text}, [AI] [06_refactor_into_class_case_2_state_vars_if_else] prob={prob}",
+                    {'name': f"{text}, [AI] [{RULE_REFACTOR_STATE_VARS}] prob={prob}",
                      'type': '',
                      'line': line_no})
 
@@ -1918,10 +2004,12 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_similar_function_names(self) -> str | defaultdict[Any, dict]:
-        if self.text_embedding_models.get('06_similar_function_names') is None:
-            return "no text embedding model"
+        """Check if there are some pairs of two similar function names (the location of the functions are not near)."""
 
-        text_embedding_model = self.text_embedding_models.get('06_similar_function_names')
+        if self.text_embedding_models.get(RULE_SIMILAR_FUNCTION_NAMES) is None:
+            return NO_TEXT_EMBEDDING_MODEL
+
+        text_embedding_model = self.text_embedding_models.get(RULE_SIMILAR_FUNCTION_NAMES)
         text_embedding_model.load_model()
         final_result_dict = defaultdict(dict)
 
@@ -1954,7 +2042,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                     if self.is_test:
                         final_result_dict[py_file_path][func_name_0].append(
                             {'name': f'{func_name_0} | {func_name_1}, ' +
-                                     f'[AI] [06_similar_function_names] cos_sim={cos_sim}',
+                                     f'[AI] [{RULE_SIMILAR_FUNCTION_NAMES}] cos_sim={cos_sim}',
                              'type': '',
                              'line': line_no})
 
@@ -1991,6 +2079,8 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         return final_result_dict
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
+        """Run all the code review for Cohesiveness and check the need of converting to Class (OOP)."""
+
         checks = [
             'refactor_into_class_case_1_same_args',
             'refactor_into_class_case_2_state_vars_if_else',
@@ -2079,7 +2169,7 @@ def default_code_review_func(py_codes: dict[str, str],
     item_counts = defaultdict(dict)
     for rule_id, rule_review_result in code_review_result.items():
         for file_name, code_review_per_file in rule_review_result.items():
-            total_item_count = sum(len(items) for items in code_review_per_file.values())
+            total_item_count = sum(map(len, code_review_per_file.values()))
             if total_item_count >= 1:
                 item_counts[rule_id][file_name] = total_item_count
 

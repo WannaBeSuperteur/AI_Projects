@@ -6,14 +6,14 @@ import glob
 import gc
 from pathlib import Path
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Any, Callable
 
 import numpy as np
 import torch
 import torch.nn as nn
 import pandas as pd
-from sentence_transformers import SentenceTransformer
 
+from sentence_transformers import SentenceTransformer
 from transformers import AutoModel, AutoTokenizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -24,6 +24,7 @@ PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
 from embedding_model.train_model import EmbeddingProbPredictor
+from project_common import ENTIRE_CODE_PATH
 
 
 TEST_CASES_DIR = 'test_cases'
@@ -115,7 +116,7 @@ RULE_NAME_TO_KOREAN = {
 
 class CodeReviewer:
     def __init__(self,
-                 code_review_func,
+                 code_review_func: Callable,
                  text_embedding_models: dict | None = None,
                  test_cases: list[dict[str, dict[str, str]]] | None = None,
                  max_line_length: int = 120,
@@ -133,7 +134,9 @@ class CodeReviewer:
         self.test_cases = test_cases
         self.current_code_path = None
 
-    def _get_files_to_review(self, code_path: str, except_path: str | None = None):
+    def _get_files_to_review(self, code_path: str, except_path: str | None = None) -> list[str]:
+        """Find all the Python code files to review."""
+
         if ' ||| ' in code_path:
             py_file_paths = [p for p in code_path.split(' ||| ') if p.endswith('.py')]
         elif code_path.endswith('.py'):
@@ -167,6 +170,8 @@ class CodeReviewer:
         return len(py_file_paths)
 
     def get_code_lines(self, code_path: str, except_path: str | None = None) -> dict[str, int]:
+        """Find the number of code lines for each Python code file."""
+
         py_file_paths = self._get_files_to_review(code_path, except_path)
         code_lines_info = {}
 
@@ -197,12 +202,6 @@ class CodeReviewer:
         print(f'success ratio : {ratio}')
 
 
-def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[0]
-    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-
-
 class TextEmbeddingModelForInference:
     def __init__(self, model_path: str, hidden_size: int, task_id: str, task_type: str,
                  max_len: int = 256, device: str = 'cuda', is_test: bool = False):
@@ -222,7 +221,11 @@ class TextEmbeddingModelForInference:
 
         self.is_test = is_test
 
-    def _append_to_embedding_log(self, func_name: str, text1: str, text2: str, result, inference_time: float):
+    def _append_to_embedding_log(self, func_name: str, text1: str, text2: str, result: Any,
+                                 inference_time: float) -> None:
+
+        """Add embedding log for test."""
+
         embedding_log['task_id'].append(self.task_id)
         embedding_log['func_name'].append(func_name)
         embedding_log['text1'].append(text1)
@@ -234,7 +237,9 @@ class TextEmbeddingModelForInference:
         embedding_log_df = pd.DataFrame(embedding_log)
         embedding_log_df.to_csv(EMBEDDING_INFERENCE_LOG_PATH)
 
-    def load_model(self):
+    def load_model(self) -> None:
+        """Load embedding models."""
+
         if self.model is not None:
             print("model already loaded")
             return
@@ -256,7 +261,9 @@ class TextEmbeddingModelForInference:
         self.model.to(self.device)
         self.model.eval()
 
-    def unload_model(self):
+    def unload_model(self) -> None:
+        """Unload embedding models."""
+
         if self.model is None:
             print("model not loaded")
             return
@@ -266,7 +273,9 @@ class TextEmbeddingModelForInference:
         if "cuda" in str(self.device):
             torch.cuda.empty_cache()
 
-    def _tokenize_text(self, text: str):
+    def _tokenize_text(self, text: str) -> dict | None:
+        """Tokenize the text for embedding models."""
+
         if self.tokenizer is None:
             print("tokenizer not loaded")
             return
@@ -284,15 +293,17 @@ class TextEmbeddingModelForInference:
         }
 
     def get_similarity(self, text1: str, text2: str) -> float:
+        """Find the cosine similarity of two texts."""
+
         start_at = time.time()
 
         with torch.no_grad():
-            emb1 = self.model.encode(text1)
-            emb2 = self.model.encode(text2)
-            emb1 = emb1.reshape(1, -1)
-            emb2 = emb2.reshape(1, -1)
+            embedding1 = self.model.encode(text1)
+            embedding2 = self.model.encode(text2)
+            embedding1 = embedding1.reshape(1, -1)
+            embedding2 = embedding2.reshape(1, -1)
 
-        cos_sim = cosine_similarity(emb1, emb2)[0][0]
+        cos_sim = cosine_similarity(embedding1, embedding2)[0][0]
 
         elapsed_time = time.time() - start_at
         if self.is_test:
@@ -300,7 +311,9 @@ class TextEmbeddingModelForInference:
 
         return cos_sim
 
-    def get_prob(self, text) -> float:
+    def get_prob(self, text: str) -> float:
+        """Find the probability (of having a specific condition) of the text, using embedding model."""
+
         start_at = time.time()
         tokenize_result = self._tokenize_text(text)
         input_ids = tokenize_result['input_ids'].unsqueeze(0).to(self.device)
@@ -319,19 +332,23 @@ class TextEmbeddingModelForInference:
         return prob
 
     def get_embedding(self, text: str):
+        """Get embedding vector of the text."""
+
         start_at = time.time()
 
         with torch.no_grad():
-            emb = self.model.encode(text)
+            embedding = self.model.encode(text)
 
         elapsed_time = time.time() - start_at
         if self.is_test:
-            self._append_to_embedding_log('get_embedding', text, '', str(emb)[:100], elapsed_time)
+            self._append_to_embedding_log('get_embedding', text, '', str(embedding)[:100], elapsed_time)
 
-        return emb
+        return embedding
 
 
 def get_embedding_model(task_id: str):
+    """Get appropriate embedding model."""
+
     if task_id == "01_unnecessary_prints":
         model_name = GTE_MODERNBERT_BASE
     elif task_id.startswith("01_func_docstring"):
@@ -353,13 +370,15 @@ def get_embedding_model(task_id: str):
 
 
 def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[dict]) -> dict[Any, float]:
+    """Evaulate and compute score, using the code review result."""
+
     evaluation_result = defaultdict(dict)
     scores = defaultdict(float)
     sum_code_lines = sum(code_lines.values())
 
     for rule_id, rule_review_result in item_counts.items():
-        if '(코드 전체 경로)' in rule_review_result.keys():
-            evaluation_result[rule_id] = {'entire_code': max(0, 100 - 50 * rule_review_result['(코드 전체 경로)'])}
+        if ENTIRE_CODE_PATH in rule_review_result.keys():
+            evaluation_result[rule_id] = {'entire_code': max(0, 100 - 50 * rule_review_result[ENTIRE_CODE_PATH])}
             scores[rule_id] = evaluation_result[rule_id]['entire_code'] / 100
         else:
             evaluation_result[rule_id] = {file_path: max(0, code_lines[remove_after_py(file_path)] - 100 * issue_cnt)
@@ -390,6 +409,8 @@ def mark_score(score: float) -> str:
 
 
 def run_entire_code_review(code_path: str, except_path: str | None = None) -> dict:
+    """Run entire code review of all the Python code files from the given path."""
+
     task_list_with_embedding = [
         "01_unnecessary_prints",
         "01_similar_variables",
