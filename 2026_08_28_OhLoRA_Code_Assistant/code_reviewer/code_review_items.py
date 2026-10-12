@@ -72,7 +72,7 @@ def simplify_code(original_code: str) -> str:
     return result
 
 
-def convert_to_human_friendly_review(final_result_dict: defaultdict[Any, dict]) -> str:
+def convert_to_human_friendly_review(rule_id: str, final_result_dict: defaultdict[Any, dict]) -> str:
     """Convert json-like format review result into human-friendly review style."""
 
     final_review = ''
@@ -221,6 +221,7 @@ class DefaultCodeChecker:
         self.text_embedding_models = config.get('text_embedding_models')
 
         self.code_path = code_path
+        self.code_paths = self.code_path.split(' ||| ')
         self.except_path = except_path
 
         self.python_libraries = set(list(sys.stdlib_module_names))
@@ -468,14 +469,12 @@ class DefaultCodeChecker:
 
         return final_result_dict
 
-    def run_ruff_check(self, rules: list[str], extra_args: list = None) -> None:
-        self.final_result_dict = defaultdict(dict)
-
+    def _run_ruff_check_per_file(self, code_path: str, rules: list[str], extra_args: list = None) -> None:
         rules_str = ','.join(rules)
-        full_code_path = str(Path(self.code_path).resolve())
+        full_code_path = str(Path(code_path).resolve())
         full_code_path_for_ruff = full_code_path.replace(r'\\', r'\\\\')
 
-        command = ["ruff", "check", self.code_path, "--select", rules_str, "--output-format", "json"]
+        command = ["ruff", "check", code_path, "--select", rules_str, "--output-format", "json"]
         if self.except_path is not None:
             command.extend(["--exclude", self.except_path])
         if extra_args:
@@ -500,7 +499,7 @@ class DefaultCodeChecker:
                 full_file_path = os.path.join(full_code_path, file_path)
                 function_name = get_function_name_at_line(full_file_path, line_no)
 
-                final_path = self.code_path + os.sep + file_path
+                final_path = code_path + os.sep + file_path
                 final_path = remove_after_py(final_path)
 
                 ruff_message_cleaned = item['message'].replace('`', "'")
@@ -511,6 +510,12 @@ class DefaultCodeChecker:
 
         except json.JSONDecodeError:
             pass
+
+    def run_ruff_check(self, rules: list[str], extra_args: list = None) -> None:
+        self.final_result_dict = defaultdict(dict)
+
+        for code_path in self.code_paths:
+            self._run_ruff_check_per_file(code_path, rules, extra_args)
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
         raise NotImplementedError
@@ -1264,6 +1269,11 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_files(self) -> defaultdict[Any, dict]:
+        if ' ||| ' in self.code_path:
+            repo_base_path = self.code_paths[0].split('repo')[0] + 'repo'
+        else:
+            repo_base_path = self.code_path
+
         code_path_str = '(코드 전체 경로)'
         final_result_dict = defaultdict(dict)
         final_result_dict[code_path_str] = defaultdict(list)
@@ -1271,7 +1281,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         required_files = ['README.md', 'pyproject.toml']
 
         for required_file in required_files:
-            if not os.path.exists(os.path.join(self.code_path, required_file)):
+            if not os.path.exists(os.path.join(repo_base_path, required_file)):
                 if required_file == 'pyproject.toml' and len(self.py_codes.keys()) < 3:
                     continue
 
@@ -2064,7 +2074,7 @@ def default_code_review_func(py_codes: dict[str, str],
                                              is_test=False)
 
     code_review_result = default_code_checker.run_code_review()
-    code_review_result_str = {k: convert_to_human_friendly_review(v) for k, v in code_review_result.items()}
+    code_review_result_str = {k: convert_to_human_friendly_review(k, v) for k, v in code_review_result.items()}
 
     item_counts = defaultdict(dict)
     for rule_id, rule_review_result in code_review_result.items():
