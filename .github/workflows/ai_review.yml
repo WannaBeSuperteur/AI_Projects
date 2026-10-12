@@ -68,7 +68,7 @@ jobs:
               }
             }
 
-            function pickMarbleImage(score, hasAlert) {
+            function pickMarbleImage(score, hasAlert, hasManyAlerts) {
               const base =
                 "https://raw.githubusercontent.com/WannaBeSuperteur/AI_Projects/" +
                 "refs/heads/main/2026_08_28_OhLoRA_Code_Assistant/purple_marble/";
@@ -76,11 +76,11 @@ jobs:
               let number;
               if (score < 60) {
                 number = 4;
-              } else if (hasAlert || score < 88) {
+              } else if (hasManyAlerts || score < 88) {
                 number = 3;
               } else if (score < 92) {
                 number = 2;
-              } else if (score < 96) {
+              } else if (hasAlert || score < 96) {
                 number = 5;
               } else {
                 number = 1;
@@ -156,6 +156,7 @@ jobs:
               const codeReviewResultDetail = normalizeText(result.code_review_result_str);
               const llmAnswer = normalizeText(result.llm_answer);
               const hasAlert = topItemsEvalSummary.includes("🚨");
+              const hasManyAlerts = topItemsEvalSummary.split("🚨").length - 1 >= 3;
 
               if (
                 result.mean_score == null || result.mean_score === ""
@@ -170,7 +171,7 @@ jobs:
                 );
               }
 
-              const image = pickMarbleImage(score, hasAlert);
+              const image = pickMarbleImage(score, hasAlert, hasManyAlerts);
 
               let codeReviewComment = "";
               if (score < 99 || hasAlert) {
