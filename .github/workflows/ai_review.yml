@@ -76,11 +76,11 @@ jobs:
               let number;
               if (score < 60) {
                 number = 4;
-              } else if (hasAlert || score < 70) {
+              } else if (hasAlert || score < 88) {
                 number = 3;
-              } else if (score < 80) {
+              } else if (score < 92) {
                 number = 2;
-              } else if (score < 90) {
+              } else if (score < 96) {
                 number = 5;
               } else {
                 number = 1;
