@@ -21,7 +21,7 @@ TYPE_TO_NAME = {
 
 
 def parse_function_def(node: ast.AST) -> dict:
-    """Parse name, args, ... etc. from function definition."""
+    """Parse function definition and get name, args, ..., etc."""
 
     args_info = defaultdict(list)
 

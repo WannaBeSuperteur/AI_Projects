@@ -20,11 +20,11 @@ from difflib import SequenceMatcher
 from operator import itemgetter
 
 from pathlib import Path
-from sklearn.metrics.pairwise import cosine_similarity
-from ast_utils import parse_py_code, get_function_name_at_line, remove_after_py
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
-from rule_names import *
+from ast_utils import parse_py_code, get_function_name_at_line, remove_after_py
+from rule_info import *
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
@@ -161,6 +161,8 @@ def check_a_in_b(a: str, b: str) -> bool:
 
 # Generated using ChatGPT-6 and human-reviewed later
 def extract_numbers(line: str) -> list[str]:
+    """extract numeric values (= Python recognizes as number) from the line."""
+
     try:
         tokens = list(tokenize.generate_tokens(io.StringIO(line).readline))
     except (tokenize.TokenError, IndentationError, SyntaxError):
@@ -455,6 +457,8 @@ class DefaultCodeChecker:
         def update_final_result_dict(py_file_path: str, line_no: int, current_if_elifs: list[dict],
                                      additional_check_func: Optional[Callable] = None) -> None:
 
+            """Add detected if-elif-...-else patterns to final result dict."""
+
             if (len(current_if_elifs) >= 3
                     and len(set(info['var_name'] for info in current_if_elifs)) == 1
                     and len(set(info['simplified_body'] for info in current_if_elifs)) == 1
@@ -571,11 +575,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
         body_2_lines = [line.strip() for line in body_2.split(';')]
 
         seq_matcher = SequenceMatcher(None, body_1_lines, body_2_lines)
-        lcs = seq_matcher.find_longest_match(0, len(body_1_lines), 0, len(body_2_lines))
+        longest_match = seq_matcher.find_longest_match(0, len(body_1_lines), 0, len(body_2_lines))
 
-        cond_lcs_1 = lcs.size >= 12
-        cond_lcs_2 = lcs.size >= 7 and lcs.size >= 0.5 * min(len(body_1_lines), len(body_2_lines))
-        cond_lcs_3 = lcs.size >= 4 and lcs.size >= 0.75 * min(len(body_1_lines), len(body_2_lines))
+        cond_lcs_1 = longest_match.size >= 12
+        cond_lcs_2 = longest_match.size >= 7 and longest_match.size >= 0.5 * min(len(body_1_lines), len(body_2_lines))
+        cond_lcs_3 = longest_match.size >= 4 and longest_match.size >= 0.75 * min(len(body_1_lines), len(body_2_lines))
 
         return cond_lcs_1 or cond_lcs_2 or cond_lcs_3
 
@@ -584,7 +588,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_unnecessary_prints(self) -> str | defaultdict[Any, dict]:
-        """Check unnecessary prints and loggings."""
+        """Check unnecessary prints/loggings."""
 
         if self.text_embedding_models.get(RULE_UNNECESSARY_PRINTS) is None:
             return NO_TEXT_EMBEDDING_MODEL
@@ -621,7 +625,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                              'type': '',
                              'line': line_no})
 
-                    if prob >= 0.8:
+                    if prob >= PROBS[RULE_UNNECESSARY_PRINTS]:
                         final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line),
                                                                            'type': print_type,
                                                                            'line': line_no})
@@ -678,10 +682,10 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 function_body = item['body']
                 start_line = item['start_line']
 
-                simplified_body = convert_values_to_data_type_names(str(function_body))
-                for existing_simplified_body in simplified_function_body_list:
-                    if self._is_function_bodies_similar(existing_simplified_body['body'], simplified_body):
-                        existing_func_name = existing_simplified_body['name']
+                body_of_data_type = convert_values_to_data_type_names(str(function_body))
+                for existing_data_type_body in simplified_function_body_list:
+                    if self._is_function_bodies_similar(existing_data_type_body['body'], body_of_data_type):
+                        existing_func_name = existing_data_type_body['name']
                         existing_message = f'{function_name} 함수는 {existing_func_name} 과 유사 구조 존재'
 
                         prev_line = max(start_line - 1, 0)
@@ -695,13 +699,15 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         break
 
                 simplified_function_body_list.append({'name': function_name,
-                                                      'body': simplified_body,
+                                                      'body': body_of_data_type,
                                                       'start_line': start_line})
 
         self.final_result_dict = final_result_dict
         return final_result_dict
 
-    def _find_all_similar_text_pairs(self, text_embedding_model, value_dict: defaultdict[Any, dict],
+    def _find_all_similar_text_pairs(self,
+                                     text_embedding_model,
+                                     value_dict: defaultdict[Any, dict],
                                      only_same: bool = False,
                                      include_same: bool = False) -> list[dict]:
 
@@ -711,7 +717,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
         all_similar_text_pairs = []
         embedding_vector_dict = {}
 
-        def check_text_similar_with_prevs(info, py_file_path: str) -> None:
+        def check_text_similar_with_prevs(info: dict, py_file_path: str) -> None:
+            """Check if there are text values similar to info['name'], comparing with accumulated embedding vectors."""
+
             embedding_vector = embedding_vector_dict.get(info['name'])
             if embedding_vector is None:
                 embedding_vector = text_embedding_model.get_embedding(info['name'])
@@ -722,8 +730,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
             info['embedding'] = embedding_vector
             info['py_file_path'] = py_file_path
 
-            text_embedding_logs_filtered = [log for log in text_embedding_logs
-                                            if cosine_similarity(log['embedding'], embedding_vector) >= 0.93]
+            text_embedding_logs_filtered = \
+                [log for log in text_embedding_logs
+                 if cosine_similarity(log['embedding'], embedding_vector) >= SIMILARITIES[RULE_SIMILAR_VARIABLES]]
 
             if only_same:
                 text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
@@ -836,7 +845,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_names(self) -> str | defaultdict[Any, dict]:
-        """Check the variable names & function names are meaningful, using embedding model."""
+        """Check the variable & function names are meaningful, using embedding model."""
 
         if self.text_embedding_models.get(RULE_NAMES) is None:
             return NO_TEXT_EMBEDDING_MODEL
@@ -878,7 +887,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                          'type': '',
                          'line': line_no})
 
-                if text_embedding_model.get_prob(name) <= 0.1 and name != '_':
+                if text_embedding_model.get_prob(name) <= PROBS[RULE_NAMES] and name != '_':
                     final_result_dict[py_file_path][func_name].append({
                         'name': name,
                         'type': 'var_or_func',
@@ -949,7 +958,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                              'type': '',
                              'line': line_no})
 
-                    if cos_sim < 0.35:
+                    if cos_sim < SIMILARITIES[RULE_RETURN_MATCHED_NAME]:
                         final_result_dict[py_file_path][func_name].append({'name': f'{var_name} = {func_name}(...)',
                                                                            'type': 'func_return',
                                                                            'line': line_no})
@@ -1068,13 +1077,13 @@ class PythonBasicsChecker(DefaultCodeChecker):
                          'type': '',
                          'line': line_no})
 
-                if docstring_prob < 0.3:
+                if docstring_prob < PROBS[RULE_FUNC_DOCSTRING_RESPONSIBILITY]:
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f"함수 {item['name']} 단일 책임 원칙 위반",
                          'type': 'docstring',
                          'line': line_no})
 
-                if docstring_and_name_cos_sim < 0.3:
+                if docstring_and_name_cos_sim < PROBS[RULE_FUNC_DOCSTRING_NAME]:
                     final_result_dict[py_file_path][func_name].append(
                         {'name': f"함수 {item['name']} - docstring 불일치",
                          'type': 'docstring',
@@ -1187,6 +1196,135 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         self.final_result_dict = final_result_dict
         return final_result_dict
 
+    def _find_line_pairs_with_multiple_used_numeric_values(self,
+                                                           multiple_used_numeric_values: list,
+                                                           line_embeddings: dict,
+                                                           text_embedding_model_twice) -> list:
+
+        """Find all the pair of lines with same numeric values."""
+
+        line_pairs_to_compare_for_multiple_used_numeric_values = []
+        line_pairs_compared_for_multiple_used_numeric_values = set()
+
+        for info1 in multiple_used_numeric_values:
+            if info1['line_no'] in line_pairs_compared_for_multiple_used_numeric_values:
+                continue
+
+            for info2 in multiple_used_numeric_values:
+                if info1['number'] == info2['number']:
+                    line1, line2 = info1['line_content'], info2['line_content']
+                    line1_line_no, line2_line_no = info1['line_no'], info2['line_no']
+
+                    line1_embedding = line_embeddings.get(line1_line_no)
+                    if line1_embedding is None:
+                        line1_embedding = text_embedding_model_twice.get_embedding(line1)
+
+                    line2_embedding = line_embeddings.get(line2_line_no)
+                    if line2_embedding is None:
+                        line2_embedding = text_embedding_model_twice.get_embedding(line2)
+
+                    if line_embeddings.get(line1_line_no) is None:
+                        line_embeddings[line1_line_no] = line1_embedding
+                    if line_embeddings.get(line2_line_no) is None:
+                        line_embeddings[line2_line_no] = line2_embedding
+
+                    line_pairs_to_compare_for_multiple_used_numeric_values.append({'line1_line_no': line1_line_no,
+                                                                                   'line2_line_no': line2_line_no,
+                                                                                   'line1': line1,
+                                                                                   'line2': line2})
+
+                    line_pairs_compared_for_multiple_used_numeric_values.add(line1_line_no)
+                    break
+
+        return line_pairs_to_compare_for_multiple_used_numeric_values
+
+    def _check_numeric_values_per_file(self,
+                                       final_result_dict: dict,
+                                       py_file_path: str,
+                                       py_code: str,
+                                       text_embedding_models_dict: dict) -> None:
+
+        """Check numeric values that can be const or used more than once. (per each Python code file)"""
+
+        text_embedding_model_twice = text_embedding_models_dict['twice']
+        text_embedding_model_maybe_const = text_embedding_models_dict['maybe_const']
+
+        final_result_dict[py_file_path] = defaultdict(list)
+        lines = py_code.split('\n')
+        numeric_values = []
+        line_embeddings = {}
+        lines_with_numbers = []
+
+        for line_idx, line in enumerate(lines):
+
+            # skip top-definition pattern (e.g. "VARIABLE_NUM = 123 * 456")
+            if re.match(r"^[A-Z_]+\s*=\s*[0-9\s*+-/]+", line):
+                continue
+
+            line_no = line_idx + 1
+            extracted_numbers = [{'line_no': line_no,
+                                  'line_content': line,
+                                  'number': num} for num in extract_numbers(line)]
+            extracted_numbers = [info for info in extracted_numbers if info['number'] not in ALLOWED_NUM_CONSTS]
+            numeric_values.extend(extracted_numbers)
+
+            if extracted_numbers:
+                lines_with_numbers.append({'line_no': line_no,
+                                           'line_content': line})
+
+        number_counts = Counter(item['number'] for item in numeric_values)
+        multiple_used_numbers = [num for num, count in number_counts.items() if count >= 2]
+        multiple_used_numeric_values = [item for item in numeric_values if item['number'] in multiple_used_numbers]
+
+        line_pairs_to_compare_for_multiple_used_numeric_values = (
+            self._find_line_pairs_with_multiple_used_numeric_values(multiple_used_numeric_values,
+                                                                    line_embeddings,
+                                                                    text_embedding_model_twice))
+
+        # 2회 이상 등장한 숫자 값 유사도 검사
+        for line_info in line_pairs_to_compare_for_multiple_used_numeric_values:
+            line1, line2 = line_info['line1'], line_info['line2']
+            line1_line_no, line2_line_no = line_info['line1_line_no'], line_info['line2_line_no']
+
+            if extract_comment(line1) == line1 or extract_comment(line2) == line2:
+                continue
+
+            line1_embedding = line_embeddings[line1_line_no].reshape(1, -1)
+            line2_embedding = line_embeddings[line2_line_no].reshape(1, -1)
+            cos_sim = cosine_similarity(line1_embedding, line2_embedding)[0][0]
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
+
+            if self.is_test:
+                final_result_dict[py_file_path][func_name].append(
+                    {'name': ai_log(f'{line1.strip()} | {line2.strip()}', RULE_NUMERIC_TWICE, 'cos_sim', cos_sim),
+                     'type': '',
+                     'line': line1_line_no})
+
+            if cos_sim >= SIMILARITIES[RULE_NUMERIC_TWICE]:
+                final_result_dict[py_file_path][func_name].append(
+                    {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
+                     'type': NUMERIC_VALUES_CONST,
+                     'line': line1_line_no})
+
+        # 모든 숫자 값에 대해 const 고정 권장 확률 검사
+        for line_info in lines_with_numbers:
+            line_no, line_content = line_info['line_no'], line_info['line_content']
+
+            maybe_const_prob = text_embedding_model_maybe_const.get_prob(line_content)
+            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+
+            if self.is_test:
+                final_result_dict[py_file_path][func_name].append(
+                    {'name': ai_log(line_content, RULE_NUMERIC_CONST, 'prob', maybe_const_prob),
+                     'type': '',
+                     'line': line_no})
+
+            if maybe_const_prob >= PROBS[RULE_NUMERIC_CONST] and not extract_comment(line_content).strip():
+                final_result_dict[py_file_path][func_name].append(
+                    {'name': f'상단 const var 고정 권장: {ellipse_str(line_content.strip())}',
+                     'type': NUMERIC_VALUES_CONST,
+                     'line': line_no})
+
     def _check_numeric_values(self) -> str | defaultdict[Any, dict]:
         """
         Check numeric values that can be const or used more than once,
@@ -1207,110 +1345,13 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         text_embedding_model_maybe_const.load_model()
         text_embedding_model_twice.load_model()
 
+        text_embedding_models_dict = {
+            'maybe_const': text_embedding_model_maybe_const,
+            'twice': text_embedding_model_twice
+        }
+
         for py_file_path, py_code in self.py_codes.items():
-            final_result_dict[py_file_path] = defaultdict(list)
-            lines = py_code.split('\n')
-            numeric_values = []
-            line_embeddings = {}
-            lines_with_numbers = []
-
-            for line_idx, line in enumerate(lines):
-
-                # skip top-definition pattern (e.g. "VARIABLE_NUM = 123 * 456")
-                if re.match(r"^[A-Z_]+\s*=\s*[0-9\s*+-/]+", line):
-                    continue
-
-                line_no = line_idx + 1
-                extracted_numbers = [{'line_no': line_no,
-                                      'line_content': line,
-                                      'number': num} for num in extract_numbers(line)]
-                extracted_numbers = [info for info in extracted_numbers if info['number'] not in ALLOWED_NUM_CONSTS]
-                numeric_values.extend(extracted_numbers)
-
-                if extracted_numbers:
-                    lines_with_numbers.append({'line_no': line_no,
-                                               'line_content': line})
-
-            number_counts = Counter(item['number'] for item in numeric_values)
-            multiple_used_numbers = [num for num, count in number_counts.items() if count >= 2]
-            multiple_used_numeric_values = [item for item in numeric_values if item['number'] in multiple_used_numbers]
-
-            lines_to_compare_for_multiple_used_numeric_values = []
-            lines_compared_for_multiple_used_numeric_values = set()
-
-            for info1 in multiple_used_numeric_values:
-                if info1['line_no'] in lines_compared_for_multiple_used_numeric_values:
-                    continue
-
-                for info2 in multiple_used_numeric_values:
-                    if info1['number'] == info2['number']:
-                        line1, line2 = info1['line_content'], info2['line_content']
-                        line1_line_no, line2_line_no = info1['line_no'], info2['line_no']
-
-                        line1_embedding = line_embeddings.get(line1_line_no)
-                        if line1_embedding is None:
-                            line1_embedding = text_embedding_model_twice.get_embedding(line1)
-
-                        line2_embedding = line_embeddings.get(line2_line_no)
-                        if line2_embedding is None:
-                            line2_embedding = text_embedding_model_twice.get_embedding(line2)
-
-                        if line_embeddings.get(line1_line_no) is None:
-                            line_embeddings[line1_line_no] = line1_embedding
-                        if line_embeddings.get(line2_line_no) is None:
-                            line_embeddings[line2_line_no] = line2_embedding
-
-                        lines_to_compare_for_multiple_used_numeric_values.append({'line1_line_no': line1_line_no,
-                                                                                  'line2_line_no': line2_line_no,
-                                                                                  'line1': line1,
-                                                                                  'line2': line2})
-
-                        lines_compared_for_multiple_used_numeric_values.add(line1_line_no)
-                        break
-
-            # 2회 이상 등장한 숫자 값 유사도 검사
-            for line_info in lines_to_compare_for_multiple_used_numeric_values:
-                line1, line2 = line_info['line1'], line_info['line2']
-                line1_line_no, line2_line_no = line_info['line1_line_no'], line_info['line2_line_no']
-
-                if extract_comment(line1) == line1 or extract_comment(line2) == line2:
-                    continue
-
-                line1_embedding = line_embeddings[line1_line_no].reshape(1, -1)
-                line2_embedding = line_embeddings[line2_line_no].reshape(1, -1)
-                cos_sim = cosine_similarity(line1_embedding, line2_embedding)[0][0]
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line1_line_no]
-
-                if self.is_test:
-                    final_result_dict[py_file_path][func_name].append(
-                        {'name': ai_log(f'{line1.strip()} | {line2.strip()}', RULE_NUMERIC_TWICE, 'cos_sim', cos_sim),
-                         'type': '',
-                         'line': line1_line_no})
-
-                if cos_sim >= 0.8:
-                    final_result_dict[py_file_path][func_name].append(
-                        {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
-                         'type': NUMERIC_VALUES_CONST,
-                         'line': line1_line_no})
-
-            # 모든 숫자 값에 대해 const 고정 권장 확률 검사
-            for line_info in lines_with_numbers:
-                line_no, line_content = line_info['line_no'], line_info['line_content']
-
-                maybe_const_prob = text_embedding_model_maybe_const.get_prob(line_content)
-                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-
-                if self.is_test:
-                    final_result_dict[py_file_path][func_name].append(
-                        {'name': ai_log(line_content, RULE_NUMERIC_CONST, 'prob', maybe_const_prob),
-                         'type': '',
-                         'line': line_no})
-
-                if maybe_const_prob >= 0.85 and not extract_comment(line_content).strip():
-                    final_result_dict[py_file_path][func_name].append(
-                        {'name': f'상단 const var 고정 권장: {ellipse_str(line_content.strip())}',
-                         'type': NUMERIC_VALUES_CONST,
-                         'line': line_no})
+            self._check_numeric_values_per_file(final_result_dict, py_file_path, py_code, text_embedding_models_dict)
 
         text_embedding_model_maybe_const.unload_model()
         text_embedding_model_twice.unload_model()
@@ -1520,6 +1561,8 @@ class PythonSimplificationChecker(DefaultCodeChecker):
         return final_result_dict
 
     def _check_any_all(self) -> defaultdict[Any, dict]:
+        """Suggest using any/all instead of nested 'if' statements, if appropriate."""
+
         self._init_final_result_dict()
         self._add_regex_matched_lines(
             regex=(r'([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(False|True)\s+' +
@@ -1759,6 +1802,8 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
         return self.final_result_dict
 
     def _check_func_args_bindable(self) -> str | defaultdict[Any, dict]:
+        """Check function arguments are 'bindable', to suggest converting to Class (OOP) if appropriate."""
+
         final_result_dict = defaultdict(dict)
 
         if self.text_embedding_models.get(RULE_ARGS_BINDABLE) is None:
@@ -1799,13 +1844,13 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                              'type': '',
                              'line': line_no})
 
-                    if bindable_prob >= 0.9:
+                    if bindable_prob >= PROBS[RULE_ARGS_BINDABLE]:
                         final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'bindable_args',
                              'line': line_no})
 
-                    if dynamic_prob >= 0.9:
+                    if dynamic_prob >= PROBS[RULE_ARGS_DYNAMIC]:
                         final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'dynamic_args',
@@ -1974,7 +2019,9 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         text_embedding_model.load_model()
         self.final_result_dict = defaultdict(lambda: defaultdict(list))
 
-        def check_is_state_value(info) -> bool:
+        def check_is_state_value(info: list[dict]) -> bool:
+            """Check if the variable name indicates 'state' of some object."""
+
             text = info[0]['var_name']
             prob = text_embedding_model.get_prob(text)
 
@@ -1987,7 +2034,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                      'type': '',
                      'line': line_no})
 
-            return prob >= 0.98
+            return prob >= PROBS[RULE_REFACTOR_STATE_VARS]
 
         pattern_dict = self._find_if_elif_else_patterns(additional_check_func=check_is_state_value)
         for file_path, funcs in pattern_dict.items():
@@ -2046,9 +2093,9 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
                              'type': '',
                              'line': line_no})
 
-                    if cos_sim >= 0.95:
+                    if cos_sim >= SIMILARITIES[RULE_SIMILAR_FUNCTION_NAMES]['high']:
                         func_sim_matrix[idx_0][idx_1] = 'high'
-                    elif cos_sim < 0.75:
+                    elif cos_sim < SIMILARITIES[RULE_SIMILAR_FUNCTION_NAMES]['mid']:
                         func_sim_matrix[idx_0][idx_1] = 'low'
 
             for idx_0, func_name_item in enumerate(func_names):
@@ -2133,6 +2180,8 @@ class EntireCodeChecker(DefaultCodeChecker):
         return self.python_cohesiveness_and_class_checker.run_code_review()
 
     def run_code_review(self) -> dict[str, str | defaultdict[Any, dict]]:
+        """Run entire code review."""
+
         python_basics_result = self._check_python_basics()
         basic_convention_result = self._check_basic_convention()
         simplification_result = self._check_simplification()

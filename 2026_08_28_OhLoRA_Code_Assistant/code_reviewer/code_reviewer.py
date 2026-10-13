@@ -13,13 +13,13 @@ import torch
 import torch.nn as nn
 import pandas as pd
 
-from sentence_transformers import SentenceTransformer
 from transformers import AutoModel, AutoTokenizer
+from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from ast_utils import remove_after_py
 from code_review_items import default_code_review_func
-from rule_names import *
+from rule_info import *
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
@@ -118,16 +118,14 @@ RULE_NAME_TO_KOREAN = {
 class CodeReviewer:
     def __init__(self,
                  code_review_func: Callable,
+                 base_config: dict[str, int],
                  text_embedding_models: dict | None = None,
-                 test_cases: list[dict[str, dict[str, str]]] | None = None,
-                 max_line_length: int = 120,
-                 max_func_lines: int = 100,
-                 code_indent: int = 4):
+                 test_cases: list[dict[str, dict[str, str]]] | None = None):
 
         self.config = {
-            'max_line_length': max_line_length,
-            'max_func_lines': max_func_lines,
-            'code_indent': code_indent,
+            'max_line_length': base_config['max_line_length'],
+            'max_func_lines': base_config['max_func_lines'],
+            'code_indent': base_config['code_indent'],
             'text_embedding_models': text_embedding_models
         }
 
@@ -204,21 +202,21 @@ class CodeReviewer:
 
 
 class TextEmbeddingModelForInference:
-    def __init__(self, model_path: str, hidden_size: int, task_id: str, task_type: str,
+    def __init__(self, model_config: dict[str, Any], task_config: dict[str, str],
                  max_len: int = 256, device: str = 'cuda', is_test: bool = False):
 
-        self.model_path = model_path
+        self.model_path = model_config['model_path']
         self.model = None
         self.tokenizer = None
         self.device = device
-        self.task_id = task_id
+        self.task_id = task_config['task_id']
 
-        assert task_type in ['prob', 'cos-sim']
-        self.task_type = task_type
+        self.task_type = task_config['task_type']
+        assert self.task_type in ['prob', 'cos-sim']
 
         self.max_len = max_len
-        self.hidden_size = hidden_size
-        self.final_linear = nn.Linear(hidden_size, 1)
+        self.hidden_size = model_config['hidden_size']
+        self.final_linear = nn.Linear(self.hidden_size, 1)
 
         self.is_test = is_test
 
@@ -347,7 +345,7 @@ class TextEmbeddingModelForInference:
         return embedding
 
 
-def get_embedding_model(task_id: str):
+def get_embedding_model(task_id: str) -> TextEmbeddingModelForInference:
     """Get appropriate embedding model."""
 
     if task_id == RULE_UNNECESSARY_PRINTS:
@@ -362,16 +360,20 @@ def get_embedding_model(task_id: str):
     else:
         task_type = 'prob'
 
-    return TextEmbeddingModelForInference(
-        model_path=os.path.join(PROJECT_DIR_PATH, "embedding_model", "models", task_id),
-        hidden_size=HIDDEN_SIZE[model_name],
-        task_id=task_id,
-        task_type=task_type
-    )
+    model_config = {
+        'model_path': os.path.join(PROJECT_DIR_PATH, "embedding_model", "models", task_id),
+        'hidden_size': HIDDEN_SIZE[model_name]
+    }
+    task_config = {
+        'task_id': task_id,
+        'task_type': task_type
+    }
+
+    return TextEmbeddingModelForInference(model_config=model_config, task_config=task_config)
 
 
 def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[dict]) -> dict[Any, float]:
-    """Evaulate and compute score, using the code review result."""
+    """Evaluate score, using the code review result."""
 
     evaluation_result = defaultdict(dict)
     scores = defaultdict(float)
@@ -429,7 +431,8 @@ def run_entire_code_review(code_path: str, except_path: str | None = None) -> di
     text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list_with_embedding}
 
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
-                                 text_embedding_models=text_embedding_models)
+                                 text_embedding_models=text_embedding_models,
+                                 base_config={'max_line_length': 120, 'max_func_lines': 100, 'code_indent': 4})
 
     code_lines = code_reviewer.get_code_lines(code_path=code_path)
     item_counts, code_review_result = code_reviewer.review_codes(code_path=code_path, except_path=except_path)
