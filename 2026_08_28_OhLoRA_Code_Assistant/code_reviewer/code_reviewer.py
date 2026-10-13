@@ -327,7 +327,8 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
             evaluation_result[rule_id] = {'entire_code': max(0, 100 - 50 * rule_review_result[ENTIRE_CODE_PATH])}
             scores[rule_id] = evaluation_result[rule_id]['entire_code'] / 100
         else:
-            evaluation_result[rule_id] = {file_path: max(0, code_lines[remove_after_py(file_path)] - 100 * issue_cnt)
+            weight = 20 if rule_id == '02_indent' else 100
+            evaluation_result[rule_id] = {file_path: max(0, code_lines[remove_after_py(file_path)] - weight * issue_cnt)
                                           for file_path, issue_cnt in rule_review_result.items()}
 
             not_checked_file_paths = [path for path in code_lines.keys() if path not in evaluation_result[rule_id]]
