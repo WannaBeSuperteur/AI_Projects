@@ -19,6 +19,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from ast_utils import remove_after_py
 from code_review_items import default_code_review_func
+from rule_names import *
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
@@ -38,11 +39,11 @@ HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
                F2LLM_V2_330M: 896,
                LATEON_CODE_PRETRAIN: 768}
 
-SIMILARITY_TASKS = ['01_similar_variables',
-                    '01_return_matched_with_func_name',
-                    '01_func_docstring_docstring_and_name',
-                    '06_similar_function_names',
-                    '02_numeric_values_twice']
+SIMILARITY_TASKS = [RULE_SIMILAR_VARIABLES,
+                    RULE_RETURN_MATCHED_NAME,
+                    RULE_FUNC_DOCSTRING_NAME,
+                    RULE_SIMILAR_FUNCTION_NAMES,
+                    RULE_NUMERIC_TWICE]
 
 embedding_log = {
     'task_id': [],
@@ -56,61 +57,61 @@ embedding_log = {
 
 TOP_RULE_COUNT = 5
 RULE_NAME_TO_KOREAN = {
-    '01_unused': '미 사용 변수/함수 제거',
-    '01_unnecessary_prints': '불필요한 print, logging 제거',
-    '01_duplicates': '중복되는 사항 common 으로 빼기',
-    '01_similar_variables': '유사한 변수명 통일',
-    '01_same_func_args': '동일 인자 type 통일',
-    '01_names': '의미 있는 함수명, 변수명 사용',
-    '01_return_matched_with_func_name': '함수명, 반환값 간 일치',
-    '01_library_orders': 'import 순서 준수',
-    '01_func_docstring': '함수 docstring, 함수명 의미 일치',
-    '01_commented_codes': '주석 처리된 코드 제거',
-    '01_empty_file': '빈 파일 TODO 표시 필요',
-    '02_const': '고정값 상수화 필요',
-    '02_numeric_values': '숫자 값은 위쪽에 상수로',
-    '02_line_length': '한 줄의 길이는 일정 글자 이내로',
-    '02_files': 'README.md, pyproject.toml 필요',
-    '02_functions_length_and_docstring': '100 line 이상 함수 분리, docstring 필요',
-    '02_functions_type_hint': '함수 인수 type hint 필요',
-    '02_indent': '지나치게 많은 들여쓰기 수정',
-    '03_suggest_list_comprehension': '리스트 컴프리헨션 사용이 가능한 경우 사용',
-    '03_generator_expression': '제너레이터 표현식 사용이 가능한 경우 사용',
-    '03_if_to_dict': 'if-elif-elif-else 구문은 되도록 dict로 수정',
-    '03_path_format': '경로를 path/to/file 이 아닌, pathlib 또는 os.path.join 사용',
-    '03_defaultdict': '불필요한 변수 생성 대신 defaultdict 권장',
-    '03_any_all': '조건문 중첩 대신 any, all 사용',
-    '03_zip': 'zip 사용 가능한 경우 사용',
-    '03_enumerate': 'enumerate 사용 가능한 경우 사용',
-    '03_itertools_product': 'itertools.product 사용 가능한 경우 사용',
-    '03_just_read_write_to_read_write_text': '파일 단순 읽기/쓰기는 Path 사용',
-    '03_sentence_empty': '비어 있는 문자열 여부 판단 간소화',
-    '03_handle_none': 'if a.get("b") ... 형태로 수정 필요',
-    '03_extend': '기존 배열의 원소 추가 대신 extend 함수 사용',
-    '03_count': '개수 세기에 count 함수 사용',
-    '03_index': '인덱스 반환에 index 함수 사용',
-    '03_str_join': 'str 단순 += 대신 join 사용',
-    '03_use_map': '매우 간결한 변환은 map 사용',
-    '04_unpacking_case_1': 'a = my_list[0], b = my_list[1] ... 대신 unpacking 사용 필요',
-    '04_unpacking_case_2': '언패킹 시 숫자 인덱스 사용하지 말 것 (변수에 바로 할당)',
-    '04_open_file': '파일 열기, 닫기 시 with open(...) 사용',
-    '04_key_itemgetter': 'key=itemgetter("key") 사용 권장',
-    '04_f_string': '문자열 단순 연결보다는 f-string 사용',
-    '04_collections_itertools_glob': '빈도수, 반복문, 경로명 리스트 추출 시 collections, itertools, glob 사용',
-    '04_func_args_bindable': '함수의 인자가 하나로 묶을 수 있는 경우 처리 권장',
-    '04_attribute_getattr': '함수의 인자가 유동적인 경우 처리 권장',
-    '04_regex_r': '정규 표현식 문자열은 r"..." 권장',
-    '04_func_lambda': 'f = lambda x: ... 보다는 def f(x): return ... 를 사용',
-    '04_prefix_suffix': 'prefix, suffix 검사 시 startswith(), endswith() 사용',
-    '05_exception_ignored': '예외를 삼키는 경우가 없어야 함',
-    '05_exception_type': '예외의 종류 (OOOError 등) 구체적 명시 권장',
-    '05_func_arg_error_prevent': '함수의 인수를 변경 가능한 default value로 하지 않아야 함',
-    '05_assertion_try_except': 'assertion을 제어 메커니즘으로 사용하면 안됨',
-    '05_python_keywords_args': 'Python 예약어를 변수명으로 사용하지 않아야 함',
-    '06_refactor_into_class_case_1_same_args': '동일한 인수 집합을 갖는 함수가 많은 경우 클래스화 고려',
-    '06_refactor_into_class_case_2_state_vars_if_else': '상태 값 조건이 있는 if-elif-elif-else 있는 경우 클래스화 고려',
-    '06_prefix_for_only_in_class_methods': '클래스 내부에서만 쓰이는 속성, 메서드 (접두사 있음) 호출 비 권장',
-    '06_similar_function_names': '유사한 이름의 함수끼리 가까이 위치하도록 수정 권장'
+    RULE_UNUSED: '미 사용 변수/함수 제거',
+    RULE_UNNECESSARY_PRINTS: '불필요한 print, logging 제거',
+    RULE_DUPLICATES: '중복되는 사항 common 으로 빼기',
+    RULE_SIMILAR_VARIABLES: '유사한 변수명 통일',
+    RULE_SAME_FUNC_ARGS: '동일 인자 type 통일',
+    RULE_NAMES: '의미 있는 함수명, 변수명 사용',
+    RULE_RETURN_MATCHED_NAME: '함수명, 반환값 간 일치',
+    RULE_LIB_ORDERS: 'import 순서 준수',
+    RULE_FUNC_DOCSTRING: '함수 docstring, 함수명 의미 일치',
+    RULE_COMMENTED_CODES: '주석 처리된 코드 제거',
+    RULE_EMPTY_FILE: '빈 파일 TODO 표시 필요',
+    RULE_CONST: '고정값 상수화 필요',
+    RULE_NUMERIC: '숫자 값은 위쪽에 상수로',
+    RULE_LINE_LENGTH: '한 줄의 길이는 일정 글자 이내로',
+    RULE_FILES: 'README.md, pyproject.toml 필요',
+    RULE_FUNCTION_LENGTH_AND_DOCSTRING: '100 line 이상 함수 분리, docstring 필요',
+    RULE_FUNCTION_TYPE_HINT: '함수 인수 type hint 필요',
+    RULE_INDENT: '지나치게 많은 들여쓰기 수정',
+    RULE_LIST_COMPREHENSION: '리스트 컴프리헨션 사용이 가능한 경우 사용',
+    RULE_GENERATOR_EXPRESSION: '제너레이터 표현식 사용이 가능한 경우 사용',
+    RULE_IF_TO_DICT: 'if-elif-elif-else 구문은 되도록 dict로 수정',
+    RULE_PATH_FORMAT: '경로를 path/to/file 이 아닌, pathlib 또는 os.path.join 사용',
+    RULE_DEFAULTDICT: '불필요한 변수 생성 대신 defaultdict 권장',
+    RULE_ANY_ALL: '조건문 중첩 대신 any, all 사용',
+    RULE_ZIP: 'zip 사용 가능한 경우 사용',
+    RULE_ENUMERATE: 'enumerate 사용 가능한 경우 사용',
+    RULE_ITERTOOLS_PRODUCT: 'itertools.product 사용 가능한 경우 사용',
+    RULE_JUST_READ_WRITE: '파일 단순 읽기/쓰기는 Path 사용',
+    RULE_SENTENCE_EMPTY_CHECK: '비어 있는 문자열 여부 판단 간소화',
+    RULE_HANDLE_NONE: 'if a.get("b") ... 형태로 수정 필요',
+    RULE_EXTEND: '기존 배열의 원소 추가 대신 extend 함수 사용',
+    RULE_COUNT: '개수 세기에 count 함수 사용',
+    RULE_INDEX: '인덱스 반환에 index 함수 사용',
+    RULE_STR_JOIN: 'str 단순 += 대신 join 사용',
+    RULE_USE_MAP: '매우 간결한 변환은 map 사용',
+    RULE_UNPACKING_1: 'a = my_list[0], b = my_list[1] ... 대신 unpacking 사용 필요',
+    RULE_UNPACKING_2: '언패킹 시 숫자 인덱스 사용하지 말 것 (변수에 바로 할당)',
+    RULE_OPEN_FILE: '파일 열기, 닫기 시 with open(...) 사용',
+    RULE_KEY_ITEMGETTER: 'key=itemgetter("key") 사용 권장',
+    RULE_F_STRING: '문자열 단순 연결보다는 f-string 사용',
+    RULE_COLLECTIONS_ITERTOOLS_GLOB: '빈도수, 반복문, 경로명 리스트 추출 시 collections, itertools, glob 사용',
+    RULE_ARGS_BINDABLE: '함수의 인자가 하나로 묶을 수 있는 경우 처리 권장',
+    RULE_GETATTR: '함수의 인자가 유동적인 경우 처리 권장',
+    RULE_REGEX_R: '정규 표현식 문자열은 r"..." 권장',
+    RULE_FUNCTION_LAMBDA: 'f = lambda x: ... 보다는 def f(x): return ... 를 사용',
+    RULE_PREFIX_SUFFIX: 'prefix, suffix 검사 시 startswith(), endswith() 사용',
+    RULE_EXCEPTION_IGNORED: '예외를 삼키는 경우가 없어야 함',
+    RULE_EXCEPTION_TYPE: '예외의 종류 (OOOError 등) 구체적 명시 권장',
+    RULE_FUNCTION_ARG_ERROR: '함수의 인수를 변경 가능한 default value로 하지 않아야 함',
+    RULE_ASSERTION_TRY_EXCEPT: 'assertion을 제어 메커니즘으로 사용하면 안됨',
+    RULE_PYTHON_KEYWORD_ARGS: 'Python 예약어를 변수명으로 사용하지 않아야 함',
+    RULE_REFACTOR_SAME_ARGS: '동일한 인수 집합을 갖는 함수가 많은 경우 클래스화 고려',
+    RULE_REFACTOR_STATE_VARS: '상태 값 조건이 있는 if-elif-elif-else 있는 경우 클래스화 고려',
+    RULE_PREFIX_CLASS_METHODS: '클래스 내부에서만 쓰이는 속성, 메서드 (접두사 있음) 호출 비 권장',
+    RULE_SIMILAR_FUNCTION_NAMES: '유사한 이름의 함수끼리 가까이 위치하도록 수정 권장'
 }
 
 
@@ -349,9 +350,9 @@ class TextEmbeddingModelForInference:
 def get_embedding_model(task_id: str):
     """Get appropriate embedding model."""
 
-    if task_id == "01_unnecessary_prints":
+    if task_id == RULE_UNNECESSARY_PRINTS:
         model_name = GTE_MODERNBERT_BASE
-    elif task_id.startswith("01_func_docstring"):
+    elif task_id.startswith(RULE_FUNC_DOCSTRING):
         model_name = F2LLM_V2_330M
     else:
         model_name = LATEON_CODE_PRETRAIN
@@ -412,18 +413,18 @@ def run_entire_code_review(code_path: str, except_path: str | None = None) -> di
     """Run entire code review of all the Python code files from the given path."""
 
     task_list_with_embedding = [
-        "01_unnecessary_prints",
-        "01_similar_variables",
-        "01_names",
-        "01_return_matched_with_func_name",
-        "01_func_docstring_single_responsibility",
-        "01_func_docstring_docstring_and_name",
-        "04_func_args_bindable",
-        "04_func_args_dynamic",
-        "06_refactor_into_class_case_2_state_vars_if_else",
-        "06_similar_function_names",
-        "02_numeric_values_maybe_const",
-        "02_numeric_values_twice"
+        RULE_UNNECESSARY_PRINTS,
+        RULE_SIMILAR_VARIABLES,
+        RULE_NAMES,
+        RULE_RETURN_MATCHED_NAME,
+        RULE_FUNC_DOCSTRING_RESPONSIBILITY,
+        RULE_FUNC_DOCSTRING_NAME,
+        RULE_ARGS_BINDABLE,
+        RULE_ARGS_DYNAMIC,
+        RULE_REFACTOR_STATE_VARS,
+        RULE_SIMILAR_FUNCTION_NAMES,
+        RULE_NUMERIC_CONST,
+        RULE_NUMERIC_TWICE
     ]
     text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list_with_embedding}
 

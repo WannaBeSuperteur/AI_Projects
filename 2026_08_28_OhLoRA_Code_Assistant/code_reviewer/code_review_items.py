@@ -24,6 +24,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from ast_utils import parse_py_code, get_function_name_at_line, remove_after_py
 import pandas as pd
 
+from rule_names import *
+
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 from project_common import ENTIRE_CODE_PATH
@@ -47,19 +49,6 @@ ai_code_check_log = {
     'value_type': [],
     'value': []
 }
-
-RULE_UNNECESSARY_PRINTS = '01_unnecessary_prints'
-RULE_SIMILAR_VARIABLES = '01_similar_variables'
-RULE_NAMES = '01_names'
-RULE_RETURN_MATCHED_NAME = '01_return_matched_with_func_name'
-RULE_FUNC_DOCSTRING_RESPONSIBILITY = '01_func_docstring_single_responsibility'
-RULE_FUNC_DOCSTRING_NAME = '01_func_docstring_docstring_and_name'
-RULE_NUMERIC_CONST = '02_numeric_values_maybe_const'
-RULE_NUMERIC_TWICE = '02_numeric_values_twice'
-RULE_ARGS_BINDABLE = '04_func_args_bindable'
-RULE_ARGS_DYNAMIC = '04_func_args_dynamic'
-RULE_REFACTOR_STATE_VARS = '06_refactor_into_class_case_2_state_vars_if_else'
-RULE_SIMILAR_FUNCTION_NAMES = '06_similar_function_names'
 
 NUMERIC_VALUES_CONST = "numeric values should be const"
 NO_TEXT_EMBEDDING_MODEL = "no text embedding model"
@@ -233,6 +222,10 @@ def add_to_ai_code_check_log(final_result_dict: defaultdict[Any, dict]) -> None:
 
     ai_code_check_log_df = pd.DataFrame(ai_code_check_log)
     ai_code_check_log_df.to_csv('ai_code_check_log.csv')
+
+
+def ai_log(log: str, rule_name: str, metric_name: str, metric_value: float) -> str:
+    return f"{log}, [AI] [{rule_name}] {metric_name}={metric_value}"
 
 
 class DefaultCodeChecker:
@@ -623,7 +616,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{line}, [AI] [{RULE_UNNECESSARY_PRINTS}] prob={prob}',
+                            {'name': ai_log(line, RULE_UNNECESSARY_PRINTS, 'prob', prob),
                              'type': '',
                              'line': line_no})
 
@@ -749,7 +742,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     cos_sim = cosine_similarity(log['embedding'], embedding_vector)[0][0]
 
                     self.final_result_dict[py_file_path][func_name].append({
-                        'name': f"{log['name']} | {info['name']}, [AI] [{RULE_SIMILAR_VARIABLES}] cos_sim={cos_sim}",
+                        'name': ai_log(f"{log['name']} | {info['name']}", RULE_SIMILAR_VARIABLES, 'cos_sim', cos_sim),
                         'type': '',
                         'line': line_no})
 
@@ -874,7 +867,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f'{name}, [AI] [{RULE_NAMES}] prob={prob}',
+                        {'name': ai_log(name, RULE_NAMES, 'prob', prob),
                          'type': '',
                          'line': line_no})
 
@@ -945,7 +938,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f'{var_name} | {func_name}, [AI] [{RULE_RETURN_MATCHED_NAME}] cos_sim={cos_sim}',
+                            {'name': ai_log(f'{var_name} | {func_name}', RULE_RETURN_MATCHED_NAME, 'cos_sim', cos_sim),
                              'type': '',
                              'line': line_no})
 
@@ -1283,7 +1276,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{line1.strip()} | {line2.strip()}, [AI] [{RULE_NUMERIC_TWICE}] cos_sim={cos_sim}",
+                        {'name': ai_log(f'{line1.strip()} | {line2.strip()}', RULE_NUMERIC_TWICE, 'cos_sim', cos_sim),
                          'type': '',
                          'line': line1_line_no})
 
@@ -1302,7 +1295,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{line_content}, [AI] [{RULE_NUMERIC_CONST}] prob={maybe_const_prob}",
+                        {'name': ai_log(line_content, RULE_NUMERIC_CONST, 'prob', maybe_const_prob),
                          'type': '',
                          'line': line_no})
 
@@ -1790,12 +1783,12 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
 
                     if self.is_test:
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{arg_name_list}, [AI] [{RULE_ARGS_BINDABLE}] bindable_prob={bindable_prob}",
+                            {'name': ai_log(arg_name_list, RULE_ARGS_BINDABLE, 'bindable_prob', bindable_prob),
                              'type': '',
                              'line': line_no})
 
                         final_result_dict[py_file_path][func_name].append(
-                            {'name': f"{arg_name_list}, [AI] [{RULE_ARGS_DYNAMIC}] dynamic_prob={dynamic_prob}",
+                            {'name': ai_log(arg_name_list, RULE_ARGS_DYNAMIC, 'dynamic_prob', dynamic_prob),
                              'type': '',
                              'line': line_no})
 
@@ -1983,7 +1976,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
 
             if self.is_test:
                 self.final_result_dict[py_file_path][func_name].append(
-                    {'name': f"{text}, [AI] [{RULE_REFACTOR_STATE_VARS}] prob={prob}",
+                    {'name': ai_log(text, RULE_REFACTOR_STATE_VARS, 'prob', prob),
                      'type': '',
                      'line': line_no})
 
