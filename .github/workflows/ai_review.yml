@@ -74,13 +74,13 @@ jobs:
                 "refs/heads/main/2026_08_28_OhLoRA_Code_Assistant/purple_marble/";
 
               let number;
-              if (score < 60) {
+              if (score < 80) {
                 number = 4;
-              } else if (hasManyAlerts || score < 88) {
+              } else if (hasManyAlerts || score < 91) {
                 number = 3;
-              } else if (score < 92) {
+              } else if (score < 94) {
                 number = 2;
-              } else if (hasAlert || score < 96) {
+              } else if (hasAlert || score < 97) {
                 number = 5;
               } else {
                 number = 1;

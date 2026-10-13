@@ -1,0 +1,90 @@
+
+# 01. 기본 사항
+RULE_UNUSED = '01_unused'
+RULE_UNNECESSARY_PRINTS = '01_unnecessary_prints'
+RULE_DUPLICATES = '01_duplicates'
+RULE_SIMILAR_VARIABLES = '01_similar_variables'
+RULE_SAME_FUNC_ARGS = '01_same_func_args'
+RULE_NAMES = '01_names'
+RULE_RETURN_MATCHED_NAME = '01_return_matched_with_func_name'
+RULE_LIB_ORDERS = '01_library_orders'
+RULE_FUNC_DOCSTRING = '01_func_docstring'
+RULE_FUNC_DOCSTRING_RESPONSIBILITY = '01_func_docstring_single_responsibility'
+RULE_FUNC_DOCSTRING_NAME = '01_func_docstring_docstring_and_name'
+RULE_COMMENTED_CODES = '01_commented_codes'
+RULE_EMPTY_FILE = '01_empty_file'
+
+# 02. 기본 코딩 컨벤션
+RULE_CONST = '02_const'
+RULE_NUMERIC = '02_numeric_values'
+RULE_NUMERIC_CONST = '02_numeric_values_maybe_const'
+RULE_NUMERIC_TWICE = '02_numeric_values_twice'
+RULE_LINE_LENGTH = '02_line_length'
+RULE_FILES = '02_files'
+RULE_FUNCTION_LENGTH_AND_DOCSTRING = '02_functions_length_and_docstring'
+RULE_FUNCTION_TYPE_HINT = '02_functions_type_hint'
+RULE_INDENT = '02_indent'
+
+# 03. Python 문법 간소화
+RULE_LIST_COMPREHENSION = '03_suggest_list_comprehension'
+RULE_GENERATOR_EXPRESSION = '03_generator_expression'
+RULE_IF_TO_DICT = '03_if_to_dict'
+RULE_PATH_FORMAT = '03_path_format'
+RULE_DEFAULTDICT = '03_defaultdict'
+RULE_ANY_ALL = '03_any_all'
+RULE_ZIP = '03_zip'
+RULE_ENUMERATE = '03_enumerate'
+RULE_ITERTOOLS_PRODUCT = '03_itertools_product'
+RULE_JUST_READ_WRITE = '03_just_read_write_to_read_write_text'
+RULE_SENTENCE_EMPTY_CHECK = '03_sentence_empty'
+RULE_HANDLE_NONE = '03_handle_none'
+RULE_EXTEND = '03_extend'
+RULE_COUNT = '03_count'
+RULE_INDEX = '03_index'
+RULE_STR_JOIN = '03_str_join'
+RULE_USE_MAP = '03_use_map'
+
+# 04. 그 외 Pythonic 한 프로그래밍
+RULE_UNPACKING_1 = '04_unpacking_case_1'
+RULE_UNPACKING_2 = '04_unpacking_case_2'
+RULE_OPEN_FILE = '04_open_file'
+RULE_KEY_ITEMGETTER = '04_key_itemgetter'
+RULE_F_STRING = '04_f_string'
+RULE_COLLECTIONS_ITERTOOLS_GLOB = '04_collections_itertools_glob'
+RULE_GETATTR = '04_attribute_getattr'
+RULE_REGEX_R = '04_regex_r'
+RULE_FUNCTION_LAMBDA = '04_func_lambda'
+RULE_PREFIX_SUFFIX = '04_prefix_suffix'
+RULE_ARGS_BINDABLE = '04_func_args_bindable'
+RULE_ARGS_DYNAMIC = '04_func_args_dynamic'
+
+# 05. 예외 및 오류 처리
+RULE_EXCEPTION_IGNORED = '05_exception_ignored'
+RULE_EXCEPTION_TYPE = '05_exception_type'
+RULE_FUNCTION_ARG_ERROR = '05_func_arg_error_prevent'
+RULE_ASSERTION_TRY_EXCEPT = '05_assertion_try_except'
+RULE_PYTHON_KEYWORD_ARGS = '05_python_keywords_args'
+
+# 06. 코드 응집성, 클래스화 등
+RULE_REFACTOR_SAME_ARGS = '06_refactor_into_class_case_1_same_args'
+RULE_REFACTOR_STATE_VARS = '06_refactor_into_class_case_2_state_vars_if_else'
+RULE_PREFIX_CLASS_METHODS = '06_prefix_for_only_in_class_methods'
+RULE_SIMILAR_FUNCTION_NAMES = '06_similar_function_names'
+
+PROBS = {
+    RULE_UNNECESSARY_PRINTS: 0.8,
+    RULE_NAMES: 0.1,
+    RULE_FUNC_DOCSTRING_RESPONSIBILITY: 0.3,
+    RULE_FUNC_DOCSTRING_NAME: 0.3,
+    RULE_ARGS_BINDABLE: 0.9,
+    RULE_ARGS_DYNAMIC: 0.9,
+    RULE_REFACTOR_STATE_VARS: 0.98,
+    RULE_NUMERIC_CONST: 0.85
+}
+
+SIMILARITIES = {
+    RULE_SIMILAR_FUNCTION_NAMES: {'high': 0.95, 'mid': 0.75},
+    RULE_NUMERIC_TWICE: 0.8,
+    RULE_RETURN_MATCHED_NAME: 0.35,
+    RULE_SIMILAR_VARIABLES: 0.93
+}

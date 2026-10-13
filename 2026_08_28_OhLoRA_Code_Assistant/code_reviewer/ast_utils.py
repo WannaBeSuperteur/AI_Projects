@@ -21,6 +21,8 @@ TYPE_TO_NAME = {
 
 
 def parse_function_def(node: ast.AST) -> dict:
+    """Parse function definition and get name, args, ..., etc."""
+
     args_info = defaultdict(list)
 
     args = node.args.args
@@ -43,6 +45,8 @@ def parse_function_def(node: ast.AST) -> dict:
 
 
 def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
+    """Parse Python code for structured analysis."""
+
     tree = ast.parse(source_code)
     parse_results = []
 
@@ -77,10 +81,10 @@ def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
             parse_result['info'] = {'import_names': import_names}
 
         elif isinstance(node, ast.ImportFrom):
-            mod = node.module or ""
+            module_name = node.module or ""
             import_names = [{'name': alias.name, 'as_name': alias.asname} if alias.asname else {'name': alias.name}
                             for alias in node.names]
-            parse_result['info'] = {'mod': mod, 'import_names': import_names}
+            parse_result['info'] = {'mod': module_name, 'import_names': import_names}
 
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             parse_result['info'] = parse_function_def(node)
@@ -128,6 +132,8 @@ def parse_py_code(source_code: str, verbose: bool = False) -> list[dict]:
 
 
 def get_function_name_at_line(file_name: str, line_no: int) -> str:
+    """Get the name of function at the line {line number} of the Python code file."""
+
     source = Path(file_name).read_text(encoding="utf-8")
     tree = ast.parse(source, filename=file_name)
 
@@ -140,3 +146,9 @@ def get_function_name_at_line(file_name: str, line_no: int) -> str:
 
     return ''  # global scope
 
+
+def remove_after_py(file_path: str) -> str:
+    py_idx = file_path.rfind('.py')
+    if py_idx >= 0:
+        return file_path[:py_idx + 3]
+    return file_path
