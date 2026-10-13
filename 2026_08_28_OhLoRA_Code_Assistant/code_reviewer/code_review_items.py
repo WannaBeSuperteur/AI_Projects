@@ -11,6 +11,7 @@ import re
 import tokenize
 import keyword
 import builtins
+from _ast import Expression
 from datetime import datetime
 from collections import defaultdict, Counter
 from itertools import chain, product, groupby
@@ -160,6 +161,22 @@ def check_a_in_b(a: str, b: str) -> bool:
 
 
 # Generated using ChatGPT-6 and human-reviewed later
+
+def extract_numbers_from_string_nodes(tree: Expression,
+                                      token: tokenize.TokenInfo,
+                                      extracted_numbers: list[str]) -> None:
+
+    """Extract numeric values from string nodes."""
+
+    nodes = [node for node in ast.walk(tree)
+             if isinstance(node, ast.Constant) and type(node.value) in (int, float, complex)]
+
+    for node in nodes:
+        value = ast.get_source_segment(token.string, node)
+        if value:
+            extracted_numbers.append(value)
+
+
 def extract_numbers(line: str) -> list[str]:
     """extract numeric values (= Python recognizes as number) from the line."""
 
@@ -187,13 +204,7 @@ def extract_numbers(line: str) -> list[str]:
             except (SyntaxError, ValueError):
                 continue
 
-            nodes = [node for node in ast.walk(tree)
-                     if isinstance(node, ast.Constant) and type(node.value) in (int, float, complex)]
-
-            for node in nodes:
-                value = ast.get_source_segment(token.string, node)
-                if value:
-                    extracted_numbers.append(value)
+            extract_numbers_from_string_nodes(tree, token, extracted_numbers)
 
     return extracted_numbers
 
@@ -415,27 +426,28 @@ class DefaultCodeChecker:
                 lines_to_search = '\n'.join(lines[line_idx:line_idx+forward_lines])
                 matched = re.match(regex, lines_to_search)
 
-                if matched:
-                    matched_text = matched.group(0)
-                    matched_groups = list(matched.groups())
+                if not matched:
+                    line_idx += 1
+                    continue
 
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-                    lines_to_show = lines_to_search.replace('\n', ' ')
-                    if len(lines_to_show) > 40:
-                        lines_to_show = lines_to_show[:36] + ' ...'
+                matched_text = matched.group(0)
+                matched_groups = list(matched.groups())
 
-                    is_matched = match_func is None or match_func(matched_groups)
-                    is_file_line_matched = file_line_match_func is None or file_line_match_func(matched_groups,
-                                                                                                py_file_path,
-                                                                                                line_no)
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                lines_to_show = lines_to_search.replace('\n', ' ')
+                if len(lines_to_show) > 40:
+                    lines_to_show = lines_to_show[:36] + ' ...'
 
-                    if is_matched and is_file_line_matched:
-                        self.final_result_dict[py_file_path][func_name].append({'name': lines_to_show,
-                                                                                'type': type_name,
-                                                                                'line': line_no})
-                        line_idx += matched_text.count('\n') + 1
-                    else:
-                        line_idx += 1
+                is_matched = match_func is None or match_func(matched_groups)
+                is_file_line_matched = file_line_match_func is None or file_line_match_func(matched_groups,
+                                                                                            py_file_path,
+                                                                                            line_no)
+
+                if is_matched and is_file_line_matched:
+                    self.final_result_dict[py_file_path][func_name].append({'name': lines_to_show,
+                                                                            'type': type_name,
+                                                                            'line': line_no})
+                    line_idx += matched_text.count('\n') + 1
                 else:
                     line_idx += 1
 
@@ -587,6 +599,44 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.run_ruff_check(['F401', 'F841'])
         return self.final_result_dict
 
+    def _add_unnecessary_prints_to_final_result_dict(self,
+                                                     py_file_path: str,
+                                                     py_code: str,
+                                                     text_embedding_model,
+                                                     final_result_dict: defaultdict[Any, dict]) -> None:
+
+        """Add detected unnecessary prints/loggings to final result dict."""
+
+        re_logger = r'^logger\.(debug|info|warning|error|critical)\(.*\)$'
+        re_print = r'^print\(.*\)$'
+
+        py_code_lines = py_code.split('\n')
+        logger_loggings = [(line_no + 1, line) for line_no, line
+                           in enumerate(py_code_lines) if re.match(re_logger, line)]
+        prints = [(line_no + 1, line) for line_no, line
+                  in enumerate(py_code_lines) if re.match(re_print, line)]
+
+        print_types = (
+            (logger_loggings, 'logging'),
+            (prints, 'print')
+        )
+
+        for print_collection, print_type in print_types:
+            for line_no, line in print_collection:
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                prob = text_embedding_model.get_prob(line)
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name].append(
+                        {'name': ai_log(line, RULE_UNNECESSARY_PRINTS, 'prob', prob),
+                         'type': '',
+                         'line': line_no})
+
+                if prob >= PROBS[RULE_UNNECESSARY_PRINTS]:
+                    final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line),
+                                                                       'type': print_type,
+                                                                       'line': line_no})
+
     def _check_unnecessary_prints(self) -> str | defaultdict[Any, dict]:
         """Check unnecessary prints/loggings."""
 
@@ -597,38 +647,12 @@ class PythonBasicsChecker(DefaultCodeChecker):
         text_embedding_model.load_model()
 
         final_result_dict = defaultdict(dict)
-        re_logger = r'^logger\.(debug|info|warning|error|critical)\(.*\)$'
-        re_print = r'^print\(.*\)$'
-
         for py_file_path, py_code in self.py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
-
-            py_code_lines = py_code.split('\n')
-            logger_loggings = [(line_no + 1, line) for line_no, line
-                               in enumerate(py_code_lines) if re.match(re_logger, line)]
-            prints = [(line_no + 1, line) for line_no, line
-                      in enumerate(py_code_lines) if re.match(re_print, line)]
-
-            print_types = (
-                (logger_loggings, 'logging'),
-                (prints, 'print')
-            )
-
-            for print_collection, print_type in print_types:
-                for line_no, line in print_collection:
-                    func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-                    prob = text_embedding_model.get_prob(line)
-
-                    if self.is_test:
-                        final_result_dict[py_file_path][func_name].append(
-                            {'name': ai_log(line, RULE_UNNECESSARY_PRINTS, 'prob', prob),
-                             'type': '',
-                             'line': line_no})
-
-                    if prob >= PROBS[RULE_UNNECESSARY_PRINTS]:
-                        final_result_dict[py_file_path][func_name].append({'name': ellipse_str(line),
-                                                                           'type': print_type,
-                                                                           'line': line_no})
+            self._add_unnecessary_prints_to_final_result_dict(py_file_path,
+                                                              py_code,
+                                                              text_embedding_model,
+                                                              final_result_dict)
 
         text_embedding_model.unload_model()
 
@@ -638,13 +662,45 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         return final_result_dict
 
+    def _add_to_data_type_body_list_to_check_duplicates(self,
+                                                        item: dict,
+                                                        data_type_body_list: list,
+                                                        py_file_path: str,
+                                                        final_result_dict: defaultdict[Any, dict]) -> None:
+
+        """Add detected function bodies to body list."""
+
+        function_name = item['name']
+        function_body = item['body']
+        start_line = item['start_line']
+
+        body_of_data_type = convert_values_to_data_type_names(str(function_body))
+        for existing_data_type_body in data_type_body_list:
+            if self._is_function_bodies_similar(existing_data_type_body['body'], body_of_data_type):
+                existing_func_name = existing_data_type_body['name']
+                existing_message = f'{function_name} 함수는 {existing_func_name} 과 유사 구조 존재'
+
+                prev_line = max(start_line - 1, 0)
+                parent_function_name = self.function_name_by_line_for_codebase[py_file_path][prev_line]
+                if existing_func_name == parent_function_name:
+                    continue
+
+                final_result_dict[py_file_path][function_name].append({'name': existing_message,
+                                                                       'type': 'func',
+                                                                       'line': start_line})
+                break
+
+        data_type_body_list.append({'name': function_name,
+                                    'body': body_of_data_type,
+                                    'start_line': start_line})
+
     def _check_duplicates(self) -> defaultdict[Any, dict]:
         """Check duplicated function structures."""
 
         final_result_dict = defaultdict(dict)
         defined_constant_names = set()
         repeated_long_strs = set()
-        simplified_function_body_list = []
+        data_type_body_list = []
 
         for py_file_path, parsed_py_code in self.parsed_py_codes.items():
             final_result_dict[py_file_path] = defaultdict(list)
@@ -678,29 +734,10 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
         for py_file_path, function_body_items in function_bodies_info.items():
             for item in function_body_items:
-                function_name = item['name']
-                function_body = item['body']
-                start_line = item['start_line']
-
-                body_of_data_type = convert_values_to_data_type_names(str(function_body))
-                for existing_data_type_body in simplified_function_body_list:
-                    if self._is_function_bodies_similar(existing_data_type_body['body'], body_of_data_type):
-                        existing_func_name = existing_data_type_body['name']
-                        existing_message = f'{function_name} 함수는 {existing_func_name} 과 유사 구조 존재'
-
-                        prev_line = max(start_line - 1, 0)
-                        parent_function_name = self.function_name_by_line_for_codebase[py_file_path][prev_line]
-                        if existing_func_name == parent_function_name:
-                            continue
-
-                        final_result_dict[py_file_path][function_name].append({'name': existing_message,
-                                                                               'type': 'func',
-                                                                               'line': start_line})
-                        break
-
-                simplified_function_body_list.append({'name': function_name,
-                                                      'body': body_of_data_type,
-                                                      'start_line': start_line})
+                self._add_to_data_type_body_list_to_check_duplicates(item,
+                                                                     data_type_body_list,
+                                                                     py_file_path,
+                                                                     final_result_dict)
 
         self.final_result_dict = final_result_dict
         return final_result_dict
@@ -814,6 +851,33 @@ class PythonBasicsChecker(DefaultCodeChecker):
             add_to_ai_code_check_log(self.final_result_dict)
         return self.final_result_dict
 
+    def _add_to_dicts_to_check_same_func_args(self,
+                                              item: dict,
+                                              py_file_path: str,
+                                              func_annot_dict: dict,
+                                              final_result_dict: dict) -> None:
+
+        """Add same function args & annotation to dictionaries."""
+
+        func_args = item['info']['args']
+        line_no = item['line']
+
+        if not func_args:
+            return
+
+        func_arg_names = func_args['name']
+        func_annots = func_args['annot']
+
+        for arg_name, annot in zip(func_arg_names, func_annots):
+            existing_annot = func_annot_dict.get(arg_name)
+
+            if existing_annot and annot and existing_annot != annot:
+                func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
+                final_result_dict[py_file_path][func_name].append({'name': arg_name,
+                                                                   'type': 'arg',
+                                                                   'line': line_no})
+            func_annot_dict[arg_name] = annot
+
     def _check_same_func_args(self) -> defaultdict[Any, dict]:
         """Check the cases: two function arguments have the same name, but have different annotation."""
 
@@ -827,22 +891,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
             function_defs = [item for item in parsed_py_code if item['type_name'] == 'function_def']
 
             for item in function_defs:
-                func_args = item['info']['args']
-                line_no = item['line']
-
-                if func_args:
-                    func_arg_names = func_args['name']
-                    func_annots = func_args['annot']
-
-                    for arg_name, annot in zip(func_arg_names, func_annots):
-                        existing_annot = func_annot_dict.get(arg_name)
-
-                        if existing_annot and annot and existing_annot != annot:
-                            func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-                            final_result_dict[py_file_path][func_name].append({'name': arg_name,
-                                                                               'type': 'arg',
-                                                                               'line': line_no})
-                        func_annot_dict[arg_name] = annot
+                self._add_to_dicts_to_check_same_func_args(item, py_file_path, func_annot_dict, final_result_dict)
 
         self.final_result_dict = final_result_dict
         return final_result_dict
@@ -886,15 +935,15 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': ai_log(name, RULE_NAMES, 'prob', prob),
-                         'type': '',
-                         'line': line_no})
+                            {'name': ai_log(name, RULE_NAMES, 'prob', prob),
+                             'type': '',
+                             'line': line_no})
 
                 if text_embedding_model.get_prob(name) <= PROBS[RULE_NAMES] and name != '_':
-                    final_result_dict[py_file_path][func_name].append({
-                        'name': name,
-                        'type': 'var_or_func',
-                        'line': line_no})
+                    final_result_dict[py_file_path][func_name].append(
+                            {'name': name,
+                             'type': 'var_or_func',
+                             'line': line_no})
 
         text_embedding_model.unload_model()
 
@@ -950,21 +999,27 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             for line_no, line in enumerate(py_code.split('\n')):
                 match = re.match(pattern, line)
-                if match:
-                    var_name = match.group(1)
-                    func_name = match.group(2)
-                    cos_sim = text_embedding_model.get_similarity(var_name, func_name)
 
-                    if self.is_test:
-                        final_result_dict[py_file_path][func_name].append(
-                            {'name': ai_log(f'{var_name} | {func_name}', RULE_RETURN_MATCHED_NAME, 'cos_sim', cos_sim),
+                if not match:
+                    continue
+
+                var_name = match.group(1)
+                func_name = match.group(2)
+                cos_sim = text_embedding_model.get_similarity(var_name, func_name)
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name].append(
+                            {'name': ai_log(log=f'{var_name} | {func_name}',
+                                            rule_name=RULE_RETURN_MATCHED_NAME,
+                                            metric_name='cos_sim',
+                                            metric_value=cos_sim),
                              'type': '',
                              'line': line_no})
 
-                    if cos_sim < SIMILARITIES[RULE_RETURN_MATCHED_NAME]:
-                        final_result_dict[py_file_path][func_name].append({'name': f'{var_name} = {func_name}(...)',
-                                                                           'type': 'func_return',
-                                                                           'line': line_no})
+                if cos_sim < SIMILARITIES[RULE_RETURN_MATCHED_NAME]:
+                    final_result_dict[py_file_path][func_name].append({'name': f'{var_name} = {func_name}(...)',
+                                                                       'type': 'func_return',
+                                                                       'line': line_no})
 
         text_embedding_model.unload_model()
 
@@ -1069,28 +1124,28 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
                 if self.is_test:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{item['name']}, " +
-                                 f"[AI] [01_func_docstring_single_responsibility] prob={docstring_prob}",
-                         'type': '',
-                         'line': line_no})
+                            {'name': f"{item['name']}, " +
+                                     f"[AI] [01_func_docstring_single_responsibility] prob={docstring_prob}",
+                             'type': '',
+                             'line': line_no})
 
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"{item['name']} | {item['docstring']}, " +
-                                 f"[AI] [{RULE_FUNC_DOCSTRING_NAME}] cos_sim={docstring_and_name_cos_sim}",
-                         'type': '',
-                         'line': line_no})
+                            {'name': f"{item['name']} | {item['docstring']}, " +
+                                     f"[AI] [{RULE_FUNC_DOCSTRING_NAME}] cos_sim={docstring_and_name_cos_sim}",
+                             'type': '',
+                             'line': line_no})
 
                 if docstring_prob < PROBS[RULE_FUNC_DOCSTRING_RESPONSIBILITY]:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"함수 {item['name']} 단일 책임 원칙 위반",
-                         'type': 'docstring',
-                         'line': line_no})
+                            {'name': f"함수 {item['name']} 단일 책임 원칙 위반",
+                             'type': 'docstring',
+                             'line': line_no})
 
                 if docstring_and_name_cos_sim < PROBS[RULE_FUNC_DOCSTRING_NAME]:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f"함수 {item['name']} - docstring 불일치",
-                         'type': 'docstring',
-                         'line': line_no})
+                            {'name': f"함수 {item['name']} - docstring 불일치",
+                             'type': 'docstring',
+                             'line': line_no})
 
         text_embedding_model_single_responsibility.unload_model()
         text_embedding_model_docstring_and_name.unload_model()
@@ -1204,10 +1259,40 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                                                            line_embeddings: dict,
                                                            text_embedding_model_twice) -> list:
 
-        """Find all the pair of lines with same numeric values."""
+        """Find all the pair of lines with same numeric values, to compare the contents of the paired two lines."""
 
         line_pairs_to_compare_for_multiple_used_numeric_values = []
         line_pairs_compared_for_multiple_used_numeric_values = set()
+
+        def add_line_pairs_to_compare(line_info1: dict,
+                                      line_info2: dict,
+                                      line_embeddings: dict,
+                                      text_embedding_model_twice) -> None:
+
+            """Add line pairs to compare the line contents."""
+
+            line1_content, line2_content = line_info1['line_content'], line_info2['line_content']
+            line1_line_no, line2_line_no = line_info1['line_no'], line_info2['line_no']
+
+            line1_embedding = line_embeddings.get(line1_line_no)
+            if line1_embedding is None:
+                line1_embedding = text_embedding_model_twice.get_embedding(line1_content)
+
+            line2_embedding = line_embeddings.get(line2_line_no)
+            if line2_embedding is None:
+                line2_embedding = text_embedding_model_twice.get_embedding(line2_content)
+
+            if line_embeddings.get(line1_line_no) is None:
+                line_embeddings[line1_line_no] = line1_embedding
+            if line_embeddings.get(line2_line_no) is None:
+                line_embeddings[line2_line_no] = line2_embedding
+
+            line_pairs_to_compare_for_multiple_used_numeric_values.append({'line1_line_no': line1_line_no,
+                                                                           'line2_line_no': line2_line_no,
+                                                                           'line1_content': line1_content,
+                                                                           'line2_content': line2_content})
+
+            line_pairs_compared_for_multiple_used_numeric_values.add(line1_line_no)
 
         for info1 in multiple_used_numeric_values:
             if info1['line_no'] in line_pairs_compared_for_multiple_used_numeric_values:
@@ -1215,28 +1300,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
             for info2 in multiple_used_numeric_values:
                 if info1['number'] == info2['number']:
-                    line1, line2 = info1['line_content'], info2['line_content']
-                    line1_line_no, line2_line_no = info1['line_no'], info2['line_no']
-
-                    line1_embedding = line_embeddings.get(line1_line_no)
-                    if line1_embedding is None:
-                        line1_embedding = text_embedding_model_twice.get_embedding(line1)
-
-                    line2_embedding = line_embeddings.get(line2_line_no)
-                    if line2_embedding is None:
-                        line2_embedding = text_embedding_model_twice.get_embedding(line2)
-
-                    if line_embeddings.get(line1_line_no) is None:
-                        line_embeddings[line1_line_no] = line1_embedding
-                    if line_embeddings.get(line2_line_no) is None:
-                        line_embeddings[line2_line_no] = line2_embedding
-
-                    line_pairs_to_compare_for_multiple_used_numeric_values.append({'line1_line_no': line1_line_no,
-                                                                                   'line2_line_no': line2_line_no,
-                                                                                   'line1': line1,
-                                                                                   'line2': line2})
-
-                    line_pairs_compared_for_multiple_used_numeric_values.add(line1_line_no)
+                    add_line_pairs_to_compare(info1, info2, line_embeddings, text_embedding_model_twice)
                     break
 
         return line_pairs_to_compare_for_multiple_used_numeric_values
@@ -1287,12 +1351,12 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
                                                                     line_embeddings,
                                                                     text_embedding_model_twice))
 
-        # 2회 이상 등장한 숫자 값 유사도 검사
+        # 2회 이상 등장한 숫자 값에 대해, 해당 line 내용의 유사도 검사
         for line_info in line_pairs_to_compare_for_multiple_used_numeric_values:
-            line1, line2 = line_info['line1'], line_info['line2']
+            line1_content, line2_content = line_info['line1_content'], line_info['line2_content']
             line1_line_no, line2_line_no = line_info['line1_line_no'], line_info['line2_line_no']
 
-            if extract_comment(line1) == line1 or extract_comment(line2) == line2:
+            if extract_comment(line1_content) == line1_content or extract_comment(line2_content) == line2_content:
                 continue
 
             line1_embedding = line_embeddings[line1_line_no].reshape(1, -1)
@@ -1302,13 +1366,16 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
             if self.is_test:
                 final_result_dict[py_file_path][func_name].append(
-                    {'name': ai_log(f'{line1.strip()} | {line2.strip()}', RULE_NUMERIC_TWICE, 'cos_sim', cos_sim),
+                    {'name': ai_log(log=f'{line1_content.strip()} | {line2_content.strip()}',
+                                    rule_name=RULE_NUMERIC_TWICE,
+                                    metric_name='cos_sim',
+                                    metric_value=cos_sim),
                      'type': '',
                      'line': line1_line_no})
 
             if cos_sim >= SIMILARITIES[RULE_NUMERIC_TWICE]:
                 final_result_dict[py_file_path][func_name].append(
-                    {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1.strip())}',
+                    {'name': f'동일 숫자 여러번 등장: {ellipse_str(line1_content.strip())}',
                      'type': NUMERIC_VALUES_CONST,
                      'line': line1_line_no})
 
@@ -1416,15 +1483,15 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
                 if func_length > self.max_func_lines:
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f'{func_name} 너무 긺 ({func_length} 줄 > {self.max_func_lines} 줄)',
-                         'type': 'too_long_function',
-                         'line': line_no})
+                            {'name': f'{func_name} 너무 긺 ({func_length} 줄 > {self.max_func_lines} 줄)',
+                             'type': 'too_long_function',
+                             'line': line_no})
 
                 if func_length >= 10 and not item.get('docstring', None) and func_name != '__init__':
                     final_result_dict[py_file_path][func_name].append(
-                        {'name': f'{func_name} docstring 없음',
-                         'type': 'no_docstring',
-                         'line': line_no})
+                            {'name': f'{func_name} docstring 없음',
+                             'type': 'no_docstring',
+                             'line': line_no})
 
         self.final_result_dict = final_result_dict
         return final_result_dict
@@ -1556,12 +1623,11 @@ class PythonSimplificationChecker(DefaultCodeChecker):
                 val_line_ = val_line['line']
                 def_line_ = def_line['line']
 
-                if val_line_no > def_line_no:
-                    if def_line_.split('=')[0].strip() == val_line_.split('[')[0].strip():
-                        func_name = self.function_name_by_line_for_codebase[py_file_path][def_line_no]
-                        final_result_dict[py_file_path][func_name].append({'name': ellipse_str(val_line_.strip()),
-                                                                           'type': 'should use defaultdict',
-                                                                           'line': def_line_no})
+                if val_line_no > def_line_no and def_line_.split('=')[0].strip() == val_line_.split('[')[0].strip():
+                    func_name = self.function_name_by_line_for_codebase[py_file_path][def_line_no]
+                    final_result_dict[py_file_path][func_name].append({'name': ellipse_str(val_line_.strip()),
+                                                                       'type': 'should use defaultdict',
+                                                                       'line': def_line_no})
 
         self.final_result_dict = final_result_dict
         return final_result_dict
@@ -1833,31 +1899,33 @@ class PythonOtherPythonicChecker(DefaultCodeChecker):
                 func_name = item['info']['name']
                 arg_names = item['info'].get('args', {}).get('name', None)
 
-                if arg_names is not None and arg_names != ['self']:
-                    arg_name_list = ','.join(arg_names)
+                if arg_names is None or arg_names == ['self']:
+                    continue
 
-                    bindable_prob = text_embedding_model_bindable.get_prob(arg_name_list)
-                    dynamic_prob = text_embedding_model_dynamic.get_prob(arg_name_list)
+                arg_name_list = ','.join(arg_names)
 
-                    if self.is_test:
-                        final_result_dict[py_file_path][func_name].append(
+                bindable_prob = text_embedding_model_bindable.get_prob(arg_name_list)
+                dynamic_prob = text_embedding_model_dynamic.get_prob(arg_name_list)
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name].append(
                             {'name': ai_log(arg_name_list, RULE_ARGS_BINDABLE, 'bindable_prob', bindable_prob),
                              'type': '',
                              'line': line_no})
 
-                        final_result_dict[py_file_path][func_name].append(
+                    final_result_dict[py_file_path][func_name].append(
                             {'name': ai_log(arg_name_list, RULE_ARGS_DYNAMIC, 'dynamic_prob', dynamic_prob),
                              'type': '',
                              'line': line_no})
 
-                    if bindable_prob >= PROBS[RULE_ARGS_BINDABLE]:
-                        final_result_dict[py_file_path][func_name].append(
+                if bindable_prob >= PROBS[RULE_ARGS_BINDABLE]:
+                    final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'bindable_args',
                              'line': line_no})
 
-                    if dynamic_prob >= PROBS[RULE_ARGS_DYNAMIC]:
-                        final_result_dict[py_file_path][func_name].append(
+                if dynamic_prob >= PROBS[RULE_ARGS_DYNAMIC]:
+                    final_result_dict[py_file_path][func_name].append(
                             {'name': f'{func_name}({ellipse_str(arg_name_list)})',
                              'type': 'dynamic_args',
                              'line': line_no})
@@ -2056,6 +2124,37 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
         self.run_ruff_check(['SLF001'])
         return self.final_result_dict
 
+    def _fill_func_similarity_matrix(self,
+                                     py_file_path: str,
+                                     func_sim_matrix: list[list[str]],
+                                     func_names: list[dict[str, Any]],
+                                     final_result_dict: defaultdict[Any, dict]) -> None:
+
+        """Fill the function similarity matrix to detect similar-name functions."""
+
+        for idx_0, func_name_info_0 in enumerate(func_names):
+            for idx_1, func_name_info_1 in enumerate(func_names):
+                emb_0 = func_name_info_0['embedding'].reshape(1, -1)
+                emb_1 = func_name_info_1['embedding'].reshape(1, -1)
+                func_name_0, func_name_1 = func_name_info_0['name'], func_name_info_1['name']
+                line_no = func_name_info_0['line']
+
+                cos_sim = cosine_similarity(emb_0, emb_1)[0][0]
+                if func_name_0 == '__init__' or func_name_1 == '__init__':
+                    continue
+
+                if self.is_test:
+                    final_result_dict[py_file_path][func_name_0].append(
+                        {'name': f'{func_name_0} | {func_name_1}, ' +
+                                 f'[AI] [{RULE_SIMILAR_FUNCTION_NAMES}] cos_sim={cos_sim}',
+                         'type': '',
+                         'line': line_no})
+
+                if cos_sim >= SIMILARITIES[RULE_SIMILAR_FUNCTION_NAMES]['high']:
+                    func_sim_matrix[idx_0][idx_1] = 'high'
+                elif cos_sim < SIMILARITIES[RULE_SIMILAR_FUNCTION_NAMES]['mid']:
+                    func_sim_matrix[idx_0][idx_1] = 'low'
+
     def _check_similar_function_names(self) -> str | defaultdict[Any, dict]:
         """Check if there are some pairs of two similar function names (the location of the functions are not near)."""
 
@@ -2081,28 +2180,7 @@ class PythonCohesivenessAndClassChecker(DefaultCodeChecker):
             func_count = len(func_names)
             func_sim_matrix = [['mid' for _ in range(func_count)] for _ in range(func_count)]
 
-            for idx_0, func_name_info_0 in enumerate(func_names):
-                for idx_1, func_name_info_1 in enumerate(func_names):
-                    emb_0 = func_name_info_0['embedding'].reshape(1, -1)
-                    emb_1 = func_name_info_1['embedding'].reshape(1, -1)
-                    func_name_0, func_name_1 = func_name_info_0['name'], func_name_info_1['name']
-                    line_no = func_name_info_0['line']
-
-                    cos_sim = cosine_similarity(emb_0, emb_1)[0][0]
-                    if func_name_0 == '__init__' or func_name_1 == '__init__':
-                        continue
-
-                    if self.is_test:
-                        final_result_dict[py_file_path][func_name_0].append(
-                            {'name': f'{func_name_0} | {func_name_1}, ' +
-                                     f'[AI] [{RULE_SIMILAR_FUNCTION_NAMES}] cos_sim={cos_sim}',
-                             'type': '',
-                             'line': line_no})
-
-                    if cos_sim >= SIMILARITIES[RULE_SIMILAR_FUNCTION_NAMES]['high']:
-                        func_sim_matrix[idx_0][idx_1] = 'high'
-                    elif cos_sim < SIMILARITIES[RULE_SIMILAR_FUNCTION_NAMES]['mid']:
-                        func_sim_matrix[idx_0][idx_1] = 'low'
+            self._fill_func_similarity_matrix(py_file_path, func_sim_matrix, func_names, final_result_dict)
 
             for idx_0, func_name_item in enumerate(func_names):
                 first_similar_idx = None
