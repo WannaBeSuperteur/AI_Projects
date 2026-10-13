@@ -707,7 +707,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
     def _find_all_similar_text_pairs(self,
                                      text_embedding_model,
-                                     value_dict: defaultdict[Any, dict],
+                                     variables_info_dict: defaultdict[Any, dict],
                                      only_same: bool = False,
                                      include_same: bool = False) -> list[dict]:
 
@@ -717,18 +717,18 @@ class PythonBasicsChecker(DefaultCodeChecker):
         all_similar_text_pairs = []
         embedding_vector_dict = {}
 
-        def check_text_similar_with_prevs(info: dict, py_file_path: str) -> None:
+        def check_text_similar_with_prevs(variable_info: dict, py_file_path: str) -> None:
             """Check if there are text values similar to info['name'], comparing with accumulated embedding vectors."""
 
-            embedding_vector = embedding_vector_dict.get(info['name'])
+            embedding_vector = embedding_vector_dict.get(variable_info['name'])
             if embedding_vector is None:
-                embedding_vector = text_embedding_model.get_embedding(info['name'])
+                embedding_vector = text_embedding_model.get_embedding(variable_info['name'])
 
             embedding_vector = embedding_vector.reshape(1, -1)
-            embedding_vector_dict[info['name']] = embedding_vector
+            embedding_vector_dict[variable_info['name']] = embedding_vector
 
-            info['embedding'] = embedding_vector
-            info['py_file_path'] = py_file_path
+            variable_info['embedding'] = embedding_vector
+            variable_info['py_file_path'] = py_file_path
 
             text_embedding_logs_filtered = \
                 [log for log in text_embedding_logs
@@ -736,19 +736,19 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             if only_same:
                 text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
-                                                if log['name'] == info['name']]
+                                                if log['name'] == variable_info['name']]
 
             if not include_same:
                 text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
-                                                if (log['name'] != info['name'] and
-                                                    log['name'] + '_' != info['name'] and
-                                                    log['name'] != info['name'] + '_' and
-                                                    log['name'] + 's' != info['name'] and
-                                                    log['name'] != info['name'] + 's' and
-                                                    log['name'] + 'es' != info['name'] and
-                                                    log['name'] != info['name'] + 'es')]
+                                                if (log['name'] != variable_info['name'] and
+                                                    log['name'] + '_' != variable_info['name'] and
+                                                    log['name'] != variable_info['name'] + '_' and
+                                                    log['name'] + 's' != variable_info['name'] and
+                                                    log['name'] != variable_info['name'] + 's' and
+                                                    log['name'] + 'es' != variable_info['name'] and
+                                                    log['name'] != variable_info['name'] + 'es')]
 
-            line_no = info['line']
+            line_no = variable_info['line']
             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
 
             if self.is_test:
@@ -756,20 +756,23 @@ class PythonBasicsChecker(DefaultCodeChecker):
                     cos_sim = cosine_similarity(log['embedding'], embedding_vector)[0][0]
 
                     self.final_result_dict[py_file_path][func_name].append({
-                        'name': ai_log(f"{log['name']} | {info['name']}", RULE_SIMILAR_VARIABLES, 'cos_sim', cos_sim),
+                        'name': ai_log(f"{log['name']} | {variable_info['name']}",
+                                       rule_name=RULE_SIMILAR_VARIABLES,
+                                       metric_name='cos_sim',
+                                       metric_value=cos_sim),
                         'type': '',
                         'line': line_no})
 
             if text_embedding_logs_filtered:
-                info[DETECTED_SIMILAR_NAME] = text_embedding_logs_filtered[0]['name']
-                all_similar_text_pairs.append(info)
+                variable_info[DETECTED_SIMILAR_NAME] = text_embedding_logs_filtered[0]['name']
+                all_similar_text_pairs.append(variable_info)
 
-            text_embedding_logs.append(info)
+            text_embedding_logs.append(variable_info)
 
-        for py_file_path in value_dict.keys():
-            for func_name, info_list in value_dict[py_file_path].items():
-                for info in info_list:
-                    check_text_similar_with_prevs(info, py_file_path)
+        for py_file_path in variables_info_dict.keys():
+            for func_name, variable_info_list in variables_info_dict[py_file_path].items():
+                for variable_info in variable_info_list:
+                    check_text_similar_with_prevs(variable_info, py_file_path)
 
         return all_similar_text_pairs
 
@@ -782,7 +785,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
         self.final_result_dict = defaultdict(dict)
         text_embedding_model = self.text_embedding_models.get(RULE_SIMILAR_VARIABLES)
         text_embedding_model.load_model()
-        all_variables_dict = defaultdict(dict)
+        all_variables_info_dict = defaultdict(dict)
 
         for py_file_path in self.parsed_py_codes.keys():
             self.final_result_dict[py_file_path] = defaultdict(list)
@@ -792,9 +795,9 @@ class PythonBasicsChecker(DefaultCodeChecker):
 
             variable_info = {func: [info for info in info_list if info['type'] == 'name' and len(info['name']) >= 4]
                              for func, info_list in defined_info.items()}
-            all_variables_dict[py_file_path] = variable_info
+            all_variables_info_dict[py_file_path] = variable_info
 
-        all_similar_text_pairs = self._find_all_similar_text_pairs(text_embedding_model, all_variables_dict)
+        all_similar_text_pairs = self._find_all_similar_text_pairs(text_embedding_model, all_variables_info_dict)
 
         for info in all_similar_text_pairs:
             line_no = info['line']
@@ -1239,7 +1242,7 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         return line_pairs_to_compare_for_multiple_used_numeric_values
 
     def _check_numeric_values_per_file(self,
-                                       final_result_dict: dict,
+                                       final_result_dict: defaultdict[Any, dict],
                                        py_file_path: str,
                                        py_code: str,
                                        text_embedding_models_dict: dict) -> None:

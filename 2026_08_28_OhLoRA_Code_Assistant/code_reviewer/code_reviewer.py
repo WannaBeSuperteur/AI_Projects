@@ -387,9 +387,9 @@ def evaluate_code_review_result(code_lines: dict[str, int], item_counts: dict[di
             evaluation_result[rule_id] = {file_path: max(0, code_lines[remove_after_py(file_path)] - 100 * issue_cnt)
                                           for file_path, issue_cnt in rule_review_result.items()}
 
-            for file_path in code_lines.keys():
-                if file_path not in evaluation_result[rule_id]:
-                    evaluation_result[rule_id][file_path] = code_lines[file_path]
+            not_checked_file_paths = [path for path in code_lines.keys() if path not in evaluation_result[rule_id]]
+            for file_path in not_checked_file_paths:
+                evaluation_result[rule_id][file_path] = code_lines[file_path]
 
             scores[rule_id] = sum(evaluation_result[rule_id].values()) / sum_code_lines
 
