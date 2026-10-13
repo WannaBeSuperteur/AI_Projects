@@ -1260,8 +1260,11 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
 
         for line_idx, line in enumerate(lines):
 
-            # skip top-definition pattern (e.g. "VARIABLE_NUM = 123 * 456")
+            # skip top-definition & dict-definition pattern (e.g. "VAR_NUM = 123 * 456", "VAR_NUM: 123 * 456")
             if re.match(r"^[A-Z_]+\s*=\s*[0-9\s*+-/]+", line):
+                continue
+
+            if re.match(r"^[A-Z_]+\s*:\s*[0-9\s*+-/]+,?", line):
                 continue
 
             line_no = line_idx + 1

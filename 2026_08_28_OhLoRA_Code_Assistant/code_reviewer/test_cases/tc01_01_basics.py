@@ -6,6 +6,12 @@ import os
 
 unused_variable = 123
 TEST_DUPLICATED = 10
+ABC_DEF = "abc_def"
+
+TEST_DUPLICATED_ = {
+    ABC_DEF: 100,
+    TEST_DUPLICATED: 15.36
+}
 IMPORT_NUM = 0
 
 
