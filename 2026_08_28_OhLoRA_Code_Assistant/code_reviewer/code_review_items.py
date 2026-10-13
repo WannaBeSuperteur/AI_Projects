@@ -52,6 +52,7 @@ ai_code_check_log = {
 
 NUMERIC_VALUES_CONST = "numeric values should be const"
 NO_TEXT_EMBEDDING_MODEL = "no text embedding model"
+DETECTED_SIMILAR_NAME = "detected_similar_name"
 SHOW_LENGTH_ELLIPSED = 20
 
 
@@ -732,7 +733,11 @@ class PythonBasicsChecker(DefaultCodeChecker):
                 text_embedding_logs_filtered = [log for log in text_embedding_logs_filtered
                                                 if (log['name'] != info['name'] and
                                                     log['name'] + '_' != info['name'] and
-                                                    log['name'] != info['name'] + '_')]
+                                                    log['name'] != info['name'] + '_' and
+                                                    log['name'] + 's' != info['name'] and
+                                                    log['name'] != info['name'] + 's' and
+                                                    log['name'] + 'es' != info['name'] and
+                                                    log['name'] != info['name'] + 'es')]
 
             line_no = info['line']
             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
@@ -747,6 +752,7 @@ class PythonBasicsChecker(DefaultCodeChecker):
                         'line': line_no})
 
             if text_embedding_logs_filtered:
+                info[DETECTED_SIMILAR_NAME] = text_embedding_logs_filtered[0]['name']
                 all_similar_text_pairs.append(info)
 
             text_embedding_logs.append(info)
@@ -784,9 +790,10 @@ class PythonBasicsChecker(DefaultCodeChecker):
         for info in all_similar_text_pairs:
             line_no = info['line']
             py_file_path = info['py_file_path']
+            similar_name = info[DETECTED_SIMILAR_NAME]
 
             func_name = self.function_name_by_line_for_codebase[py_file_path][line_no]
-            self.final_result_dict[py_file_path][func_name].append({'name': info['name'],
+            self.final_result_dict[py_file_path][func_name].append({'name': f"{info['name']} ({similar_name} 과 유사)",
                                                                     'type': 'name',
                                                                     'line': info['line']})
 
