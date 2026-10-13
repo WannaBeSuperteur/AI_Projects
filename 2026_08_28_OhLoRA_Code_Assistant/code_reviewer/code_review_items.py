@@ -1322,25 +1322,22 @@ class PythonBasicConventionChecker(DefaultCodeChecker):
         line_embeddings = {}
         lines_with_numbers = []
 
-        for line_idx, line in enumerate(lines):
+        for line_idx, line_content in enumerate(lines):
 
             # skip top-definition & dict-definition pattern (e.g. "VAR_NUM = 123 * 456", "VAR_NUM: 123 * 456")
-            if re.match(r"^[A-Z_]+\s*=\s*[0-9.\s*+\-/]+", line):
-                continue
-
-            if re.match(r"^[A-Z_]+\s*:\s*[0-9.\s*+\-/]+,?", line):
+            if re.match(r"^\s*[A-Z_]+\s*[:=]\s*[0-9.\s*+\-/]+,?\s*$", line_content):
                 continue
 
             line_no = line_idx + 1
             extracted_numbers = [{'line_no': line_no,
-                                  'line_content': line,
-                                  'number': num} for num in extract_numbers(line)]
+                                  'line_content': line_content,
+                                  'number': num} for num in extract_numbers(line_content)]
             extracted_numbers = [info for info in extracted_numbers if info['number'] not in ALLOWED_NUM_CONSTS]
             numeric_values.extend(extracted_numbers)
 
             if extracted_numbers:
                 lines_with_numbers.append({'line_no': line_no,
-                                           'line_content': line})
+                                           'line_content': line_content})
 
         number_counts = Counter(item['number'] for item in numeric_values)
         multiple_used_numbers = [num for num, count in number_counts.items() if count >= 2]
