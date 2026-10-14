@@ -1,0 +1,25 @@
+---
+language:
+- ko
+- en
+base_model:
+- {base_model}
+library_name: sentence-transformers
+tags:
+- sentence-transformers
+- embeddings
+- code-search
+- semantic-search
+---
+
+## Model Description
+
+- One of the 12 Embedding models for [Oh-LoRA 👱‍♀️ Code Assistant Project](https://github.com/WannaBeSuperteur/AI_Projects/tree/main/2026_08_28_OhLoRA_Code_Assistant).
+- Applied Rule ID: `{rule_id}`
+- What to predict (`prob` / `sim`(cos-sim)) : `{what_to_predict}`
+- For more details, please visit [Here](https://github.com/WannaBeSuperteur/AI_Projects/blob/main/2026_08_28_OhLoRA_Code_Assistant/code_reviewer/README.md).
+
+## Model Details
+
+- **Model Type:** Sentence Embedding
+- **Framework:** SentenceTransformers
