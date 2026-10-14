@@ -2,6 +2,7 @@
 import os
 import sys
 
+from pathlib import Path
 from huggingface_hub import HfApi
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
@@ -21,9 +22,10 @@ EMBEDDING_REPOS = [EMBEDDING_REPO_BASE + rule_id for rule_id in RULES_EMBEDDING]
 LLM_REPO_ID = f"{HF_USERNAME}/260828_OhLoRA_LLM"
 PRIVATE = False
 
-EMBEDDING_MODEL_PATHS = [PROJECT_DIR_PATH / "embedding_model" / "models" / rule_id for rule_id in RULES_EMBEDDING]
-LLM_MODEL_PATH = PROJECT_DIR_PATH / "llm_model" / "kanana-2-3b-instruct_fine_tuned" / "full_model"
-README_TEMPLATE_PATH = PROJECT_DIR_PATH / "huggingface" / "readme_templates"
+PROJECT_DIR_PATH_ = Path(PROJECT_DIR_PATH)
+EMBEDDING_MODEL_PATHS = [PROJECT_DIR_PATH_ / "embedding_model" / "models" / rule_id for rule_id in RULES_EMBEDDING]
+LLM_MODEL_PATH = (PROJECT_DIR_PATH_ / "llm_model" / "kanana-2-3b-instruct_fine_tuned" / "full_model")
+README_TEMPLATE_PATH = (PROJECT_DIR_PATH_ / "huggingface" / "readme_templates")
 
 
 def upload_casual_llm():
@@ -44,7 +46,7 @@ def upload_casual_llm():
         repo_type="model"
     )
 
-    local_readme_teamplate_path = README_TEMPLATE_PATH / "llm_template.txt"
+    local_readme_teamplate_path = Path(README_TEMPLATE_PATH) / "llm_template.txt"
     local_readme = local_readme_teamplate_path.read_text(encoding="utf-8")
 
     api.upload_file(
@@ -61,7 +63,7 @@ def upload_embedding_models():
 
     for local_path, hf_repo_id, rule_id in zip(EMBEDDING_MODEL_PATHS, EMBEDDING_REPOS, RULES_EMBEDDING):
         assert local_path.is_dir(), f"Model directory not found: {local_path}"
-        assert (local_path / "modules.json").is_file()
+        assert ((local_path / "modules.json").is_file() or (local_path / "model.safetensors").is_file())
 
         api.create_repo(
             repo_id=hf_repo_id,
