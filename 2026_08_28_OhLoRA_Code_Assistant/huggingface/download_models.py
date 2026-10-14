@@ -41,20 +41,19 @@ def download_embedding_models(embedding_models_root_save_path: str):
     for repo_id in EMBEDDING_REPOS:
         rule_id = repo_id.split('_Embedding_')[-1]
         embedding_model_save_path = Path(embedding_models_root_save_path) / rule_id
+        os.makedirs(embedding_model_save_path, exist_ok=True)
         download_llm(repo_id, embedding_model_save_path)
 
 
 if __name__ == '__main__':
-
-    # TODO: set default value for these arguments as '../llm_model/kanana-2-3b-instruct-fine-tuned/full_model',
-    #       '../embedding_model/models', respectively
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--llm_path",
                         required=True,
+                        default="../llm_model/kanana-2-3b-instruct_fine_tuned/full_model",
                         help="save path of Causal LLM of Oh-LoRA Code Assistant")
     parser.add_argument("--emb_path",
                         required=True,
+                        default="../embedding_model/models",
                         help="root save path of the Embedding models of Oh-LoRA Code Assistant")
 
     args = parser.parse_args()
