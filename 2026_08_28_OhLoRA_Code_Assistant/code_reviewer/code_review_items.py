@@ -85,7 +85,7 @@ def convert_values_to_data_type_names(original_code: str) -> str:
     return result
 
 
-def convert_to_human_friendly_review(rule_id: str, final_result_dict: defaultdict[Any, dict]) -> str:
+def convert_to_human_friendly_review(final_result_dict: defaultdict[Any, dict]) -> str:
     """Convert json-like format review result into human-friendly review style."""
 
     final_review = ''
@@ -2295,7 +2295,7 @@ def default_code_review_func(py_codes: dict[str, str],
                                              is_test=False)
 
     code_review_result = default_code_checker.run_code_review()
-    code_review_result_str = {k: convert_to_human_friendly_review(k, v) for k, v in code_review_result.items()}
+    code_review_result_str = {k: convert_to_human_friendly_review(v) for k, v in code_review_result.items()}
 
     item_counts = defaultdict(dict)
     for rule_id, rule_review_result in code_review_result.items():
