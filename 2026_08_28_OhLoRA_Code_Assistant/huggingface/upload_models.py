@@ -50,7 +50,7 @@ def upload_casual_llm():
     local_readme = local_readme_teamplate_path.read_text(encoding="utf-8")
 
     api.upload_file(
-        path_or_fileobj=str(local_readme),
+        path_or_fileobj=local_readme.encode('utf-8'),
         path_in_repo="README.md",
         repo_id=LLM_REPO_ID,
         repo_type="model",
@@ -86,7 +86,7 @@ def upload_embedding_models():
         local_readme = local_readme.replace('{what_to_predict}', TASK_NAME_TO_INFO[rule_id]['task_type'])
 
         api.upload_file(
-            path_or_fileobj=str(local_readme),
+            path_or_fileobj=local_readme.encode('utf-8'),
             path_in_repo="README.md",
             repo_id=hf_repo_id,
             repo_type="model",
