@@ -1,21 +1,22 @@
 import argparse
 import os
+import sys
 import shutil
 import time
 import random
+import math
 
 import numpy as np
 import pandas as pd
 import sklearn
 
-import math
 import torch
 import torch.nn as nn
 import torch.utils.data
 from torch.utils.data import random_split, DataLoader
 
 import datasets
-from sentence_transformers import SentenceTransformer, util, SentenceTransformerTrainingArguments, \
+from sentence_transformers import SentenceTransformer, SentenceTransformerTrainingArguments, \
                                   SentenceTransformerTrainer
 from sentence_transformers.sentence_transformer import losses
 from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
@@ -25,14 +26,19 @@ from safetensors.torch import save_file
 from sklearn.metrics.pairwise import cosine_similarity
 
 
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_DIR_PATH)
+
+from rule_and_model_info import GTE_MODERNBERT_BASE, F2LLM_V2_330M, LATEON_CODE_PRETRAIN
+from rule_and_model_info import HIDDEN_SIZE, TASK_NAME_TO_INFO
+
+
 np.set_printoptions(linewidth=160)
-
-
 SEED = 2026
 split_generator = torch.Generator().manual_seed(SEED)
 
 
-def seed_everything(seed=SEED):
+def seed_everything(seed: int = SEED) -> None:
     random.seed(seed)
     np.random.seed(seed)
 
@@ -49,8 +55,6 @@ seed_everything(SEED)
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
 TEST_BATCH_SIZE = 4
@@ -64,14 +68,6 @@ EARLY_STOPPING_PATIENCE_SIMILARITY = 3
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
 MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/checkpoints'
 TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_log'
-
-GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
-F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
-LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
-
-HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
-               F2LLM_V2_330M: 896,
-               LATEON_CODE_PRETRAIN: 768}
 
 LEARNING_RATE = {GTE_MODERNBERT_BASE: {'lr': 3e-5, 'warmup_fraction': 0.075},
                  F2LLM_V2_330M: {'lr': 2.5e-6, 'warmup_fraction': 0.4},
@@ -91,7 +87,7 @@ def mean_pooling(model_output, attention_mask):
 
 
 class SingleTextDataset(torch.utils.data.Dataset):
-    def __init__(self, df, tokenizer, max_len=256):
+    def __init__(self, df: pd.DataFrame, tokenizer, max_len: int = 256):
         self.texts = list(df['code'])
         self.probs = list(df['probability'])
         self.tokenizer = tokenizer
@@ -100,7 +96,7 @@ class SingleTextDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.texts)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> dict:
         text = str(self.texts[idx])
 
         inputs = self.tokenizer(
@@ -161,6 +157,8 @@ class EmbeddingProbTrainer:
         self.predictor.to(self.device)
 
     def _run_train(self):
+        """Run training of Embedding Probability Trainer."""
+
         self.predictor.train()
 
         total = 0
@@ -188,6 +186,8 @@ class EmbeddingProbTrainer:
         return train_loss
 
     def _run_validation_or_test(self, model: nn.Module, data_loader: DataLoader, is_test: bool = False):
+        """Run validation/test of Embedding Probability Trainer."""
+
         model.eval()
         total = 0
         val_mse_sum, val_mae_sum, val_loss_sum = 0.0, 0.0, 0.0
@@ -239,10 +239,11 @@ class EmbeddingProbTrainer:
         return val_mse, val_mae, val_loss
 
     def _run_all_process(self):
+        """Run entire process, including training, test and model save."""
+
         self.current_epoch = 0
         min_valid_loss_epoch = -1  # Loss-based Early Stopping
         min_valid_loss = None
-        best_epoch_model = None
         val_loss_list = []
 
         ckpt_dir_path = os.path.join(MODEL_CKPT_PATH, self.task_name)
@@ -361,7 +362,9 @@ class EmbeddingProbTrainer:
                                      is_test=is_test)
 
 
-def save_base_model(model_dir_path):
+def save_base_model(model_dir_path: str) -> None:
+    """Save base model (= backbone model)."""
+
     model_file_names = [name for name in os.listdir(model_dir_path) if name.endswith('.pt') or name.endswith('.pth')]
     model_file_name = model_file_names[0]
     model_file_path = os.path.join(model_dir_path, model_file_name)
@@ -381,7 +384,7 @@ def save_base_model(model_dir_path):
         save_file(base_model_state_dict, save_path)
 
 
-def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
+def train_probability_predictor(model_path: str, dataset_path: str, task_name: str) -> None:
     """train text embedding probability predictor."""
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
@@ -438,7 +441,9 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     save_base_model(model_dir_path)
 
 
-def create_datasets_for_tvt(dataset_df: pd.DataFrame):
+def create_datasets_for_tvt(dataset_df: pd.DataFrame) -> dict:
+    """Create train, validation, and test dataset."""
+
     dataset_size = len(dataset_df)
     n_train_size = int(0.75 * dataset_size)
     n_valid_size = int(0.125 * dataset_size)
@@ -486,6 +491,8 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataset):
 
 
 def valid_or_test_similarity_predictor(model, val_or_test_dataset):
+    """Predict similarity for all sentence pairs in valid/test dataset."""
+
     predicted_scores, true_labels, sentence1s, sentence2s = [], [], [], []
 
     for batch in val_or_test_dataset:
@@ -516,7 +523,7 @@ class LogTrainingCallback(TrainerCallback):
             self.log_function(score, epoch, steps)
 
 
-def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
+def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str) -> None:
     """train text embedding similarity predictor."""
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
@@ -548,7 +555,9 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         'test_time': []
     }
 
-    def log_training(score: float, epoch: float, steps: int):
+    def log_training(score: float, epoch: float, steps: int) -> None:
+        """Log current ongoing training process."""
+
         with torch.no_grad():
             predicted_scores, true_labels, _, _ = valid_or_test_similarity_predictor(model=model,
                                                                                      val_or_test_dataset=valid_dataset)
@@ -631,27 +640,12 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
 
-    task_name_to_info = {
-        '01_unnecessary_prints': {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
-        '01_similar_variables': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-        '01_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '01_return_matched_with_func_name': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-        '01_func_docstring_single_responsibility': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
-        '01_func_docstring_docstring_and_name': {'model_path': F2LLM_V2_330M, 'task_type': 'sim'},
-        '04_func_args_bindable': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '04_func_args_dynamic': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '06_refactor_into_class_case_2_state_vars_if_else': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '06_similar_function_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-        '02_numeric_values_maybe_const': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '02_numeric_values_twice': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-    }
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", required=True, help="task name (e.g. 01_unnecessary_prints)")
     args = parser.parse_args()
 
     task_name = args.task
-    task_info = task_name_to_info[task_name]
+    task_info = TASK_NAME_TO_INFO[task_name]
 
     dataset_path = os.path.join(PROJECT_DIR_PATH,
                                 "code_reviewer",

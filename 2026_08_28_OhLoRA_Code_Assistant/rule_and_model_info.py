@@ -89,6 +89,41 @@ SIMILARITIES = {
     RULE_SIMILAR_VARIABLES: 0.93
 }
 
+RULES_EMBEDDING = [
+    RULE_UNNECESSARY_PRINTS,
+    RULE_SIMILAR_VARIABLES,
+    RULE_NAMES,
+    RULE_RETURN_MATCHED_NAME,
+    RULE_FUNC_DOCSTRING_RESPONSIBILITY,
+    RULE_FUNC_DOCSTRING_NAME,
+    RULE_ARGS_BINDABLE,
+    RULE_ARGS_DYNAMIC,
+    RULE_REFACTOR_STATE_VARS,
+    RULE_SIMILAR_FUNCTION_NAMES,
+    RULE_NUMERIC_CONST,
+    RULE_NUMERIC_TWICE
+]
+
+GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
+F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
+LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
+HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768, F2LLM_V2_330M: 896, LATEON_CODE_PRETRAIN: 768}
+
+TASK_NAME_TO_INFO = {
+    RULES_EMBEDDING[0]: {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
+    RULES_EMBEDDING[1]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+    RULES_EMBEDDING[2]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[3]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+    RULES_EMBEDDING[4]: {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
+    RULES_EMBEDDING[5]: {'model_path': F2LLM_V2_330M, 'task_type': 'sim'},
+    RULES_EMBEDDING[6]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[7]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[8]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[9]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+    RULES_EMBEDDING[10]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[11]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+}
+
 RULE_NAME_TO_KOREAN = {
     RULE_UNUSED: '미 사용 변수/함수 제거',
     RULE_UNNECESSARY_PRINTS: '불필요한 print, logging 제거',

@@ -19,25 +19,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from ast_utils import remove_after_py
 from code_review_items import default_code_review_func
-from rule_info import *
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
+from rule_and_model_info import *
 from embedding_model.train_model import EmbeddingProbPredictor
 from project_common import ENTIRE_CODE_PATH
 
 
 TEST_CASES_DIR = 'test_cases'
-
-GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
-F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
-LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
 EMBEDDING_INFERENCE_LOG_PATH = os.path.join(PROJECT_DIR_PATH, "code_reviewer", "embedding_log.csv")
-
-HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
-               F2LLM_V2_330M: 896,
-               LATEON_CODE_PRETRAIN: 768}
 
 SIMILARITY_TASKS = [RULE_SIMILAR_VARIABLES,
                     RULE_RETURN_MATCHED_NAME,
@@ -358,21 +350,7 @@ def mark_score(score: float) -> str:
 def run_entire_code_review(code_path: str, except_path: str | None = None) -> dict:
     """Run entire code review of all the Python code files from the given path."""
 
-    task_list_with_embedding = [
-        RULE_UNNECESSARY_PRINTS,
-        RULE_SIMILAR_VARIABLES,
-        RULE_NAMES,
-        RULE_RETURN_MATCHED_NAME,
-        RULE_FUNC_DOCSTRING_RESPONSIBILITY,
-        RULE_FUNC_DOCSTRING_NAME,
-        RULE_ARGS_BINDABLE,
-        RULE_ARGS_DYNAMIC,
-        RULE_REFACTOR_STATE_VARS,
-        RULE_SIMILAR_FUNCTION_NAMES,
-        RULE_NUMERIC_CONST,
-        RULE_NUMERIC_TWICE
-    ]
-    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list_with_embedding}
+    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in RULES_EMBEDDING}
 
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models,
