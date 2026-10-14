@@ -18,11 +18,12 @@ HF_USERNAME = api.whoami()["name"]
 
 EMBEDDING_REPO_BASE = f"{HF_USERNAME}/260828_OhLoRA_Embedding_"
 EMBEDDING_REPOS = [EMBEDDING_REPO_BASE + rule_id for rule_id in RULES_EMBEDDING]
-LLM_REPO = f"{HF_USERNAME}/260828_OhLoRA_LLM"
+LLM_REPO_ID = f"{HF_USERNAME}/260828_OhLoRA_LLM"
 PRIVATE = False
 
 EMBEDDING_MODEL_PATHS = [PROJECT_DIR_PATH / "embedding_model" / "models" / rule_id for rule_id in RULES_EMBEDDING]
 LLM_MODEL_PATH = PROJECT_DIR_PATH / "llm_model" / "kanana-2-3b-instruct_fine_tuned" / "full_model"
+README_TEMPLATE_PATH = PROJECT_DIR_PATH / "huggingface" / "readme_templates"
 
 
 def upload_casual_llm():
@@ -32,36 +33,62 @@ def upload_casual_llm():
     assert list(LLM_MODEL_PATH.glob("*.safetensors"))
 
     api.create_repo(
-        repo_id=LLM_REPO,
+        repo_id=LLM_REPO_ID,
         repo_type="model",
         private=PRIVATE,
         exist_ok=True
     )
     api.upload_large_folder(
         folder_path=str(LLM_MODEL_PATH),
-        repo_id=LLM_REPO,
+        repo_id=LLM_REPO_ID,
         repo_type="model"
+    )
+
+    local_readme_teamplate_path = README_TEMPLATE_PATH / "llm_template.txt"
+    local_readme = local_readme_teamplate_path.read_text(encoding="utf-8")
+
+    api.upload_file(
+        path_or_fileobj=str(local_readme),
+        path_in_repo="README.md",
+        repo_id=LLM_REPO_ID,
+        repo_type="model",
+        commit_message="Update model card",
     )
 
 
 def upload_embedding_models():
     """Upload 12 embedding models."""
 
-    for path, repo, rule_id in zip(EMBEDDING_MODEL_PATHS, EMBEDDING_REPOS, RULES_EMBEDDING):
-        assert path.is_dir(), f"Model directory not found: {path}"
-        assert (path / "modules.json").is_file()
+    for local_path, hf_repo_id, rule_id in zip(EMBEDDING_MODEL_PATHS, EMBEDDING_REPOS, RULES_EMBEDDING):
+        assert local_path.is_dir(), f"Model directory not found: {local_path}"
+        assert (local_path / "modules.json").is_file()
 
         api.create_repo(
-            repo_id=repo,
+            repo_id=hf_repo_id,
             repo_type="model",
             private=PRIVATE,
             exist_ok=True
         )
         api.upload_folder(
-            folder_path=str(path),
-            repo_id=repo,
+            folder_path=str(local_path),
+            repo_id=hf_repo_id,
             repo_type="model",
             commit_message=f"Upload {rule_id} fine-tuned SentenceTransformer embedding model"
+        )
+
+        local_readme_teamplate_path = README_TEMPLATE_PATH / "embedding_model_template.txt"
+        local_readme = local_readme_teamplate_path.read_text(encoding="utf-8")
+
+        local_readme = local_readme.replace('{base_model}', TASK_NAME_TO_INFO[rule_id]['model_path'])
+        local_readme = local_readme.replace('{rule_id}', rule_id)
+        local_readme = local_readme.replace('{what_to_predict}', TASK_NAME_TO_INFO[rule_id]['task_type'])
+
+        api.upload_file(
+            path_or_fileobj=str(local_readme),
+            path_in_repo="README.md",
+            repo_id=hf_repo_id,
+            repo_type="model",
+            commit_message="Update model card",
         )
 
 
