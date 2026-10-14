@@ -414,21 +414,7 @@ def mark_score(score: float) -> str:
 def run_entire_code_review(code_path: str, except_path: str | None = None) -> dict:
     """Run entire code review of all the Python code files from the given path."""
 
-    task_list_with_embedding = [
-        RULE_UNNECESSARY_PRINTS,
-        RULE_SIMILAR_VARIABLES,
-        RULE_NAMES,
-        RULE_RETURN_MATCHED_NAME,
-        RULE_FUNC_DOCSTRING_RESPONSIBILITY,
-        RULE_FUNC_DOCSTRING_NAME,
-        RULE_ARGS_BINDABLE,
-        RULE_ARGS_DYNAMIC,
-        RULE_REFACTOR_STATE_VARS,
-        RULE_SIMILAR_FUNCTION_NAMES,
-        RULE_NUMERIC_CONST,
-        RULE_NUMERIC_TWICE
-    ]
-    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in task_list_with_embedding}
+    text_embedding_models = {task_id: get_embedding_model(task_id) for task_id in RULES_EMBEDDING}
 
     code_reviewer = CodeReviewer(code_review_func=default_code_review_func,
                                  text_embedding_models=text_embedding_models,
