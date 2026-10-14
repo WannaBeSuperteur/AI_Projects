@@ -103,3 +103,23 @@ RULES_EMBEDDING = [
     RULE_NUMERIC_CONST,
     RULE_NUMERIC_TWICE
 ]
+
+GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
+F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
+LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
+HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768, F2LLM_V2_330M: 896, LATEON_CODE_PRETRAIN: 768}
+
+TASK_NAME_TO_INFO = {
+    RULES_EMBEDDING[0]: {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
+    RULES_EMBEDDING[1]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+    RULES_EMBEDDING[2]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[3]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+    RULES_EMBEDDING[4]: {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
+    RULES_EMBEDDING[5]: {'model_path': F2LLM_V2_330M, 'task_type': 'sim'},
+    RULES_EMBEDDING[6]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[7]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[8]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[9]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+    RULES_EMBEDDING[10]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
+    RULES_EMBEDDING[11]: {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
+}

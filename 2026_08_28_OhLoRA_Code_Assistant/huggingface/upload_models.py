@@ -7,7 +7,7 @@ from huggingface_hub import HfApi
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
-from code_reviewer.rule_info import RULES_EMBEDDING
+from rule_and_model_info import RULES_EMBEDDING, TASK_NAME_TO_INFO
 
 
 # Most of the code below was generated using ChatGPT-6 Thinking, and later human-reviewed.

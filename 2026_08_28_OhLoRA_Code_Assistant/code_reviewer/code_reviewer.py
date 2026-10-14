@@ -19,25 +19,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from ast_utils import remove_after_py
 from code_review_items import default_code_review_func
-from rule_info import *
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
 
+from rule_and_model_info import *
 from embedding_model.train_model import EmbeddingProbPredictor
 from project_common import ENTIRE_CODE_PATH
 
 
 TEST_CASES_DIR = 'test_cases'
-
-GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
-F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
-LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
 EMBEDDING_INFERENCE_LOG_PATH = os.path.join(PROJECT_DIR_PATH, "code_reviewer", "embedding_log.csv")
-
-HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
-               F2LLM_V2_330M: 896,
-               LATEON_CODE_PRETRAIN: 768}
 
 SIMILARITY_TASKS = [RULE_SIMILAR_VARIABLES,
                     RULE_RETURN_MATCHED_NAME,

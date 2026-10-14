@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import shutil
 import time
 import random
@@ -25,9 +26,14 @@ from safetensors.torch import save_file
 from sklearn.metrics.pairwise import cosine_similarity
 
 
+PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(PROJECT_DIR_PATH)
+
+from rule_and_model_info import GTE_MODERNBERT_BASE, F2LLM_V2_330M, LATEON_CODE_PRETRAIN
+from rule_and_model_info import HIDDEN_SIZE, TASK_NAME_TO_INFO
+
+
 np.set_printoptions(linewidth=160)
-
-
 SEED = 2026
 split_generator = torch.Generator().manual_seed(SEED)
 
@@ -64,14 +70,6 @@ EARLY_STOPPING_PATIENCE_SIMILARITY = 3
 MODEL_SAVE_PATH = f'{PROJECT_DIR_PATH}/embedding_model/models'
 MODEL_CKPT_PATH = f'{PROJECT_DIR_PATH}/embedding_model/checkpoints'
 TRAIN_LOG_PATH = f'{PROJECT_DIR_PATH}/embedding_model/train_log'
-
-GTE_MODERNBERT_BASE = 'Alibaba-NLP/gte-modernbert-base'
-F2LLM_V2_330M = 'codefuse-ai/F2LLM-v2-330M'
-LATEON_CODE_PRETRAIN = 'lightonai/LateOn-Code-pretrain'
-
-HIDDEN_SIZE = {GTE_MODERNBERT_BASE: 768,
-               F2LLM_V2_330M: 896,
-               LATEON_CODE_PRETRAIN: 768}
 
 LEARNING_RATE = {GTE_MODERNBERT_BASE: {'lr': 3e-5, 'warmup_fraction': 0.075},
                  F2LLM_V2_330M: {'lr': 2.5e-6, 'warmup_fraction': 0.4},
@@ -631,27 +629,12 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
 if __name__ == '__main__':
     os.makedirs(TRAIN_LOG_PATH, exist_ok=True)
 
-    task_name_to_info = {
-        '01_unnecessary_prints': {'model_path': GTE_MODERNBERT_BASE, 'task_type': 'prob'},
-        '01_similar_variables': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-        '01_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '01_return_matched_with_func_name': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-        '01_func_docstring_single_responsibility': {'model_path': F2LLM_V2_330M, 'task_type': 'prob'},
-        '01_func_docstring_docstring_and_name': {'model_path': F2LLM_V2_330M, 'task_type': 'sim'},
-        '04_func_args_bindable': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '04_func_args_dynamic': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '06_refactor_into_class_case_2_state_vars_if_else': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '06_similar_function_names': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-        '02_numeric_values_maybe_const': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'prob'},
-        '02_numeric_values_twice': {'model_path': LATEON_CODE_PRETRAIN, 'task_type': 'sim'},
-    }
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", required=True, help="task name (e.g. 01_unnecessary_prints)")
     args = parser.parse_args()
 
     task_name = args.task
-    task_info = task_name_to_info[task_name]
+    task_info = TASK_NAME_TO_INFO[task_name]
 
     dataset_path = os.path.join(PROJECT_DIR_PATH,
                                 "code_reviewer",

@@ -25,11 +25,12 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
 from ast_utils import parse_py_code, get_function_name_at_line, remove_after_py
-from rule_info import *
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
+
 from project_common import ENTIRE_CODE_PATH
+from rule_and_model_info import *
 
 
 PRESERVED_WORDS = set(keyword.kwlist) | set(dir(builtins))
