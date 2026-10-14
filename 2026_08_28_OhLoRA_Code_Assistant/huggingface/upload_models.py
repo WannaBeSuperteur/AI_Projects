@@ -28,7 +28,7 @@ LLM_MODEL_PATH = (PROJECT_DIR_PATH_ / "llm_model" / "kanana-2-3b-instruct_fine_t
 README_TEMPLATE_PATH = (PROJECT_DIR_PATH_ / "huggingface" / "readme_templates")
 
 
-def upload_casual_llm():
+def upload_casual_llm() -> None:
     """Upload Causal LLM. (Transformers, Kanana2-3B Instruct)"""
 
     assert (LLM_MODEL_PATH / "config.json").is_file()
@@ -58,7 +58,7 @@ def upload_casual_llm():
     )
 
 
-def upload_embedding_models():
+def upload_embedding_models() -> None:
     """Upload 12 embedding models."""
 
     for local_path, hf_repo_id, rule_id in zip(EMBEDDING_MODEL_PATHS, EMBEDDING_REPOS, RULES_EMBEDDING):

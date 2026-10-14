@@ -4,19 +4,19 @@ import sys
 import shutil
 import time
 import random
+import math
 
 import numpy as np
 import pandas as pd
 import sklearn
 
-import math
 import torch
 import torch.nn as nn
 import torch.utils.data
 from torch.utils.data import random_split, DataLoader
 
 import datasets
-from sentence_transformers import SentenceTransformer, util, SentenceTransformerTrainingArguments, \
+from sentence_transformers import SentenceTransformer, SentenceTransformerTrainingArguments, \
                                   SentenceTransformerTrainer
 from sentence_transformers.sentence_transformer import losses
 from sentence_transformers.sentence_transformer.evaluation import EmbeddingSimilarityEvaluator
@@ -38,7 +38,7 @@ SEED = 2026
 split_generator = torch.Generator().manual_seed(SEED)
 
 
-def seed_everything(seed=SEED):
+def seed_everything(seed: int = SEED) -> None:
     random.seed(seed)
     np.random.seed(seed)
 
@@ -54,8 +54,6 @@ seed_everything(SEED)
 # to prevent force system off during S-BERT training
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-
-PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 4
@@ -89,7 +87,7 @@ def mean_pooling(model_output, attention_mask):
 
 
 class SingleTextDataset(torch.utils.data.Dataset):
-    def __init__(self, df, tokenizer, max_len=256):
+    def __init__(self, df: pd.DataFrame, tokenizer, max_len: int = 256):
         self.texts = list(df['code'])
         self.probs = list(df['probability'])
         self.tokenizer = tokenizer
@@ -98,7 +96,7 @@ class SingleTextDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.texts)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> dict:
         text = str(self.texts[idx])
 
         inputs = self.tokenizer(
@@ -159,6 +157,8 @@ class EmbeddingProbTrainer:
         self.predictor.to(self.device)
 
     def _run_train(self):
+        """Run training of Embedding Probability Trainer."""
+
         self.predictor.train()
 
         total = 0
@@ -186,6 +186,8 @@ class EmbeddingProbTrainer:
         return train_loss
 
     def _run_validation_or_test(self, model: nn.Module, data_loader: DataLoader, is_test: bool = False):
+        """Run validation/test of Embedding Probability Trainer."""
+
         model.eval()
         total = 0
         val_mse_sum, val_mae_sum, val_loss_sum = 0.0, 0.0, 0.0
@@ -237,10 +239,11 @@ class EmbeddingProbTrainer:
         return val_mse, val_mae, val_loss
 
     def _run_all_process(self):
+        """Run entire process, including training, test and model save."""
+
         self.current_epoch = 0
         min_valid_loss_epoch = -1  # Loss-based Early Stopping
         min_valid_loss = None
-        best_epoch_model = None
         val_loss_list = []
 
         ckpt_dir_path = os.path.join(MODEL_CKPT_PATH, self.task_name)
@@ -359,7 +362,9 @@ class EmbeddingProbTrainer:
                                      is_test=is_test)
 
 
-def save_base_model(model_dir_path):
+def save_base_model(model_dir_path: str) -> None:
+    """Save base model (= backbone model)."""
+
     model_file_names = [name for name in os.listdir(model_dir_path) if name.endswith('.pt') or name.endswith('.pth')]
     model_file_name = model_file_names[0]
     model_file_path = os.path.join(model_dir_path, model_file_name)
@@ -379,7 +384,7 @@ def save_base_model(model_dir_path):
         save_file(base_model_state_dict, save_path)
 
 
-def train_probability_predictor(model_path: str, dataset_path: str, task_name: str):
+def train_probability_predictor(model_path: str, dataset_path: str, task_name: str) -> None:
     """train text embedding probability predictor."""
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
@@ -436,7 +441,9 @@ def train_probability_predictor(model_path: str, dataset_path: str, task_name: s
     save_base_model(model_dir_path)
 
 
-def create_datasets_for_tvt(dataset_df: pd.DataFrame):
+def create_datasets_for_tvt(dataset_df: pd.DataFrame) -> dict:
+    """Create train, validation, and test dataset."""
+
     dataset_size = len(dataset_df)
     n_train_size = int(0.75 * dataset_size)
     n_valid_size = int(0.125 * dataset_size)
@@ -484,6 +491,8 @@ def test_similarity_predictor(model_dir_path: str, device: str, test_dataset):
 
 
 def valid_or_test_similarity_predictor(model, val_or_test_dataset):
+    """Predict similarity for all sentence pairs in valid/test dataset."""
+
     predicted_scores, true_labels, sentence1s, sentence2s = [], [], [], []
 
     for batch in val_or_test_dataset:
@@ -514,7 +523,7 @@ class LogTrainingCallback(TrainerCallback):
             self.log_function(score, epoch, steps)
 
 
-def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str):
+def train_similarity_predictor(model_path: str, dataset_path: str, task_name: str) -> None:
     """train text embedding similarity predictor."""
 
     model_dir_path = os.path.join(MODEL_SAVE_PATH, task_name)
@@ -546,7 +555,9 @@ def train_similarity_predictor(model_path: str, dataset_path: str, task_name: st
         'test_time': []
     }
 
-    def log_training(score: float, epoch: float, steps: int):
+    def log_training(score: float, epoch: float, steps: int) -> None:
+        """Log current ongoing training process."""
+
         with torch.no_grad():
             predicted_scores, true_labels, _, _ = valid_or_test_similarity_predictor(model=model,
                                                                                      val_or_test_dataset=valid_dataset)

@@ -20,7 +20,7 @@ EMBEDDING_REPOS = [EMBEDDING_REPO_BASE + rule_id for rule_id in RULES_EMBEDDING]
 LLM_REPO_ID = f"{HF_USERNAME}/260828_OhLoRA_LLM"
 
 
-def download_llm(hf_repo_id: str, model_save_path: str):
+def download_llm(hf_repo_id: str, model_save_path: str) -> None:
     snapshot_download(
         repo_id=hf_repo_id,
         repo_type="model",
@@ -28,14 +28,14 @@ def download_llm(hf_repo_id: str, model_save_path: str):
     )
 
 
-def download_casual_llm(causal_llm_save_path: str):
+def download_casual_llm(causal_llm_save_path: str) -> None:
     """Download Causal LLM. (Transformers, Kanana2-3B Instruct)"""
 
     os.makedirs(causal_llm_save_path, exist_ok=True)
     download_llm(LLM_REPO_ID, causal_llm_save_path)
 
 
-def download_embedding_models(embedding_models_root_save_path: str):
+def download_embedding_models(embedding_models_root_save_path: str) -> None:
     """Download 12 embedding models."""
 
     for repo_id in EMBEDDING_REPOS:
