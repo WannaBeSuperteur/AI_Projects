@@ -47,11 +47,11 @@ def download_embedding_models(embedding_models_root_save_path: str) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--llm_path",
-                        required=True,
+                        required=False,
                         default="../llm_model/kanana-2-3b-instruct_fine_tuned/full_model",
                         help="save path of Causal LLM of Oh-LoRA Code Assistant")
     parser.add_argument("--emb_path",
-                        required=True,
+                        required=False,
                         default="../embedding_model/models",
                         help="root save path of the Embedding models of Oh-LoRA Code Assistant")
 
