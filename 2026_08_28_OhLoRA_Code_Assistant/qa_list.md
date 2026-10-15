@@ -91,14 +91,38 @@ FileNotFoundError: [Errno 2] No such file or directory: '..\\llm_model\\kanana-2
   * Windows 에서 HuggingFace Cache 저장 경로의 **path 길이가 260자 초과 (약 267자)** 로 오류 발생
 
 * 해결 방법
-  * Cache 위치를 임시로 수정 (OS 별 적용)
+  * Cache 위치를 임시로 수정 (OS 별 적용) → **❌ 해결 안됨**
+  * 모델 Cache 저장 경로를 '길이가 짧은' 임시 경로로 지정, 이후 모델 이동
 
 ```python
-def set_hf_cache_path() -> None:
+# 모델 Cache 저장 경로를 '길이가 짧은' 임시 경로로 지정, 이후 모델 이동
+
+def get_hf_cache_path() -> str:
     if platform.system() == "Windows":
         cache_path = r"C:\ohlora_v7_hf_cache"
     else:
         cache_path = os.path.expanduser("~/ohlora_v7_hf_cache")
-    os.environ["HUGGINGFACE_HUB_CACHE"] = cache_path
+    return cache_path
+
+
+def download_model(hf_repo_id: str, model_save_path: str) -> None:
+    temp_path = Path(get_hf_cache_path())
+    model_save_path_ = Path(model_save_path).resolve()
+
+    temp_path.parent.mkdir(parents=True, exist_ok=True)
+    model_save_path_.parent.mkdir(parents=True, exist_ok=True)
+
+    if model_save_path_.exists():
+        print('Model already exists.')
+        return
+
+    snapshot_download(
+        repo_id=hf_repo_id,
+        repo_type="model",
+        local_dir=str(temp_path),
+    )
+    
+    # move model from temp_path to model_save_path_
+    os.rename(temp_path, model_save_path_)
 ```
 

@@ -20,27 +20,40 @@ EMBEDDING_REPOS = [EMBEDDING_REPO_BASE + rule_id for rule_id in RULES_EMBEDDING]
 LLM_REPO_ID = f"{HF_USERNAME}/260828_OhLoRA_LLM"
 
 
-def set_hf_cache_path() -> None:
+def get_hf_cache_path() -> str:
     if platform.system() == "Windows":
         cache_path = r"C:\ohlora_v7_hf_cache"
     else:
         cache_path = os.path.expanduser("~/ohlora_v7_hf_cache")
-    os.environ["HUGGINGFACE_HUB_CACHE"] = cache_path
+    return cache_path
 
 
-def download_llm(hf_repo_id: str, model_save_path: str) -> None:
+def download_model(hf_repo_id: str, model_save_path: str) -> None:
+    temp_path = Path(get_hf_cache_path())
+    model_save_path_ = Path(model_save_path).resolve()
+
+    temp_path.parent.mkdir(parents=True, exist_ok=True)
+    model_save_path_.parent.mkdir(parents=True, exist_ok=True)
+
+    if model_save_path_.exists():
+        print('Model already exists.')
+        return
+
     snapshot_download(
         repo_id=hf_repo_id,
         repo_type="model",
-        local_dir=model_save_path,
+        local_dir=str(temp_path),
     )
+
+    # move model from temp_path to model_save_path_
+    os.rename(temp_path, model_save_path_)
 
 
 def download_casual_llm(causal_llm_save_path: str) -> None:
     """Download Causal LLM. (Transformers, Kanana2-3B Instruct)"""
 
     os.makedirs(causal_llm_save_path, exist_ok=True)
-    download_llm(LLM_REPO_ID, causal_llm_save_path)
+    download_model(LLM_REPO_ID, causal_llm_save_path)
 
 
 def download_embedding_models(embedding_models_root_save_path: str) -> None:
@@ -50,12 +63,10 @@ def download_embedding_models(embedding_models_root_save_path: str) -> None:
         rule_id = repo_id.split('_Embedding_')[-1]
         embedding_model_save_path = Path(embedding_models_root_save_path) / rule_id
         os.makedirs(embedding_model_save_path, exist_ok=True)
-        download_llm(repo_id, embedding_model_save_path)
+        download_model(repo_id, embedding_model_save_path)
 
 
 if __name__ == '__main__':
-    set_hf_cache_path()
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--llm_path",
                         required=False,
