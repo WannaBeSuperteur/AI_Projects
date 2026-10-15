@@ -32,12 +32,12 @@ def download_model(hf_repo_id: str, model_save_path: str) -> None:
     temp_path = Path(get_hf_cache_path())
     model_save_path_ = Path(model_save_path).resolve()
 
-    temp_path.parent.mkdir(parents=True, exist_ok=True)
-    model_save_path_.parent.mkdir(parents=True, exist_ok=True)
-
-    if model_save_path_.exists():
+    if model_save_path_.exists() and len(os.listdir(model_save_path_)) >= 1:
         print('Model already exists.')
         return
+
+    temp_path.parent.mkdir(parents=True, exist_ok=True)
+    model_save_path_.parent.mkdir(parents=True, exist_ok=True)
 
     snapshot_download(
         repo_id=hf_repo_id,
