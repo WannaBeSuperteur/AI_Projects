@@ -4,7 +4,7 @@ import sys
 import argparse
 from pathlib import Path
 
-from huggingface_hub import HfApi, snapshot_download
+from huggingface_hub import snapshot_download
 
 PROJECT_DIR_PATH = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(PROJECT_DIR_PATH)
@@ -12,8 +12,7 @@ sys.path.append(PROJECT_DIR_PATH)
 from rule_and_model_info import RULES_EMBEDDING
 
 
-api = HfApi()
-HF_USERNAME = api.whoami()["name"]
+HF_USERNAME = "daebakgazua"
 
 EMBEDDING_REPO_BASE = f"{HF_USERNAME}/260828_OhLoRA_Embedding_"
 EMBEDDING_REPOS = [EMBEDDING_REPO_BASE + rule_id for rule_id in RULES_EMBEDDING]
