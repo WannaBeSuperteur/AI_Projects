@@ -62,7 +62,59 @@
 ### 1-2. 실행 로그
 
 * Oh-LoRA 👱‍♀️ 의 다른 버전들과 달리, **가상 인간 여성 얼굴 이미지/애니메이션이 나타나지 않습니다.**
-* TBU
+* [예시 테스트 케이스](user_program/test_case_result.txt) 참고.
+
+```text
+[ eval_result_kor_summary ]
+[미 사용 변수/함수 제거] : 84.5 점,
+[불필요한 print, logging 제거] : 68.2 점,
+[중복되는 사항 common 으로 빼기] : 45.5 점 🚨,
+
+... (중략) ...
+
+[상태 값 조건이 있는 if-elif-elif-else 있는 경우 클래스화 고려] : 94.0 점 👍,
+[클래스 내부에서만 쓰이는 속성, 메서드 (접두사 있음) 호출 비 권장] : 95.2 점 👍,
+[유사한 이름의 함수끼리 가까이 위치하도록 수정 권장] : 58.9 점 🚨
+
+
+[ top_items_eval_summary ]
+[중복되는 사항 common 으로 빼기] : 45.5 점 🚨,
+[100 line 이상 함수 분리, docstring 필요] : 35.0 점 🚨,
+[숫자 값은 위쪽에 상수로] : 33.8 점 🚨,
+[함수 인수 type hint 필요] : 5.5 점 🚨,
+[README.md, pyproject.toml 필요] : 0.0 점 🚨
+
+
+[ code_review_result_str ]
+## 규칙: 미 사용 변수/함수 제거
+### 파일: `../code_reviewer/test_cases\tc01_01_basics.py`
+ - 함수: `(최상위 레벨)`
+   - line `3` 에 있는 `(ruff) 'math' imported but unused`
+   - line `5` 에 있는 `(ruff) 'os' imported but unused`
+
+... (중략) ...
+
+ - 함수: `flmf`
+   - line `1414` 에 있는 `유사 함수 재정렬 필요: flmf`
+   - line `1484` 에 있는 `유사 함수 재정렬 필요: flmf`
+   - line `1628` 에 있는 `유사 함수 재정렬 필요: flmf`
+
+
+[ mean_score ]
+82.5
+
+
+[ item_counts ]
+01_unused {'../code_reviewer/test_cases\\tc01_01_basics.py': 4, '../code_reviewer/test_cases\\tc01_01_basics_2.py': 1, '../code_reviewer/test_cases\\tc01_01_import.py': 1, '../code_reviewer/test_cases\\tc01_08.py': 9, '../code_reviewer/test_cases\\tc05.py': 2}
+01_unnecessary_prints {'../code_reviewer/test_cases\\ai_test.py': 2, '../code_reviewer/test_cases\\tc01_01_basics_2.py': 2, '../code_reviewer/test_cases\\tc01_02.py': 6, '../code_reviewer/test_cases\\tc01_08.py': 4, '../code_reviewer/test_cases\\tc03.py': 4, '../code_reviewer/test_cases\\tc04.py': 2, '../code_reviewer/test_cases\\tc05.py': 1, '../code_reviewer/test_cases\\path_test\\path_test.py': 1}
+01_duplicates {'../code_reviewer/test_cases\\code_review_items_old.py': 13, '../code_reviewer/test_cases\\tc01_01_basics.py': 3, '../code_reviewer/test_cases\\tc01_01_basics_2.py': 4, '../code_reviewer/test_cases\\tc01_08.py': 6, '../code_reviewer/test_cases\\tc06.py': 4}
+
+... (중략) ...
+
+06_refactor_into_class_case_2_state_vars_if_else {'../code_reviewer/test_cases\\ai_test.py': 1, '../code_reviewer/test_cases\\tc06.py': 1}
+06_prefix_for_only_in_class_methods {'../code_reviewer/test_cases\\tc06.py': 4}
+06_similar_function_names {'../code_reviewer/test_cases\\ai_test.py': 4, '../code_reviewer/test_cases\\code_review_items_old.py': 11}
+```
 
 ## 2. 기술 분야 및 사용 기술
 
