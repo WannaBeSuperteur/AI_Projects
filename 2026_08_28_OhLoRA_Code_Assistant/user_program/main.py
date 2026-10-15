@@ -10,8 +10,19 @@ from backend.entire_process import run_entire_process
 
 
 """
+Run these test cases below at '2026_08_28_OhLoRA_Code_Assistant/user_program' directory.
+
 Test Case        : python main.py --code_path ../code_reviewer/test_cases --verbose True
 Test Case Result : user_program/test_case_result.txt
+
+Test Case        : python main.py --code_path ../code_reviewer/test_cases --except_path ../code_reviewer/test_cases/path_test --verbose True
+Test Case Result : user_program/test_case_result_with_except_path.txt
+
+Test Case        : python main.py --code_path ../code_reviewer/test_cases/tc02.py --verbose True
+Test Case Result : user_program/test_case_result_single_file.txt
+
+Test Case        : python main.py --code_path "../code_reviewer/test_cases/tc02.py ||| ../code_reviewer/test_cases/tc03.py" --verbose True
+Test Case Result : user_program/test_case_result_multiple_files.txt
 """
 
 
