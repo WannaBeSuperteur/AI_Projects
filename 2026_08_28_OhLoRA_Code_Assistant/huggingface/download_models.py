@@ -37,6 +37,7 @@ def download_model(hf_repo_id: str, model_save_path: str) -> None:
         return
 
     temp_path.parent.mkdir(parents=True, exist_ok=True)
+    model_save_path_.parent.mkdir(parents=True, exist_ok=True)
 
     snapshot_download(
         repo_id=hf_repo_id,
@@ -51,7 +52,6 @@ def download_model(hf_repo_id: str, model_save_path: str) -> None:
 def download_casual_llm(causal_llm_save_path: str) -> None:
     """Download Causal LLM. (Transformers, Kanana2-3B Instruct)"""
 
-    os.makedirs(causal_llm_save_path, exist_ok=True)
     download_model(LLM_REPO_ID, causal_llm_save_path)
 
 
@@ -61,7 +61,6 @@ def download_embedding_models(embedding_models_root_save_path: str) -> None:
     for repo_id in EMBEDDING_REPOS:
         rule_id = repo_id.split('_Embedding_')[-1]
         embedding_model_save_path = Path(embedding_models_root_save_path) / rule_id
-        os.makedirs(embedding_model_save_path, exist_ok=True)
         download_model(repo_id, embedding_model_save_path)
 
 

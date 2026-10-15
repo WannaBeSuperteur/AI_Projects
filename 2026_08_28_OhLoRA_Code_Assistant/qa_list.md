@@ -114,6 +114,7 @@ def download_model(hf_repo_id: str, model_save_path: str) -> None:
         return
     
     temp_path.parent.mkdir(parents=True, exist_ok=True)
+    model_save_path_.parent.mkdir(parents=True, exist_ok=True)
 
     snapshot_download(
         repo_id=hf_repo_id,
