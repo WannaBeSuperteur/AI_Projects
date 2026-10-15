@@ -156,6 +156,7 @@ TBU
     * 일반적으로 다음 명령어 중 하나를 입력합니다.
       * `python download_models.py`
       * `python3 download_models.py`
+    * **[주의] 전체 모델 용량이 약 18 GB 입니다.**
   * **2.** `2026_08_28_OhLoRA_Code_Assistant/user_program` 디렉토리에서 `main.py` 를 다음 예시를 참고하여 실행합니다.
 
 | 예시                                                                                                                     | 설명                                                                                                                         |

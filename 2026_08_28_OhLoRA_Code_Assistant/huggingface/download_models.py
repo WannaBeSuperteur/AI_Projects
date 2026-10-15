@@ -1,5 +1,6 @@
 
 import os
+import platform
 import sys
 import argparse
 from pathlib import Path
@@ -17,6 +18,14 @@ HF_USERNAME = "daebakgazua"
 EMBEDDING_REPO_BASE = f"{HF_USERNAME}/260828_OhLoRA_Embedding_"
 EMBEDDING_REPOS = [EMBEDDING_REPO_BASE + rule_id for rule_id in RULES_EMBEDDING]
 LLM_REPO_ID = f"{HF_USERNAME}/260828_OhLoRA_LLM"
+
+
+def set_hf_cache_path() -> None:
+    if platform.system() == "Windows":
+        cache_path = r"C:\ohlora_v7_hf_cache"
+    else:
+        cache_path = os.path.expanduser("~/ohlora_v7_hf_cache")
+    os.environ["HUGGINGFACE_HUB_CACHE"] = cache_path
 
 
 def download_llm(hf_repo_id: str, model_save_path: str) -> None:
@@ -45,6 +54,8 @@ def download_embedding_models(embedding_models_root_save_path: str) -> None:
 
 
 if __name__ == '__main__':
+    set_hf_cache_path()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--llm_path",
                         required=False,
