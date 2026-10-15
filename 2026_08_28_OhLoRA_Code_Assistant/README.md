@@ -153,7 +153,7 @@ TBU
 
 * 실행 방법
   * **1.** git clone 받은 repo에서, `2026_08_28_OhLoRA_Code_Assistant/huggingface` 디렉토리에서 `download_models.py` 를 실행합니다. (모델 다운로드)
-    * 일반적으로 다음 명령어를 입력합니다.
+    * 일반적으로 다음 명령어 중 하나를 입력합니다.
       * `python download_models.py`
       * `python3 download_models.py`
   * **2.** `2026_08_28_OhLoRA_Code_Assistant/user_program` 디렉토리에서 `main.py` 를 다음 예시를 참고하여 실행합니다.
