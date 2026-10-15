@@ -83,13 +83,13 @@
   * Python : **Python 3.10.11**
   * Dev Tool : PyCharm 2024.1 Community Edition
 * Python Libraries
-  * pyproject.toml 참고 (TBU)
+  * [해당 문서](system_info_and_user_guide.md#1-1-주요-python-라이브러리) 참고.
 * OS & CPU & GPU
   * OS : **Windows 10**
   * CPU : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
   * GPU : 2 x **Quadro M6000** (12 GB each)
   * **CUDA 12.4** (NVIDIA-SMI 551.61)
-* 시스템 환경 상세 정보 (TBU)
+* [시스템 환경 상세 정보](system_info_and_user_guide.md#1-시스템-환경)
 
 ## 3. 프로젝트 일정
 
@@ -104,7 +104,7 @@
 | 🔍 최종 검토 | 전체 리팩토링             | 10.12 월 - 10.13 화 (2d) | `P010-014-refactoring` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/73) / [PR](https://github.com/WannaBeSuperteur/AI_Projects/pull/74) | ✅  |
 | 📃 문서화   | 모델 HuggingFace 에 등록 | 10.13 화 - 10.15 목 (3d) | `P010-015-huggingface` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/75) / [PR](https://github.com/WannaBeSuperteur/AI_Projects/pull/76) | ✅  |
 | 🔍 최종 검토 | 최종 QA (버그 유무 검사)    | 10.15 목 (1d)           |                        |                                                                                                                                    | ✅  |
-| 📃 문서화   | 프로젝트 문서 정리 및 마무리    | 10.15 목 (1d)           |                        |                                                                                                                                    | ⬜  |
+| 📃 문서화   | 프로젝트 문서 정리 및 마무리    | 10.15 목 (1d)           |                        |                                                                                                                                    | 💨 |
 
 **2. Python 코드 리뷰 어시스턴트**
 
@@ -148,8 +148,8 @@ TBU
 
 ## 6. 사용자 가이드
 
-* 환경 설정 방법
-  * (TBU)
+* Python 환경 설정 방법
+  * [해당 문서의 사용자 가이드 (2-1. Python 환경 설정)](system_info_and_user_guide.md#2-사용자-가이드) 참고.
 
 * 실행 방법
   * **1.** git clone 받은 repo에서, `2026_08_28_OhLoRA_Code_Assistant/huggingface` 디렉토리에서 `download_models.py` 를 실행합니다. (모델 다운로드)
