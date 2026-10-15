@@ -139,6 +139,8 @@
 
 TBU
 
+* 모델 정보는 (TBU) 참고.
+
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
 * 특이 사항 없음
@@ -146,5 +148,16 @@ TBU
 
 ## 6. 사용자 가이드
 
-* 모델 정보는 (TBU) 참고.
-* 사용자 가이드는 (TBU) 참고.
+* 환경 설정 방법
+  * (TBU)
+
+* 실행 방법
+  * **1.** git clone 받은 repo에서, `2026_08_28_OhLoRA_Code_Assistant/huggingface` 디렉토리에서 `download_models.py` 를 실행합니다. (모델 다운로드)
+  * **2.** `2026_08_28_OhLoRA_Code_Assistant/user_program` 디렉토리에서 `main.py` 를 다음 예시를 참고하여 실행합니다.
+
+| 예시                                                                                                                     | 설명                                                                                                                         |
+|------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `python main.py --code_path code_reviewer/test_cases --verbose True`                                                   | `code_reviewer/test_cases` 디렉토리의 모든 Python 코드 파일 리뷰 + 결과 출력                                                                |
+| `python main.py --code_path code_reviewer/test_cases --except_path code_reviewer/test_cases/path_test --verbose True`  | `code_reviewer/test_cases` 디렉토리의 모든 Python 코드 파일 리뷰 + 결과 출력<br>(단, `code_reviewer/test_cases/path_test` 디렉토리 내부의 코드 파일 제외) |
+| `python main.py --code_path code_reviewer/test_cases/tc02.py --verbose True`                                           | `code_reviewer/test_cases/tc02.py` 파일만 리뷰 실시 + 결과 출력                                                                       |
+| `python main.py --code_path "code_reviewer/test_cases/tc02.py \|\|\| code_reviewer/test_cases/tc03.py" --verbose True` | `code_reviewer/test_cases/tc02.py`, 동일 디렉토리의 `tc03.py` 파일만 리뷰 실시 + 결과 출력                                                   |
