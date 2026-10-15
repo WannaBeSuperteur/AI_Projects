@@ -24,10 +24,12 @@
 
 * 전체 테스트 케이스는 [사용자 프로그램 코드 파일](user_program/main.py) 의 docstring 참고.
 
-| 번호  | 테스트 목적                   | 테스트 케이스 (Windows shell 명령어)                                                                                                  | 1차 검사 결과 | 버그 수정 | 최종 검사 결과 |
-|-----|--------------------------|------------------------------------------------------------------------------------------------------------------------------|----------|-------|----------|
-| 2-1 | 기본 형태 (코드 경로)            | `python main.py --code_path ../code_reviewer/test_cases --verbose True`                                                      |          |       |          |
-| 2-2 | `except_path` (제외 경로) 포함 | `python main.py --code_path ../code_reviewer/test_cases --except_path ../code_reviewer/test_cases/path_test --verbose True`  |          |       |          |
-| 2-3 | 단일 파일 테스트                | `python main.py --code_path ../code_reviewer/test_cases/tc02.py --verbose True`                                              |          |       |          |
-| 2-4 | 다중 파일 테스트                | `python main.py --code_path "../code_reviewer/test_cases/tc02.py \|\|\| ../code_reviewer/test_cases/tc03.py" --verbose True` |          |       |          |
+| 번호  | 테스트 목적                       | 테스트 케이스 (Windows shell 명령어)                                                                                                                                                      | 1차 검사 결과 | 버그 수정 | 최종 검사 결과 |
+|-----|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-------|----------|
+| 2-1 | 기본 형태 (코드 경로)                | `python main.py --code_path ../code_reviewer/test_cases --verbose True`                                                                                                          |          |       |          |
+| 2-2 | `except_path` (제외 경로) 포함     | `python main.py --code_path ../code_reviewer/test_cases --except_path ../code_reviewer/test_cases/path_test --verbose True`                                                      |          |       |          |
+| 2-3 | 단일 파일 테스트                    | `python main.py --code_path ../code_reviewer/test_cases/tc02.py --verbose True`                                                                                                  |          |       |          |
+| 2-4 | 다중 파일 테스트                    | `python main.py --code_path "../code_reviewer/test_cases/tc02.py \|\|\| ../code_reviewer/test_cases/tc03.py" --verbose True`                                                     |          |       |          |
+| 2-5 | 단일 파일 테스트 (`except_path` 포함) | `python main.py --code_path ../code_reviewer/test_cases/tc02.py --except_path ../code_reviewer/test_cases/path_test --verbose True`                                              |          |       |          |
+| 2-6 | 다중 파일 테스트 (`except_path` 포함) | `python main.py --code_path "../code_reviewer/test_cases/tc02.py \|\|\| ../code_reviewer/test_cases/tc03.py" --except_path ../code_reviewer/test_cases/path_test --verbose True` |          |       |          |
 
