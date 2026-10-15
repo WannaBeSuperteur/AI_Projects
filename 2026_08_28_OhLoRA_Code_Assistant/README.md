@@ -8,6 +8,7 @@
   * [2-1. 사용한 Python 라이브러리 및 시스템 환경](#2-1-사용한-python-라이브러리-및-시스템-환경)
 * [3. 프로젝트 일정](#3-프로젝트-일정)
 * [4. 프로젝트 상세 설명](#4-프로젝트-상세-설명)
+  * [4-1. 모델 정보](#4-1-모델-정보) 
 * [5. 프로젝트 진행 중 이슈 및 해결 방법](#5-프로젝트-진행-중-이슈-및-해결-방법)
 * [6. 사용자 가이드](#6-사용자-가이드)
 
@@ -125,7 +126,7 @@
 
 | 기술 분야          | 사용 기술                                                                                                                                                        | 설명                                                          |
 |----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
-| Text Embedding | TBU                                                                                                                                                          | Python 코드 리뷰 시, 함수명, 클래스명 등 유사도를 통해 최적의 코드 배치 및 코드 응집성 등 판단 |
+| Text Embedding | Text Embedding                                                                                                                                               | Python 코드 리뷰 시, 함수명, 클래스명 등 유사도를 통해 최적의 코드 배치 및 코드 응집성 등 판단 |
 | LLM            | [SFT (Supervised Fine-Tuning)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_SFT.md)    | 코드 리뷰 멘트를 LLM으로 생성                                          |
 | LLM            | [LoRA (Low-Rank Adaption)](https://github.com/WannaBeSuperteur/AI-study/blob/main/AI%20Basics/LLM%20Basics/LLM_%EA%B8%B0%EC%B4%88_Fine_Tuning_LoRA_QLoRA.md) | Oh-LoRA 👱‍♀️ 의 LLM 을 효율적으로 Fine-Tuning 하는 기술               |
 
@@ -156,7 +157,7 @@
 | 🔍 최종 검토 | 전체 리팩토링             | 10.12 월 - 10.13 화 (2d) | `P010-014-refactoring` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/73) / [PR](https://github.com/WannaBeSuperteur/AI_Projects/pull/74) | ✅  |
 | 📃 문서화   | 모델 HuggingFace 에 등록 | 10.13 화 - 10.15 목 (3d) | `P010-015-huggingface` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/75) / [PR](https://github.com/WannaBeSuperteur/AI_Projects/pull/76) | ✅  |
 | 🔍 최종 검토 | 최종 QA (버그 유무 검사)    | 10.15 목 (1d)           |                        |                                                                                                                                    | ✅  |
-| 📃 문서화   | 프로젝트 문서 정리 및 마무리    | 10.15 목 (1d)           |                        |                                                                                                                                    | 💨 |
+| 📃 문서화   | 프로젝트 문서 정리 및 마무리    | 10.15 목 (1d)           |                        |                                                                                                                                    | ✅  |
 
 **2. Python 코드 리뷰 어시스턴트**
 
@@ -189,9 +190,29 @@
 
 ## 4. 프로젝트 상세 설명
 
-TBU
+* **Python 코드 리뷰 어시스턴트** 핵심 구조
+  * 상세 내용은 [해당 문서](code_reviewer/README.md) 참고.
+  * [전체 코드 리뷰 규칙 (Rule-based 45개, 임베딩 기반 11개)](code_reviewer/code_review_standard.md)
 
-* 모델 정보는 (TBU) 참고.
+![image](../images/260828_36.PNG)
+
+----
+
+* **Pull Request hook을 통한 코멘트 작성** 및 **FastAPI 서버** 핵심 구조
+  * 상세 내용은 [해당 문서](backend/README.md) 참고.
+
+![image](../images/260828_37.PNG)
+
+### 4-1. 모델 정보
+
+* 임베딩 모델 (텍스트의 rule 위반 확률, 유사도 등 분석용) 12개
+  * [각 규칙 별 선택한 텍스트 임베딩 모델 정보 & 성능 평가 결과](embedding_model/model_test_result.md)
+  * [임베딩 모델 후보 선택 과정](embedding_model/model_candidates.md)
+  * [임베딩 모델 학습/테스트 데이터셋](ai_dataset/embedding_dataset) 및 [임베딩 모델 데이터셋 생성 ChatGPT 프롬프트](ai_dataset/embedding_dataset/chatgpt_prompts.md)
+ 
+* LLM (코드 리뷰 최종 결과 출력용) 1개
+  * [LLM 선택: Kanana-2 3B (상세 정보)](llm_model/llm_selection.md) 
+  * [LLM 학습/테스트 데이터셋 (총 500개 row)](ai_dataset/llm_dataset/llm_dataset.csv)
 
 ## 5. 프로젝트 진행 중 이슈 및 해결 방법
 
