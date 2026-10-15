@@ -21,7 +21,7 @@
 | 1  | 모델 다운로드 정상 동작 (사용자 PC 기준)                                                                                                                              | ❌        | [버그 수정 로그](#3-1-모델-다운로드-시-경로-찾기-불가) | ✅        |
 | 2  | API 실행 시 정상 동작 (서버 PC 기준)                                                                                                                              | ✅        |                                     |          |
 | 3  | [사용자 프로그램](user_program/main.py) 테스트 케이스 실행 결과 일치                                                                                                      | ✅        |                                     |          |
-| 4  | [code_reviewer.py](code_reviewer/code_reviewer.py) 실행 시 임베딩 로그가 [기존 모델 로그](code_reviewer/bugfix_logs/ai_code_check_log_before_model_download.csv) 와 동일 |          |                                     |          |
+| 4  | [code_reviewer.py](code_reviewer/code_reviewer.py) 실행 시 임베딩 로그가 [기존 모델 로그](code_reviewer/bugfix_logs/ai_code_check_log_before_model_download.csv) 와 동일 | ✅        |                                     |          |
 
 ### 2-1. 테스트 케이스 목록
 
