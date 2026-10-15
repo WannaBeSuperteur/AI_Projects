@@ -93,7 +93,7 @@
 
 ## 3. 프로젝트 일정
 
-* 전체 일정 : **2026.08.28 금 - 10.14 수 (48 days)**
+* 전체 일정 : **2026.08.28 금 - 10.15 목 (49 days)**
 * 상태 : ⬜ (TODO), 💨 (ING), ✅ (DONE), ❎ (DONE BUT **NOT MERGED**), ❌ (FAILED)
 
 **1. 프로젝트 전체 관리**
@@ -102,9 +102,9 @@
 |----------|---------------------|------------------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------|----|
 | 📃 문서화   | 프로젝트 개요 및 최초 일정 작성  | 08.28 금 (1d)           |                        |                                                                                                                                    | ✅  |
 | 🔍 최종 검토 | 전체 리팩토링             | 10.12 월 - 10.13 화 (2d) | `P010-014-refactoring` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/73) / [PR](https://github.com/WannaBeSuperteur/AI_Projects/pull/74) | ✅  |
-| 📃 문서화   | 모델 HuggingFace 에 등록 | 10.13 화 - 10.14 수 (2d) | `P010-015-huggingface` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/75) / [PR](https://github.com/WannaBeSuperteur/AI_Projects/pull/76) | 💨 |
-| 🔍 최종 검토 | 최종 QA (버그 유무 검사)    | 10.14 수 (1d)           |                        |                                                                                                                                    | ⬜  |
-| 📃 문서화   | 프로젝트 문서 정리 및 마무리    | 10.14 수 (1d)           |                        |                                                                                                                                    | ⬜  |
+| 📃 문서화   | 모델 HuggingFace 에 등록 | 10.13 화 - 10.15 목 (3d) | `P010-015-huggingface` | [issue](https://github.com/WannaBeSuperteur/AI_Projects/issues/75) / [PR](https://github.com/WannaBeSuperteur/AI_Projects/pull/76) | ✅  |
+| 🔍 최종 검토 | 최종 QA (버그 유무 검사)    | 10.15 목 (1d)           |                        |                                                                                                                                    | ✅  |
+| 📃 문서화   | 프로젝트 문서 정리 및 마무리    | 10.15 목 (1d)           |                        |                                                                                                                                    | ⬜  |
 
 **2. Python 코드 리뷰 어시스턴트**
 
