@@ -9,6 +9,12 @@ sys.path.append(PROJECT_DIR_PATH)
 from backend.entire_process import run_entire_process
 
 
+"""
+Test Case        : python main.py --code_path ../code_reviewer/test_cases --verbose True
+Test Case Result : user_program/test_case_result.txt
+"""
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--code_path",
